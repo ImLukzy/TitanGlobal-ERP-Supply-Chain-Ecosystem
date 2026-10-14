@@ -20,6 +20,27 @@ public class ErrorHandlingMiddleware
         {
             await _next(context);
         }
+        catch (ReglaNegocioException exception)
+        {
+            if (context.Response.HasStarted)
+            {
+                throw;
+            }
+
+            _logger.LogWarning(exception, "La petición incumplió una regla de negocio.");
+            context.Response.Clear();
+            context.Response.StatusCode = exception.StatusCode;
+            context.Response.ContentType = "application/json";
+
+            object error = new
+            {
+                StatusCode = exception.StatusCode,
+                Message = exception.Message
+            };
+            string responseBody = JsonSerializer.Serialize(error, JsonSerializationOptions.ErrorResponses);
+
+            await context.Response.WriteAsync(responseBody);
+        }
         catch (Exception exception)
         {
             if (context.Response.HasStarted)
