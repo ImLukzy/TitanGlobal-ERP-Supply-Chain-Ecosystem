@@ -58,12 +58,22 @@
 | A7 | Visual | capturas con Playwright y respuestas simuladas (`page.route`, datos realistas como los de `scripts/seed-dev.sql`) del módulo 04 a 375 y 1280 px, en claro y oscuro, con la jerarquía desplegada; esperar a que terminen las transiciones; sin scroll horizontal de página | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: registro de pantallas, tipos y `api.ts`.
-- [ ] Tarea 2: formulario de nueva orden.
-- [ ] Tarea 3: tarjetas de analítica.
-- [ ] Tarea 4: pendientes de la spec 03.
-- [ ] Tarea 5: tests, capturas y A1–A7.
+- [x] Tarea 1: registro de pantallas, tipos y `api.ts`.
+- [x] Tarea 2: formulario de nueva orden.
+- [x] Tarea 3: tarjetas de analítica.
+- [x] Tarea 4: pendientes de la spec 03.
+- [x] Tarea 5: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`d86d677`): backend 23/23, frontend 36/36, lint 0 warnings, build |
+| 2026-10-14 | A2 | ✅ | `api.test.ts`: 10 funciones con URL, método y parámetros exactos |
+| 2026-10-14 | A3 | ✅ | `NuevaOrdenForm.test.tsx`: validación sin petición, éxito «Orden creada con Id 7» y limpieza; 400/403 y (corrección 1) 409 «Ya existe una orden…» y 400 «El cliente 9999 no existe.» visibles, sin limpiar el formulario |
+| 2026-10-14 | A4 | ✅ | `Analitica.test.tsx`: carga de los patrones 5, 8 y 9, jerarquía con subtotales, «más caro» vacío → «Sin resultados», un 500 aislado por tarjeta |
+| 2026-10-14 | A5 | ✅ | Escape cierra el menú y devuelve el foco; `isUserRole` sin `as`; 5xx sin JSON → mensaje nuevo; dev en 127.0.0.1 |
+| 2026-10-14 | A6 | ✅ | `App.test.tsx`: `/modulos/04-ordenes-compra` con la pantalla nueva y `/modulos/01-clientes` pendiente |
+| 2026-10-14 | A7 | ✅ | capturas de Dwight en `/tmp/titan-spec04/` (375/1280 × claro/oscuro, respuestas simuladas), revisadas por Claudio |
+| 2026-10-14 | Corrección 1 | ✅ | Claudio vio en las capturas que OC-001 (`2026-01-02T00:00:00Z`) salía como 1/1/2026 (hora de Lima); `lib/formato.ts` formatea en UTC; test bajo `TZ=America/Lima` → 2/1/2026 |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, sin hallazgos (sobre `d41b8e2`; la corrección 1 la revisó Claudio) |
+| 2026-10-14 | QA E2E | ⏳ | pendiente: Pam con frontend + API + PostgreSQL cuando estén integradas las specs 05 y 06 |
