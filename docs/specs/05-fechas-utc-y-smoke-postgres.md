@@ -46,11 +46,16 @@
 | A4 | Limpieza | después del smoke, también si se fuerza un fallo: `ss -ltn` sin 5080 ni 5433 y sin contenedor `db` | limpio |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: `FechasUtc` y normalización en el UseCase.
-- [ ] Tarea 2: tests.
-- [ ] Tarea 3: `smoke-postgres.sh`.
-- [ ] Tarea 4: A1–A4.
+- [x] Tarea 1: `FechasUtc` y normalización en el UseCase.
+- [x] Tarea 2: tests.
+- [x] Tarea 3: `smoke-postgres.sh`.
+- [x] Tarea 4: A1–A4.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`1f9eb7a`): backend 28/28, frontend 36/36 |
+| 2026-10-14 | A2 | ✅ | `FechasUtcTests` (Utc, Local, Unspecified) y teoría de `ventas/suma` con las 3 variantes de fecha |
+| 2026-10-14 | A3 | ✅ | Claudio ejecutó `./scripts/smoke-postgres.sh` → `SMOKE OK`; `2026-01-01`, `2026-01-01T00:00:00` y `…Z` → 200 `{"totalVentas":10750.00}` (antes: 500 con fecha sin zona) |
+| 2026-10-14 | A4 | ✅ | tras el smoke: 5080 y 5433 libres, 0 contenedores; Michael forzó un fallo y comprobó la misma limpieza |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, sin hallazgos (sobre `69f95aa`, idéntico a `a59bf8a`) |
