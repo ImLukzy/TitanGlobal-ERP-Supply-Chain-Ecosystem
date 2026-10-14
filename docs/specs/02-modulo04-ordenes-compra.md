@@ -47,12 +47,21 @@ Namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.{Dtos,UseCa
 | A7 | OpenAPI | `/openapi/v1.json` incluye las 10 rutas de `api/v1/ordenes-compra` | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: DTOs.
-- [ ] Tarea 2: `CrearOrdenCompraUseCase` y `AnaliticaOrdenesCompraUseCase`.
-- [ ] Tarea 3: controlador.
-- [ ] Tarea 4: `scripts/seed-dev.sql` y tests.
-- [ ] Tarea 5: A1–A7.
+- [x] Tarea 1: DTOs.
+- [x] Tarea 2: `CrearOrdenCompraUseCase` y `AnaliticaOrdenesCompraUseCase`.
+- [x] Tarea 3: controlador.
+- [x] Tarea 4: `scripts/seed-dev.sql` y tests.
+- [x] Tarea 5: A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (Claudio en `ImLukzy/Claudio`, commit `94c321a`) |
+| 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio`: backend 23/23, frontend 13/13 y build |
+| 2026-10-14 | A3 | ✅ | `OrdenesCompraApiTests`: 13 tests nuevos con valores exactos (escritura, filtros, suma, promedio, ranking, jerarquía, categorías, compradores, rol) |
+| 2026-10-14 | A4 | ✅ | tests y QA (Pam): `termino=LAPTOP` → Laptop Pro y Laptop Air; cliente 5 sin órdenes → `promedioCompra: 0`; POST vacío → 400; `Bloqueado` → 403 |
+| 2026-10-14 | A5 | ✅ | `AnaliticaOrdenesCompraUseCase`: patrones 1–12 numerados; Kelly comprobó que cada consulta implementa su patrón |
+| 2026-10-14 | A6 | ✅ | QA (Pam) contra PostgreSQL: seed aplicado dos veces con los mismos recuentos (5 clientes, 10 productos, 8 órdenes, 9 detalles); 10/10 rutas idénticas a su SQL directo. Michael: patrón 9 `[{clienteId:1,totalOrdenes:4},…]`, 11 `["Computo","Pantallas","Perifericos"]`, 12 `["Acme Industrial","Beta Comercio"]` |
+| 2026-10-14 | A7 | ✅ | QA (Pam): `/openapi/v1.json` incluye las 10 rutas de `api/v1/ordenes-compra` |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, sin hallazgos |
+| 2026-10-14 | Nota | ℹ️ | POST con `NumeroOrden` repetido o `ClienteId` inexistente → 500 JSON del middleware (la spec no pide validarlo; propuesta pendiente de decisión del humano: 409/400 con mensaje) |
