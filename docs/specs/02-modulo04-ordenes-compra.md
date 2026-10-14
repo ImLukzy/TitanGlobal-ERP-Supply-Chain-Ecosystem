@@ -6,7 +6,7 @@
 
 ## 2. Fuera de alcance
 - Otros módulos (Clientes, Productos…), aunque usen las mismas entidades.
-- Cambiar las entidades, el repositorio genérico, los middlewares o `Program.cs` (spec 01). Si algo de la base impide cumplir esta spec, se reporta BLOQUEADO; no se toca.
+- Cambiar las entidades, el repositorio genérico, los middlewares o `Program.cs` (spec 01), salvo los tres ajustes heredados de §3. Si algo de la base impide cumplir esta spec, se reporta BLOQUEADO; no se toca.
 - Pantallas del frontend (spec 04).
 - Validaciones de negocio que el enunciado no pide (por ejemplo, comprobar que el cliente existe antes de crear la orden).
 
@@ -21,6 +21,9 @@
 | `src/TitanGlobal.Api/Modules/Modulo04_OrdenesCompra/Controllers/OrdenesCompraController.cs` | crear | `[Route("api/v1/ordenes-compra")]`, 10 acciones de enunciado §3.5 |
 | `scripts/seed-dev.sql` | crear | datos de demostración para la BD local: ≥5 clientes (con y sin `Descripcion`), ≥10 productos en ≥3 categorías (algunos sin `Descripcion`), ≥8 órdenes con detalles y fechas repartidas. Idempotente (`TRUNCATE … RESTART IDENTITY CASCADE` al inicio) |
 | `tests/TitanGlobal.Api.Tests/Modulo04_OrdenesCompra/*.cs` | crear | tests de integración con BD InMemory sembrada |
+| `src/TitanGlobal.Api/Program.cs` | modificar | solo el ajuste heredado de la auditoría de la spec 01: `public partial class Program` en varias líneas |
+| `src/TitanGlobal.Api/Middlewares/*.cs` | modificar | solo serializar los errores sin escapar acentos (`JsonSerializerOptions` con `Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)`, opciones compartidas en un único sitio), para que `curl` muestre «petición» y no `petici\u00F3n` |
+| `tests/TitanGlobal.Api.Tests/ApiTests.cs` | modificar | test de A8 de la spec 01 (`/openapi/v1.json` → 200 e incluye `/api/v1/sistema/salud`; la factoría en entorno Development) y aserción de que el cuerpo del 403 contiene «operación» sin escapar |
 
 Namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.{Dtos,UseCases,Controllers}`.
 
