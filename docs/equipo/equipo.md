@@ -2,7 +2,7 @@
 
 Claude es el integrador: trabaja en el worktree `titan-claudio` (rama `ImLukzy/Claudio`), reparte las tareas con Orca, revisa, integra y pide permiso al humano antes de publicar.
 
-| Miembro | Worktree | Agente | Rol |
+| Miembro | Worktree (rama = mismo nombre) | Agente | Rol |
 |---|---|---|---|
 | Michael | `titan-michael` | Codex | escritor de código |
 | Dwight | `titan-dwight` | Codex | escritor de código (tareas que no pisen los archivos de Michael) |
