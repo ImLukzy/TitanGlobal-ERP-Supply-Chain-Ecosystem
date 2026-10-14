@@ -108,10 +108,10 @@ Las reglas de código están en `CLAUDE.md` § Reglas de código.
 - 79 ParametrosSistema
 - 80 CierresPeriodo
 
-> **Pendiente de confirmar con el humano:** el árbol de ejemplo del documento original usa `Modulo02_OrdenesCompra`, pero su lista de módulos pone OrdenesCompra en el puesto 04. Aquí se sigue el orden de la lista; la carpeta de OrdenesCompra se nombrará cuando el humano lo decida.
+> **Numeración (decidida por el humano el 2026-10-14):** vale el orden de esta lista. Las carpetas llevan número de dos dígitos, `Modules/ModuloNN_Nombre/`; por ejemplo, `Modules/Modulo04_OrdenesCompra/`. El namespace sigue a la carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.UseCases`. `Modulo00_Sistema` queda reservado para los endpoints técnicos (salud).
 
 ## Módulo de referencia
-El módulo OrdenesCompra es la plantilla de todos los módulos. Incluye:
+`Modulo04_OrdenesCompra` es la plantilla de todos los módulos. Incluye:
 - Un caso de uso transaccional de escritura: `CrearOrdenCompraUseCase`.
 - Un caso de uso analítico con los 12 patrones LINQ obligatorios, numerados en comentarios (`AnaliticaOrdenesCompraUseCase`).
 - Un controlador delgado.

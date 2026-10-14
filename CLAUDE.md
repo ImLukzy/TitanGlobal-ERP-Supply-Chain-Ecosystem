@@ -19,7 +19,7 @@ src/TitanGlobal.Api/
   Models/          entidades partial (estilo scaffolding) + TitanGlobalDbContext
   Repositories/    Interfaces/ (IGenericRepository<T>, IUnitOfWork) · Implementations/
   Services/        SOLO servicios técnicos transversales (IAuthService/AuthService)
-  Modules/ModuloNN_Nombre/{Controllers,Dtos,UseCases}/   vertical slices
+  Modules/ModuloNN_Nombre/{Controllers,Dtos,UseCases}/   vertical slices (NN = orden de docs/arquitectura.md; namespace = carpeta)
   Program.cs       registro de UseCases por reflexión + pipeline estricto
 tests/TitanGlobal.Api.Tests/
 ```
