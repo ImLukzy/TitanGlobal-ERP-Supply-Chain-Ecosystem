@@ -1,0 +1,6 @@
+@TitanGlobal.Api_HostAddress = http://localhost:5080
+
+GET {{TitanGlobal.Api_HostAddress}}/api/v1/sistema/salud
+Accept: application/json
+
+###
