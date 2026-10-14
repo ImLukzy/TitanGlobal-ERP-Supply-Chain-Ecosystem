@@ -2,6 +2,8 @@
 
 Sistema empresarial transaccional para una corporación multinacional manufacturera y logística. Cubre de extremo a extremo la cadena de suministro, las compras internacionales, la manufactura, los almacenes (WMS), la distribución (TMS), la facturación electrónica, las finanzas y el capital humano.
 
+Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **frontend** (§ Frontend). Donde este documento y el enunciado difieren, manda § Desviaciones decididas.
+
 ## Estilo
 - **Vertical slices:** cada módulo vive en `Modules/ModuloNN_Nombre/` con `Controllers/`, `Dtos/` y `UseCases/`.
 - **Capas transversales:** solo `Middlewares/`, `Models/` (EF Core), `Repositories/` (repositorio genérico + unidad de trabajo), `Services/` (exclusivamente técnicos: auth) y `Configuration/`.
@@ -111,7 +113,31 @@ Las reglas de código están en `CLAUDE.md` § Reglas de código.
 > **Numeración (decidida por el humano el 2026-10-14):** vale el orden de esta lista. Las carpetas llevan número de dos dígitos, `Modules/ModuloNN_Nombre/`; por ejemplo, `Modules/Modulo04_OrdenesCompra/`. El namespace sigue a la carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.UseCases`. `Modulo00_Sistema` queda reservado para los endpoints técnicos (salud).
 
 ## Módulo de referencia
-`Modulo04_OrdenesCompra` es la plantilla de todos los módulos. Incluye:
+`Modulo04_OrdenesCompra` es la plantilla de todos los módulos (código en `docs/enunciado.md` §3). Incluye:
 - Un caso de uso transaccional de escritura: `CrearOrdenCompraUseCase`.
 - Un caso de uso analítico con los 12 patrones LINQ obligatorios, numerados en comentarios (`AnaliticaOrdenesCompraUseCase`).
-- Un controlador delgado.
+- Un controlador delgado (`api/v1/ordenes-compra`).
+
+## Contratos fijados por el enunciado
+- `IGenericRepository<T>`: `IQueryable<T> AsQueryable()`, `Task AddAsync(T)`, `void Update(T)`, `void Remove(T)`.
+- `IUnitOfWork : IDisposable`: `IGenericRepository<T> Repository<T>()`, `Task<int> CompleteAsync()`.
+- Entidades `Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra` con exactamente los campos de `docs/enunciado.md` §3.1 (`Cantidad` es `int`; importes `decimal(18,2)`).
+- Mensajes de error literales de `docs/enunciado.md` §4.
+
+## Desviaciones decididas (mandan sobre el enunciado)
+| Enunciado | Proyecto | Decisión |
+|---|---|---|
+| Árbol de ejemplo con `Modulo02_OrdenesCompra` | `Modulo04_OrdenesCompra` (orden de la lista) | humano, 2026-10-14 |
+| Namespace `TitanGlobal.Api.Modules.OrdenesCompra` | namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra` | humano, 2026-10-14 |
+| `RoleBasedAccessMiddleware` lee la cabecera directamente | lee el rol vía `IAuthService` (misma cabecera `X-User-Role`) | spec 01 |
+| Registro de servicios dentro de `Program.cs` | métodos de extensión en `Configuration/DependencyInjectionExtensions.cs`, llamados desde `Program.cs` | spec 01 (el árbol del enunciado ya lo incluye) |
+| Solo backend | backend + frontend | humano, 2026-10-14 |
+
+## Frontend
+Decidido por el humano el 2026-10-14: **React + Vite + TypeScript**, en la carpeta `frontend/` de este mismo repo.
+- SPA que consume la API `api/v1/...`; en desarrollo, proxy de Vite hacia la API.
+- Navegación por los 8 dominios y 80 módulos con la misma numeración (`docs/arquitectura.md`).
+- Errores de la API (`{ StatusCode, Message }`) mostrados al usuario; la cabecera `X-User-Role` la pone el cliente HTTP.
+- Tipos de la API alineados con el OpenAPI (`/openapi/v1.json`).
+- Gate propio (`lint`, `typecheck`, `test` con Vitest, `build`) que `scripts/verify.sh` llama.
+- Las pantallas de cada módulo van en specs aparte, después del backend de ese módulo.

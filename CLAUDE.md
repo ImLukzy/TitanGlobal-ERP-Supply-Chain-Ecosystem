@@ -1,5 +1,5 @@
 # CLAUDE.md — TitanGlobal ERP & Supply Chain Ecosystem
-ERP transaccional para una corporación manufacturera y logística: comercial/CRM, compras e importaciones, inventarios (WMS), manufactura (MRP), logística (TMS), finanzas, capital humano (HCM) y gobierno/seguridad. 80 módulos en 8 dominios (`docs/arquitectura.md`).
+ERP transaccional para una corporación manufacturera y logística: comercial/CRM, compras e importaciones, inventarios (WMS), manufactura (MRP), logística (TMS), finanzas, capital humano (HCM) y gobierno/seguridad. 80 módulos en 8 dominios (`docs/arquitectura.md`). Lo que se evalúa (Lab 08 / Examen) está en `docs/enunciado.md`; además se requiere frontend.
 
 ## Trabajo
 - Responde en español. Al terminar: «Hecho» + resultado verificable.
@@ -9,7 +9,8 @@ ERP transaccional para una corporación manufacturera y logística: comercial/CR
 - Equipo y flujo: `docs/equipo/equipo.md`. Lecciones: `docs/equipo/lecciones.md`.
 
 ## Stack
-.NET 10 (ASP.NET Core Web API, controladores) · EF Core + Npgsql (PostgreSQL 16) · OpenAPI nativo (`AddOpenApi`) · xUnit + `WebApplicationFactory` para tests.
+- **Backend:** .NET 10 (ASP.NET Core Web API, controladores) · EF Core + Npgsql (PostgreSQL 16) · OpenAPI nativo (`AddOpenApi`) · xUnit + `WebApplicationFactory` para tests.
+- **Frontend:** React + Vite + TypeScript en `frontend/` (npm, Vitest). Detalle en `docs/arquitectura.md` § Frontend.
 
 ## Árbol
 ```
@@ -22,6 +23,7 @@ src/TitanGlobal.Api/
   Modules/ModuloNN_Nombre/{Controllers,Dtos,UseCases}/   vertical slices (NN = orden de docs/arquitectura.md; namespace = carpeta)
   Program.cs       registro de UseCases por reflexión + pipeline estricto
 tests/TitanGlobal.Api.Tests/
+frontend/          SPA React + Vite + TS
 ```
 
 ## Reglas de código (estrictas, las revisa la auditoría)
@@ -34,7 +36,10 @@ tests/TitanGlobal.Api.Tests/
 - **DTOs** por módulo en `Modules/*/Dtos`; nunca exponer entidades en controladores.
 - **Pipeline fijo** en `Program.cs`, en este orden: `ErrorHandlingMiddleware` → `UseRouting` → `ParameterValidationMiddleware` → `RoleBasedAccessMiddleware` → `UseAuthorization` → `MapControllers`.
 - Rutas `api/v1/<recurso-en-kebab-case>`.
-- Errores en JSON `{ StatusCode, Message }` (más `Detail` solo en 500).
+- Errores en JSON `{ StatusCode, Message }` (más `Detail` solo en 500), con los mensajes literales de `docs/enunciado.md` §4.
+- Contratos de repositorio y entidades: los de `docs/enunciado.md` §3 (`AsQueryable`, `Repository<T>()`, `CompleteAsync`).
+- Código legible: una sentencia por línea, un miembro por línea; nada de clases o métodos comprimidos en una sola línea.
+- Migraciones siempre generadas con `dotnet ef migrations add` (con `Designer` y `ModelSnapshot`); nunca escritas a mano.
 
 ## Comandos
-`dotnet build` · `dotnet test` · `./scripts/verify.sh` (gate completo) · BD local: `docker compose up -d db` · migraciones: `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Api` / `dotnet ef database update -p src/TitanGlobal.Api`.
+`dotnet build` · `dotnet test` · frontend: `npm --prefix frontend run <lint|typecheck|test|build>` · `./scripts/verify.sh` (gate completo) · BD local: `docker compose up -d db` · migraciones: `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Api` / `dotnet ef database update -p src/TitanGlobal.Api`.

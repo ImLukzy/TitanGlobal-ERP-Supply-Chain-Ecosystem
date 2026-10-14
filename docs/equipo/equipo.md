@@ -7,7 +7,7 @@ Claude es el integrador: trabaja en el worktree `titan-claudio` (rama `ImLukzy/C
 | Michael | `titan-michael` | Codex | escritor de código |
 | Dwight | `titan-dwight` | Codex | escritor de código (tareas que no pisen los archivos de Michael) |
 | Kelly | `titan-kelly` | Antigravity | auditora, solo lectura: lee solo la spec y el diff |
-| Pam | `titan-pam` | Antigravity | QA, solo lectura: prueba la API, el OpenAPI y los casos de error |
+| Pam | `titan-pam` | Antigravity | QA, solo lectura: prueba la API, el OpenAPI y los casos de error; en el frontend, capturas a 375 px y 1280 px en claro y oscuro |
 | Jim | `titan-jim` | OpenCode | explorador, solo lectura |
 
 ## Flujo por tarea
@@ -23,5 +23,7 @@ Claude es el integrador: trabaja en el worktree `titan-claudio` (rama `ImLukzy/C
 - Commits con autor y committer `ImLukzy <lukas.melgar@tecsup.edu.pe>`, sin trailers ni menciones de IA.
 - Solo Claude escribe en §6 y §7 de las specs.
 - Los encargos son autocontenidos: contexto, archivos, reglas, gate y formato de reporte (OK/BLOQUEADO).
+- Fuente de requisitos: `docs/enunciado.md` (backend) y `docs/arquitectura.md` (desviaciones decididas y frontend). Ningún encargo cita documentos que no estén en el repo.
+- Puertos de desarrollo: API 5080, frontend 5173, PostgreSQL 5433.
 - Los agentes Codex usan `/home/lukzy/.local/bin/orca-ide` en lugar de `orca`.
 - Hay que verificar los reportes de los agentes. Un fallo puede venir de su entorno; por ejemplo, de dependencias sin restaurar (`dotnet restore`).

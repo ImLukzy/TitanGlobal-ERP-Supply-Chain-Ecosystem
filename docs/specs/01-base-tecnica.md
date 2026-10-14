@@ -7,6 +7,8 @@
 - El proyecto de tests `tests/TitanGlobal.Api.Tests`.
 - El gate `./scripts/verify.sh`, que compila, revisa formato y reglas de código y ejecuta los tests.
 
+> **Enmienda 2026-10-14 (ciclo de corrección 1):** el humano entregó el enunciado (`docs/enunciado.md`). Esta spec se alinea con él: contratos de repositorio y entidades de §3, mensajes de error literales de §4 del enunciado. Además: código con una sentencia por línea, migración generada por EF, `check-rules.sh` sin huecos y tests con BD InMemory. La API escucha en desarrollo en `http://localhost:5080` (5173 es del frontend).
+
 ## 2. Fuera de alcance
 - Los 80 módulos de negocio. El módulo de referencia OrdenesCompra va en la spec 02, cuando el humano confirme su número.
 - Autenticación real (JWT, usuarios en BD). `AuthService` solo resuelve el rol de la petición.
@@ -22,11 +24,11 @@
 | `src/TitanGlobal.Api/Program.cs` | crear | como en §4: reflexión y pipeline estricto. Declarar `public partial class Program { }` para `WebApplicationFactory` |
 | `src/TitanGlobal.Api/Configuration/DependencyInjectionExtensions.cs` | crear | DbContext, UnitOfWork, repositorio genérico, Services y registro de UseCases por reflexión, en métodos de extensión; `Program.cs` los llama |
 | `src/TitanGlobal.Api/Middlewares/{ErrorHandling,ParameterValidation,RoleBasedAccess}Middleware.cs` | crear | comportamiento de §4 |
-| `src/TitanGlobal.Api/Models/{TitanGlobalDbContext,Cliente,Producto,OrdenCompra,DetalleOrdenCompra}.cs` | crear | entidades `partial` del documento original, con las relaciones configuradas en `OnModelCreating`, `decimal(18,2)` en importes y `NumeroOrden` único |
-| `src/TitanGlobal.Api/Repositories/Interfaces/{IGenericRepository,IUnitOfWork}.cs` | crear | contratos del documento original |
+| `src/TitanGlobal.Api/Models/{TitanGlobalDbContext,Cliente,Producto,OrdenCompra,DetalleOrdenCompra}.cs` | crear | entidades `partial` con exactamente los campos de `docs/enunciado.md` §3.1, con las relaciones configuradas en `OnModelCreating`, `decimal(18,2)` en importes y `NumeroOrden` único |
+| `src/TitanGlobal.Api/Repositories/Interfaces/{IGenericRepository,IUnitOfWork}.cs` | crear | contratos de `docs/enunciado.md` §3.2: `AsQueryable`, `AddAsync`, `Update`, `Remove`; `Repository<T>()`, `CompleteAsync()` |
 | `src/TitanGlobal.Api/Repositories/Implementations/{GenericRepository,UnitOfWork}.cs` | crear | `UnitOfWork` cachea los repositorios por tipo |
 | `src/TitanGlobal.Api/Services/{IAuthService,AuthService}.cs` | crear | `string ObtenerRolActual(HttpContext)` lee la cabecera `X-User-Role` (vacío si no viene). Es lo único que hace |
-| `src/TitanGlobal.Api/Migrations/*` | crear | migración inicial `Inicial` |
+| `src/TitanGlobal.Api/Migrations/*` | crear | migración inicial `Inicial` generada con `dotnet ef migrations add Inicial` (incluye `Designer` y `TitanGlobalDbContextModelSnapshot`) |
 | `src/TitanGlobal.Api/appsettings.json` | crear | `ConnectionStrings:DefaultConnection` solo con valores de desarrollo local (docker compose); nada real |
 | `docker-compose.yml` | crear | servicio `db`: postgres:16, puerto 5433, credenciales de desarrollo |
 | `tests/TitanGlobal.Api.Tests/*` | crear | xUnit + `Microsoft.AspNetCore.Mvc.Testing`; BD EF InMemory en los tests |
