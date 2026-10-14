@@ -59,12 +59,19 @@
 | A6 | Visual | capturas a 375 px y 1280 px (portada y una página de módulo) en claro y oscuro, sin scroll horizontal | adjuntas en el reporte |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: proyecto Vite + TS + ESLint + Vitest y scripts.
-- [ ] Tarea 2: catálogo, router y layout.
-- [ ] Tarea 3: cliente HTTP, selector de rol y portada.
-- [ ] Tarea 4: tests y capturas.
-- [ ] Tarea 5: A1–A6.
+- [x] Tarea 1: proyecto Vite + TS + ESLint + Vitest y scripts.
+- [x] Tarea 2: catálogo, router y layout.
+- [x] Tarea 3: cliente HTTP, selector de rol y portada.
+- [x] Tarea 4: tests y capturas.
+- [x] Tarea 5: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `npm --prefix frontend ci && npm --prefix frontend run verify`: lint con 0 warnings, typecheck, 13/13 tests, build (268 kB, 85 kB gzip). Desde ahora lo ejecuta `scripts/verify.sh` (rc=0 en `ImLukzy/Claudio`) |
+| 2026-10-14 | A2 | ✅ | `catalogo.test.ts`; además, un script de Claudio comparó los 80 nombres con `docs/arquitectura.md` y no encontró diferencias |
+| 2026-10-14 | A3 | ✅ | `client.test.ts`: rol, POST, 400/403/500 con `Message`, cuerpo no JSON y fallo de red → `statusCode 0` |
+| 2026-10-14 | A4 | ✅ | `App.test.tsx` y QA (Pam): 8 dominios × 10 módulos, `/modulos/04-ordenes-compra`, slug inválido → «Módulo no encontrado», teclado y `aria-expanded` |
+| 2026-10-14 | A5 | ✅ | test y QA (Pam) con la API real por el proxy: «API en línea» / «API no disponible»; rol «Bloqueado» → 403 con el mensaje literal; `X-User-Role` solo con rol y se recuerda tras recargar |
+| 2026-10-14 | A6 | ✅ | capturas de Pam en `/tmp/titan-qa03-capturas/` (portada y módulo 04 × 375/1280 × claro/oscuro + menú móvil), sin scroll horizontal. La del menú móvil salió a mitad de la animación; Claudio la repitió esperando 600 ms → panel de 310 px y capa a toda la altura |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, 0 bloqueantes; menor: un `as` de tipo en el selector de rol. Pendientes menores para la spec 04: Escape no cierra el menú móvil, `--host 0.0.0.0` en `npm run dev`, mensaje genérico con la API apagada |

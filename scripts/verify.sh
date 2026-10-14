@@ -12,3 +12,5 @@ for rule in a b c d e; do
     fi
 done
 dotnet test --no-build
+npm --prefix frontend ci --no-audit --no-fund
+npm --prefix frontend run verify

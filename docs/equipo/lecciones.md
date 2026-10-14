@@ -8,4 +8,5 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Migraciones EF escritas a mano:** sin `Designer` ni `ModelSnapshot`, la siguiente migración vuelve a crear todo. Siempre `dotnet ef migrations add`.
 - **Gate de reglas con huecos:** `check-rules.sh` dejaba pasar `public int X => 1;`, `get => …` y `foreach (var …)`. Cada regla necesita fixtures buenos y malos que cubran sus variantes.
 - **Entorno de la máquina:** hacían falta `aspnet-runtime-10.0` (tests y API) y `docker-compose` (BD). Instalados el 2026-10-14.
+- **Capturas con animaciones:** la captura del menú móvil de QA salía cortada porque se tomó a mitad de la transición de 0,2 s. Antes de capturar hay que esperar a que termine (`waitForTimeout` ≥ duración o `prefers-reduced-motion`), y las capturas de página completa no sirven para elementos `fixed`.
 - **Migraciones en producción:** copia de seguridad, ensayo en una copia y OK humano. Después hay que comprobar que se aplicaron de verdad, porque algunos hostings no ejecutan el paso previo al despliegue.
