@@ -69,3 +69,13 @@ export function apiPost<T>(ruta: string, cuerpo: unknown): Promise<T> {
   headers.set('Content-Type', 'application/json');
   return solicitar<T>(ruta, { method: 'POST', headers, body: JSON.stringify(cuerpo) });
 }
+
+export function apiPut<T>(ruta: string, cuerpo: unknown): Promise<T> {
+  const headers = new Headers();
+  headers.set('Content-Type', 'application/json');
+  return solicitar<T>(ruta, { method: 'PUT', headers, body: JSON.stringify(cuerpo) });
+}
+
+export function apiDelete(ruta: string): Promise<void> {
+  return solicitar<void>(ruta, { method: 'DELETE' });
+}

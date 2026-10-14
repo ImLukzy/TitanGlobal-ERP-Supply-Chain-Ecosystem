@@ -41,9 +41,18 @@ describe('navegación', () => {
     expect(within(comprasSummary.parentElement).getAllByRole('link')).toHaveLength(10);
   });
 
-  it('registra OrdenesCompra y conserva pendientes los demás módulos', async () => {
+  it('registra Clientes y OrdenesCompra y conserva pendientes los demás módulos', async () => {
     vi.stubGlobal('fetch', vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.endsWith('/clientes/resumen')) {
+        return Promise.resolve(new Response(JSON.stringify({ totalClientes: 5, clientesConOrdenes: 4, clientesSinDescripcion: 1, topClientesPorMonto: [] }), { status: 200 }));
+      }
+      if (url.includes('/clientes?')) {
+        return Promise.resolve(new Response(JSON.stringify({ items: [], total: 0, pagina: 1, tamanoPagina: 10 }), { status: 200 }));
+      }
+      if (url.endsWith('/clientes/1')) {
+        return Promise.resolve(new Response(JSON.stringify({ id: 1, nombre: 'Acme Industrial', ruc: '20111111111', descripcion: 'Cliente principal', totalOrdenes: 4, montoTotal: 8000, ultimaOrdenFecha: '2026-01-02T00:00:00Z' }), { status: 200 }));
+      }
       if (url.endsWith('/productos/mas-caro')) {
         return Promise.resolve(new Response(JSON.stringify({ id: 1, nombre: 'Laptop Pro', precio: 2500 }), { status: 200 }));
       }
@@ -62,6 +71,9 @@ describe('navegación', () => {
     expect(screen.getByRole('heading', { name: 'Analítica' })).toBeInTheDocument();
     unmount();
     renderApp('/modulos/01-clientes');
+    expect(screen.getByRole('heading', { name: '01 · Clientes' })).toBeInTheDocument();
+    unmount();
+    renderApp('/modulos/02-segmentacion-clientes');
     expect(screen.getByText('Pantalla pendiente')).toBeInTheDocument();
   });
 
