@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TitanGlobal.Api.Configuration;
 using TitanGlobal.Api.Models;
 using TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.Dtos;
 using TitanGlobal.Api.Repositories.Interfaces;
@@ -39,9 +40,11 @@ public class AnaliticaOrdenesCompraUseCase
     {
         // PATRÓN LINQ 4: suma asíncrona.
         // PATRÓN LINQ 6: filtro por rango de fecha.
+        DateTime fechaInicioUtc = FechasUtc.Normalizar(fechaInicio);
+
         return await _unitOfWork.Repository<OrdenCompra>()
             .AsQueryable()
-            .Where(orden => orden.Fecha > fechaInicio)
+            .Where(orden => orden.Fecha > fechaInicioUtc)
             .SumAsync(orden => orden.Total);
     }
 

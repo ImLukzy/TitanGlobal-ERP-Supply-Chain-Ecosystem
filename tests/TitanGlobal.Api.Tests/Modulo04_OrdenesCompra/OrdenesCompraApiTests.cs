@@ -69,11 +69,14 @@ public class OrdenesCompraApiTests
         Assert.Equal(new[] { "Laptop Pro", "Laptop Básica", "Laptop Air" }, products.Select(product => product.Nombre).ToArray());
     }
 
-    [Fact]
-    public async Task SalesSumFiltersByDateAndSumsOrderTotals()
+    [Theory]
+    [InlineData("2026-01-01")]
+    [InlineData("2026-01-01T00:00:00")]
+    [InlineData("2026-01-01T00:00:00Z")]
+    public async Task SalesSumAcceptsDateValuesWithoutOffset(string date)
     {
         Dictionary<string, decimal>? result = await _client.GetFromJsonAsync<Dictionary<string, decimal>>(
-            "/api/v1/ordenes-compra/ventas/suma?fechaInicio=2026-01-01T00%3A00%3A00Z");
+            $"/api/v1/ordenes-compra/ventas/suma?fechaInicio={Uri.EscapeDataString(date)}");
 
         Assert.NotNull(result);
         Assert.Equal(10750m, result["totalVentas"]);
