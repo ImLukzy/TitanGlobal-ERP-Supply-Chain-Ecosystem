@@ -5,6 +5,7 @@ BASE_URL="http://localhost:5080"
 API_PID=""
 COMPOSE_CLEANUP_REQUIRED=0
 CLIENTE_CREADO_ID=""
+PRODUCTO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -117,6 +118,13 @@ checks = {
     "cliente-created": lambda data: data["id"] > 0,
     "cliente-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un cliente con el RUC 20111111111.",
     "cliente-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el cliente 1 porque tiene órdenes de compra.",
+    "products-category": lambda data: data["total"] == 3 and [item["id"] for item in data["items"]] == [7, 2, 1] and all(item["categoria"] == "Computo" for item in data["items"]),
+    "products-price": lambda data: data["total"] == 5 and [item["id"] for item in data["items"]] == [10, 5, 8, 9, 4],
+    "product-detail": lambda data: data["id"] == 1 and data["nombre"] == "Laptop Pro" and data["unidadesVendidas"] == 1 and data["montoVendido"] == 2500.0 and data["clientesDistintos"] == 1,
+    "product-categories": lambda data: data == ["Accesorios", "Computo", "Oficina", "Pantallas", "Perifericos"],
+    "products-summary": lambda data: data["totalProductos"] == 10 and data["productosSinDescripcion"] == 3 and data["precioPromedio"] == 994.5 and [(item["categoria"], item["totalProductos"], item["precioMaximo"]) for item in data["porCategoria"]] == [("Accesorios", 1, 25.0), ("Computo", 3, 3200.0), ("Oficina", 1, 800.0), ("Pantallas", 2, 900.0), ("Perifericos", 3, 200.0)] and [item["productoId"] for item in data["masVendidos"]] == [3, 7, 1, 5, 9],
+    "product-created": lambda data: data["id"] > 0,
+    "product-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el producto 1 porque tiene ventas registradas.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -172,6 +180,10 @@ request_check() {
     if [[ "$validation" == "cliente-created" ]]; then
         CLIENTE_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+
+    if [[ "$validation" == "product-created" ]]; then
+        PRODUCTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -194,6 +206,14 @@ request_check 'POST cliente válido' POST '/api/v1/clientes' 200 cliente-created
 request_check 'POST cliente con RUC existente' POST '/api/v1/clientes' 409 cliente-duplicate '{"nombre":"Duplicado Smoke","ruc":"20111111111"}'
 request_check 'DELETE cliente con órdenes' DELETE '/api/v1/clientes/1' 409 cliente-delete-protected
 request_check 'DELETE cliente recién creado' DELETE "/api/v1/clientes/${CLIENTE_CREADO_ID}" 204 ''
+request_check 'Productos por categoría computo' GET '/api/v1/productos?categoria=computo' 200 products-category
+request_check 'Productos por rango de precio' GET '/api/v1/productos?precioMin=100&precioMax=1000' 200 products-price
+request_check 'Detalle del producto 1' GET '/api/v1/productos/1' 200 product-detail
+request_check 'Categorías de productos' GET '/api/v1/productos/categorias' 200 product-categories
+request_check 'Resumen de productos' GET '/api/v1/productos/resumen' 200 products-summary
+request_check 'POST producto válido' POST '/api/v1/productos' 200 product-created '{"nombre":"Producto Smoke","categoria":"Pruebas","precio":12.50,"descripcion":"Alta de smoke"}'
+request_check 'DELETE producto con ventas' DELETE '/api/v1/productos/1' 409 product-delete-protected
+request_check 'DELETE producto recién creado' DELETE "/api/v1/productos/${PRODUCTO_CREADO_ID}" 204 ''
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
 printf 'SMOKE OK\n'
