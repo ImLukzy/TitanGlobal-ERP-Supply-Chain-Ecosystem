@@ -43,14 +43,20 @@ describe('cliente HTTP', () => {
     });
   });
 
-  it('usa un mensaje genérico ante un cuerpo de error que no es JSON', async () => {
+  it('usa el mensaje de API no disponible ante un 5xx que no es JSON', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('bad gateway', { status: 502 })));
 
     await expect(apiGet('/recurso')).rejects.toMatchObject({
       name: 'ApiError',
       statusCode: 502,
-      message: 'No se pudo completar la solicitud.',
+      message: 'La API no está disponible o no respondió correctamente.',
     });
+  });
+
+  it('tolera una respuesta 200 con el cuerpo vacío', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 200 })));
+
+    await expect(apiGet<null>('/recurso')).resolves.toBeUndefined();
   });
 
   it('convierte fallos de red en ApiError con statusCode 0', async () => {

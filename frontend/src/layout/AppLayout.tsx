@@ -1,20 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
+import { isUserRole } from '../api/roleStore';
 import { dominios } from '../modules/catalogo';
 import { useRole } from './RoleContext';
 
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedDomains, setExpandedDomains] = useState<string[]>([dominios[0].nombre]);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
   const { role, setRole } = useRole();
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        menuToggleRef.current?.focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [menuOpen]);
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <button
           aria-expanded={menuOpen}
-          aria-label="Abrir navegación"
+          aria-label={menuOpen ? 'Cerrar navegación' : 'Abrir navegación'}
           className="menu-toggle"
+          ref={menuToggleRef}
           onClick={() => setMenuOpen((open) => !open)}
           type="button"
         >
@@ -28,7 +47,10 @@ export function AppLayout() {
           <span>Rol de prueba</span>
           <select
             aria-label="Rol de prueba"
-            onChange={(event) => setRole(event.target.value === '' ? null : event.target.value as NonNullable<typeof role>)}
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              setRole(isUserRole(value) ? value : null);
+            }}
             value={role ?? ''}
           >
             <option value="">Ninguno</option>

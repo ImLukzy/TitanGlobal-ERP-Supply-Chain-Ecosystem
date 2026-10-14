@@ -2,6 +2,7 @@ import { getSelectedRole } from './roleStore';
 
 const API_BASE = '/api/v1';
 const GENERIC_ERROR = 'No se pudo completar la solicitud.';
+const SERVER_GENERIC_ERROR = 'La API no está disponible o no respondió correctamente.';
 const NETWORK_ERROR = 'No se pudo conectar con la API.';
 
 export class ApiError extends Error {
@@ -36,14 +37,18 @@ async function solicitar<T>(ruta: string, init: RequestInit): Promise<T> {
           message = body.Message;
         }
       } catch {
-        message = GENERIC_ERROR;
+        message = response.status >= 500 ? SERVER_GENERIC_ERROR : GENERIC_ERROR;
       }
       throw new ApiError(response.status, message);
     }
     if (response.status === 204) {
       return undefined as T;
     }
-    return (await response.json()) as T;
+    const body = await response.text();
+    if (body.trim() === '') {
+      return undefined as T;
+    }
+    return JSON.parse(body) as T;
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       throw error;

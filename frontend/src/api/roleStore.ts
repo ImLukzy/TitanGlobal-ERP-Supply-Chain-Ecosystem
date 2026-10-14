@@ -4,7 +4,7 @@ const STORAGE_KEY = 'titanglobal-role';
 let selectedRole: UserRole | null = null;
 const listeners = new Set<() => void>();
 
-function isUserRole(value: string | null): value is UserRole {
+export function isUserRole(value: string | null): value is UserRole {
   return value === 'Administrador' || value === 'Bloqueado' || value === 'SinPermiso';
 }
 
