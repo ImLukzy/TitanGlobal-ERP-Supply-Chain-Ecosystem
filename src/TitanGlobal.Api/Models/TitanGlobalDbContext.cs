@@ -23,6 +23,10 @@ public class TitanGlobalDbContext : DbContext
             .WithOne(orden => orden.Cliente)
             .HasForeignKey(orden => orden.ClienteId);
 
+        modelBuilder.Entity<Cliente>()
+            .HasIndex(cliente => cliente.Ruc)
+            .IsUnique();
+
         modelBuilder.Entity<Producto>()
             .Property(producto => producto.Precio)
             .HasColumnType("decimal(18,2)");

@@ -43,6 +43,9 @@ namespace TitanGlobal.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Ruc")
+                        .IsUnique();
+
                     b.ToTable("Clientes");
                 });
 

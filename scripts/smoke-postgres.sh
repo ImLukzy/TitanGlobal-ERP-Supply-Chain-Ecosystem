@@ -4,6 +4,7 @@ set -euo pipefail
 BASE_URL="http://localhost:5080"
 API_PID=""
 COMPOSE_CLEANUP_REQUIRED=0
+CLIENTE_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -110,6 +111,12 @@ checks = {
     "created": lambda data: data["id"] > 0,
     "empty-body": lambda data: data["StatusCode"] == 400 and data["Message"] == "El cuerpo de la petición (Body) no puede estar vacío.",
     "blocked": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "operación" in sys.argv[1] and "operaci\\u00F3n" not in sys.argv[1],
+    "clients-list": lambda data: data["total"] == 1 and [item["id"] for item in data["items"]] == [1] and data["items"][0]["ruc"] == "20111111111",
+    "cliente-detail": lambda data: data["id"] == 1 and data["nombre"] == "Acme Industrial" and data["ruc"] == "20111111111" and data["totalOrdenes"] == 4 and data["montoTotal"] == 10000.0 and data["ultimaOrdenFecha"] == "2026-03-10T00:00:00Z",
+    "clientes-summary": lambda data: data["totalClientes"] == 5 and data["clientesConOrdenes"] == 4 and data["clientesSinDescripcion"] == 3 and [(item["clienteId"], item["montoTotal"]) for item in data["topClientesPorMonto"]] == [(1, 10000.0), (2, 2000.0), (4, 750.0), (3, 500.0)],
+    "cliente-created": lambda data: data["id"] > 0,
+    "cliente-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un cliente con el RUC 20111111111.",
+    "cliente-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el cliente 1 porque tiene órdenes de compra.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -140,7 +147,7 @@ request_check() {
             return 1
         fi
     else
-        if ! response="$(curl -sS --max-time 10 -w $'\n%{http_code}' "$BASE_URL$path")"; then
+        if ! response="$(curl -sS --max-time 10 -X "$method" -w $'\n%{http_code}' "$BASE_URL$path")"; then
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
             return 1
         fi
@@ -161,6 +168,10 @@ request_check() {
             return 1
         fi
     fi
+
+    if [[ "$validation" == "cliente-created" ]]; then
+        CLIENTE_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -176,6 +187,13 @@ request_check 'Categorías únicas (patrón 11)' GET '/api/v1/ordenes-compra/cli
 request_check 'Compradores del producto (patrón 12)' GET '/api/v1/ordenes-compra/productos/3/clientes-compradores' 200 buyers
 request_check 'POST vacío' POST '/api/v1/ordenes-compra' 400 empty-body
 request_check 'POST rol bloqueado' POST '/api/v1/ordenes-compra' 403 blocked '{"numeroOrden":"OC-SMOKE-BLOCKED","clienteId":1,"total":1}' Bloqueado
+request_check 'Clientes listado por nombre' GET '/api/v1/clientes?busqueda=acme&pagina=1&tamanoPagina=20' 200 clients-list
+request_check 'Detalle de cliente 1' GET '/api/v1/clientes/1' 200 cliente-detail
+request_check 'Resumen de clientes' GET '/api/v1/clientes/resumen' 200 clientes-summary
+request_check 'POST cliente válido' POST '/api/v1/clientes' 200 cliente-created '{"nombre":"Cliente Smoke","ruc":"20987654321","descripcion":"Alta de smoke"}'
+request_check 'POST cliente con RUC existente' POST '/api/v1/clientes' 409 cliente-duplicate '{"nombre":"Duplicado Smoke","ruc":"20111111111"}'
+request_check 'DELETE cliente con órdenes' DELETE '/api/v1/clientes/1' 409 cliente-delete-protected
+request_check 'DELETE cliente recién creado' DELETE "/api/v1/clientes/${CLIENTE_CREADO_ID}" 204 ''
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
 printf 'SMOKE OK\n'
