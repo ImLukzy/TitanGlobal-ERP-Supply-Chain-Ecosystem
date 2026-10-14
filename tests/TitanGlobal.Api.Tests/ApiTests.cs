@@ -47,6 +47,9 @@ public class ApiTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.Equal(403, document.RootElement.GetProperty("StatusCode").GetInt32());
+        string responseBody = await response.Content.ReadAsStringAsync();
+        Assert.Contains("operación", responseBody);
+        Assert.DoesNotContain("operaci\\u00F3n", responseBody);
         Assert.Equal(
             "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.",
             document.RootElement.GetProperty("Message").GetString());
@@ -124,6 +127,16 @@ public class ApiTests : IClassFixture<ApiFactory>
 
         Assert.NotNull(persisted);
         Assert.Equal(12.50m, persisted.Precio);
+    }
+
+    [Fact]
+    public async Task OpenApiIncludesHealthEndpoint()
+    {
+        HttpResponseMessage response = await _client.GetAsync("/openapi/v1.json");
+        string document = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("/api/v1/sistema/salud", document);
     }
 }
 

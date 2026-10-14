@@ -32,12 +32,13 @@ public class ErrorHandlingMiddleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            string responseBody = JsonSerializer.Serialize(new
+            object error = new
             {
                 StatusCode = 500,
                 Message = "Ocurrió un error interno en el servidor.",
                 Detail = exception.Message
-            });
+            };
+            string responseBody = JsonSerializer.Serialize(error, JsonSerializationOptions.ErrorResponses);
 
             await context.Response.WriteAsync(responseBody);
         }

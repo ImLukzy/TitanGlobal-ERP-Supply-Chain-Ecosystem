@@ -26,11 +26,12 @@ public class ParameterValidationMiddleware
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 context.Response.ContentType = "application/json";
 
-                string responseBody = JsonSerializer.Serialize(new
+                object error = new
                 {
                     StatusCode = 400,
                     Message = "El cuerpo de la petición (Body) no puede estar vacío."
-                });
+                };
+                string responseBody = JsonSerializer.Serialize(error, JsonSerializationOptions.ErrorResponses);
 
                 await context.Response.WriteAsync(responseBody, context.RequestAborted);
                 return;

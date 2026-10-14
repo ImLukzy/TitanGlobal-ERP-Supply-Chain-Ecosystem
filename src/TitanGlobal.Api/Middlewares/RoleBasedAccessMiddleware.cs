@@ -23,11 +23,12 @@ public class RoleBasedAccessMiddleware
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/json";
 
-            string responseBody = JsonSerializer.Serialize(new
+            object error = new
             {
                 StatusCode = 403,
                 Message = "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación."
-            });
+            };
+            string responseBody = JsonSerializer.Serialize(error, JsonSerializationOptions.ErrorResponses);
 
             await context.Response.WriteAsync(responseBody, context.RequestAborted);
             return;

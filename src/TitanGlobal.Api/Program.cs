@@ -17,4 +17,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 app.Run();
-public partial class Program { }
+public partial class Program
+{
+}
