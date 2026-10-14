@@ -49,10 +49,15 @@ El mecanismo sirve igual para los 79 módulos restantes.
 | A4 | PostgreSQL | a mano con la BD local + seed: `OC-001` → 409; cliente 9999 → 400; POST válido → 200 | evidencia `curl` en el reporte |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: `ReglaNegocioException` y middleware.
-- [ ] Tarea 2: validaciones en el UseCase.
-- [ ] Tarea 3: tests y A1–A4.
+- [x] Tarea 1: `ReglaNegocioException` y middleware.
+- [x] Tarea 2: validaciones en el UseCase.
+- [x] Tarea 3: tests y A1–A4.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`c20e9de`): backend 36/36, frontend 36/36 |
+| 2026-10-14 | A2 | ✅ | `CrearOrdenCompraValidacionTests`: número vacío o en blanco, cliente 0, total −1, cliente 999 → 400; `OC-001` y `" OC-001 "` → 409; mensajes literales, sin `Detail`, sin filas nuevas |
+| 2026-10-14 | A3 | ✅ | POST válido → 200 `{ id }`; cuerpo vacío → 400 del middleware; excepción no controlada → 500 con `Detail` |
+| 2026-10-14 | A4 | ✅ | Michael contra PostgreSQL: `OC-001` → 409, cliente 9999 → 400, orden válida → 200; `smoke-postgres.sh` → `SMOKE OK`. QA E2E de Pam pendiente (junto con Clientes) |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; menor: identificadores locales en inglés (`clientExists`, `order`…). Desde la spec 07 se exigen nombres en español |
