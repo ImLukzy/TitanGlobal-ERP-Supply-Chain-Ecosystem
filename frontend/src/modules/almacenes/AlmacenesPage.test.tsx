@@ -176,6 +176,18 @@ describe('AlmacenesPage', () => {
     await waitFor(() => expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/almacenes?'))).toHaveLength(2));
   });
 
+  it('muestra el 409 de la API si el almacén tiene zonas', async () => {
+    const { fetchMock } = prepararApiAlmacenes({ errorEliminarConZonas: true });
+    renderAlmacenes();
+    await esperarCargaAlmacenes(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar almacén' }));
+    const confirmar = screen.getAllByRole('button', { name: 'Eliminar almacén' }).at(-1);
+    if (confirmar !== undefined) {
+      fireEvent.click(confirmar);
+    }
+    expect(await screen.findByText('No se puede eliminar el almacén 3 porque tiene zonas.')).toBeInTheDocument();
+  });
+
   it('Escape cancela la baja sin petición y devuelve el foco', async () => {
     const { fetchMock } = prepararApiAlmacenes();
     renderAlmacenes();

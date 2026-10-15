@@ -73,6 +73,7 @@ export interface OpcionesApiAlmacenes {
   errorLista?: boolean;
   errorGuardarCodigo?: boolean;
   errorGuardar400?: boolean;
+  errorEliminarConZonas?: boolean;
 }
 
 export interface LlamadaApiAlmacen {
@@ -171,6 +172,12 @@ export function prepararApiAlmacenes(opciones: OpcionesApiAlmacenes = {}) {
     }
     if (metodo === 'DELETE') {
       const id = Number(parsed.pathname.split('/').at(-1));
+      if (opciones.errorEliminarConZonas) {
+        return Response.json({
+          StatusCode: 409,
+          Message: `No se puede eliminar el almacén ${id} porque tiene zonas.`,
+        }, { status: 409 });
+      }
       const index = filas.findIndex((almacen) => almacen.id === id);
       if (index < 0) {
         return Response.json({ StatusCode: 404, Message: `El almacén ${id} no existe.` }, { status: 404 });

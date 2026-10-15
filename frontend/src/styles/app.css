@@ -409,6 +409,78 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .parameter-field { min-width: 94px; }
 }
 
+.zonas-page { min-width: 0; }
+.zonas-store-selector { display: grid; max-width: 520px; gap: 6px; margin: 15px 0; color: var(--ink-soft); font-size: 11px; font-weight: 650; }
+.zonas-store-selector select, .zonas-filters input, .zonas-filters select, .zona-form input:not([type="checkbox"]), .zona-form select { min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.zonas-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 12px; }
+.zonas-summary-stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.zonas-summary-stats > .cliente-stat { min-height: 85px; padding: 14px; }
+.zonas-summary-stats > .cliente-stat strong { font-size: 24px; }
+.zonas-type-panel, .zonas-occupancy-panel { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.zonas-type-panel h2, .zonas-occupancy-panel h2 { margin: 0 0 11px; color: var(--ink); font-size: 13px; }
+.zonas-type-panel table { width: 100%; border-collapse: collapse; color: var(--ink); font-size: 10px; }
+.zonas-type-panel th, .zonas-type-panel td { padding: 6px 5px; border-bottom: 1px solid var(--line); text-align: left; }
+.zonas-type-panel thead th { color: var(--ink-faint); font-size: 9px; }
+.zonas-occupancy-panel ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.zonas-occupancy-panel li { min-width: 0; }
+.zonas-occupancy-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--ink); font-size: 10px; }
+.zonas-near-full { padding: 3px 6px; border-radius: 20px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; white-space: nowrap; }
+.zonas-meter { height: 8px; margin-top: 6px; overflow: hidden; border-radius: 8px; background: var(--surface-muted); }
+.zonas-meter span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.zonas-meter.is-near-full span { background: var(--bad); }
+.zonas-occupancy-panel li p { margin: 4px 0 0; color: var(--ink-faint); font-size: 9px; }
+.zonas-work-area { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(330px, .9fr); align-items: start; gap: 0 14px; }
+.zonas-list-panel, .zonas-detail-panel, .zonas-form-panel { min-width: 0; }
+.zonas-filters { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 9px; margin: 0 0 13px; }
+.zonas-filters > div { display: grid; min-width: 0; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.zonas-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.zonas-table { min-width: 850px; font-size: 10px; }
+.zonas-table th, .zonas-table td { padding: 8px 7px; font-size: 9px; }
+.zona-code-button { padding: 0; border: 0; background: transparent; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; white-space: nowrap; }
+.zonas-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.zonas-detail-grid > div { min-width: 0; }
+.zonas-detail-grid dt { margin-bottom: 4px; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+.zonas-detail-grid dd { margin: 0; color: var(--ink); font-size: 10px; overflow-wrap: anywhere; }
+.zona-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.zona-form .form-field { min-width: 0; }
+.zona-form .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.zona-active-field { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 10px; }
+.zona-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.zona-form-actions .clientes-form-message { margin: 0 auto 0 0; color: var(--bad); font-size: 10px; }
+
+@media (min-width: 1024px) {
+  .zonas-table.is-filtered { min-width: 0; table-layout: fixed; }
+  .zonas-table.is-filtered th, .zonas-table.is-filtered td { padding: 7px 4px; overflow-wrap: normal; word-break: normal; font-size: 10px; }
+  .zonas-table.is-filtered th:nth-child(1) { width: 14%; }
+  .zonas-table.is-filtered th:nth-child(2) { width: 26%; }
+  .zonas-table.is-filtered th:nth-child(3) { width: 20%; }
+  .zonas-table.is-filtered th:nth-child(4) { width: 15%; }
+  .zonas-table.is-filtered th:nth-child(5) { width: 13%; }
+  .zonas-table.is-filtered th:nth-child(6) { width: 12%; }
+  .zonas-table.is-filtered th { font-size: 9px; }
+  .zonas-table.is-filtered td { white-space: normal; }
+  .zona-code-button { white-space: nowrap; font-size: inherit; letter-spacing: normal; }
+}
+
+@media (max-width: 1023px) {
+  .zonas-summary { grid-template-columns: minmax(0, 1fr); }
+  .zonas-summary-stats, .zonas-type-panel, .zonas-occupancy-panel { grid-column: 1; }
+  .zonas-work-area { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .zonas-summary { gap: 8px; }
+  .zonas-summary-stats { gap: 8px; }
+  .zonas-summary-stats > .cliente-stat { min-height: 75px; padding: 11px; }
+  .zonas-summary-stats > .cliente-stat strong { font-size: 21px; }
+  .zonas-type-panel, .zonas-occupancy-panel { padding: 12px; }
+  .zonas-filters { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .zonas-table { min-width: 850px; }
+  .zona-form { grid-template-columns: minmax(0, 1fr); }
+  .zona-form-actions { align-items: stretch; flex-direction: column; }
+  .zona-form-actions .primary-button { width: 100%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
