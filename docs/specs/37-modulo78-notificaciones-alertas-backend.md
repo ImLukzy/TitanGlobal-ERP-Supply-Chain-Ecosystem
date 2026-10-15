@@ -74,11 +74,16 @@ Porcentajes con 2 decimales y punto; fechas en UTC con formato `dd/MM/yyyy`.
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 4 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: generadores por tipo, UseCases y controlador.
-- [ ] Tarea 3: tests y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidad, `DbContext` y migración.
+- [x] Tarea 2: generadores por tipo, UseCases y controlador.
+- [x] Tarea 3: tests y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`f9ca926`, mismas líneas que el auditado `d06da8d`): backend 496/496, frontend 222/222 |
+| 2026-10-15 | A2–A3 | ✅ | `AlertasApiTests`: mensajes literales de clave, filtros, descartar/restaurar; los 7 tipos con sus mensajes y límites (89.99 % de ocupación, contrato que vence en 31 días, solicitud de 7 días) iguales a sus módulos de origen; orden y resumen |
+| 2026-10-15 | A4 | ✅ | migración `AlertasDescartadas` (con `Designer` y snapshot) solo crea la tabla; aplicada en el smoke y en Neon |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: alertas del seed (orden OA-DEV-002 atrasada, reclamo vencido, almacén de Lima al 90 %), filtro por severidad, resumen 6 (2 altas), descartar → desaparece, otra vez → 409, restaurar → reaparece, clave inexistente → 404 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; recomendación menor no bloqueante: separar la generación de los 7 tipos en tests por tipo |
