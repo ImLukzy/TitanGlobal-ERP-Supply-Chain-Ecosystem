@@ -44,7 +44,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 
 | Verbo | Ruta | Entrada | Respuesta OK | Errores |
 |---|---|---|---|---|
-| GET | `api/v1/listas-precios?busqueda=&segmentoId=&vigentes=&pagina=1&tamanoPagina=20` | opcionales salvo paginación; `vigentes=true` = vigentes hoy | 200 `PaginaListasDto { items: ListaListadoDto[], total, pagina, tamanoPagina }` | 400 paginación |
+| GET | `api/v1/listas-precios?busqueda=&segmentoId=&vigentes=&pagina=1&tamanoPagina=20` | opcionales salvo paginación; `vigentes=true` = vigentes hoy; `segmentoId=0` = solo listas generales (sin segmento; añadido el 2026-10-15 tras el QA de la spec 30) | 200 `PaginaListasDto { items: ListaListadoDto[], total, pagina, tamanoPagina }` | 400 paginación |
 | GET | `api/v1/listas-precios/{id:int}` | — | 200 `ListaDetalleDto` | 404 «La lista de precios {id} no existe.» |
 | POST | `api/v1/listas-precios` | `GuardarListaRequestDto { codigo, nombre, segmentoClienteId?, prioridad, fechaInicio, fechaFin?, activa, items: [{ productoId, precio }] }` | 200 `{ id }` | 400, 409 |
 | PUT | `api/v1/listas-precios/{id:int}` | igual (reemplaza los ítems) | 200 `{ id }` | 400, 404, 409 |
