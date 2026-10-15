@@ -165,4 +165,24 @@ ON CONFLICT ("Codigo") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"SegmentosClientes"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "SegmentosClientes"));
 
+DELETE FROM "DetallesCotizacion";
+TRUNCATE TABLE "Cotizaciones" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Cotizaciones" (
+    "Id", "Numero", "Fecha", "ClienteId", "FechaValidez", "Estado", "Observaciones", "MotivoRechazo", "FechaDecision", "OrdenCompraId") VALUES
+    (1, 'COT-DEV-001', TIMESTAMPTZ '2026-10-15 09:00:00+00', 1, TIMESTAMPTZ '2027-01-31 00:00:00+00', 'Emitida', 'Cotización vigente', NULL, NULL, NULL),
+    (2, 'COT-DEV-002', TIMESTAMPTZ '2026-08-10 09:00:00+00', 2, TIMESTAMPTZ '2026-09-30 00:00:00+00', 'Emitida', NULL, NULL, NULL, NULL),
+    (3, 'COT-DEV-003', TIMESTAMPTZ '2026-08-20 09:00:00+00', 3, TIMESTAMPTZ '2026-11-30 00:00:00+00', 'Rechazada', NULL, 'Presupuesto insuficiente', TIMESTAMPTZ '2026-08-21 09:00:00+00', NULL),
+    (4, 'COT-DEV-004', TIMESTAMPTZ '2026-09-01 09:00:00+00', 3, TIMESTAMPTZ '2026-12-31 00:00:00+00', 'Aceptada', NULL, NULL, TIMESTAMPTZ '2026-09-02 09:00:00+00', NULL);
+
+INSERT INTO "DetallesCotizacion" (
+    "CotizacionId", "ProductoId", "Cantidad", "PrecioUnitario", "DescuentoPorcentaje") VALUES
+    ((SELECT "Id" FROM "Cotizaciones" WHERE "Numero" = 'COT-DEV-001'), 1, 2, 100.00, 10.00),
+    ((SELECT "Id" FROM "Cotizaciones" WHERE "Numero" = 'COT-DEV-002'), 2, 1, 50.00, 0.00),
+    ((SELECT "Id" FROM "Cotizaciones" WHERE "Numero" = 'COT-DEV-003'), 3, 1, 100.00, 0.00),
+    ((SELECT "Id" FROM "Cotizaciones" WHERE "Numero" = 'COT-DEV-004'), 4, 1, 80.00, 0.00);
+
+SELECT setval(pg_get_serial_sequence('"Cotizaciones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Cotizaciones"));
+SELECT setval(pg_get_serial_sequence('"DetallesCotizacion"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "DetallesCotizacion"));
+
 COMMIT;

@@ -12,6 +12,10 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
+    public DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
+
+    public DbSet<DetalleCotizacion> DetallesCotizacion { get; set; } = null!;
+
     public DbSet<Proveedor> Proveedores { get; set; } = null!;
 
     public DbSet<Almacen> Almacenes { get; set; } = null!;
@@ -34,6 +38,59 @@ public class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Cotizacion>()
+            .Property(cotizacion => cotizacion.Numero)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Cotizacion>()
+            .Property(cotizacion => cotizacion.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Cotizacion>()
+            .Property(cotizacion => cotizacion.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Cotizacion>()
+            .Property(cotizacion => cotizacion.MotivoRechazo)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Cotizacion>()
+            .HasIndex(cotizacion => cotizacion.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<Cotizacion>()
+            .HasOne(cotizacion => cotizacion.Cliente)
+            .WithMany()
+            .HasForeignKey(cotizacion => cotizacion.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Cotizacion>()
+            .HasOne(cotizacion => cotizacion.OrdenCompra)
+            .WithMany()
+            .HasForeignKey(cotizacion => cotizacion.OrdenCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Cotizacion>()
+            .HasMany(cotizacion => cotizacion.Detalles)
+            .WithOne(detalle => detalle.Cotizacion)
+            .HasForeignKey(detalle => detalle.CotizacionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DetalleCotizacion>()
+            .Property(detalle => detalle.PrecioUnitario)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<DetalleCotizacion>()
+            .Property(detalle => detalle.DescuentoPorcentaje)
+            .HasColumnType("decimal(5,2)");
+
+        modelBuilder.Entity<DetalleCotizacion>()
+            .HasOne(detalle => detalle.Producto)
+            .WithMany()
+            .HasForeignKey(detalle => detalle.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<SegmentoCliente>()
             .Property(segmento => segmento.Codigo)
             .HasMaxLength(20)

@@ -12,6 +12,7 @@ ORDEN_ABASTECIMIENTO_CREADA_ID=""
 ALMACEN_CREADO_ID=""
 ZONA_CREADA_ID=""
 SEGMENTO_CREADO_ID=""
+COTIZACION_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -139,6 +140,17 @@ checks = {
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
+    "cotizaciones-list": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["COT-DEV-001", "COT-DEV-002"] and data["items"][0]["total"] == 180.0,
+    "cotizaciones-expired": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "COT-DEV-002" and data["items"][0]["vencida"] is True,
+    "cotizacion-detail": lambda data: data["numero"] == "COT-DEV-001" and data["clienteNombre"] == "Acme Industrial" and data["subtotal"] == 200.0 and data["descuento"] == 20.0 and data["total"] == 180.0 and data["lineas"][0]["importe"] == 180.0,
+    "cotizaciones-summary": lambda data: data["total"] == 4 and data["emitidas"] == 2 and data["vencidas"] == 1 and data["aceptadas"] == 1 and data["rechazadas"] == 1 and data["montoVigente"] == 180.0 and data["montoAceptado"] == 80.0 and data["tasaAceptacion"] == 50.0,
+    "cotizacion-created": lambda data: data["id"] > 4 and data["numero"] == f"COT-{data['id']:06d}",
+    "cotizacion-accepted": lambda data: data["estado"] == "Aceptada" and data["ordenCompraNumero"] == f"OC-{data['numero']}" and data["ordenCompraId"] > 0 and data["total"] == 180.0,
+    "cotizacion-already-accepted": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La cotización COT-\d{6} ya está aceptada\.", data["Message"]) is not None,
+    "cotizacion-expired-conflict": lambda data: data["StatusCode"] == 409 and data["Message"] == "La cotización COT-DEV-002 está vencida.",
+    "cotizacion-empty-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio.",
+    "cotizacion-order-hierarchy": lambda data: len(data) == 1 and re.fullmatch(r"OC-COT-\d{6}", data[0]["numeroOrden"]) is not None and data[0]["nombreCliente"] == "Cliente sin órdenes",
+    "openapi-cotizaciones": lambda data: all(path in data["paths"] for path in ["/api/v1/cotizaciones", "/api/v1/cotizaciones/{id}", "/api/v1/cotizaciones/{id}/aceptar", "/api/v1/cotizaciones/{id}/rechazar", "/api/v1/cotizaciones/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/cotizaciones", "get"), ("/api/v1/cotizaciones", "post"), ("/api/v1/cotizaciones/{id}", "get"), ("/api/v1/cotizaciones/{id}", "put"), ("/api/v1/cotizaciones/{id}", "delete"), ("/api/v1/cotizaciones/{id}/aceptar", "post"), ("/api/v1/cotizaciones/{id}/rechazar", "post"), ("/api/v1/cotizaciones/resumen", "get")]),
     "segments-list": lambda data: data["total"] == 4 and [item["codigo"] for item in data["items"]] == ["VIP", "FRECUENTE", "OCASIONAL", "PREMIUM-OLD"] and [item["clientes"] for item in data["items"]] == [1, 1, 2, 0],
     "segments-classification": lambda data: data["total"] == 5 and [(item["clienteId"], item["segmentoCodigo"]) for item in data["items"]] == [(1, "VIP"), (2, "FRECUENTE"), (4, "OCASIONAL"), (3, "OCASIONAL"), (5, None)],
     "segments-unassigned": lambda data: data["total"] == 1 and data["items"][0]["clienteId"] == 5 and data["items"][0]["segmentoId"] is None,
@@ -249,6 +261,10 @@ request_check() {
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "cotizacion-created" ]]; then
+        COTIZACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "segment-created" ]]; then
         SEGMENTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -349,4 +365,15 @@ request_check 'Generar orden desde solicitud pendiente' POST '/api/v1/ordenes-ab
 request_check 'Anular orden sin motivo' POST '/api/v1/ordenes-abastecimiento/2/anular' 400 orden-missing-cancel-reason '{"motivo":" "}'
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
+request_check 'OpenAPI de cotizaciones' GET '/openapi/v1.json' 200 openapi-cotizaciones
+request_check 'Listado de cotizaciones emitidas' GET '/api/v1/cotizaciones?estado=emitida' 200 cotizaciones-list
+request_check 'Cotizaciones vencidas' GET '/api/v1/cotizaciones?vencidas=true' 200 cotizaciones-expired
+request_check 'Detalle de cotización vigente' GET '/api/v1/cotizaciones/1' 200 cotizacion-detail
+request_check 'Resumen de cotizaciones' GET '/api/v1/cotizaciones/resumen' 200 cotizaciones-summary
+request_check 'Rechazar cotización sin motivo' POST '/api/v1/cotizaciones/1/rechazar' 400 cotizacion-empty-reason '{"motivo":" "}'
+request_check 'Aceptar cotización vencida' POST '/api/v1/cotizaciones/2/aceptar' 409 cotizacion-expired-conflict
+request_check 'POST cotización válida' POST '/api/v1/cotizaciones' 200 cotizacion-created '{"clienteId":5,"fechaValidez":"2099-01-01T00:00:00Z","observaciones":"Cotización smoke","lineas":[{"productoId":1,"cantidad":2,"precioUnitario":100,"descuentoPorcentaje":10}]}'
+request_check 'Aceptar cotización y crear orden' POST "/api/v1/cotizaciones/${COTIZACION_CREADA_ID}/aceptar" 200 cotizacion-accepted
+request_check 'Orden de cotización en la jerarquía del cliente' GET '/api/v1/ordenes-compra/clientes/5/jerarquia' 200 cotizacion-order-hierarchy
+request_check 'Aceptar cotización ya aceptada' POST "/api/v1/cotizaciones/${COTIZACION_CREADA_ID}/aceptar" 409 cotizacion-already-accepted
 printf 'SMOKE OK\n'
