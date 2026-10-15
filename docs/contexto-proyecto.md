@@ -109,6 +109,8 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-15 | Siguiente módulo de los agentes: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integrador |
 | 2026-10-15 | Al aceptar una cotización se crea una `OrdenCompra` del enunciado sin modificar su entidad (el enlace vive en `Cotizacion`) | integrador (spec 25) |
 | 2026-10-15 | Se adelanta 09 ReclamosPostventa al 08 ComisionesVendedores: el 08 necesita vendedores y los empleados son el módulo 61 (Kelvin) | integrador |
+| 2026-10-15 | 08 ComisionesVendedores con su propio maestro de vendedores y una asignación de órdenes a vendedores (enlazable más adelante con Empleados, módulo 61) | Lukas |
+| 2026-10-15 | 71 Usuarios y 72 RolesPermisos se gestionan como datos; el middleware de roles del enunciado (cabecera `X-User-Role`, 403 literal) no cambia | Lukas |
 | 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
 
 ## 11. Cómo se mantiene este documento
