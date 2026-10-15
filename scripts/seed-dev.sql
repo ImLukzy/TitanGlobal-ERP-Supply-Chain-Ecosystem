@@ -165,6 +165,28 @@ ON CONFLICT ("Codigo") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"SegmentosClientes"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "SegmentosClientes"));
 
+INSERT INTO "ListasPrecios" ("Codigo", "Nombre", "SegmentoClienteId", "Prioridad", "FechaInicio", "FechaFin", "Activa") VALUES
+    ('VIP-2026', 'Precios VIP 2026', (SELECT "Id" FROM "SegmentosClientes" WHERE "Codigo" = 'VIP'), 1, TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', TRUE),
+    ('GENERAL-2026', 'Precios generales 2026', NULL, 10, TIMESTAMPTZ '2026-01-01 00:00:00+00', NULL, TRUE),
+    ('PROMO-2025', 'Promoción 2025', NULL, 5, TIMESTAMPTZ '2025-01-01 00:00:00+00', TIMESTAMPTZ '2025-12-31 00:00:00+00', TRUE)
+ON CONFLICT ("Codigo") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "SegmentoClienteId" = EXCLUDED."SegmentoClienteId",
+    "Prioridad" = EXCLUDED."Prioridad",
+    "FechaInicio" = EXCLUDED."FechaInicio",
+    "FechaFin" = EXCLUDED."FechaFin",
+    "Activa" = EXCLUDED."Activa";
+
+DELETE FROM "ItemsListaPrecios"
+WHERE "ListaPreciosId" IN (SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" IN ('VIP-2026', 'GENERAL-2026', 'PROMO-2025'));
+
+INSERT INTO "ItemsListaPrecios" ("ListaPreciosId", "ProductoId", "Precio") VALUES
+    ((SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" = 'VIP-2026'), 1, 2300.00),
+    ((SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" = 'VIP-2026'), 5, 820.00),
+    ((SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" = 'GENERAL-2026'), 1, 2450.00),
+    ((SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" = 'GENERAL-2026'), 3, 45.00),
+    ((SELECT "Id" FROM "ListasPrecios" WHERE "Codigo" = 'PROMO-2025'), 1, 2000.00);
+
 DELETE FROM "DetallesCotizacion";
 TRUNCATE TABLE "Cotizaciones" RESTART IDENTITY CASCADE;
 

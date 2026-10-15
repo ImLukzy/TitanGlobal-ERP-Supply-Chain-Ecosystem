@@ -5,8 +5,14 @@ using TitanGlobal.Api.Repositories.Interfaces;
 
 namespace TitanGlobal.Api.Modules.Modulo02_SegmentacionClientes.UseCases;
 
-internal static class ConsultaSegmentacionClientes
+public static class ConsultaSegmentacionClientes
 {
+    public static async Task<ClienteClasificadoDto?> ObtenerClienteClasificadoAsync(int clienteId, IUnitOfWork unitOfWork)
+    {
+        List<ClienteClasificadoDto> clientes = await ObtenerClientesAsync(unitOfWork);
+        return clientes.SingleOrDefault(cliente => cliente.ClienteId == clienteId);
+    }
+
     public static async Task<List<ClienteClasificadoDto>> ObtenerClientesAsync(IUnitOfWork unitOfWork)
     {
         List<SegmentoCliente> segmentos = await unitOfWork.Repository<SegmentoCliente>()

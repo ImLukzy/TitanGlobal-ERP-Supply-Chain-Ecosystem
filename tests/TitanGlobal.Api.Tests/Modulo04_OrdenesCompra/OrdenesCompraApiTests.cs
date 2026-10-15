@@ -218,7 +218,7 @@ public class OrdenesCompraApiTests
     }
 }
 
-public sealed class OrdenesCompraApiFactory : WebApplicationFactory<Program>
+public class OrdenesCompraApiFactory : WebApplicationFactory<Program>
 {
     private bool _databaseSeeded;
 

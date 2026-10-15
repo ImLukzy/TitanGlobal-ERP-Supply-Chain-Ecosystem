@@ -24,6 +24,10 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<ZonaAlmacenaje> ZonasAlmacenaje { get; set; } = null!;
 
+    public DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
+
+    public DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -354,6 +358,50 @@ public class TitanGlobalDbContext : DbContext
             .HasMany(cliente => cliente.OrdenesCompra)
             .WithOne(orden => orden.Cliente)
             .HasForeignKey(orden => orden.ClienteId);
+
+        modelBuilder.Entity<ListaPrecios>()
+            .Property(lista => lista.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ListaPrecios>()
+            .Property(lista => lista.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<ListaPrecios>()
+            .HasIndex(lista => lista.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<ListaPrecios>()
+            .HasIndex(lista => lista.Prioridad)
+            .IsUnique();
+
+        modelBuilder.Entity<ListaPrecios>()
+            .HasOne(lista => lista.SegmentoCliente)
+            .WithMany()
+            .HasForeignKey(lista => lista.SegmentoClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ListaPrecios>()
+            .HasMany(lista => lista.Items)
+            .WithOne(item => item.ListaPrecios)
+            .HasForeignKey(item => item.ListaPreciosId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ItemListaPrecios>()
+            .Property(item => item.Precio)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<ItemListaPrecios>()
+            .HasIndex(item => new { item.ListaPreciosId, item.ProductoId })
+            .IsUnique();
+
+        modelBuilder.Entity<ItemListaPrecios>()
+            .HasOne<Producto>()
+            .WithMany()
+            .HasForeignKey(item => item.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Cliente>()
             .HasIndex(cliente => cliente.Ruc)

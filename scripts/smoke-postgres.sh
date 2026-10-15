@@ -15,12 +15,16 @@ SEGMENTO_CREADO_ID=""
 COTIZACION_CREADA_ID=""
 CONTRATO_CREADO_ID=""
 CONTRATO_BORRADOR_ID=""
+LISTA_PRECIOS_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
     trap - EXIT INT TERM
 
     if [[ -n "$API_PID" ]]; then
+        if [[ -n "$LISTA_PRECIOS_CREADA_ID" ]]; then
+            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" >/dev/null 2>&1 || true
+        fi
         kill "$API_PID" 2>/dev/null || true
         wait "$API_PID" 2>/dev/null || true
     fi
@@ -205,6 +209,15 @@ checks = {
     "orden-already-received": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La orden OA-\d{6} ya está recibida\.", data["Message"]) is not None,
     "orden-pending-request": lambda data: data["StatusCode"] == 409 and data["Message"] == "La solicitud SC-DEV-001 no está aprobada.",
     "orden-missing-cancel-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de anulación es obligatorio.",
+    "openapi-listas-precios": lambda data: all(path in data["paths"] for path in ["/api/v1/listas-precios", "/api/v1/listas-precios/{id}", "/api/v1/listas-precios/precio", "/api/v1/listas-precios/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/listas-precios", "get"), ("/api/v1/listas-precios", "post"), ("/api/v1/listas-precios/{id}", "get"), ("/api/v1/listas-precios/{id}", "put"), ("/api/v1/listas-precios/{id}", "delete"), ("/api/v1/listas-precios/precio", "get"), ("/api/v1/listas-precios/resumen", "get")]),
+    "listas-vigentes": lambda data: data["total"] == 2 and all(item["vigente"] for item in data["items"]),
+    "lista-vip": lambda data: data["codigo"] == "VIP-2026" and data["segmentoCodigo"] == "VIP" and data["prioridad"] == 1 and [(item["productoId"], item["precio"]) for item in data["items"]] == [(1, 2300.0), (5, 820.0)],
+    "precio-vip": lambda data: data["precio"] == 2300.0 and data["origen"] == "Segmento" and data["listaCodigo"] == "VIP-2026",
+    "precio-general": lambda data: data["precio"] == 2450.0 and data["origen"] == "General" and data["listaCodigo"] == "GENERAL-2026",
+    "precio-base": lambda data: data["precio"] == data["precioBase"] == 200.0 and data["origen"] == "Base" and data["listaId"] is None,
+    "listas-summary": lambda data: data["total"] == 3 and data["activas"] == 3 and data["vigentes"] == 2 and data["deSegmento"] == 1 and data["generales"] == 2 and data["productosConPrecioEspecial"] == 3,
+    "lista-created": lambda data: data["id"] > 0,
+    "lista-priority-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una lista de precios con la prioridad 1.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -295,6 +308,10 @@ request_check() {
 
     if [[ "$validation" == "zone-created" ]]; then
         ZONA_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "lista-created" ]]; then
+        LISTA_PRECIOS_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -405,4 +422,14 @@ request_check 'POST cotización válida' POST '/api/v1/cotizaciones' 200 cotizac
 request_check 'Aceptar cotización y crear orden' POST "/api/v1/cotizaciones/${COTIZACION_CREADA_ID}/aceptar" 200 cotizacion-accepted
 request_check 'Orden de cotización en la jerarquía del cliente' GET '/api/v1/ordenes-compra/clientes/5/jerarquia' 200 cotizacion-order-hierarchy
 request_check 'Aceptar cotización ya aceptada' POST "/api/v1/cotizaciones/${COTIZACION_CREADA_ID}/aceptar" 409 cotizacion-already-accepted
+request_check 'OpenAPI de listas de precios' GET '/openapi/v1.json' 200 openapi-listas-precios
+request_check 'Listas de precios vigentes' GET '/api/v1/listas-precios?vigentes=true' 200 listas-vigentes
+request_check 'Detalle de lista VIP-2026' GET '/api/v1/listas-precios/1' 200 lista-vip
+request_check 'Precio de Laptop Pro para Acme' GET '/api/v1/listas-precios/precio?productoId=1&clienteId=1&fecha=2026-06-01' 200 precio-vip
+request_check 'Precio de Laptop Pro para Beta' GET '/api/v1/listas-precios/precio?productoId=1&clienteId=2&fecha=2026-06-01' 200 precio-general
+request_check 'Precio base del Teclado Mecánico' GET '/api/v1/listas-precios/precio?productoId=4&clienteId=1&fecha=2026-06-01' 200 precio-base
+request_check 'Resumen de listas de precios' GET '/api/v1/listas-precios/resumen' 200 listas-summary
+request_check 'POST lista de precios válida' POST '/api/v1/listas-precios' 200 lista-created '{"codigo":"SMOKE-LP","nombre":"Lista Smoke","prioridad":99,"fechaInicio":"2026-01-01T00:00:00Z","activa":true,"items":[{"productoId":2,"precio":1400}]}'
+request_check 'POST lista con prioridad del seed' POST '/api/v1/listas-precios' 409 lista-priority-duplicate '{"codigo":"SMOKE-DUP-LP","nombre":"Duplicada","prioridad":1,"fechaInicio":"2026-01-01T00:00:00Z","activa":true,"items":[{"productoId":2,"precio":1400}]}'
+request_check 'DELETE lista recién creada' DELETE "/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" 204 ''
 printf 'SMOKE OK\n'
