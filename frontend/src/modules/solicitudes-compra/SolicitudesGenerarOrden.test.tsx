@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SolicitudesCompraPage } from './SolicitudesCompraPage';
@@ -6,21 +6,21 @@ import { OrdenesAbastecimientoPage } from '../ordenes-abastecimiento/OrdenesAbas
 import { prepararApi } from '../ordenes-abastecimiento/ordenes.testUtils';
 
 async function esperarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
-  await screen.findByRole('button', { name: 'SC-000003' });
-  await screen.findByRole('option', { name: 'Andes Suministros S.A.C.' });
-  vi.useFakeTimers();
   await act(async () => {
     await vi.advanceTimersByTimeAsync(300);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
   });
   vi.useRealTimers();
-  await waitFor(() => {
-    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/solicitudes-compra?'))).toHaveLength(1);
-  });
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-  });
+  await screen.findByRole('button', { name: 'SC-000003' });
+  await screen.findByRole('option', { name: 'Andes Suministros S.A.C.' });
+  await screen.findByRole('region', { name: 'Resumen de solicitudes de compra' });
+  const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+  expect(urls.filter((url) => url.includes('/solicitudes-compra?'))).toHaveLength(1);
+  expect(urls.some((url) => url.includes('/solicitudes-compra/resumen'))).toBe(true);
+  expect(urls.some((url) => url.includes('/proveedores?'))).toBe(true);
+  expect(urls.some((url) => url.includes('/productos?'))).toBe(true);
 }
 
 afterEach(() => {
@@ -32,6 +32,7 @@ afterEach(() => {
 describe('generar orden desde solicitud aprobada', () => {
   it('A5 muestra el acceso solo para aprobadas, envía el cuerpo y abre la orden nueva', async () => {
     const { fetchMock } = prepararApi();
+    vi.useFakeTimers();
     render(
       <MemoryRouter initialEntries={['/modulos/13-solicitudes-compra']}>
         <Routes>
@@ -58,6 +59,7 @@ describe('generar orden desde solicitud aprobada', () => {
 
   it('A5 presenta un 409 dentro del diálogo y conserva la selección', async () => {
     const { fetchMock } = prepararApi({ errorGenerar: true });
+    vi.useFakeTimers();
     render(
       <MemoryRouter initialEntries={['/modulos/13-solicitudes-compra']}>
         <Routes>
@@ -73,6 +75,7 @@ describe('generar orden desde solicitud aprobada', () => {
     const dialog = screen.getByRole('dialog', { name: 'Generar orden desde SC-000003' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Generar orden' }));
     expect(await screen.findByText('La solicitud SC-000003 ya tiene la orden OA-000001.')).toHaveAttribute('role', 'alert');
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]) === '/api/v1/ordenes-abastecimiento/desde-solicitud/3' && call[1]?.method === 'POST')).toHaveLength(1);
     expect(within(dialog).getByLabelText('Proveedor')).toHaveValue('1');
     expect(dialog).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'OA-000005' })).not.toBeInTheDocument();
@@ -80,6 +83,7 @@ describe('generar orden desde solicitud aprobada', () => {
 
   it('A5 no muestra generar orden cuando la solicitud sigue pendiente', async () => {
     const { fetchMock } = prepararApi({ solicitudEstado: 'Pendiente' });
+    vi.useFakeTimers();
     render(
       <MemoryRouter initialEntries={['/modulos/13-solicitudes-compra']}>
         <Routes>
