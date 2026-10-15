@@ -36,6 +36,7 @@ frontend/          SPA React + Vite + TS
 - **DTOs** por módulo en `Modules/*/Dtos`; nunca exponer entidades en controladores.
 - **Pipeline fijo** en `Program.cs`, en este orden: `ErrorHandlingMiddleware` → `UseRouting` → `ParameterValidationMiddleware` → `RoleBasedAccessMiddleware` → `UseAuthorization` → `MapControllers`.
 - Rutas `api/v1/<recurso-en-kebab-case>`.
+- Una acción POST/PUT que no necesita cuerpo (p. ej. `aprobar`, `recibir`) se marca con `[PermitirCuerpoVacio]` (`Middlewares/PermitirCuerpoVacioAttribute.cs`). Nunca se añaden rutas al `ParameterValidationMiddleware`.
 - Errores en JSON `{ StatusCode, Message }` (más `Detail` solo en 500), con los mensajes literales de `docs/enunciado.md` §4.
 - Contratos de repositorio y entidades: los de `docs/enunciado.md` §3 (`AsQueryable`, `Repository<T>()`, `CompleteAsync`).
 - Código legible: una sentencia por línea, un miembro por línea; nada de clases o métodos comprimidos en una sola línea.

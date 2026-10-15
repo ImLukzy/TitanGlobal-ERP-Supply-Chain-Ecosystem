@@ -8,7 +8,7 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
 - **Vertical slices:** cada módulo vive en `Modules/ModuloNN_Nombre/` con `Controllers/`, `Dtos/` y `UseCases/`.
 - **Capas transversales:** solo `Middlewares/`, `Models/` (EF Core), `Repositories/` (repositorio genérico + unidad de trabajo), `Services/` (exclusivamente técnicos: auth) y `Configuration/`.
 - **Casos de uso concretos sin interfaz**, registrados por reflexión (toda clase concreta terminada en `UseCase`).
-- **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers.
+- **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers. Como Routing va antes, ParameterValidation lee los metadatos del endpoint: las acciones sin cuerpo se declaran con `[PermitirCuerpoVacio]` (spec 18).
 
 Las reglas de código están en `CLAUDE.md` § Reglas de código.
 
