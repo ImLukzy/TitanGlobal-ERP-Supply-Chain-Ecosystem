@@ -62,6 +62,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 13 SolicitudesCompra | `api/v1/solicitudes-compra` | solicitudes con líneas, aprobar (sin cuerpo), rechazar con motivo, editar y borrar solo pendientes, resumen | líneas dinámicas y diálogos | 14, 15 |
 | 15 OrdenesAbastecimiento | `api/v1/ordenes-abastecimiento` | órdenes al proveedor manuales o desde una solicitud aprobada, recibir (sin cuerpo), anular con motivo, «atrasada», resumen | órdenes y botón «Generar orden» en solicitudes | 16, 17, 18 |
 | 23 Almacenes | `api/v1/almacenes` | maestro de almacenes con tipo, ciudad y capacidad, ciudades, resumen | en desarrollo (spec 20) | 19, 20 |
+| 24 ZonasAlmacenaje | `api/v1/zonas-almacenaje` | zonas de cada almacén (tipo, temperatura, capacidad), ocupación por almacén; un almacén con zonas no se borra | en desarrollo | 21, 22 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
@@ -90,14 +91,15 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-14 | Orden de módulos: 01 Clientes, 21 Productos, 11 Proveedores, 13 SolicitudesCompra, 15 OrdenesAbastecimiento, 23 Almacenes | Lukas (por recomendación del integrador) |
 | 2026-10-14 | Repositorio privado en GitHub a nombre de Lukas; despliegue en Neon, Render y Vercel; `main` al día | Lukas |
 | 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integrador (spec 18) |
+| 2026-10-15 | Siguiente módulo de los agentes: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integrador |
 | 2026-10-15 | Módulos propuestos a compañeros: 12 (Leonel), 22 (Antony), 19 (Kelvin) | Lukas |
 
 ## 11. Cómo se mantiene este documento
 En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
-- **En curso:** módulo 23 Almacenes (backend integrado y desplegado; pantalla en desarrollo).
+- **En curso:** módulo 23 Almacenes (backend integrado y desplegado; pantalla en desarrollo) y módulo 24 ZonasAlmacenaje (specs 21 y 22).
 - **Asignados a compañeros:** 12 EvaluacionProveedores, 22 CategoriasProducto, 19 RecepcionMercaderia.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel vacío más grande en SolicitudesCompra; números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
-- **Resto:** 72 módulos con «Pantalla pendiente».
+- **Resto:** 71 módulos sin empezar.

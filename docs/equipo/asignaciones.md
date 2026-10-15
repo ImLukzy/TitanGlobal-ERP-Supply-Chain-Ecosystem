@@ -22,6 +22,7 @@ Antes de empezar un módulo, apúntate aquí (PR pequeño o avisando a Lukas). U
 | 12 EvaluacionProveedores | Leonel Portillo | asignado | — |
 | 22 CategoriasProducto | Antony Huayhua | asignado (maestro aparte: no cambia la entidad `Producto` del enunciado) | — |
 | 23 Almacenes | Lukas (equipo Claude) | backend terminado, pantalla en curso | 19, 20 |
+| 24 ZonasAlmacenaje | Lukas (equipo Claude) | en curso | 21, 22 |
 | 19 RecepcionMercaderia | Kelvin Pinto | asignado (depende de 15, terminado, y 23, en curso: empezar por la spec) | — |
 
 Para los demás módulos, añade una fila al apuntarte. Primer paso de cada persona: escribir la spec de su módulo (ver `docs/guia-companeros.md` §4) y pedir a Lukas que la revise antes de programar.

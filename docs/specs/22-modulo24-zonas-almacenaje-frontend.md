@@ -1,0 +1,50 @@
+# Especificación: 22 - Pantalla de Modulo24_ZonasAlmacenaje (frontend)
+
+## 1. Objetivo
+**Problema:** `/modulos/24-zonas-almacenaje` muestra «Pantalla pendiente» y no se ve cuánta capacidad de cada almacén está asignada a zonas.
+**Resultado esperado:** pantalla de zonas contra el contrato de la spec 21 §4, con el patrón y los componentes de Almacenes (spec 20), y una barra de ocupación por almacén.
+
+## 2. Fuera de alcance
+- La API: `fetch` simulado y contrato de la spec 21 §4.
+- Cambiar otras pantallas, salvo mostrar en Almacenes el 409 «tiene zonas» al borrar (ya lo muestra el diálogo con el `Message` de la API; solo se añade su test).
+- Librerías nuevas (la barra es un `<progress>` o un `div` con `role="meter"`).
+
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna.
+
+## 3. Archivos afectados
+| Archivo | Acción | Nota |
+|---|---|---|
+| `frontend/src/modules/zonas-almacenaje/{tipos,api}.ts` | crear | 6 funciones (`listarZonas(filtros)`, `obtenerZona`, `crearZona`, `actualizarZona`, `eliminarZona`, `obtenerResumenZonas(almacenId?)`) |
+| `frontend/src/modules/zonas-almacenaje/*.tsx` | crear | partida en componentes (≤ ~300 líneas por archivo) |
+| `frontend/src/modules/pantallas.ts` | modificar | registrar `24-zonas-almacenaje` |
+| `frontend/src/modules/almacenes/*.test.tsx` | modificar | test: borrar un almacén con zonas muestra el 409 en el diálogo |
+| `frontend/src/modules/zonas-almacenaje/*.test.ts(x)` | crear | `fetch` simulado, temporizadores falsos |
+
+## 4. Diseño y lógica
+- **Selector de almacén** arriba (de `GET almacenes?activo=true&tamanoPagina=100`, con «Todos»): filtra la tabla y el resumen. Se puede abrir con `?almacen={id}`.
+- **Resumen:** total y activas; zonas por tipo; **ocupación por almacén** con barra accesible (`role="meter"`, `aria-valuenow`, texto «412.00 de 500.00 m³ · 82.40 %»); a partir del 90 % la barra cambia de tono y muestra el texto «Casi lleno» (no solo color).
+- **Filtros:** búsqueda (300 ms), tipo, temperatura y estado; vuelta a la página 1; el listado se pide una sola vez al cargar.
+- **Tabla:** almacén, código, nombre, tipo, temperatura, capacidad y estado con texto. Paginación de 10. Carga, vacío y error.
+- **Detalle y formulario:** almacén (selector de activos), código en mayúsculas al escribir, nombre, tipo, temperatura, capacidad y casilla «Activa». Validación local con los literales de la spec 21 §4; el 409 de capacidad y el de código repetido se muestran conservando lo escrito.
+- **Baja:** `DialogoBaja`; Escape y foco devuelto.
+- **Accesibilidad y responsive:** como en la spec 20.
+
+## 5. Criterios de aceptación (medibles)
+| # | Criterio | Cómo se verifica | Umbral |
+|---|---|---|---|
+| A1 | Gate | `./scripts/verify.sh` | en verde, 0 warnings |
+| A2 | API | tests: las 6 funciones con URL, método, query y cuerpo exactos | pasan |
+| A3 | Filtros, tabla y ocupación | tests: selector de almacén y `?almacen=`, filtros en la query, página 1, una sola petición al cargar, barra con `aria-valuenow` y texto, «Casi lleno» a partir del 90 %, vacío y error | pasan |
+| A4 | Formulario y baja | tests: validaciones locales sin petición, 409 de capacidad y de código conservando lo escrito, edición con PUT, baja con refresco, Escape; en Almacenes, 409 «tiene zonas» en el diálogo | pasan |
+| A5 | Sin regresiones | demás pantallas en verde sin cambiar lo que comprueban; la suite pasa 10 veces seguidas | pasan |
+| A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: resumen con un almacén casi lleno, detalle y diálogo de baja; márgenes ≥ 16 px, sin scroll horizontal, celdas recortadas ni códigos partidos | adjuntas |
+
+## 6. Checklist de ejecución
+- [ ] Tarea 1: tipos y `api.ts`.
+- [ ] Tarea 2: selector, resumen con ocupación, filtros y tabla.
+- [ ] Tarea 3: detalle, formulario, baja y test de Almacenes.
+- [ ] Tarea 4: tests, capturas y A1–A6.
+
+## 7. Registro de verificación
+| Fecha | Criterio | Resultado | Evidencia (comando / captura) |
+|---|---|---|---|
