@@ -879,6 +879,63 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 @media (max-width: 760px) { .promociones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promociones-filters { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 460px) { .promociones-summary { gap: 7px; } .promociones-summary > article { min-height: 70px; padding: 10px; } .promocion-form-row, .promocion-detail-grid { grid-template-columns: minmax(0, 1fr); } .promocion-linea { grid-template-columns: minmax(0, 1fr) minmax(0, .65fr); } .promocion-linea button { grid-column: 1 / -1; } .promocion-totales { justify-content: space-between; gap: 8px; } }
 
+/* Reclamos postventa */
+.reclamos-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.reclamos-summary > article, .reclamos-types { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
+.reclamos-summary > article { display: grid; min-height: 74px; align-content: space-between; color: var(--ink-soft); font-size: 10px; }
+.reclamos-summary > article strong { color: var(--ink); font-size: 17px; }
+.reclamos-summary > .reclamos-overdue strong { color: var(--danger); }
+.reclamos-types { grid-column: span 2; }
+.reclamos-types h2 { margin: 0 0 8px; font-size: 12px; }
+.reclamos-types ul { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.reclamos-types li { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 10px; }
+.reclamos-types li strong { color: var(--ink); }
+.reclamos-work-area { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .85fr); align-items: start; gap: 14px; }
+.reclamos-panel { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: var(--shadow); }
+.reclamos-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.reclamos-panel-heading h2 { margin: 3px 0 0; font-size: 16px; }
+.reclamos-filters { display: grid; grid-template-columns: minmax(100px, 1.2fr) repeat(4, minmax(80px, 1fr)) auto; gap: 8px; margin-bottom: 12px; }
+.reclamos-filters > label, .reclamo-form-fields > label, .reclamo-action-field { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.reclamos-filters input:not([type=checkbox]), .reclamos-filters select, .reclamo-form input, .reclamo-form select, .reclamo-form textarea, .reclamo-action-field textarea { width: 100%; min-width: 0; min-height: 34px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.reclamos-filters .reclamos-checkbox { display: flex; align-items: center; white-space: nowrap; }
+.reclamos-checkbox input { width: 14px; height: 14px; margin: 0 3px 0 0; accent-color: var(--accent); }
+.reclamos-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.reclamos-table { width: 100%; min-width: 0; table-layout: fixed; }
+.reclamos-table th, .reclamos-table td { padding: 7px 4px; font-size: 8px; overflow-wrap: normal; word-break: normal; }
+.reclamos-table thead th { white-space: nowrap; }
+.reclamos-table th:nth-child(1) { width: 16%; }
+.reclamos-table th:nth-child(2) { width: 17%; }
+.reclamos-table th:nth-child(3) { width: 11%; }
+.reclamos-table th:nth-child(4) { width: 12%; }
+.reclamos-table th:nth-child(5) { width: 10%; }
+.reclamos-table th:nth-child(6) { width: 15%; }
+.reclamos-table th:nth-child(7) { width: 19%; }
+.reclamos-table td:nth-child(1) { white-space: nowrap; }
+.reclamo-status, .reclamo-priority { display: inline-flex; align-items: center; padding: 4px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-raised); color: var(--ink); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.reclamo-status.is-abierto, .reclamo-priority.is-alta { border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); color: var(--danger); }
+.reclamo-status.is-enproceso, .reclamo-priority.is-media { color: var(--accent); }
+.reclamo-status.is-resuelto, .reclamo-status.is-cerrado, .reclamo-priority.is-baja { color: var(--success); }
+.reclamo-overdue-label, .reclamo-late { color: var(--danger); }
+.reclamo-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin: 0; }
+.reclamo-detail-grid > div { min-width: 0; }
+.reclamo-detail-grid dt { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.reclamo-detail-grid dd { margin: 3px 0 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.reclamo-detail-note, .reclamo-timeline { margin-top: 14px; padding-top: 11px; border-top: 1px solid var(--line); }
+.reclamo-detail-note h3, .reclamo-timeline h3 { margin: 0 0 6px; font-size: 11px; }
+.reclamo-detail-note p { margin: 0; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+.reclamo-timeline ol { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+.reclamo-timeline li { display: flex; justify-content: space-between; gap: 8px; color: var(--ink-soft); font-size: 10px; }
+.reclamo-timeline time { white-space: nowrap; }
+.reclamo-on-time { color: var(--success); font-size: 11px; font-weight: 700; }
+.reclamos-actions, .reclamo-form-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+.reclamo-form { margin-top: 14px; }
+.reclamo-form-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.reclamo-form-fields textarea { min-height: 90px; resize: vertical; }
+.reclamo-form-fields > label:has(textarea) { grid-column: 1 / -1; }
+.reclamo-form-fields small { font-size: 9px; }
+.reclamo-action-field textarea { min-height: 90px; resize: vertical; }
+@media (max-width: 1050px) { .reclamos-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } .reclamos-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); } .reclamos-work-area { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .reclamos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; } .reclamos-types { grid-column: span 2; } .reclamos-panel { padding: 11px; } .reclamos-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .reclamos-table { min-width: 760px; table-layout: auto; } .reclamos-table th, .reclamos-table td { white-space: nowrap; } .reclamo-form-fields { grid-template-columns: minmax(0, 1fr); } .reclamo-form-fields > label:has(textarea) { grid-column: auto; } }
 .cotizacion-expired-label { display: inline-flex; border-radius: 20px; padding: 4px 7px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; white-space: nowrap; }
 .solicitud-status.is-emitida { background: var(--accent-soft); color: var(--accent-ink); }
 .solicitud-status.is-aceptada { background: var(--good-soft); color: var(--good); }
