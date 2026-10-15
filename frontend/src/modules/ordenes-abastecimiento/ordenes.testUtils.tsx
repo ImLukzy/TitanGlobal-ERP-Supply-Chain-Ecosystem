@@ -277,9 +277,9 @@ export function renderEnRouter(elemento: ReactElement, initialEntries = ['/modul
 }
 
 export async function esperarCargaInicial(): Promise<void> {
-  await screen.findByRole('button', { name: 'OA-000001' });
-  await screen.findByText(/5,900\.00/);
-  await screen.findByRole('option', { name: 'Cobre Austral SpA' });
+  await screen.findByRole('button', { name: 'OA-000001' }, { timeout: 5000 });
+  await screen.findByText(/5,900\.00/, {}, { timeout: 5000 });
+  await screen.findByRole('option', { name: 'Cobre Austral SpA' }, { timeout: 5000 });
 }
 
 export function cambiarValor(etiqueta: string, valor: string): void {

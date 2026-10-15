@@ -467,6 +467,60 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .proveedores-form-actions p { max-width: 58%; }
 }
 
+.almacenes-page { padding-bottom: 42px; }
+.almacenes-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.almacenes-capacity-value { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; font-size: clamp(15px, 1.3vw, 18px) !important; letter-spacing: -.035em !important; }
+.cliente-stat .almacenes-capacity-value > span { color: var(--ink); font-size: inherit; font-weight: 700; }
+.almacenes-capacity-value small { color: var(--ink); font-size: .68em; font-weight: 700; }
+.almacenes-summary-panel { grid-column: span 2; min-width: 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.almacenes-summary-panel h2 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.almacenes-summary-panel table { width: 100%; border-collapse: collapse; color: var(--ink); font-size: 10px; }
+.almacenes-summary-panel th, .almacenes-summary-panel td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.almacenes-summary-panel tr:last-child th, .almacenes-summary-panel tr:last-child td { border-bottom: 0; }
+.almacenes-work-area { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); align-items: start; gap: 0 15px; }
+.almacenes-list-panel, .almacenes-detail-panel { min-width: 0; }
+.almacenes-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); align-items: center; gap: 7px 10px; margin-bottom: 14px; }
+.almacenes-filters > div { display: grid; min-width: 0; gap: 6px; }
+.almacenes-filters label { color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.almacenes-filters input, .almacenes-filters select { width: 100%; min-width: 0; height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.almacenes-table { width: 100%; min-width: 620px; border-collapse: collapse; text-align: left; font-size: 10px; }
+.almacenes-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.almacenes-table-scroll .almacenes-table { min-width: 0; table-layout: fixed; }
+.almacenes-table th:nth-child(1), .almacenes-table td:nth-child(1) { width: 19%; }
+.almacenes-table th:nth-child(2), .almacenes-table td:nth-child(2) { width: 19%; }
+.almacenes-table th:nth-child(3), .almacenes-table td:nth-child(3) { width: 14%; }
+.almacenes-table th:nth-child(4), .almacenes-table td:nth-child(4) { width: 15%; }
+.almacenes-table th:nth-child(5), .almacenes-table td:nth-child(5) { width: 19%; }
+.almacenes-table th:nth-child(6), .almacenes-table td:nth-child(6) { width: 14%; }
+.almacenes-table th { padding: 9px 7px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.almacenes-table td { padding: 9px 7px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.almacenes-table tbody tr.is-selected { background: var(--accent-soft); }
+.almacenes-table td:first-child { white-space: nowrap; }
+.almacen-code-button { padding: 0; border: 0; background: transparent; color: var(--accent); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.almacenes-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.almacenes-detail-grid > div { min-width: 0; }
+.almacenes-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.almacenes-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.almacen-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.almacen-form input, .almacen-form select { width: 100%; min-width: 0; }
+.almacen-active-field { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 11px; }
+.almacen-active-field input { width: auto; }
+.almacen-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.almacen-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+.almacen-delete-focus-target { position: absolute; width: 0; height: 0; overflow: hidden; }
+@media (max-width: 900px) {
+  .almacenes-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .almacenes-summary-panel { grid-column: 1 / -1; }
+  .almacenes-work-area { grid-template-columns: minmax(0, 1fr); }
+  .almacenes-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .almacenes-filters { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .almacenes-table-scroll .almacenes-table { min-width: 660px; table-layout: auto; }
+  .almacen-form { grid-template-columns: minmax(0, 1fr); }
+  .almacen-form-actions { grid-column: auto; }
+}
+
 .solicitudes-page { padding-bottom: 42px; }
 .solicitudes-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .solicitudes-summary > article, .solicitudes-top-panel, .solicitudes-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }

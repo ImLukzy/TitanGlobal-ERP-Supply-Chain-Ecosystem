@@ -5,6 +5,7 @@ import { ProductosPage } from './productos/ProductosPage';
 import { ProveedoresPage } from './proveedores/ProveedoresPage';
 import { SolicitudesCompraPage } from './solicitudes-compra/SolicitudesCompraPage';
 import { OrdenesAbastecimientoPage } from './ordenes-abastecimiento/OrdenesAbastecimientoPage';
+import { AlmacenesPage } from './almacenes/AlmacenesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -13,4 +14,5 @@ export const pantallas: Record<string, ComponentType> = {
   '13-solicitudes-compra': SolicitudesCompraPage,
   '15-ordenes-abastecimiento': OrdenesAbastecimientoPage,
   '21-productos': ProductosPage,
+  '23-almacenes': AlmacenesPage,
 };
