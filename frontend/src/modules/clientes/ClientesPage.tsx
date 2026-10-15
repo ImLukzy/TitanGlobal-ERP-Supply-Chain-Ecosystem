@@ -1,6 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type FocusEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { ApiError } from '../../api/client';
+import { CampoConError } from '../../components/CampoConError';
+import { DialogoBaja } from '../../components/DialogoBaja';
 import { PaginaModulo } from '../../components/PaginaModulo';
+import { PanelDetalle } from '../../components/PanelDetalle';
+import { TablaPaginada } from '../../components/TablaPaginada';
 import { formateadorMoneda, formatearFecha } from '../../lib/formato';
 import { actualizarCliente, crearCliente, eliminarCliente, listarClientes, obtenerCliente, obtenerResumenClientes } from './api';
 import type { ClienteDetalle, GuardarClienteRequest, PaginaClientes, ResumenClientes } from './tipos';
@@ -104,8 +108,7 @@ function FormularioCliente({ cliente, cancelar, guardado }: {
         </button>
       </div>
       <form className="cliente-form" noValidate onSubmit={(event) => void enviar(event)}>
-        <div className="form-field">
-          <label htmlFor="cliente-nombre">Nombre</label>
+        <CampoConError etiqueta="Nombre" htmlFor="cliente-nombre" error={errores.nombre} idError="cliente-nombre-error">
           <input
             aria-describedby={errores.nombre ? 'cliente-nombre-error' : undefined}
             aria-invalid={Boolean(errores.nombre)}
@@ -114,10 +117,8 @@ function FormularioCliente({ cliente, cancelar, guardado }: {
             onChange={(event) => setNombre(event.currentTarget.value)}
             value={nombre}
           />
-          {errores.nombre && <span className="field-error" id="cliente-nombre-error">{errores.nombre}</span>}
-        </div>
-        <div className="form-field">
-          <label htmlFor="cliente-ruc">RUC</label>
+        </CampoConError>
+        <CampoConError etiqueta="RUC" htmlFor="cliente-ruc" error={errores.ruc} idError="cliente-ruc-error">
           <input
             aria-describedby={errores.ruc ? 'cliente-ruc-error' : undefined}
             aria-invalid={Boolean(errores.ruc)}
@@ -127,8 +128,7 @@ function FormularioCliente({ cliente, cancelar, guardado }: {
             onChange={(event) => setRuc(event.currentTarget.value)}
             value={ruc}
           />
-          {errores.ruc && <span className="field-error" id="cliente-ruc-error">{errores.ruc}</span>}
-        </div>
+        </CampoConError>
         <div className="form-field cliente-descripcion-field">
           <label htmlFor="cliente-descripcion">Descripción <span className="optional-label">Opcional</span></label>
           <textarea
@@ -146,72 +146,6 @@ function FormularioCliente({ cliente, cancelar, guardado }: {
         </div>
       </form>
     </section>
-  );
-}
-
-function DialogoEliminar({ cliente, cerrar, confirmar, eliminando, error }: {
-  cliente: ClienteDetalle;
-  cerrar: () => void;
-  confirmar: () => void;
-  eliminando: boolean;
-  error: string;
-}) {
-  const dialogoRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const dialogo = dialogoRef.current;
-    const primerBoton = dialogo?.querySelector<HTMLElement>('button:not(:disabled)');
-    primerBoton?.focus();
-    function manejarTeclado(event: globalThis.KeyboardEvent): void {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        cerrar();
-      }
-      if (event.key === 'Tab' && dialogo !== null) {
-        const elementos = Array.from(dialogo.querySelectorAll<HTMLElement>('button:not(:disabled)'));
-        const primero = elementos[0];
-        const ultimo = elementos[elementos.length - 1];
-        if (event.shiftKey && document.activeElement === primero && ultimo !== undefined) {
-          event.preventDefault();
-          ultimo.focus();
-        } else if (!event.shiftKey && document.activeElement === ultimo && primero !== undefined) {
-          event.preventDefault();
-          primero.focus();
-        }
-      }
-    }
-    document.addEventListener('keydown', manejarTeclado);
-    return () => document.removeEventListener('keydown', manejarTeclado);
-  }, [cerrar]);
-
-  function manejarFoco(event: FocusEvent<HTMLDivElement>): void {
-    if (event.target === event.currentTarget) {
-      dialogoRef.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus();
-    }
-  }
-
-  return (
-    <div className="clientes-dialog-backdrop">
-      <div aria-labelledby="eliminar-cliente-title" aria-modal="true" className="clientes-dialog" onFocus={manejarFoco} ref={dialogoRef} role="dialog" tabIndex={-1}>
-        <div className="page-eyebrow">CONFIRMAR BAJA</div>
-        <h2 id="eliminar-cliente-title">Eliminar cliente</h2>
-        <p>¿Seguro que deseas eliminar a <strong>{cliente.nombre}</strong>?</p>
-        {error !== '' && (
-          <p aria-live="polite" className="clientes-error clientes-dialog-error" role="alert">
-            <span aria-hidden="true">!</span>
-            {error}
-          </p>
-        )}
-        <div className="clientes-dialog-actions">
-          <button className="secondary-button" disabled={eliminando} onClick={cerrar} type="button">
-            Cancelar
-          </button>
-          <button className="danger-button" disabled={eliminando} onClick={confirmar} type="button">
-            {eliminando ? 'Eliminando…' : 'Eliminar cliente'}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -404,60 +338,40 @@ export function ClientesPage() {
           )}
           {lista !== null && errorLista === '' && lista.items.length > 0 && (
             <>
-              <div className="clientes-table-scroll" role="region" aria-label="Tabla de clientes" tabIndex={0}>
-                <table className="clientes-table">
-                  <caption>Directorio de clientes</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Nombre</th>
-                      <th scope="col">RUC</th>
-                      <th scope="col">Órdenes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lista.items.map((cliente) => (
-                      <tr className={seleccionado === cliente.id ? 'is-selected' : ''} key={cliente.id}>
-                        <td>
-                          <button
-                            aria-current={seleccionado === cliente.id ? 'true' : undefined}
-                            className="cliente-row-select"
-                            onClick={() => setSeleccionado(cliente.id)}
-                            onKeyDown={(event) => manejarTecladoFila(event, cliente.id)}
-                            type="button"
-                          >
-                            {cliente.nombre}
-                          </button>
-                        </td>
-                        <td>{cliente.ruc}</td>
-                        <td>{cliente.totalOrdenes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <nav aria-label="Paginación de clientes" className="clientes-pagination">
-                <button
-                  className="secondary-button"
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina((valor) => valor - 1)}
-                  type="button"
-                >
-                  Anterior
-                </button>
-                <span>Página {pagina} de {paginas}</span>
-                <button
-                  className="secondary-button"
-                  disabled={pagina >= paginas}
-                  onClick={() => setPagina((valor) => valor + 1)}
-                  type="button"
-                >
-                  Siguiente
-                </button>
-              </nav>
+              <TablaPaginada
+                caption="Directorio de clientes"
+                etiquetaRegion="Tabla de clientes"
+                columnas={[{ id: 'nombre', etiqueta: 'Nombre' }, { id: 'ruc', etiqueta: 'RUC' }, { id: 'ordenes', etiqueta: 'Órdenes' }]}
+                elementos={lista.items}
+                obtenerClave={(cliente) => cliente.id}
+                pagina={pagina}
+                totalPaginas={paginas}
+                cambiarPagina={setPagina}
+                className="clientes-table"
+                classNameContenedor="clientes-table-scroll"
+                classNamePaginacion="clientes-pagination"
+                renderizarFila={(cliente) => (
+                  <tr className={seleccionado === cliente.id ? 'is-selected' : ''}>
+                    <td>
+                      <button
+                        aria-current={seleccionado === cliente.id ? 'true' : undefined}
+                        className="cliente-row-select"
+                        onClick={() => setSeleccionado(cliente.id)}
+                        onKeyDown={(event) => manejarTecladoFila(event, cliente.id)}
+                        type="button"
+                      >
+                        {cliente.nombre}
+                      </button>
+                    </td>
+                    <td>{cliente.ruc}</td>
+                    <td>{cliente.totalOrdenes}</td>
+                  </tr>
+                )}
+              />
             </>
           )}
         </section>
-        <section aria-labelledby="cliente-detail-title" className="clientes-detail-panel">
+        <PanelDetalle ariaLabelledBy="cliente-detail-title" className="clientes-detail-panel">
           {errorDetalle !== '' && (
             <p aria-live="polite" className="clientes-error" role="alert">
               {errorDetalle}
@@ -519,7 +433,7 @@ export function ClientesPage() {
               </div>
             </>
           )}
-        </section>
+        </PanelDetalle>
       </div>
       {mostrarFormulario && (
         <FormularioCliente
@@ -533,8 +447,9 @@ export function ClientesPage() {
         />
       )}
       {dialogoAbierto && detalle !== null && (
-        <DialogoEliminar
-          cliente={detalle}
+        <DialogoBaja
+          entidad="cliente"
+          nombre={detalle.nombre}
           cerrar={cerrarDialogo}
           confirmar={() => void confirmarEliminacion()}
           eliminando={eliminando}

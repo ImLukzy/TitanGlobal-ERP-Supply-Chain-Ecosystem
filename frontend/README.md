@@ -9,6 +9,8 @@ npm run dev
 
 Vite expone la aplicación en `http://localhost:5173` y reenvía `/api` a `http://localhost:5080`. Sin la API, la portada informa que no está disponible.
 
+Para apuntar a otra API durante desarrollo, define `TITAN_API_URL` antes de iniciar Vite, por ejemplo `TITAN_API_URL=http://localhost:5081 npm run dev`.
+
 Comandos de calidad:
 
 ```sh

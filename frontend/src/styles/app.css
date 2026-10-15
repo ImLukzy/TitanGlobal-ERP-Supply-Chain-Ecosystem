@@ -253,6 +253,47 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .clientes-search input { height: 36px; }
 .cliente-form textarea { resize: vertical; }
 .clientes-table-scroll { max-width: 100%; overflow-x: auto; }
+.tabla-paginada-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.tabla-paginada { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
+.tabla-paginada caption { padding: 0 0 8px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.tabla-paginada th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.tabla-paginada td { padding: 10px; border-bottom: 1px solid var(--line); color: var(--ink); }
+.tabla-paginada-nav { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 12px; }
+.tabla-paginada-nav span { color: var(--ink-soft); font-size: 10px; font-variant-numeric: tabular-nums; }
+.productos-page { padding-bottom: 42px; }
+.productos-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.productos-summary-tables { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); gap: 12px; }
+.productos-summary-tables .productos-panel { margin-top: 12px; }
+.productos-summary-tables h2 { margin: 0 0 12px; color: var(--ink); font-size: 13px; }
+.productos-analysis-table { width: 100%; border-collapse: collapse; color: var(--ink); font-size: 10px; }
+.productos-analysis-table caption { margin-bottom: 7px; color: var(--ink-faint); text-align: left; }
+.productos-analysis-table th, .productos-analysis-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.productos-analysis-table thead th { color: var(--ink-soft); }
+.productos-top-list { display: grid; gap: 8px; margin: 0; padding-left: 19px; color: var(--ink); font-size: 10px; }
+.productos-top-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.productos-summary article, .productos-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.productos-summary article { display: grid; min-height: 94px; align-content: space-between; padding: 16px; color: var(--ink-soft); font-size: 11px; }
+.productos-summary strong { color: var(--ink); font-size: 25px; font-variant-numeric: tabular-nums; }
+.productos-work-area { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.productos-panel { margin-top: 14px; padding: 18px; }
+.productos-heading, .productos-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.productos-heading { margin-bottom: 13px; }
+.productos-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; }
+.productos-filters { display: grid; grid-template-columns: 2fr repeat(3, minmax(100px, 1fr)); gap: 9px; margin-bottom: 13px; }
+.productos-filters label, .productos-form label { display: grid; gap: 5px; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.productos-filters input, .productos-filters select, .productos-form input, .productos-form select, .productos-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.productos-table { min-width: 540px; }
+.producto-row-select { padding: 0; border: 0; background: none; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }
+.productos-table tr.is-selected { background: var(--accent-soft); }
+.productos-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.productos-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.productos-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.productos-detail-grid > div:last-child { grid-column: 1 / -1; }
+.product-category { padding: 6px 9px; border-radius: 20px; background: var(--accent-soft); color: var(--accent-ink); font-size: 10px; }
+.productos-error { padding: 9px 11px; border-left: 3px solid var(--bad); border-radius: 6px; background: var(--bad-soft); color: var(--bad); font-size: 11px; }
+.productos-form form { display: grid; gap: 12px; }
+.productos-form textarea { resize: vertical; }
+.productos-actions { justify-content: flex-end; margin-top: 14px; }
 .clientes-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
 .clientes-table caption { padding: 0 0 8px; color: var(--ink-faint); text-align: left; font-size: 9px; }
 .clientes-table th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
@@ -297,6 +338,9 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 
 @media (min-width: 1024px) {
   .clientes-work-area { grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); }
+  .productos-work-area { grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); }
+  .productos-table { min-width: 0; table-layout: fixed; font-size: 9px; }
+  .productos-table th, .productos-table td { padding: 7px 5px; overflow-wrap: anywhere; }
 }
 
 @media (max-width: 720px) {
@@ -343,6 +387,10 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .clientes-pagination { gap: 7px; }
   .clientes-pagination span { font-size: 9px; }
   .clientes-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .productos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .productos-summary-tables { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .productos-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .productos-filters label:first-child { grid-column: 1 / -1; }
   .cliente-detail-grid { gap: 12px; }
   .business-section-heading { align-items: flex-start; margin-bottom: 15px; }
   .business-section-heading h2 { font-size: 17px; }
