@@ -66,7 +66,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 15 OrdenesAbastecimiento | `api/v1/ordenes-abastecimiento` | órdenes al proveedor manuales o desde una solicitud aprobada, recibir (sin cuerpo), anular con motivo, «atrasada», resumen | órdenes y botón «Generar orden» en solicitudes | 16, 17, 18 |
 | 23 Almacenes | `api/v1/almacenes` | maestro de almacenes con tipo, ciudad y capacidad, ciudades, resumen | mantenimiento completo | 19, 20 |
 | 24 ZonasAlmacenaje | `api/v1/zonas-almacenaje` | zonas de cada almacén (tipo, temperatura, capacidad), ocupación por almacén; un almacén con zonas no se borra | zonas con barra de ocupación por almacén («Casi lleno» desde el 90 %); terminado con QA | 21, 22 |
-| 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | vistas Segmentos y Clasificación | 23, 24 |
+| 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | vistas Segmentos y Clasificación; terminado con QA | 23, 24 |
 | 03 Cotizaciones | `api/v1/cotizaciones` | presupuestos a clientes con descuento por línea; aceptar genera la orden de compra del módulo 04 (transaccional); rechazar con motivo; vencidas; resumen con tasa de aceptación | backend integrado; pantalla pendiente (spec 26) | 25, 26 |
 | 05 ContratosComerciales | `api/v1/contratos-comerciales` | acuerdos marco con cliente (Borrador → Vigente → Finalizado / Cancelado); consumo calculado con las órdenes del periodo; sin vigentes solapados por cliente | en desarrollo | 27, 28 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
@@ -105,7 +105,7 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
-- **En curso:** QA de extremo a extremo del módulo 02 SegmentacionClientes (integrado y desplegado); módulo 03 Cotizaciones (backend integrado y desplegado; pantalla en desarrollo) y módulo 05 ContratosComerciales (backend en desarrollo).
+- **En curso:** módulo 03 Cotizaciones (backend integrado y desplegado; pantalla en desarrollo) y módulo 05 ContratosComerciales (backend en desarrollo).
 - **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). A Lukas le quedan 12 por empezar (02, 03, 05–10, 71, 72, 77, 78) más cerrar 23 y 24; Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel vacío más grande en SolicitudesCompra; números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
