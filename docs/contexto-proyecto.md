@@ -77,6 +77,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 07 PromocionesDescuentos | `api/v1/promociones` | promociones por producto o por monto mínimo, con vigencia y segmento opcional; evaluación de una compra (mejor promoción por línea y una por compra) | backend integrado; pantalla pendiente (spec 32) | 31, 32 |
 | 09 ReclamosPostventa | `api/v1/reclamos-postventa` | reclamos sobre órdenes del cliente con tipo y prioridad; plazo de atención (2/5/10 días) y vencidos; Abierto → EnProceso → Resuelto → Cerrado o Rechazado; cumplimiento de plazos | backend integrado; pantalla pendiente (spec 34) | 33, 34 |
 | 10 DevolucionesComerciales | `api/v1/devoluciones-comerciales` | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; importe con el precio de la orden; tasa de devolución | en desarrollo | 35, 36 |
+| 78 NotificacionesAlertas | `api/v1/alertas` | centro de alertas calculadas desde los módulos (reclamos vencidos, órdenes atrasadas, contratos excedidos o por vencer, almacenes casi llenos, cotizaciones vencidas, solicitudes antiguas); descartar y restaurar | en desarrollo | 37, 38 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
@@ -119,7 +120,8 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 06 ListasPrecios: backend integrado y desplegado; pantalla por empezar.
   - 07 PromocionesDescuentos: backend integrado y desplegado; pantalla por empezar.
   - 09 ReclamosPostventa: backend integrado y desplegado; pantalla por empezar (se adelanta al 08, que necesita decidir cómo se modelan los vendedores).
-  - 10 DevolucionesComerciales: backend en desarrollo.
+  - 10 DevolucionesComerciales: backend en auditoría.
+  - 78 NotificacionesAlertas: backend en desarrollo.
 - **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 10 de 20 terminados (01, 02, 03, 04, 11, 13, 15, 21, 23, 24); tiene 4 en curso (05, 06, 07, 09) y 6 por empezar (08, 10, 71, 72, 77, 78). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra y Cotizaciones (probablemente en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
