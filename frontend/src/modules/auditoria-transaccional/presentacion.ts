@@ -9,8 +9,18 @@ const formateadorFechaHora = new Intl.DateTimeFormat('es-PE', {
   timeZone: 'UTC',
 });
 
+const formateadorFechaCorta = new Intl.DateTimeFormat('es-PE', {
+  day: 'numeric',
+  month: 'numeric',
+  timeZone: 'UTC',
+});
+
 export function formatearFechaHoraUtc(fecha: string): string {
   return formateadorFechaHora.format(new Date(fecha));
+}
+
+export function formatearFechaCortaUtc(fecha: string): string {
+  return formateadorFechaCorta.format(new Date(fecha));
 }
 
 export function textoAccion(accion: AccionAuditoria): string {

@@ -34,8 +34,7 @@ export function AuditoriaTabla({ items, total, pagina, error, cargando, seleccio
       { id: 'entidad-id', etiqueta: 'Id' },
       { id: 'accion', etiqueta: 'Acción' },
       { id: 'usuario', etiqueta: 'Usuario' },
-      { id: 'ruta', etiqueta: 'Ruta' },
-      { id: 'cambios', etiqueta: 'Campos cambiados' },
+      { id: 'cambios', etiqueta: 'Campos' },
     ]}
     elementos={items}
     obtenerClave={(item) => item.id}
@@ -47,11 +46,10 @@ export function AuditoriaTabla({ items, total, pagina, error, cargando, seleccio
     classNamePaginacion="auditoria-pagination"
     renderizarFila={(item) => <tr className={item.id === seleccionadoId ? 'is-selected' : ''} key={item.id}>
       <th scope="row"><button aria-label={`Ver registro ${item.id}`} className="auditoria-row-link" onClick={() => seleccionar(item.id)} type="button">{formatearFechaHoraUtc(item.fecha)}</button></th>
-      <td>{item.entidad}</td>
+      <td className="auditoria-entidad-cell"><span>{item.entidad}</span><small className="auditoria-ruta" title={item.ruta ?? undefined}>{item.ruta ?? '—'}</small></td>
       <td>{item.entidadId}</td>
       <td><span className={`auditoria-accion auditoria-accion-${item.accion.toLowerCase()}`}>{textoAccion(item.accion)}</span></td>
       <td>{item.usuario}</td>
-      <td className="auditoria-ruta" title={item.ruta ?? undefined}>{item.ruta ?? '—'}</td>
       <td>{item.camposCambiados}</td>
     </tr>}
   />;
