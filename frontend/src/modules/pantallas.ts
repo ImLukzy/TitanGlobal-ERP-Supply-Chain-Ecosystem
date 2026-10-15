@@ -11,6 +11,7 @@ import { SegmentacionClientesPage } from './segmentacion-clientes/SegmentacionCl
 import { CotizacionesPage } from './cotizaciones/CotizacionesPage';
 import { ContratosComercialesPage } from './contratos-comerciales/ContratosComercialesPage';
 import { ListasPreciosPage } from './listas-precios/ListasPreciosPage';
+import { PromocionesPage } from './promociones-descuentos/PromocionesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -18,6 +19,7 @@ export const pantallas: Record<string, ComponentType> = {
   '03-cotizaciones': CotizacionesPage,
   '05-contratos-comerciales': ContratosComercialesPage,
   '06-listas-precios': ListasPreciosPage,
+  '07-promociones-descuentos': PromocionesPage,
   '04-ordenes-compra': OrdenesCompraPage,
   '11-proveedores': ProveedoresPage,
   '13-solicitudes-compra': SolicitudesCompraPage,

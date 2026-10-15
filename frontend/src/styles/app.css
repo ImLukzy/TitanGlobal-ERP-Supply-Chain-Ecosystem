@@ -811,6 +811,69 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 @media (max-width: 1023px) { .contratos-work-area { grid-template-columns: minmax(0, 1fr); } .contratos-table { min-width: 1000px; } }
 @media (max-width: 760px) { .contratos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contratos-summary .contratos-consumption-summary { grid-column: span 2; } .contratos-filters { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 460px) { .contratos-work-area { gap: 10px; } .contratos-summary { gap: 7px; } .contratos-summary > article { padding: 10px; } .contrato-form-row { grid-template-columns: minmax(0, 1fr); } }
+
+.promociones-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.promociones-summary > article { display: grid; min-width: 0; min-height: 82px; align-content: space-between; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink-soft); font-size: 10px; }
+.promociones-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.promociones-evaluator { margin-top: 14px; }
+.promocion-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.promocion-form-row .form-field, .promocion-linea .form-field, .promocion-form-dialog .form-field { display: grid; min-width: 0; gap: 5px; color: var(--ink-soft); font-size: 10px; }
+.promocion-form-dialog form { display: grid; gap: 10px; }
+.promocion-form-dialog input, .promocion-form-dialog select, .promocion-form-dialog textarea, .promociones-evaluator select, .promociones-evaluator input { width: 100%; }
+.promocion-form-dialog .form-field > label, .promocion-form-row .form-field > label, .promocion-linea .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.promocion-tipos { display: flex; flex-wrap: wrap; gap: 16px; margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink-soft); font-size: 10px; }
+.promocion-tipos legend { padding: 0 5px; color: var(--ink-faint); font-size: 9px; font-weight: 700; }
+.promocion-tipos label, .promociones-checkbox { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 9px; }
+.promocion-tipos input, .promociones-checkbox input { width: auto; min-height: 0; }
+.promociones-lineas-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
+.promociones-lineas-heading h3, .promocion-resultado h3 { margin: 0; color: var(--ink); font-size: 12px; }
+.promociones-lineas { display: grid; gap: 8px; }
+.promocion-linea { display: grid; grid-template-columns: minmax(0, 2fr) minmax(65px, .7fr) minmax(110px, 1fr) auto; align-items: end; gap: 8px; min-width: 0; margin: 0; padding: 9px; border: 1px solid var(--line); border-radius: 9px; }
+.promocion-linea legend { padding: 0 4px; color: var(--ink-faint); font-size: 8px; font-weight: 700; }
+.promociones-evaluate-action { display: flex; justify-content: flex-end; margin-top: 12px; }
+.promocion-resultado { display: grid; gap: 9px; margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.promocion-resultado > p { margin: 0; color: var(--good); font-size: 10px; }
+.promocion-result-scroll { width: 100%; overflow-x: auto; }
+.promociones-result-table { width: 100%; min-width: 530px; table-layout: fixed; border-collapse: collapse; }
+.promociones-result-table th, .promociones-result-table td { padding: 7px 5px; border-bottom: 1px solid var(--line); text-align: left; font-size: 9px; }
+.promociones-result-table th:first-child { width: 25%; }
+.promociones-result-table th:nth-child(2), .promociones-result-table th:nth-child(4), .promociones-result-table th:nth-child(5) { width: 18%; }
+.promociones-result-table td:nth-child(n+2) { white-space: nowrap; }
+.promocion-compra-aplicada { margin: 0; color: var(--ink-soft); font-size: 10px; }
+.promocion-totales { display: flex; justify-content: flex-end; gap: 18px; margin: 0; }
+.promocion-totales div { display: grid; gap: 3px; text-align: right; }
+.promocion-totales dt { color: var(--ink-soft); font-size: 8px; }
+.promocion-totales dd { margin: 0; color: var(--ink); font-size: 12px; font-weight: 750; white-space: nowrap; }
+.promociones-work-area { grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); }
+.promociones-filters { grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)) auto; }
+.promociones-filters input, .promociones-filters select { width: 100%; }
+.promociones-checkbox { white-space: nowrap; }
+.promociones-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; }
+.promociones-table th, .promociones-table td { padding: 8px 5px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; word-break: normal; font-size: 8px; }
+.promociones-table th { white-space: nowrap; }
+.promociones-table th:first-child, .promociones-table th:first-child button { white-space: nowrap; }
+.promociones-table th { font-size: 7px; }
+.promociones-table th:first-child { width: 18%; }
+.promociones-table th:nth-child(2) { width: 14%; }
+.promociones-table th:nth-child(3) { width: 19%; }
+.promociones-table th:nth-child(4) { width: 11%; }
+.promociones-table th:nth-child(5) { width: 15%; }
+.promociones-table th:nth-child(6) { width: 12%; }
+.promociones-table th:nth-child(7) { width: 11%; }
+.promociones-fecha { display: grid; gap: 2px; white-space: nowrap; }
+.promociones-no-partir { white-space: nowrap; }
+.promocion-estado { display: inline-flex; padding: 3px 6px; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 7px; font-weight: 700; white-space: nowrap; }
+.promocion-estado.is-vigente { background: var(--good-soft); color: var(--good); }
+.promocion-estado.is-inactiva { background: var(--bad-soft); color: var(--bad); }
+.promocion-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+.promocion-detail-grid div { min-width: 0; padding: 8px; border-radius: 8px; background: var(--surface-muted); }
+.promocion-detail-grid dt { color: var(--ink-soft); font-size: 8px; }
+.promocion-detail-grid dd { margin: 4px 0 0; overflow-wrap: normal; font-size: 10px; font-weight: 700; }
+.promociones-detail > [role="status"] { color: var(--ink-soft); font-size: 10px; }
+@media (max-width: 1023px) { .promociones-work-area { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .promociones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promociones-filters { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 460px) { .promociones-summary { gap: 7px; } .promociones-summary > article { min-height: 70px; padding: 10px; } .promocion-form-row, .promocion-detail-grid { grid-template-columns: minmax(0, 1fr); } .promocion-linea { grid-template-columns: minmax(0, 1fr) minmax(0, .65fr); } .promocion-linea button { grid-column: 1 / -1; } .promocion-totales { justify-content: space-between; gap: 8px; } }
+
 .cotizacion-expired-label { display: inline-flex; border-radius: 20px; padding: 4px 7px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; white-space: nowrap; }
 .solicitud-status.is-emitida { background: var(--accent-soft); color: var(--accent-ink); }
 .solicitud-status.is-aceptada { background: var(--good-soft); color: var(--good); }
@@ -998,4 +1061,9 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .orden-form-fields { grid-template-columns: minmax(0, 1fr); }
   .orden-actions { justify-content: flex-start; }
   .orden-form-actions .primary-button { width: 100%; }
+}
+
+@media (min-width: 1024px) {
+  .promociones-table { min-width: 0; }
+  .promociones-table th, .promociones-table td { overflow-wrap: normal; word-break: normal; }
 }
