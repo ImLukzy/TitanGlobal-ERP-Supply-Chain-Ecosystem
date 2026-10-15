@@ -19,7 +19,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 21 Productos | ✅ | ✅ | ✅ |
 | 11 Proveedores | ✅ | ✅ | ✅ |
 | 13 SolicitudesCompra | ✅ | ✅ | ✅ |
-| 15 OrdenesAbastecimiento | ✅ | ✅ | en curso |
+| 15 OrdenesAbastecimiento | ✅ | ✅ | ✅ |
 
 El resto de módulos muestra «Pantalla pendiente». La lista completa está en [`docs/arquitectura.md`](docs/arquitectura.md).
 

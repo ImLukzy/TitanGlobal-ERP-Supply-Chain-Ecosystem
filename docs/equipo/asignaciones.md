@@ -9,7 +9,7 @@ Antes de empezar un módulo, apúntate aquí (PR pequeño o avisando a Lukas). U
 | 21 Productos | Lukas (equipo Claude) | terminado | 09, 10 |
 | 11 Proveedores | Lukas (equipo Claude) | terminado | 12, 13 |
 | 13 SolicitudesCompra | Lukas (equipo Claude) | terminado | 14, 15 |
-| 15 OrdenesAbastecimiento | Lukas (equipo Claude) | QA en curso | 16, 17, 18 |
+| 15 OrdenesAbastecimiento | Lukas (equipo Claude) | terminado | 16, 17, 18 |
 | 12 EvaluacionProveedores | libre | — | — |
 | 22 CategoriasProducto | libre | — | — |
 | 23 Almacenes | libre | — | — |

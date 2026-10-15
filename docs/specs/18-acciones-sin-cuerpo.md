@@ -47,3 +47,4 @@
 | 2026-10-14 | A3 | ✅ | `git grep -n '/api/v1' -- src/TitanGlobal.Api/Middlewares` → 0 resultados |
 | 2026-10-14 | A4 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO |
+| 2026-10-14 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |
