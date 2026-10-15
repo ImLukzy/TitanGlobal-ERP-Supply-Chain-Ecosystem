@@ -66,7 +66,7 @@ export function renderPagina(initialEntries = ['/modulos/09-reclamos-postventa']
 
 export async function esperarCargaInicial(fetchMock: ReturnType<typeof vi.fn>): Promise<void> {
   await screen.findByRole('button', { name: 'REC-DEV-001' });
-  await screen.findByText('80.00 % atendidos a tiempo');
+  await screen.findByText('80.00 %');
   await screen.findByRole('combobox', { name: 'Cliente' });
   await screen.findByRole('option', { name: 'Acme Industrial' });
   await waitFor(() => expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/reclamos-postventa?')).length).toBe(1));

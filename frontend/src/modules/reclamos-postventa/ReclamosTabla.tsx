@@ -20,7 +20,7 @@ export function ReclamosTabla({ lista, error, seleccionadoId, seleccionar, pagin
         <tr aria-selected={seleccionadoId === item.id} className={seleccionadoId === item.id ? 'is-selected' : ''} key={item.id}>
           <th scope="row"><button className="solicitud-row-select" onClick={() => seleccionar(item)} type="button">{item.numero}</button></th>
           <td>{item.clienteNombre}</td>
-          <td><a href={`/modulos/04-ordenes-compra?orden=${item.ordenCompraId}`}>{item.numeroOrden}</a></td>
+          <td><a className="reclamo-order-link" href={`/modulos/04-ordenes-compra?orden=${item.ordenCompraId}`}>{item.numeroOrden}</a></td>
           <td>{item.tipo === 'Facturacion' ? 'Facturación' : item.tipo}</td>
           <td><span className={`reclamo-priority is-${item.prioridad.toLowerCase()}`}>{item.prioridad}</span></td>
           <td><span className={`reclamo-status is-${item.estado.toLowerCase()}`}>{item.estado === 'EnProceso' ? 'En proceso' : item.estado}</span></td>

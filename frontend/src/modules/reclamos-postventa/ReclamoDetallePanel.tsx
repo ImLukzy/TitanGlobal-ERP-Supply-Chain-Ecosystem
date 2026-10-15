@@ -16,7 +16,7 @@ export function ReclamoDetallePanel({ reclamo, abrirFormulario, accion, cargando
         <div className="reclamos-panel-heading"><div><span className="page-eyebrow">DETALLE DE RECLAMO</span><h2 id="reclamo-detail-title">{reclamo.numero}</h2></div><span className={`reclamo-status is-${reclamo.estado.toLowerCase()}`}>{reclamo.estado === 'EnProceso' ? 'En proceso' : reclamo.estado}</span></div>
         <dl className="reclamo-detail-grid">
           <div><dt>Cliente</dt><dd>{reclamo.clienteNombre}</dd></div>
-          <div><dt>Orden de compra</dt><dd><a href={`/modulos/04-ordenes-compra?orden=${reclamo.ordenCompraId}`}>{reclamo.numeroOrden}</a></dd></div>
+          <div><dt>Orden de compra</dt><dd><a className="reclamo-order-link" href={`/modulos/04-ordenes-compra?orden=${reclamo.ordenCompraId}`}>{reclamo.numeroOrden}</a></dd></div>
           <div><dt>Producto</dt><dd>{reclamo.productoNombre ?? 'No especificado'}</dd></div>
           <div><dt>Tipo</dt><dd>{reclamo.tipo === 'Facturacion' ? 'Facturación' : reclamo.tipo}</dd></div>
           <div><dt>Prioridad</dt><dd>{reclamo.prioridad} · Plazo {reclamo.prioridad === 'Alta' ? 2 : reclamo.prioridad === 'Media' ? 5 : 10} días</dd></div>
