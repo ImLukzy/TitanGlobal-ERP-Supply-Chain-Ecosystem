@@ -14,4 +14,5 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 
 ## Avisos de fin de tarea que no llegan (2026-10-14)
 - **Qué pasó:** tras reiniciarse Orca, Antigravity no pasaba la comprobación de «listo» y los encargos se enviaron escribiendo en su terminal. Sus `worker_done` se rechazaron (sin tarea activa) y Claude, que solo miraba `orchestration check`, no vio los avisos.
-- **Regla:** sin tarea activa, el aviso va como `--type status` a `run:<run>` (ver `equipo.md`, «Cómo avisar al terminar»). El integrador revisa también `orca orchestration inbox`.
+- **Causa principal:** el run seguía teniendo como coordinador la terminal anterior de Claude (`term_ff3b0c37`, ya cerrada), así que `check` no entregaba los avisos a la terminal nueva.
+- **Regla:** si Claude cambia de terminal o de sesión, lo primero es `orca orchestration run-use --id <run>` y confirmarlo con `run-current`. Después de despachar, esperar con `orca orchestration check --wait` en vez de terminar el turno. Sin tarea activa, el agente avisa con `--type status` a `run:<run>` (ver `equipo.md`, «Cómo avisar al terminar»).
