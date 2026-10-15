@@ -76,4 +76,4 @@
 | 2026-10-14 | A7 | ✅ | capturas de Dwight en `/tmp/titan-spec04/` (375/1280 × claro/oscuro, respuestas simuladas), revisadas por Claudio |
 | 2026-10-14 | Corrección 1 | ✅ | Claudio vio en las capturas que OC-001 (`2026-01-02T00:00:00Z`) salía como 1/1/2026 (hora de Lima); `lib/formato.ts` formatea en UTC; test bajo `TZ=America/Lima` → 2/1/2026 |
 | 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, sin hallazgos (sobre `d41b8e2`; la corrección 1 la revisó Claudio) |
-| 2026-10-14 | QA E2E | ⏳ | pendiente: Pam con frontend + API + PostgreSQL cuando estén integradas las specs 05 y 06 |
+| 2026-10-14 | QA E2E | ✅ | Pam con frontend (Vite 5174) + API + PostgreSQL en `b640909`: filtro `fechaInicio=2026-01-01` → 200; OC-001 «2/1/2026»; orden válida creada; OC-001 → 409 «Ya existe una orden de compra con el número OC-001.» conservando lo escrito; cliente 9999 → 400 «El cliente 9999 no existe.»; API caída → «La API no está disponible o no respondió correctamente.»; `X-User-Role: Bloqueado` → 403 literal; márgenes 18 px a 375 sin scroll horizontal, claro y oscuro |

@@ -62,11 +62,15 @@
 | A7 | Visual | capturas con Playwright (`page.route`) a 375 y 1280 px, en claro y oscuro: listado con detalle abierto y diálogo de baja; esperar a que terminen las transiciones | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos, `api.ts`, `apiPut`/`apiDelete`.
-- [ ] Tarea 2: resumen y tabla.
-- [ ] Tarea 3: detalle, formulario y baja.
-- [ ] Tarea 4: tests, capturas y A1–A7.
+- [x] Tarea 1: tipos, `api.ts`, `apiPut`/`apiDelete`.
+- [x] Tarea 2: resumen y tabla.
+- [x] Tarea 3: detalle, formulario y baja.
+- [x] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`f91a900`, idéntico al auditado `31c8ea4` según `git patch-id`): backend 56/56, frontend 53/53 |
+| 2026-10-14 | A2–A6 | ✅ | tests de `frontend/src/modules/clientes/`: 6 funciones de la API con URL, método y cuerpo exactos; búsqueda con temporizadores falsos; validación local; 409 visible conservando lo escrito; baja con Escape y foco devuelto; tests de OrdenesCompra intactos |
+| 2026-10-14 | A7 | ✅ | capturas de Dwight (corrección 1, `aa8d3d1`) revisadas por Claudio: márgenes 16/16 px a 375 y detalle lateral a 1280, sin scroll horizontal. Los archivos se perdieron al vaciarse `/tmp`; el QA E2E de Pam con la API real las repetirá |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; 2 observaciones menores sin cambio requerido (`maxLength` 220 intencional para mostrar el mensaje de 200; `client.ts` solo lee `Message` en PascalCase, que es el contrato) |
