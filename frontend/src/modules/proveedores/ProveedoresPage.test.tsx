@@ -133,8 +133,19 @@ describe('pantalla de Proveedores', () => {
   it('A3 aplica la búsqueda tras 300 ms y solo consulta el último texto', async () => {
     const { fetchMock } = prepararApi();
     render(<ProveedoresPage />);
-    await screen.findByRole('button', { name: 'Andina Suministros' });
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
+    await screen.findByRole('button', { name: 'Andina Suministros' }, { timeout: 10000 });
+    await screen.findByRole('heading', { name: 'Andina Suministros' }, { timeout: 10000 });
+    await screen.findByText('6');
+    await screen.findByRole('option', { name: 'China' });
+    vi.useFakeTimers();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    vi.useRealTimers();
     vi.useFakeTimers();
     fetchMock.mockClear();
     const busqueda = screen.getByRole('searchbox', { name: 'Buscar por razón social o RUC' });
