@@ -130,7 +130,7 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 78 NotificacionesAlertas: backend integrado y desplegado; pantalla por empezar.
   - 08 ComisionesVendedores: backend integrado y desplegado; pantalla por empezar.
   - 72 RolesPermisos: backend en desarrollo.
-- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 11 de 20 terminados (01, 02, 03, 04, 05, 11, 13, 15, 21, 23, 24); tiene 4 en curso (05, 06, 07, 09) y 6 por empezar (08, 10, 71, 72, 77, 78). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
+- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 11 de 20 terminados (01, 02, 03, 04, 05, 11, 13, 15, 21, 23, 24); tiene 7 en curso (06, 07, 08, 09, 10 y 78 con el backend publicado y la pantalla pendiente; 72 con el backend en desarrollo) y 2 por empezar (71, 77). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones).
 - **Resto:** ninguno sin dueño.
