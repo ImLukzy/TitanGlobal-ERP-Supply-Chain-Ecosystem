@@ -1,0 +1,227 @@
+.contratos-summary.listas-summary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+.listas-simulator,
+.listas-list-panel,
+.listas-detail {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.listas-simulator-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.85rem;
+}
+.listas-simulator-fields .campo-error {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 650;
+}
+.listas-simulator-fields select,
+.listas-simulator-fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.listas-price-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+.listas-price-result h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.listas-price-result > strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--accent);
+  font-size: 1.6rem;
+  white-space: nowrap;
+}
+.listas-price-result dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 0;
+}
+.listas-price-result dl div {
+  display: flex;
+  gap: 0.4rem;
+}
+.listas-price-result dt {
+  color: var(--text-secondary);
+}
+.listas-price-result dd {
+  margin: 0;
+  font-weight: 600;
+}
+.listas-work-area {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+  align-items: start;
+  gap: 14px;
+  margin-top: 14px;
+}
+.listas-list-panel {
+  min-width: 0;
+}
+.listas-filters {
+  grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 0.8fr) auto;
+}
+.listas-table-scroll,
+.listas-detail-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.listas-table {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 9px;
+}
+.listas-table th,
+.listas-table td {
+  padding: 7px 3px;
+  font-size: 8px;
+}
+.listas-table th:first-child,
+.listas-table td:first-child {
+  width: 10%;
+}
+.listas-table th:nth-child(2),
+.listas-table td:nth-child(2) {
+  width: 20%;
+  white-space: nowrap;
+}
+.listas-table th:nth-child(3),
+.listas-table td:nth-child(3) {
+  width: 21%;
+}
+.listas-table th:nth-child(4),
+.listas-table td:nth-child(4) {
+  width: 13%;
+}
+.listas-table th:nth-child(5),
+.listas-table td:nth-child(5) {
+  width: 16%;
+  white-space: nowrap;
+  font-size: 7px;
+}
+.listas-table th:nth-child(6),
+.listas-table td:nth-child(6) {
+  width: 7%;
+}
+.listas-table th:nth-child(7),
+.listas-table td:nth-child(7) {
+  width: 13%;
+}
+.listas-detail-table {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 8px;
+}
+.listas-detail-table th,
+.listas-detail-table td {
+  padding: 6px 3px;
+  font-size: 8px;
+}
+.listas-detail-table th:first-child,
+.listas-detail-table td:first-child {
+  width: 28%;
+}
+.listas-detail-table th:nth-child(2),
+.listas-detail-table td:nth-child(2) {
+  width: 24%;
+}
+.listas-detail-table th:nth-child(3),
+.listas-detail-table td:nth-child(3) {
+  width: 26%;
+}
+.listas-detail-table th:nth-child(4),
+.listas-detail-table td:nth-child(4) {
+  width: 22%;
+}
+.listas-table th,
+.listas-table td,
+.listas-detail-table th,
+.listas-detail-table td {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.listas-nowrap {
+  white-space: nowrap;
+}
+.listas-detail-table th:first-child {
+  min-width: 0;
+}
+.listas-detail-grid {
+  margin: 10px 0;
+}
+.listas-detail-grid dd {
+  white-space: normal;
+}
+.listas-form-dialog {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+.listas-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.listas-items-field {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.listas-item-row {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr) auto minmax(6rem, 0.5fr);
+  align-items: center;
+  gap: 0.45rem;
+}
+@media (max-width: 900px) {
+  .listas-work-area {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .contratos-summary.listas-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .listas-simulator-fields,
+  .listas-filters,
+  .listas-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .listas-item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .listas-price-result dl {
+    display: grid;
+  }
+  .listas-price-result dl div {
+    flex-wrap: wrap;
+  }
+}
