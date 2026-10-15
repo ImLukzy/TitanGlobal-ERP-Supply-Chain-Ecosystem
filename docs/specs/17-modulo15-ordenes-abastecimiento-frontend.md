@@ -41,12 +41,19 @@
 | A7 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: detalle de una orden emitida atrasada, formulario con 3 líneas, diálogo de anulación y diálogo «Generar orden» en SolicitudesCompra; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario y diálogos.
-- [ ] Tarea 4: «Generar orden» en SolicitudesCompra.
-- [ ] Tarea 5: tests, capturas y A1–A7.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario y diálogos.
+- [x] Tarea 4: «Generar orden» en SolicitudesCompra.
+- [x] Tarea 5: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | Revisión del integrador | ⚠️ | Claudio vio en la entrega «1 órdenes» en el resumen y que `limpiarCargaInicial` de Productos esperaba 2 peticiones del listado al cargar: consolidaba un bug real (petición duplicada en Productos y SolicitudesCompra por el efecto de búsqueda) |
+| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Kelly: CAMBIOS por esos dos puntos |
+| 2026-10-14 | Correcciones | ✅ | Dwight: `425f509` (una sola petición al cargar, con test por pantalla; 10/10 sin carga y 10/10 con carga) y `60de5db` (plurales con `formatearCantidad`) |
+| 2026-10-14 | Auditoría ciclo 2 | ✅ | Kelly: APROBADO |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`1e5611c`, `425f509`, `60de5db`): backend 175/175, frontend 147/147 |
+| 2026-10-14 | A2–A6 | ✅ | tests de `ordenes-abastecimiento/` (página, formulario, acciones) y `SolicitudesGenerarOrden.test.tsx` (botón solo en aprobadas, POST `desde-solicitud`, 409, navegación) |
+| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec17/` (16 capturas) revisadas por Claudio: etiqueta «Atrasada» con texto, sin celdas recortadas a 1280, márgenes 16 px |
