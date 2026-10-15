@@ -39,11 +39,17 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: detalle de un vigente con órdenes del periodo, uno excedido y el diálogo de cancelación; márgenes ≥ 16 px, sin scroll horizontal, celdas recortadas ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla con consumo.
-- [ ] Tarea 3: detalle, formulario y diálogos.
-- [ ] Tarea 4: tests, capturas y A1–A6.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla con consumo.
+- [x] Tarea 3: detalle, formulario y diálogos.
+- [x] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Corrección 1 | ✅ | Claudio vio en las capturas filtros y paginación con el aspecto del navegador, captions grandes, condiciones de pago en texto suelto y el porcentaje de la barra partido; corregido con los componentes y estilos compartidos; además, el test de «Pantalla pendiente» elige ahora un módulo sin pantalla de forma dinámica |
+| 2026-10-15 | Corrección 2 | ✅ | importe de «Comprometido» partido a mitad de número, casilla con letra grande y «Credito30» en el detalle; corregido (importes y fechas sin partir, casilla común, «Crédito 30 días»); de paso, tests de Zonas y SolicitudesGenerarOrden deterministas sin perder comprobaciones |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`2daa127`, mismas líneas que el auditado `f621df0`): backend 523/523, frontend 232/232 |
+| 2026-10-15 | A2–A5 | ✅ | tests de `contratos-comerciales/` (api con activar y finalizar sin cuerpo, filtros y «Solo vencidos», medidor accesible y «Excedido», acciones por estado, 409 en el diálogo, Escape); 10/10 seguidas con carga |
+| 2026-10-15 | A6 | ✅ | `/tmp/titan-spec28/` (12 capturas) revisadas por Claudio tras la corrección 2 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |

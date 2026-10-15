@@ -75,7 +75,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 24 ZonasAlmacenaje | `api/v1/zonas-almacenaje` | zonas de cada almacén (tipo, temperatura, capacidad), ocupación por almacén; un almacén con zonas no se borra | zonas con barra de ocupación por almacén («Casi lleno» desde el 90 %); terminado con QA | 21, 22 |
 | 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | vistas Segmentos y Clasificación; terminado con QA | 23, 24 |
 | 03 Cotizaciones | `api/v1/cotizaciones` | presupuestos a clientes con descuento por línea; aceptar genera la orden de compra del módulo 04 (transaccional); rechazar con motivo; vencidas; resumen con tasa de aceptación | cotizaciones con líneas, descuentos y aceptación que genera la orden; terminado con QA | 25, 26 |
-| 05 ContratosComerciales | `api/v1/contratos-comerciales` | acuerdos marco con cliente (Borrador → Vigente → Finalizado / Cancelado); consumo calculado con las órdenes del periodo; sin vigentes solapados por cliente | backend integrado; pantalla pendiente (spec 28) | 27, 28 |
+| 05 ContratosComerciales | `api/v1/contratos-comerciales` | acuerdos marco con cliente (Borrador → Vigente → Finalizado / Cancelado); consumo calculado con las órdenes del periodo; sin vigentes solapados por cliente | contratos con barra de consumo, órdenes del periodo y acciones por estado | 27, 28 |
 | 06 ListasPrecios | `api/v1/listas-precios` | listas con vigencia, prioridad y segmento opcional; resolución del precio de un producto para un cliente y fecha (segmento > general > base) | backend integrado; pantalla pendiente (spec 30) | 29, 30 |
 | 07 PromocionesDescuentos | `api/v1/promociones` | promociones por producto o por monto mínimo, con vigencia y segmento opcional; evaluación de una compra (mejor promoción por línea y una por compra) | backend integrado; pantalla pendiente (spec 32) | 31, 32 |
 | 09 ReclamosPostventa | `api/v1/reclamos-postventa` | reclamos sobre órdenes del cliente con tipo y prioridad; plazo de atención (2/5/10 días) y vencidos; Abierto → EnProceso → Resuelto → Cerrado o Rechazado; cumplimiento de plazos | backend integrado; pantalla pendiente (spec 34) | 33, 34 |
@@ -90,7 +90,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 523 tests del backend y 222 del frontend en verde.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 523 tests del backend y 232 del frontend en verde.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
@@ -123,7 +123,7 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
 
 ## 12. Pendiente
 - **En curso** (parte de Lukas):
-  - 05 ContratosComerciales: backend integrado y desplegado; pantalla por empezar.
+  - 05 ContratosComerciales: integrado y desplegado; QA de extremo a extremo en curso.
   - 06 ListasPrecios: backend integrado y desplegado; pantalla por empezar.
   - 07 PromocionesDescuentos: backend integrado y desplegado; pantalla por empezar.
   - 09 ReclamosPostventa: backend integrado y desplegado; pantalla por empezar (se adelanta al 08, que necesita decidir cómo se modelan los vendedores).
