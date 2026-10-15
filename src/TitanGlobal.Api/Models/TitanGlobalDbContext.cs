@@ -52,8 +52,91 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
 
+    public DbSet<Vendedor> Vendedores { get; set; } = null!;
+
+    public DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
+
+    public DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Vendedor>()
+            .Property(vendedor => vendedor.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Vendedor>()
+            .Property(vendedor => vendedor.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Vendedor>()
+            .Property(vendedor => vendedor.Email)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<Vendedor>()
+            .Property(vendedor => vendedor.PorcentajeComision)
+            .HasColumnType("decimal(5,2)");
+
+        modelBuilder.Entity<Vendedor>()
+            .HasIndex(vendedor => vendedor.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<AsignacionVenta>()
+            .HasIndex(asignacion => asignacion.OrdenCompraId)
+            .IsUnique();
+
+        modelBuilder.Entity<AsignacionVenta>()
+            .HasOne<OrdenCompra>()
+            .WithMany()
+            .HasForeignKey(asignacion => asignacion.OrdenCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AsignacionVenta>()
+            .HasOne<Vendedor>()
+            .WithMany()
+            .HasForeignKey(asignacion => asignacion.VendedorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AsignacionVenta>()
+            .Property(asignacion => asignacion.FechaAsignacion)
+            .HasColumnType("timestamp with time zone");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.Ventas)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.Comision)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.Porcentaje)
+            .HasColumnType("decimal(5,2)");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.FechaCalculo)
+            .HasColumnType("timestamp with time zone");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .Property(liquidacion => liquidacion.FechaPago)
+            .HasColumnType("timestamp with time zone");
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .HasIndex(liquidacion => new { liquidacion.VendedorId, liquidacion.Anio, liquidacion.Mes })
+            .IsUnique();
+
+        modelBuilder.Entity<LiquidacionComision>()
+            .HasOne<Vendedor>()
+            .WithMany()
+            .HasForeignKey(liquidacion => liquidacion.VendedorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<AlertaDescartada>()
             .Property(alerta => alerta.Clave)
             .HasMaxLength(100)

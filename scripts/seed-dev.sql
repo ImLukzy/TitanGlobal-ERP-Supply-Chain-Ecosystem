@@ -257,4 +257,27 @@ INSERT INTO "DetallesDevolucion" ("DevolucionComercialId", "ProductoId", "Cantid
 SELECT setval(pg_get_serial_sequence('"DevolucionesComerciales"', 'Id'), (SELECT MAX("Id") FROM "DevolucionesComerciales"));
 SELECT setval(pg_get_serial_sequence('"DetallesDevolucion"', 'Id'), (SELECT MAX("Id") FROM "DetallesDevolucion"));
 
+TRUNCATE TABLE "LiquidacionesComisiones", "AsignacionesVentas", "Vendedores" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Vendedores" ("Codigo", "Nombre", "Email", "PorcentajeComision", "Activo") VALUES
+    ('V-ANA', 'Ana Torres', 'ana@titanglobal.example', 5.00, TRUE),
+    ('V-LUIS', 'Luis Rojas', 'luis@titanglobal.example', 3.00, TRUE),
+    ('V-OLD', 'Vendedor Antiguo', NULL, 4.00, FALSE);
+
+INSERT INTO "AsignacionesVentas" ("OrdenCompraId", "VendedorId", "FechaAsignacion") VALUES
+    (1, (SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-ANA'), TIMESTAMPTZ '2026-01-02 00:00:00+00'),
+    (5, (SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-LUIS'), TIMESTAMPTZ '2026-01-15 00:00:00+00'),
+    (2, (SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-ANA'), TIMESTAMPTZ '2026-02-05 00:00:00+00'),
+    (4, (SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-LUIS'), TIMESTAMPTZ '2026-03-10 00:00:00+00');
+
+INSERT INTO "LiquidacionesComisiones" (
+    "VendedorId", "Anio", "Mes", "Ordenes", "Ventas", "Porcentaje", "Comision", "Estado", "FechaCalculo", "FechaPago") VALUES
+    ((SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-ANA'), 2026, 1, 1, 2000.00, 5.00, 100.00, 'Pagada', TIMESTAMPTZ '2026-02-01 00:00:00+00', TIMESTAMPTZ '2026-02-05 00:00:00+00'),
+    ((SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-LUIS'), 2026, 1, 1, 500.00, 3.00, 15.00, 'Pagada', TIMESTAMPTZ '2026-02-01 00:00:00+00', TIMESTAMPTZ '2026-02-05 00:00:00+00'),
+    ((SELECT "Id" FROM "Vendedores" WHERE "Codigo" = 'V-ANA'), 2026, 2, 1, 3000.00, 5.00, 150.00, 'Calculada', TIMESTAMPTZ '2026-03-01 00:00:00+00', NULL);
+
+SELECT setval(pg_get_serial_sequence('"Vendedores"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Vendedores"));
+SELECT setval(pg_get_serial_sequence('"AsignacionesVentas"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "AsignacionesVentas"));
+SELECT setval(pg_get_serial_sequence('"LiquidacionesComisiones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "LiquidacionesComisiones"));
+
 COMMIT;

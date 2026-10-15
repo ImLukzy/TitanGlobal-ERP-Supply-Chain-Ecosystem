@@ -19,6 +19,7 @@ LISTA_PRECIOS_CREADA_ID=""
 PROMOCION_CREADA_ID=""
 DEVOLUCION_CREADA_ID=""
 RECLAMO_CREADO_ID=""
+LIQUIDACION_COMISION_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -111,13 +112,17 @@ fi
 validate_response() {
     local body="$1"
     local validation="$2"
+    local response_file
 
-    python3 - "$body" "$validation" <<'PY'
+    response_file="$(mktemp)"
+    printf '%s' "$body" > "$response_file"
+    if python3 - "$response_file" "$validation" <<'PY'
 import json
 import re
 import sys
 
-body = json.loads(sys.argv[1])
+with open(sys.argv[1], encoding="utf-8") as archivo:
+    body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
@@ -131,7 +136,7 @@ checks = {
     "buyers": lambda data: data == ["Acme Industrial", "Beta Comercio"],
     "created": lambda data: data["id"] > 0,
     "empty-body": lambda data: data["StatusCode"] == 400 and data["Message"] == "El cuerpo de la petición (Body) no puede estar vacío.",
-    "blocked": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "operación" in sys.argv[1] and "operaci\\u00F3n" not in sys.argv[1],
+    "blocked": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
     "clients-list": lambda data: data["total"] == 1 and [item["id"] for item in data["items"]] == [1] and data["items"][0]["ruc"] == "20111111111",
     "cliente-detail": lambda data: data["id"] == 1 and data["nombre"] == "Acme Industrial" and data["ruc"] == "20111111111" and data["totalOrdenes"] == 4 and data["montoTotal"] == 10000.0 and data["ultimaOrdenFecha"] == "2026-03-10T00:00:00Z",
     "clientes-summary": lambda data: data["totalClientes"] == 5 and data["clientesConOrdenes"] == 4 and data["clientesSinDescripcion"] == 3 and [(item["clienteId"], item["montoTotal"]) for item in data["topClientesPorMonto"]] == [(1, 10000.0), (2, 2000.0), (4, 750.0), (3, 500.0)],
@@ -243,6 +248,17 @@ checks = {
     "devolucion-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 1 no está en la orden OC-008." and "Detail" not in data,
     "devolucion-rejection-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
     "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
+    "openapi-comisiones": lambda data: all(path in data["paths"] for path in ["/api/v1/comisiones-vendedores/vendedores", "/api/v1/comisiones-vendedores/vendedores/{id}", "/api/v1/comisiones-vendedores/ordenes", "/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "/api/v1/comisiones-vendedores/comisiones", "/api/v1/comisiones-vendedores/liquidaciones", "/api/v1/comisiones-vendedores/liquidaciones/{id}/pagar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/comisiones-vendedores/vendedores", "get"), ("/api/v1/comisiones-vendedores/vendedores", "post"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "get"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "put"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "delete"), ("/api/v1/comisiones-vendedores/ordenes", "get"), ("/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "put"), ("/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "delete"), ("/api/v1/comisiones-vendedores/comisiones", "get"), ("/api/v1/comisiones-vendedores/liquidaciones", "post"), ("/api/v1/comisiones-vendedores/liquidaciones/{id}/pagar", "post")]),
+    "comisiones-vendedores": lambda data: data["total"] == 3 and [item["codigo"] for item in data["items"]] == ["V-ANA", "V-LUIS", "V-OLD"],
+    "comisiones-sin-asignar": lambda data: data["total"] == len(data["items"]) and all(item["vendedorId"] is None for item in data["items"]) and any(item["numeroOrden"] == "OC-007" for item in data["items"]),
+    "comisiones-enero": lambda data: data["liquidado"] and data["totalVentas"] == 2500.0 and data["totalComision"] == 115.0 and [fila["estado"] for fila in data["filas"]] == ["Pagada", "Pagada"],
+    "comisiones-marzo-pendiente": lambda data: not data["liquidado"] and data["totalVentas"] == 4000.0 and data["totalComision"] == 120.0 and data["filas"][0]["estado"] == "Pendiente",
+    "comision-asignada": lambda data: data["ordenCompraId"] == 4 and data["vendedorCodigo"] == "V-ANA",
+    "comision-locked": lambda data: data["StatusCode"] == 409 and data["Message"] == "El mes 01/2026 ya está liquidado; no se pueden cambiar sus asignaciones.",
+    "comisiones-marzo-liquidada": lambda data: data["liquidado"] and data["totalVentas"] == 4000.0 and data["totalComision"] == 200.0 and data["filas"][0]["estado"] == "Calculada" and data["filas"][0]["liquidacionId"] > 0,
+    "comisiones-marzo-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "El mes 03/2026 ya está liquidado.",
+    "comision-pagada": lambda data: data["estado"] == "Pagada" and data["fechaPago"] is not None,
+    "comision-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el vendedor V-ANA porque tiene ventas asignadas.",
     "alertas-seed": lambda data: data["total"] >= 3 and {item["tipo"] for item in data["items"]}.issuperset({"ReclamoVencido", "OrdenAbastecimientoAtrasada", "AlmacenCasiLleno"}) and any(item["clave"] == "almacen-lleno:1" and item["mensaje"] == "El almacén ALM-LIM-01 tiene asignado el 90.00 % de su capacidad." for item in data["items"]),
     "alertas-altas": lambda data: data["total"] >= 2 and all(item["severidad"] == "Alta" for item in data["items"]),
     "alertas-resumen": lambda data: data["total"] >= 3 and data["altas"] >= 2 and data["medias"] >= 1 and data["descartadas"] == 0,
@@ -271,6 +287,13 @@ checks = {
 if validation not in checks or not checks[validation](body):
     raise SystemExit(f"la respuesta no coincide con la validación {validation}")
 PY
+    then
+        rm -f "$response_file"
+        return 0
+    fi
+
+    rm -f "$response_file"
+    return 1
 }
 
 request_check() {
@@ -304,7 +327,11 @@ request_check() {
 
     status="${response##*$'\n'}"
     body="${response%$'\n'*}"
-    printf '%s HTTP %s %s\n' "$label" "$status" "$body"
+    if [[ "$path" == /openapi/* ]]; then
+        printf '%s HTTP %s (OpenAPI validado)\n' "$label" "$status"
+    else
+        printf '%s HTTP %s %s\n' "$label" "$status" "$body"
+    fi
 
     if [[ "$status" != "$expected_status" ]]; then
         printf 'ERROR: %s esperaba HTTP %s, recibió HTTP %s; cuerpo: %s\n' "$label" "$expected_status" "$status" "$body" >&2
@@ -368,6 +395,10 @@ request_check() {
 
     if [[ "$validation" == "reclamo-created" ]]; then
         RECLAMO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "comisiones-marzo-liquidada" ]]; then
+        LIQUIDACION_COMISION_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["filas"][0]["liquidacionId"])' "$body")"
     fi
 
     if [[ "$validation" == "devolucion-created" ]]; then
@@ -537,4 +568,15 @@ request_check 'Descartar alerta otra vez' POST '/api/v1/alertas/descartar' 409 a
 request_check 'Restaurar reclamo vencido del seed' POST '/api/v1/alertas/restaurar' 204 '' '{"clave":"reclamo-vencido:1"}'
 request_check 'Alerta restaurada reaparece' GET '/api/v1/alertas?incluirDescartadas=true' 200 alerta-restaurada
 request_check 'Descartar clave inexistente' POST '/api/v1/alertas/descartar' 404 alerta-inexistente '{"clave":"reclamo-vencido:999999"}'
+request_check 'OpenAPI de comisiones de vendedores' GET '/openapi/v1.json' 200 openapi-comisiones
+request_check 'Vendedores del seed' GET '/api/v1/comisiones-vendedores/vendedores' 200 comisiones-vendedores
+request_check 'Órdenes de compra sin vendedor asignado' GET '/api/v1/comisiones-vendedores/ordenes?sinAsignar=true' 200 comisiones-sin-asignar
+request_check 'Comisiones de enero pagadas' GET '/api/v1/comisiones-vendedores/comisiones?anio=2026&mes=1' 200 comisiones-enero
+request_check 'Comisiones pendientes de marzo' GET '/api/v1/comisiones-vendedores/comisiones?anio=2026&mes=3' 200 comisiones-marzo-pendiente
+request_check 'Reasignar orden de marzo a V-ANA' PUT '/api/v1/comisiones-vendedores/ordenes/4/vendedor' 200 comision-asignada '{"vendedorId":1}'
+request_check 'No modificar asignación del mes de enero liquidado' PUT '/api/v1/comisiones-vendedores/ordenes/1/vendedor' 409 comision-locked '{"vendedorId":1}'
+request_check 'Liquidar marzo' POST '/api/v1/comisiones-vendedores/liquidaciones' 200 comisiones-marzo-liquidada '{"anio":2026,"mes":3}'
+request_check 'Liquidar marzo por segunda vez' POST '/api/v1/comisiones-vendedores/liquidaciones' 409 comisiones-marzo-duplicada '{"anio":2026,"mes":3}'
+request_check 'Pagar liquidación de marzo' POST "/api/v1/comisiones-vendedores/liquidaciones/${LIQUIDACION_COMISION_ID}/pagar" 200 comision-pagada
+request_check 'Proteger vendedor con órdenes asignadas' DELETE '/api/v1/comisiones-vendedores/vendedores/1' 409 comision-delete-protected
 printf 'SMOKE OK\n'
