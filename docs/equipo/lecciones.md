@@ -24,3 +24,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 ## Tests de frontend que dependían del tiempo real (2026-10-14)
 - **Qué pasó:** dos tests (espera de 300 ms en Clientes; «sin peticiones» en Productos) fallaron en el gate con la máquina cargada y pasaban al repetir. Usaban `setTimeout` reales y exigían cero llamadas a `fetch` mientras aún llegaban cargas iniciales.
 - **Regla:** esperas con temporizadores falsos (`vi.advanceTimersByTimeAsync`); antes de `mockClear`, esperar a que termine toda la carga inicial; comprobar la ausencia de una petición concreta filtrando por URL. Antes de entregar, repetir la suite 10 veces y otra vez con carga.
+
+## Cobertura de tests del backend (2026-10-15)
+- **Qué pasó:** la primera entrega de la spec 27 traía 5 tests muy amplios para un módulo con ~20 mensajes de error, transiciones de estado, solapamientos y cálculo por periodo; la spec pedía un caso por mensaje.
+- **Regla:** un test por cada mensaje literal de §4 (con `[Theory]` si encaja), los límites que la spec nombra y la comprobación de que los casos inválidos no cambian datos. Como referencia, los módulos con estados tienen 17–25 tests.
