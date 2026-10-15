@@ -113,7 +113,7 @@ async function limpiarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
   });
   vi.useRealTimers();
   await waitFor(() => {
-    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(2);
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(1);
   });
   await act(async () => {
     await Promise.resolve();
@@ -131,6 +131,19 @@ afterEach(() => {
 });
 
 describe('pantalla de Productos', () => {
+  it('A3 solicita el listado una sola vez durante la carga inicial', async () => {
+    const { fetchMock } = prepararApi();
+    vi.useFakeTimers();
+    render(<ProductosPage />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(1);
+  });
+
   it('A2 muestra listado, resumen y detalle de productos con ventas', async () => {
     prepararApi();
     render(<ProductosPage />);

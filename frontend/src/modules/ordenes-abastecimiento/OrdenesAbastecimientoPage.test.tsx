@@ -10,6 +10,19 @@ afterEach(() => {
 });
 
 describe('pantalla de órdenes de abastecimiento: filtros y tabla', () => {
+  it('A3 solicita el listado una sola vez durante la carga inicial', async () => {
+    const { fetchMock } = prepararApi();
+    vi.useFakeTimers();
+    renderEnRouter(<OrdenesAbastecimientoPage />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/ordenes-abastecimiento?'))).toHaveLength(1);
+  });
+
   it('A3 busca tras 300 ms con temporizadores falsos y solo consulta la última escritura', async () => {
     const { fetchMock } = prepararApi();
     renderEnRouter(<OrdenesAbastecimientoPage />);

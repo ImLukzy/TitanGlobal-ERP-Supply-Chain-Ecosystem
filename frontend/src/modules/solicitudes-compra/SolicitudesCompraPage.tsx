@@ -43,6 +43,8 @@ export function SolicitudesCompraPage() {
   const [solicitudParaOrden, setSolicitudParaOrden] = useState<SolicitudDetalle | null>(null);
   const botonGenerarOrdenRef = useRef<HTMLButtonElement>(null);
   const botonBajaRef = useRef<HTMLButtonElement>(null);
+  const filtrosRef = useRef(filtros);
+  filtrosRef.current = filtros;
   const {
     lista,
     resumen,
@@ -59,7 +61,15 @@ export function SolicitudesCompraPage() {
 
   useEffect(() => {
     const temporizador = window.setTimeout(() => {
-      setFiltros((actuales) => ({ ...actuales, busqueda, pagina: 1 }));
+      if ((filtrosRef.current.busqueda ?? '') === busqueda) {
+        return;
+      }
+      setFiltros((actuales) => {
+        if ((actuales.busqueda ?? '') === busqueda) {
+          return actuales;
+        }
+        return { ...actuales, busqueda, pagina: 1 };
+      });
       setSeleccionadaId(null);
     }, 300);
     return () => window.clearTimeout(temporizador);

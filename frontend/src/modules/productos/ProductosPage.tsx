@@ -173,13 +173,25 @@ export function ProductosPage() {
   const [eliminando, setEliminando] = useState(false);
   const [actualizacion, setActualizacion] = useState(0);
   const botonEliminarRef = useRef<HTMLButtonElement>(null);
+  const filtrosRef = useRef(filtros);
+  filtrosRef.current = filtros;
   const cerrarDialogo = () => {
     setDialogo(false);
     setErrorBaja('');
     window.requestAnimationFrame(() => botonEliminarRef.current?.focus());
   };
   useEffect(() => {
-    const id = window.setTimeout(() => setFiltros((actual) => ({ ...actual, busqueda, pagina: 1 })), 300);
+    const id = window.setTimeout(() => {
+      if ((filtrosRef.current.busqueda ?? '') === busqueda) {
+        return;
+      }
+      setFiltros((actual) => {
+        if ((actual.busqueda ?? '') === busqueda) {
+          return actual;
+        }
+        return { ...actual, busqueda, pagina: 1 };
+      });
+    }, 300);
     return () => window.clearTimeout(id);
   }, [busqueda]);
   useEffect(() => {

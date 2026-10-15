@@ -37,6 +37,8 @@ export function OrdenesAbastecimientoPage() {
   const [errorAccion, setErrorAccion] = useState('');
   const [ocupada, setOcupada] = useState(false);
   const primeraBusquedaRef = useRef(true);
+  const filtrosRef = useRef(filtros);
+  filtrosRef.current = filtros;
   const botonAccionRef = useRef<HTMLButtonElement>(null);
   const { lista, resumen, proveedores, productos, errorLista, errorResumen, errorCatalogos, orden, errorDetalle, cargandoDetalle, recargar } = useOrdenesData(filtros, seleccionadaId);
 
@@ -49,7 +51,15 @@ export function OrdenesAbastecimientoPage() {
       return;
     }
     const temporizador = window.setTimeout(() => {
-      setFiltros((actuales) => ({ ...actuales, busqueda, pagina: 1 }));
+      if ((filtrosRef.current.busqueda ?? '') === busqueda) {
+        return;
+      }
+      setFiltros((actuales) => {
+        if ((actuales.busqueda ?? '') === busqueda) {
+          return actuales;
+        }
+        return { ...actuales, busqueda, pagina: 1 };
+      });
       setSeleccionadaId(null);
     }, 300);
     return () => window.clearTimeout(temporizador);

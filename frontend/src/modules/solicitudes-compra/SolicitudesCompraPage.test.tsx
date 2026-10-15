@@ -13,6 +13,19 @@ afterEach(() => {
 });
 
 describe('SolicitudesCompra: resumen, filtros y tabla', () => {
+  it('A3 solicita el listado una sola vez durante la carga inicial', async () => {
+    const { fetchMock } = prepararApi();
+    vi.useFakeTimers();
+    renderPagina();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/solicitudes-compra?'))).toHaveLength(1);
+  });
+
   it('A3 presenta resumen, tabla, fechas y detalle con líneas y subtotales', async () => {
     const { fetchMock } = prepararApi();
     renderPagina();

@@ -14,7 +14,7 @@ async function esperarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
   });
   vi.useRealTimers();
   await waitFor(() => {
-    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/solicitudes-compra?'))).toHaveLength(2);
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/solicitudes-compra?'))).toHaveLength(1);
   });
   await act(async () => {
     await Promise.resolve();
