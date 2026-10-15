@@ -118,6 +118,12 @@ describe('pantalla de Clientes', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(llamadas.some((llamada) => llamada.url.includes('pagina=2'))).toBe(true));
     expect(await screen.findByRole('button', { name: 'Omega Comercio' })).toBeInTheDocument();
+    await waitFor(() => expect(llamadas.some((llamada) => llamada.url === '/api/v1/clientes/11')).toBe(true));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
     vi.useFakeTimers();
     fetchMock.mockClear();

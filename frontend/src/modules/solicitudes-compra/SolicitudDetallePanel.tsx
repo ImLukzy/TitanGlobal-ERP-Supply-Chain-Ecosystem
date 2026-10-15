@@ -9,6 +9,7 @@ interface SolicitudDetallePanelProps {
   aprobar: (boton: HTMLButtonElement) => void;
   rechazar: (boton: HTMLButtonElement) => void;
   eliminar: (boton: HTMLButtonElement) => void;
+  generarOrden: (solicitud: SolicitudDetalle, boton: HTMLButtonElement) => void;
 }
 
 export function SolicitudDetallePanel({
@@ -18,6 +19,7 @@ export function SolicitudDetallePanel({
   aprobar,
   rechazar,
   eliminar,
+  generarOrden,
 }: SolicitudDetallePanelProps) {
   return (
     <PanelDetalle ariaLabelledBy="solicitud-detail-title" className="solicitudes-panel solicitudes-detail">
@@ -84,6 +86,11 @@ export function SolicitudDetallePanel({
               <button className="primary-button" onClick={(event) => aprobar(event.currentTarget)} type="button">Aprobar</button>
               <button className="secondary-button" onClick={(event) => rechazar(event.currentTarget)} type="button">Rechazar</button>
               <button className="danger-button" onClick={(event) => eliminar(event.currentTarget)} type="button">Eliminar</button>
+            </div>
+          )}
+          {solicitud.estado === 'Aprobada' && (
+            <div className="solicitud-actions">
+              <button className="primary-button" onClick={(event) => generarOrden(solicitud, event.currentTarget)} type="button">Generar orden</button>
             </div>
           )}
         </>

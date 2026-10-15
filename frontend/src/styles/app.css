@@ -573,3 +573,105 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .solicitudes-form-actions .primary-button { width: 100%; }
   .solicitud-decision-dialog { max-height: calc(100vh - 36px); overflow-y: auto; }
 }
+
+.ordenes-abastecimiento-page { padding-bottom: 42px; }
+.ordenes-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.ordenes-summary > article, .ordenes-top-panel, .ordenes-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.ordenes-summary > article { display: grid; min-height: 82px; align-content: space-between; padding: 13px; color: var(--ink-soft); font-size: 10px; }
+.ordenes-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.ordenes-top-panel { grid-column: 1 / -1; padding: 14px 17px; }
+.ordenes-top-panel h2 { margin: 0 0 9px; color: var(--ink-soft); font-size: 12px; }
+.ordenes-top-panel ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px 14px; margin: 0; padding-left: 20px; color: var(--ink); font-size: 10px; }
+.ordenes-top-panel li { padding-left: 2px; }
+.ordenes-top-panel li strong { display: block; margin-top: 4px; color: var(--ink-faint); font-size: 9px; }
+.ordenes-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0 14px; }
+.ordenes-panel { margin-top: 14px; padding: 17px; }
+.ordenes-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ordenes-panel-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; }
+.ordenes-filters { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 13px; }
+.ordenes-filters > label, .orden-dialog-field { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.ordenes-filters input, .ordenes-filters select, .orden-form input, .orden-form select, .orden-form textarea, .orden-dialog-field input, .orden-dialog-field select, .orden-dialog-field textarea { width: 100%; min-width: 0; min-height: 35px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.ordenes-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.ordenes-table { min-width: 900px; }
+.ordenes-table th, .ordenes-table td { padding: 8px 7px; font-size: 9px; }
+.orden-row-select { padding: 0; border: 0; background: transparent; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }
+.orden-status { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 20px; font-size: 8px; font-weight: 750; white-space: nowrap; }
+.orden-status.is-emitida { background: var(--accent-soft); color: var(--accent-ink); }
+.orden-status.is-recibida { background: var(--good-soft); color: var(--good); }
+.orden-status.is-anulada { background: var(--bad-soft); color: var(--bad); }
+.orden-late-label { display: block; width: fit-content; margin-top: 4px; padding: 3px 6px; border-radius: 10px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; }
+.orden-late-banner { margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--bad); border-radius: 8px; background: var(--bad-soft); color: var(--bad); font-size: 10px; font-weight: 750; }
+.orden-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.orden-detail-grid > div { min-width: 0; }
+.orden-detail-grid dt { margin-bottom: 4px; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+.orden-detail-grid dd { margin: 0; color: var(--ink); font-size: 10px; overflow-wrap: anywhere; }
+.orden-detail-lines, .orden-detail-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.orden-detail-lines h3, .orden-detail-note h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.orden-lines-table-scroll { max-width: 100%; overflow-x: auto; }
+.orden-lines-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; color: var(--ink); font-size: 9px; }
+.orden-lines-table caption { padding-bottom: 6px; color: var(--ink-faint); text-align: left; font-size: 8px; }
+.orden-lines-table th, .orden-lines-table td { padding: 7px 5px; border-bottom: 1px solid var(--line); text-align: left; overflow-wrap: anywhere; }
+.orden-lines-table thead th { background: var(--surface-muted); color: var(--ink-soft); font-size: 8px; }
+.orden-lines-table th:first-child { width: 35%; }
+.orden-lines-table th:nth-child(2) { width: 16%; }
+.orden-lines-table th:nth-child(3), .orden-lines-table th:nth-child(4) { width: 24.5%; }
+.orden-lines-table tbody tr:last-child th, .orden-lines-table tbody tr:last-child td { border-bottom: 0; }
+.orden-detail-note p { margin-bottom: 0; color: var(--ink); font-size: 10px; line-height: 1.5; }
+.orden-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.orden-error, .orden-field-error, .orden-dialog-error { margin: 10px 0 0; color: var(--bad); font-size: 10px; line-height: 1.5; }
+.orden-field-error { grid-column: 1 / -1; }
+.orden-form-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.orden-form .form-field { min-width: 0; gap: 5px; }
+.orden-form .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.orden-form textarea, .orden-dialog-field textarea { resize: vertical; }
+.orden-lines-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 18px 0 9px; }
+.orden-lines-heading h3 { margin: 0; color: var(--ink); font-size: 12px; }
+.orden-lines { display: grid; gap: 9px; }
+.orden-line { display: grid; grid-template-columns: minmax(0, 2fr) minmax(70px, .7fr) minmax(110px, 1fr) minmax(110px, 1fr) auto; align-items: end; gap: 9px; min-width: 0; margin: 0; padding: 11px; border: 1px solid var(--line); border-radius: 10px; }
+.orden-line legend { padding: 0 5px; color: var(--ink-faint); font-size: 8px; font-weight: 700; }
+.orden-line .form-field { min-width: 0; }
+.orden-line .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.orden-line-subtotal { display: grid; gap: 4px; margin: 0 0 3px; color: var(--ink-faint); font-size: 8px; }
+.orden-line-subtotal strong { color: var(--ink); font-size: 10px; }
+.orden-remove-line { min-height: 34px; }
+.orden-total { margin: 13px 0 0; color: var(--ink-soft); font-size: 11px; text-align: right; }
+.orden-total strong { color: var(--ink); font-size: 15px; }
+.orden-form-actions { display: flex; justify-content: flex-end; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
+.orden-dialog-field { margin-top: 12px; }
+.orden-dialog-error { font-weight: 650; }
+.orden-action-dialog { max-height: calc(100vh - 40px); overflow-y: auto; }
+
+@media (min-width: 1024px) {
+  .ordenes-work-area { grid-template-columns: minmax(0, 1.15fr) minmax(350px, .85fr); }
+  .ordenes-table { min-width: 0; table-layout: fixed; font-size: 8px; }
+  .ordenes-table th, .ordenes-table td { padding: 7px 4px; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 900px) {
+  .ordenes-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ordenes-top-panel ol { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ordenes-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .orden-line { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .orden-line-subtotal { min-height: 34px; align-content: center; }
+  .orden-remove-line { justify-self: end; }
+}
+
+@media (max-width: 720px) {
+  .ordenes-abastecimiento-page { padding-bottom: 28px; }
+  .ordenes-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ordenes-summary > article { min-height: 76px; padding: 11px; font-size: 9px; }
+  .ordenes-summary > article strong { font-size: 16px; }
+  .ordenes-top-panel { padding: 12px; }
+  .ordenes-top-panel ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ordenes-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ordenes-panel { margin-top: 12px; padding: 14px; }
+  .ordenes-panel-heading h2 { font-size: 14px; }
+  .ordenes-filters { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .ordenes-table { min-width: 900px; }
+  .orden-lines-table { min-width: 380px; }
+  .orden-line { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+  .orden-remove-line { justify-self: stretch; }
+  .orden-form-fields { grid-template-columns: minmax(0, 1fr); }
+  .orden-actions { justify-content: flex-start; }
+  .orden-form-actions .primary-button { width: 100%; }
+}

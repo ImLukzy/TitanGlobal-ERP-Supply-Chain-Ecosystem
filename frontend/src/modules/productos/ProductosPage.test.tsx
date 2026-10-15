@@ -111,11 +111,16 @@ async function limpiarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(300);
   });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(2);
+  });
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
   });
-  vi.useRealTimers();
   fetchMock.mockClear();
 }
 
@@ -189,6 +194,10 @@ describe('pantalla de Productos', () => {
     expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(0);
     fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '900' } });
     await waitFor(() => expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(1));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     fetchMock.mockClear();
     fireEvent.change(screen.getByLabelText('Precio máximo'), { target: { value: '100' } });
     expect(screen.getByText('El precio mínimo no puede ser mayor que el máximo.')).toBeInTheDocument();
@@ -268,9 +277,12 @@ describe('pantalla de Productos', () => {
   it('A4 Escape cierra la baja sin petición y devuelve el foco al botón', async () => {
     const { fetchMock, llamadas } = prepararApi();
     render(<ProductosPage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
+    await screen.findByRole('button', { name: 'Laptop Pro' });
     await screen.findByText('20');
     await screen.findByRole('option', { name: 'Pantallas' });
+    await limpiarCargaInicial(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Laptop Pro' }));
+    await screen.findByText('4 unidades');
     const abrirBaja = await screen.findByRole('button', { name: 'Eliminar' });
     await waitFor(() => {
       expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos?pagina=1&tamanoPagina=10')).toBe(true);

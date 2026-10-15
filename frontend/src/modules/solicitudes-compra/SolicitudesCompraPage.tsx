@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { ApiError } from '../../api/client';
 import { PaginaModulo } from '../../components/PaginaModulo';
 import {
@@ -14,9 +15,11 @@ import { SolicitudesOverlays } from './SolicitudesOverlays';
 import { SolicitudesResumen } from './SolicitudesResumen';
 import { SolicitudesTabla } from './SolicitudesTabla';
 import { useSolicitudesData } from './useSolicitudesData';
+import { GenerarOrdenDialog } from '../ordenes-abastecimiento/GenerarOrdenDialog';
 import type {
   FiltrosSolicitud,
   GuardarSolicitudRequest,
+  SolicitudDetalle,
   SolicitudListado,
 } from './tipos';
 
@@ -27,6 +30,7 @@ function obtenerMensaje(error: unknown, respaldo: string): string {
 }
 
 export function SolicitudesCompraPage() {
+  const navigate = useNavigate();
   const [filtros, setFiltros] = useState<FiltrosSolicitud>(filtrosIniciales);
   const [busqueda, setBusqueda] = useState('');
   const [errorFecha, setErrorFecha] = useState('');
@@ -36,6 +40,8 @@ export function SolicitudesCompraPage() {
   const [dialogoBaja, setDialogoBaja] = useState(false);
   const [errorBaja, setErrorBaja] = useState('');
   const [eliminando, setEliminando] = useState(false);
+  const [solicitudParaOrden, setSolicitudParaOrden] = useState<SolicitudDetalle | null>(null);
+  const botonGenerarOrdenRef = useRef<HTMLButtonElement>(null);
   const botonBajaRef = useRef<HTMLButtonElement>(null);
   const {
     lista,
@@ -110,6 +116,16 @@ export function SolicitudesCompraPage() {
   function abrirDialogoBaja(boton: HTMLButtonElement): void {
     botonBajaRef.current = boton;
     abrirBaja();
+  }
+
+  function abrirGeneracionOrden(solicitudElegida: SolicitudDetalle, boton: HTMLButtonElement): void {
+    botonGenerarOrdenRef.current = boton;
+    setSolicitudParaOrden(solicitudElegida);
+  }
+
+  function cerrarGeneracionOrden(): void {
+    setSolicitudParaOrden(null);
+    window.requestAnimationFrame(() => botonGenerarOrdenRef.current?.focus());
   }
 
   async function guardar(request: GuardarSolicitudRequest): Promise<void> {
@@ -197,6 +213,7 @@ export function SolicitudesCompraPage() {
           aprobar={abrirAprobacion}
           rechazar={abrirRechazo}
           eliminar={abrirDialogoBaja}
+          generarOrden={abrirGeneracionOrden}
         />
       </div>
       {errorDetalle && <p className="solicitudes-error" role="alert">{errorDetalle}</p>}
@@ -217,6 +234,14 @@ export function SolicitudesCompraPage() {
         eliminando={eliminando}
         errorBaja={errorBaja}
       />
+      {solicitudParaOrden && (
+        <GenerarOrdenDialog
+          cerrar={cerrarGeneracionOrden}
+          generada={(nuevaOrden) => navigate(`/modulos/15-ordenes-abastecimiento?orden=${nuevaOrden.id}`)}
+          proveedores={proveedores}
+          solicitud={solicitudParaOrden}
+        />
+      )}
     </PaginaModulo>
   );
 }
