@@ -22,7 +22,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | Módulo | Dominio | Responsable | Estado | Specs |
 |---|---|---|---|---|
 | 01 Clientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 07, 08 |
-| 02 SegmentacionClientes | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
+| 02 SegmentacionClientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 23, 24 |
 | 03 Cotizaciones | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
 | 04 OrdenesCompra | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 01–06 |
 | 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
