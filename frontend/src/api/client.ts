@@ -70,6 +70,10 @@ export function apiPost<T>(ruta: string, cuerpo: unknown): Promise<T> {
   return solicitar<T>(ruta, { method: 'POST', headers, body: JSON.stringify(cuerpo) });
 }
 
+export function apiPostSinCuerpo<T>(ruta: string): Promise<T> {
+  return solicitar<T>(ruta, { method: 'POST' });
+}
+
 export function apiPut<T>(ruta: string, cuerpo: unknown): Promise<T> {
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');

@@ -269,6 +269,8 @@ describe('pantalla de Productos', () => {
     const { fetchMock, llamadas } = prepararApi();
     render(<ProductosPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
+    await screen.findByText('20');
+    await screen.findByRole('option', { name: 'Pantallas' });
     const abrirBaja = await screen.findByRole('button', { name: 'Eliminar' });
     await waitFor(() => {
       expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos?pagina=1&tamanoPagina=10')).toBe(true);
