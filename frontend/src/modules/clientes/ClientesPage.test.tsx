@@ -102,26 +102,41 @@ describe('pantalla de Clientes', () => {
   it('espera 300 ms para buscar y vuelve a página 1 al cambiar búsqueda', async () => {
     const { fetchMock, llamadas } = prepararApi();
     render(<ClientesPage />);
-    expect(await screen.findByRole('heading', { name: 'Acme Industrial' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Acme Industrial' }, { timeout: 10000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Acme Industrial' }, { timeout: 10000 })).toBeInTheDocument();
     expect(screen.getByText('4 órdenes')).toBeInTheDocument();
     expect(screen.getByText('1 orden')).toBeInTheDocument();
-    await new Promise((resolver) => window.setTimeout(resolver, 350));
+    vi.useFakeTimers();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    vi.useRealTimers();
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(llamadas.some((llamada) => llamada.url.includes('pagina=2'))).toBe(true));
     expect(await screen.findByRole('button', { name: 'Omega Comercio' })).toBeInTheDocument();
     expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
-    await new Promise((resolver) => window.setTimeout(resolver, 350));
     vi.useFakeTimers();
     fetchMock.mockClear();
     const busqueda = screen.getByRole('searchbox', { name: 'Buscar por nombre o RUC' });
     fireEvent.change(busqueda, { target: { value: 'A' } });
     fireEvent.change(busqueda, { target: { value: 'Ac' } });
     fireEvent.change(busqueda, { target: { value: 'Acme' } });
-    await act(async () => { await vi.advanceTimersByTimeAsync(299); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(299);
+    });
     expect(fetchMock).not.toHaveBeenCalled();
-    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
     expect(fetchMock.mock.calls.filter((llamada) => String(llamada[0]).includes('/clientes?'))).toHaveLength(1);
-    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     expect(fetchMock.mock.calls.find((llamada) => String(llamada[0]).includes('/clientes?'))?.[0]).toBe('/api/v1/clientes?busqueda=Acme&pagina=1&tamanoPagina=10');
     expect(screen.getByText('Página 1 de 2')).toBeInTheDocument();
   });

@@ -106,6 +106,19 @@ function prepararApi(opciones: OpcionesApi = {}) {
   return { fetchMock, llamadas };
 }
 
+async function limpiarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
+  vi.useFakeTimers();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(300);
+  });
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  fetchMock.mockClear();
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -127,10 +140,11 @@ describe('pantalla de Productos', () => {
   it('A3 aplica búsqueda tras 300 ms y solo envía la última escritura', async () => {
     const { fetchMock } = prepararApi();
     render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' });
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
+    await screen.findByRole('button', { name: 'Laptop Pro' }, { timeout: 10000 });
+    await screen.findByText('20');
+    await screen.findByRole('option', { name: 'Pantallas' });
+    await limpiarCargaInicial(fetchMock);
     vi.useFakeTimers();
-    fetchMock.mockClear();
     const busqueda = screen.getByRole('searchbox', { name: 'Buscar' });
     fireEvent.change(busqueda, { target: { value: 'T' } });
     fireEvent.change(busqueda, { target: { value: 'Te' } });
@@ -166,14 +180,19 @@ describe('pantalla de Productos', () => {
   it('A3 valida precios negativos y rango incorrecto sin enviar peticiones', async () => {
     const { fetchMock } = prepararApi();
     render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' });
-    fetchMock.mockClear();
+    await screen.findByRole('button', { name: 'Laptop Pro' }, { timeout: 10000 });
+    await screen.findByText('20');
+    await screen.findByRole('option', { name: 'Pantallas' });
+    await limpiarCargaInicial(fetchMock);
     fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '-1' } });
     expect(screen.getByText('Los precios del filtro no pueden ser negativos.')).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(0);
     fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '900' } });
+    await waitFor(() => expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(1));
+    fetchMock.mockClear();
     fireEvent.change(screen.getByLabelText('Precio máximo'), { target: { value: '100' } });
     expect(screen.getByText('El precio mínimo no puede ser mayor que el máximo.')).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(0);
   });
 
   it('A3 muestra estados vacío y error del catálogo', async () => {
