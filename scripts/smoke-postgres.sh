@@ -7,6 +7,7 @@ COMPOSE_CLEANUP_REQUIRED=0
 CLIENTE_CREADO_ID=""
 PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
+SOLICITUD_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -96,6 +97,7 @@ validate_response() {
 
     python3 - "$body" "$validation" <<'PY'
 import json
+import re
 import sys
 
 body = json.loads(sys.argv[1])
@@ -133,6 +135,15 @@ checks = {
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
     "provider-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un proveedor con el RUC 20600000001.",
+    "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
+    "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
+    "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
+    "solicitudes-resumen": lambda data: data["total"] == 5 and data["pendientes"] == 2 and data["aprobadas"] == 2 and data["rechazadas"] == 1 and data["montoPendiente"] == 16760.0 and data["montoAprobado"] == 10200.0 and [item["productoId"] for item in data["topProductosSolicitados"]] == [2, 3, 7, 1, 5] and [item["unidades"] for item in data["topProductosSolicitados"]] == [10, 4, 3, 2, 2],
+    "solicitud-created": lambda data: data["id"] > 0 and data["numero"] == f"SC-{data['id']:06d}",
+    "solicitud-approved": lambda data: data["estado"] == "Aprobada" and data["fechaDecision"].endswith("Z"),
+    "solicitud-already-approved": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La solicitud SC-\d{6} ya está aprobada\.", data["Message"]) is not None,
+    "solicitud-inactive-provider": lambda data: data["StatusCode"] == 400 and data["Message"] == "El proveedor 5 está inactivo.",
+    "solicitud-delete-approved": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La solicitud SC-\d{6} ya está aprobada\.", data["Message"]) is not None,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -196,6 +207,10 @@ request_check() {
     if [[ "$validation" == "provider-created" ]]; then
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+
+    if [[ "$validation" == "solicitud-created" ]]; then
+        SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -234,6 +249,15 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Solicitudes pendientes' GET '/api/v1/solicitudes-compra?estado=pendiente' 200 solicitudes-pendientes
+request_check 'Solicitudes por rango de fechas' GET '/api/v1/solicitudes-compra?fechaDesde=2026-02-15&fechaHasta=2026-03-10' 200 solicitudes-rango
+request_check 'Detalle de solicitud 1' GET '/api/v1/solicitudes-compra/1' 200 solicitud-detalle
+request_check 'Resumen de solicitudes' GET '/api/v1/solicitudes-compra/resumen' 200 solicitudes-resumen
+request_check 'POST solicitud válida' POST '/api/v1/solicitudes-compra' 200 solicitud-created '{"solicitante":"Solicitud Smoke","proveedorId":1,"observaciones":"Prueba de smoke","lineas":[{"productoId":1,"cantidad":2,"precioEstimado":250}]}'
+request_check 'Aprobar solicitud creada' POST "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}/aprobar" 200 solicitud-approved
+request_check 'Aprobar solicitud aprobada' POST "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}/aprobar" 409 solicitud-already-approved
+request_check 'POST solicitud con proveedor inactivo' POST '/api/v1/solicitudes-compra' 400 solicitud-inactive-provider '{"solicitante":"Solicitud Smoke","proveedorId":5,"lineas":[{"productoId":1,"cantidad":1,"precioEstimado":250}]}'
+request_check 'DELETE solicitud aprobada' DELETE "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}" 409 solicitud-delete-approved
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
 printf 'SMOKE OK\n'

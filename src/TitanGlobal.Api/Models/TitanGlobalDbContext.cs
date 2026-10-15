@@ -12,6 +12,10 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Proveedor> Proveedores { get; set; } = null!;
 
+    public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
+
+    public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
+
     public DbSet<Producto> Productos { get; set; } = null!;
 
     public DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -43,6 +47,53 @@ public class TitanGlobalDbContext : DbContext
         modelBuilder.Entity<Proveedor>()
             .HasIndex(proveedor => proveedor.Ruc)
             .IsUnique();
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .Property(solicitud => solicitud.Numero)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .Property(solicitud => solicitud.Solicitante)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .Property(solicitud => solicitud.Estado)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .Property(solicitud => solicitud.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .Property(solicitud => solicitud.MotivoRechazo)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .HasIndex(solicitud => solicitud.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .HasOne(solicitud => solicitud.Proveedor)
+            .WithMany(proveedor => proveedor.SolicitudesCompra)
+            .HasForeignKey(solicitud => solicitud.ProveedorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SolicitudCompra>()
+            .HasMany(solicitud => solicitud.Detalles)
+            .WithOne(detalle => detalle.SolicitudCompra)
+            .HasForeignKey(detalle => detalle.SolicitudCompraId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DetalleSolicitudCompra>()
+            .Property(detalle => detalle.PrecioEstimado)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<DetalleSolicitudCompra>()
+            .HasOne(detalle => detalle.Producto)
+            .WithMany()
+            .HasForeignKey(detalle => detalle.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
 
         modelBuilder.Entity<Cliente>()
             .HasMany(cliente => cliente.OrdenesCompra)

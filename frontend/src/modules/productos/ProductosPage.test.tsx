@@ -266,10 +266,16 @@ describe('pantalla de Productos', () => {
   });
 
   it('A4 Escape cierra la baja sin petición y devuelve el foco al botón', async () => {
-    const { fetchMock } = prepararApi();
+    const { fetchMock, llamadas } = prepararApi();
     render(<ProductosPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
     const abrirBaja = await screen.findByRole('button', { name: 'Eliminar' });
+    await waitFor(() => {
+      expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos?pagina=1&tamanoPagina=10')).toBe(true);
+      expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos/resumen')).toBe(true);
+      expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos/categorias')).toBe(true);
+      expect(llamadas.some((llamada) => llamada.url === '/api/v1/productos/1')).toBe(true);
+    });
     fireEvent.click(abrirBaja);
     fetchMock.mockClear();
     fireEvent.keyDown(document, { key: 'Escape' });

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -227,7 +228,10 @@ public sealed class OrdenesCompraApiFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<DbContextOptions<TitanGlobalDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<TitanGlobalDbContext>>();
-            services.AddDbContext<TitanGlobalDbContext>(options => options.UseInMemoryDatabase("Modulo04OrdenesTests"));
+            services.AddDbContext<TitanGlobalDbContext>(options => options
+                .UseInMemoryDatabase("Modulo04OrdenesTests")
+                // EF InMemory ignores TransactionScope; PostgreSQL smoke verifies the atomic transaction behavior.
+                .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
         });
     }
 

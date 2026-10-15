@@ -78,6 +78,35 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("DetallesOrdenCompra");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.DetalleSolicitudCompra", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PrecioEstimado")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SolicitudCompraId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("SolicitudCompraId");
+
+                    b.ToTable("DetallesSolicitudCompra");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.OrdenCompra", b =>
                 {
                     b.Property<int>("Id")
@@ -181,6 +210,56 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("Proveedores");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.SolicitudCompra", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaDecision")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MotivoRechazo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("ProveedorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Solicitante")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Numero")
+                        .IsUnique();
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("SolicitudesCompra");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.DetalleOrdenCompra", b =>
                 {
                     b.HasOne("TitanGlobal.Api.Models.OrdenCompra", "OrdenCompra")
@@ -200,6 +279,25 @@ namespace TitanGlobal.Api.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.DetalleSolicitudCompra", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TitanGlobal.Api.Models.SolicitudCompra", "SolicitudCompra")
+                        .WithMany("Detalles")
+                        .HasForeignKey("SolicitudCompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("SolicitudCompra");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.OrdenCompra", b =>
                 {
                     b.HasOne("TitanGlobal.Api.Models.Cliente", "Cliente")
@@ -209,6 +307,16 @@ namespace TitanGlobal.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.SolicitudCompra", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Proveedor", "Proveedor")
+                        .WithMany("SolicitudesCompra")
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Proveedor");
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.Cliente", b =>
@@ -224,6 +332,16 @@ namespace TitanGlobal.Api.Migrations
             modelBuilder.Entity("TitanGlobal.Api.Models.Producto", b =>
                 {
                     b.Navigation("DetallesOrdenCompra");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.Proveedor", b =>
+                {
+                    b.Navigation("SolicitudesCompra");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.SolicitudCompra", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

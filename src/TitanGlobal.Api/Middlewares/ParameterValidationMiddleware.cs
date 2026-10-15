@@ -13,7 +13,8 @@ public class ParameterValidationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method))
+        bool validarCuerpo = HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method);
+        if (validarCuerpo && !EsAprobacionSinCuerpo(context.Request))
         {
             context.Request.EnableBuffering();
 
@@ -39,5 +40,26 @@ public class ParameterValidationMiddleware
         }
 
         await _next(context);
+    }
+
+    private static bool EsAprobacionSinCuerpo(HttpRequest solicitud)
+    {
+        if (!HttpMethods.IsPost(solicitud.Method))
+        {
+            return false;
+        }
+
+        string ruta = solicitud.Path.Value ?? string.Empty;
+        string prefijo = "/api/v1/solicitudes-compra/";
+        string sufijo = "/aprobar";
+        if (!ruta.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase)
+            || !ruta.EndsWith(sufijo, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string idTexto = ruta.Substring(prefijo.Length, ruta.Length - prefijo.Length - sufijo.Length);
+
+        return int.TryParse(idTexto, out int _);
     }
 }

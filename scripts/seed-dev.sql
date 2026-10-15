@@ -62,4 +62,36 @@ SELECT setval(pg_get_serial_sequence('"Productos"', 'Id'), (SELECT MAX("Id") FRO
 SELECT setval(pg_get_serial_sequence('"OrdenesCompra"', 'Id'), (SELECT MAX("Id") FROM "OrdenesCompra"));
 SELECT setval(pg_get_serial_sequence('"DetallesOrdenCompra"', 'Id'), (SELECT MAX("Id") FROM "DetallesOrdenCompra"));
 
+INSERT INTO "SolicitudesCompra" (
+    "Numero", "Fecha", "Solicitante", "ProveedorId", "Estado", "Observaciones", "MotivoRechazo", "FechaDecision") VALUES
+    ('SC-DEV-001', TIMESTAMPTZ '2026-01-10 09:00:00+00', 'Mantenimiento Planta', 1, 'Pendiente', 'Repuestos preventivos', NULL, NULL),
+    ('SC-DEV-002', TIMESTAMPTZ '2026-02-15 14:30:00+00', 'Operaciones', NULL, 'Pendiente', 'Solicitud sin proveedor asignado', NULL, NULL),
+    ('SC-DEV-003', TIMESTAMPTZ '2026-03-10 11:00:00+00', 'Producción', 1, 'Aprobada', 'Insumos de producción', NULL, TIMESTAMPTZ '2026-03-11 10:00:00+00'),
+    ('SC-DEV-004', TIMESTAMPTZ '2026-04-20 08:00:00+00', 'Logística', 2, 'Aprobada', 'Equipos de almacén', NULL, TIMESTAMPTZ '2026-04-21 08:00:00+00'),
+    ('SC-DEV-005', TIMESTAMPTZ '2026-05-01 12:00:00+00', 'Taller', 1, 'Rechazada', 'Herramientas especiales', 'Fuera del presupuesto aprobado', TIMESTAMPTZ '2026-05-02 12:00:00+00')
+ON CONFLICT ("Numero") DO UPDATE SET
+    "Fecha" = EXCLUDED."Fecha",
+    "Solicitante" = EXCLUDED."Solicitante",
+    "ProveedorId" = EXCLUDED."ProveedorId",
+    "Estado" = EXCLUDED."Estado",
+    "Observaciones" = EXCLUDED."Observaciones",
+    "MotivoRechazo" = EXCLUDED."MotivoRechazo",
+    "FechaDecision" = EXCLUDED."FechaDecision";
+
+DELETE FROM "DetallesSolicitudCompra"
+WHERE "SolicitudCompraId" IN (
+    SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" IN (
+        'SC-DEV-001', 'SC-DEV-002', 'SC-DEV-003', 'SC-DEV-004', 'SC-DEV-005'));
+
+INSERT INTO "DetallesSolicitudCompra" ("SolicitudCompraId", "ProductoId", "Cantidad", "PrecioEstimado") VALUES
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-001'), 1, 2, 2300.00),
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-001'), 3, 4, 40.00),
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-002'), 2, 10, 1200.00),
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-003'), 7, 3, 2900.00),
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-004'), 5, 2, 750.00),
+    ((SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-005'), 3, 100, 45.00);
+
+SELECT setval(pg_get_serial_sequence('"SolicitudesCompra"', 'Id'), (SELECT MAX("Id") FROM "SolicitudesCompra"));
+SELECT setval(pg_get_serial_sequence('"DetallesSolicitudCompra"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "DetallesSolicitudCompra"));
+
 COMMIT;

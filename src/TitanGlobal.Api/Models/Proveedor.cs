@@ -15,4 +15,6 @@ public partial class Proveedor
     public string? Telefono { get; set; }
 
     public bool Activo { get; set; } = true;
+
+    public virtual ICollection<SolicitudCompra> SolicitudesCompra { get; set; } = new List<SolicitudCompra>();
 }
