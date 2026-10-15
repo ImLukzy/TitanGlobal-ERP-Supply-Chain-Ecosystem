@@ -19,7 +19,7 @@ export function PromocionesTabla({ items, total, pagina, error, cargando, selecc
       <td>{item.tipo === 'Producto' ? `Producto: ${item.productoNombre ?? '—'}` : `Compra desde ${formateadorMoneda.format(item.montoMinimo ?? 0)}`}</td>
       <td className="promociones-no-partir">{item.porcentajeDescuento.toFixed(2)} %</td>
       <td>{item.segmentoCodigo ?? 'Todos los clientes'}</td>
-      <td><span className="promociones-fecha">{formatearFecha(item.fechaInicio)}<span aria-hidden="true">–</span>{formatearFecha(item.fechaFin)}</span></td>
+      <td><span aria-label={`Desde ${formatearFecha(item.fechaInicio)} hasta ${formatearFecha(item.fechaFin)}`} className="promociones-fecha"><span>{formatearFecha(item.fechaInicio)}</span><span>{formatearFecha(item.fechaFin)}</span></span></td>
       <td><span className={`promocion-estado ${item.activa && item.vigente ? 'is-vigente' : item.activa ? 'is-novigente' : 'is-inactiva'}`}>{!item.activa ? 'Inactiva' : item.vigente ? 'Vigente' : 'No vigente'}</span></td>
     </tr>} />}
   </>;

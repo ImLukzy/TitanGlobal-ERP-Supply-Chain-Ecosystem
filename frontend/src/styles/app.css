@@ -259,7 +259,8 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .tabla-paginada-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
 .tabla-paginada { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
 .tabla-paginada caption { padding: 0 0 8px; color: var(--ink-faint); text-align: left; font-size: 9px; }
-.tabla-paginada th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.tabla-paginada thead th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.tabla-paginada tbody th { padding: 10px; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font-size: inherit; font-weight: inherit; text-align: left; vertical-align: top; }
 .tabla-paginada td { padding: 10px; border-bottom: 1px solid var(--line); color: var(--ink); }
 .tabla-paginada-nav { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 12px; }
 .tabla-paginada-nav span { color: var(--ink-soft); font-size: 10px; font-variant-numeric: tabular-nums; }
@@ -820,6 +821,7 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .promocion-form-row .form-field, .promocion-linea .form-field, .promocion-form-dialog .form-field { display: grid; min-width: 0; gap: 5px; color: var(--ink-soft); font-size: 10px; }
 .promocion-form-dialog form { display: grid; gap: 10px; }
 .promocion-form-dialog input, .promocion-form-dialog select, .promocion-form-dialog textarea, .promociones-evaluator select, .promociones-evaluator input { width: 100%; }
+.promocion-form-row select, .promocion-linea select, .promocion-form-dialog select { height: 38px; min-width: 0; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
 .promocion-form-dialog .form-field > label, .promocion-form-row .form-field > label, .promocion-linea .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
 .promocion-tipos { display: flex; flex-wrap: wrap; gap: 16px; margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink-soft); font-size: 10px; }
 .promocion-tipos legend { padding: 0 5px; color: var(--ink-faint); font-size: 9px; font-weight: 700; }
@@ -827,6 +829,7 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .promocion-tipos input, .promociones-checkbox input { width: auto; min-height: 0; }
 .promociones-lineas-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
 .promociones-lineas-heading h3, .promocion-resultado h3 { margin: 0; color: var(--ink); font-size: 12px; }
+.promociones-evaluator .clientes-panel-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; letter-spacing: -.02em; }
 .promociones-lineas { display: grid; gap: 8px; }
 .promocion-linea { display: grid; grid-template-columns: minmax(0, 2fr) minmax(65px, .7fr) minmax(110px, 1fr) auto; align-items: end; gap: 8px; min-width: 0; margin: 0; padding: 9px; border: 1px solid var(--line); border-radius: 9px; }
 .promocion-linea legend { padding: 0 4px; color: var(--ink-faint); font-size: 8px; font-weight: 700; }
@@ -847,7 +850,8 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .promociones-work-area { grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); }
 .promociones-filters { grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)) auto; }
 .promociones-filters input, .promociones-filters select { width: 100%; }
-.promociones-checkbox { white-space: nowrap; }
+.promociones-checkbox { justify-self: start; white-space: nowrap; }
+.promociones-checkbox input { width: auto; min-height: 0; flex: 0 0 auto; }
 .promociones-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; }
 .promociones-table th, .promociones-table td { padding: 8px 5px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; word-break: normal; font-size: 8px; }
 .promociones-table th { white-space: nowrap; }
@@ -861,6 +865,7 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .promociones-table th:nth-child(6) { width: 12%; }
 .promociones-table th:nth-child(7) { width: 11%; }
 .promociones-fecha { display: grid; gap: 2px; white-space: nowrap; }
+.promociones-table tbody td:nth-child(6) { white-space: nowrap; }
 .promociones-no-partir { white-space: nowrap; }
 .promocion-estado { display: inline-flex; padding: 3px 6px; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 7px; font-weight: 700; white-space: nowrap; }
 .promocion-estado.is-vigente { background: var(--good-soft); color: var(--good); }
