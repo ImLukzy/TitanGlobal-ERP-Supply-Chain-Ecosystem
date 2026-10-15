@@ -17,6 +17,7 @@ CONTRATO_CREADO_ID=""
 CONTRATO_BORRADOR_ID=""
 LISTA_PRECIOS_CREADA_ID=""
 PROMOCION_CREADA_ID=""
+RECLAMO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -232,6 +233,18 @@ checks = {
     "promo-created": lambda data: data["id"] > 4,
     "promo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una promoción con el código LAPTOP-10." and "Detail" not in data,
     "promo-product-required": lambda data: data["StatusCode"] == 400 and data["Message"] == "La promoción de producto requiere un producto." and "Detail" not in data,
+    "openapi-reclamos": lambda data: all(path in data["paths"] for path in ["/api/v1/reclamos-postventa", "/api/v1/reclamos-postventa/{id}", "/api/v1/reclamos-postventa/{id}/iniciar", "/api/v1/reclamos-postventa/{id}/resolver", "/api/v1/reclamos-postventa/{id}/cerrar", "/api/v1/reclamos-postventa/{id}/rechazar", "/api/v1/reclamos-postventa/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/reclamos-postventa", "get"), ("/api/v1/reclamos-postventa", "post"), ("/api/v1/reclamos-postventa/{id}", "get"), ("/api/v1/reclamos-postventa/{id}", "put"), ("/api/v1/reclamos-postventa/{id}/iniciar", "post"), ("/api/v1/reclamos-postventa/{id}/resolver", "post"), ("/api/v1/reclamos-postventa/{id}/cerrar", "post"), ("/api/v1/reclamos-postventa/{id}/rechazar", "post"), ("/api/v1/reclamos-postventa/resumen", "get")]),
+    "reclamos-list": lambda data: data["total"] == 5 and [item["numero"] for item in data["items"]] == ["REC-DEV-001", "REC-DEV-004", "REC-DEV-003", "REC-DEV-002", "REC-DEV-005"],
+    "reclamos-vencidos": lambda data: data["total"] == 1 and [item["numero"] for item in data["items"]] == ["REC-DEV-001"] and data["items"][0]["vencido"] is True,
+    "reclamo-detail": lambda data: data["numero"] == "REC-DEV-001" and data["clienteNombre"] == "Acme Industrial" and data["numeroOrden"] == "OC-001" and data["productoNombre"] == "Laptop Pro" and data["estado"] == "Abierto",
+    "reclamos-summary": lambda data: data["total"] == 5 and data["abiertos"] == 1 and data["enProceso"] == 1 and data["resueltos"] == 1 and data["cerrados"] == 1 and data["rechazados"] == 1 and data["vencidos"] == 1 and data["horasPromedioResolucion"] == 60.0 and data["cumplimientoPlazo"] == 50.0 and [(item["tipo"], item["reclamos"]) for item in data["porTipo"]] == [("Defecto", 1), ("Retraso", 1), ("Faltante", 1), ("Facturacion", 1), ("Otro", 1)],
+    "reclamo-created": lambda data: data["id"] > 5 and data["numero"] == f"REC-{data['id']:06d}",
+    "reclamo-started": lambda data: data["estado"] == "EnProceso" and data["fechaInicio"] is not None,
+    "reclamo-resolved": lambda data: data["estado"] == "Resuelto" and data["resolucion"] == "Solución aplicada" and data["fechaResolucion"] is not None and data["atendidoATiempo"] is True,
+    "reclamo-closed": lambda data: data["estado"] == "Cerrado" and data["fechaCierre"] is not None,
+    "reclamo-close-conflict": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El reclamo REC-\d{6} está cerrado\.", data["Message"]) is not None and "Detail" not in data,
+    "reclamo-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 2 no está en la orden OC-001." and "Detail" not in data,
+    "reclamo-no-rejection-motive": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -330,6 +343,10 @@ request_check() {
 
     if [[ "$validation" == "promo-created" ]]; then
         PROMOCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "reclamo-created" ]]; then
+        RECLAMO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -461,4 +478,16 @@ request_check 'POST promoción válida' POST '/api/v1/promociones' 200 promo-cre
 request_check 'POST código de promoción del seed' POST '/api/v1/promociones' 409 promo-duplicate '{"codigo":"laptop-10","nombre":"Duplicada","tipo":"Producto","productoId":1,"porcentajeDescuento":5,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","activa":true}'
 request_check 'POST promoción de producto sin producto' POST '/api/v1/promociones' 400 promo-product-required '{"codigo":"PROMO-SIN-PRODUCTO","nombre":"Incompleta","tipo":"Producto","porcentajeDescuento":5,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","activa":true}'
 request_check 'DELETE promoción recién creada' DELETE "/api/v1/promociones/${PROMOCION_CREADA_ID}" 204 ''
+request_check 'OpenAPI de reclamos postventa' GET '/openapi/v1.json' 200 openapi-reclamos
+request_check 'Listado de reclamos postventa' GET '/api/v1/reclamos-postventa' 200 reclamos-list
+request_check 'Reclamos vencidos' GET '/api/v1/reclamos-postventa?vencidos=true' 200 reclamos-vencidos
+request_check 'Detalle del reclamo REC-DEV-001' GET '/api/v1/reclamos-postventa/1' 200 reclamo-detail
+request_check 'Resumen de reclamos postventa' GET '/api/v1/reclamos-postventa/resumen' 200 reclamos-summary
+request_check 'Crear reclamo postventa' POST '/api/v1/reclamos-postventa' 200 reclamo-created '{"clienteId":1,"ordenCompraId":1,"productoId":1,"tipo":"Defecto","prioridad":"Alta","descripcion":"Prueba de smoke para reclamo"}'
+request_check 'Iniciar reclamo creado' POST "/api/v1/reclamos-postventa/${RECLAMO_CREADO_ID}/iniciar" 200 reclamo-started
+request_check 'Resolver reclamo creado' POST "/api/v1/reclamos-postventa/${RECLAMO_CREADO_ID}/resolver" 200 reclamo-resolved '{"resolucion":"Solución aplicada"}'
+request_check 'Cerrar reclamo creado' POST "/api/v1/reclamos-postventa/${RECLAMO_CREADO_ID}/cerrar" 200 reclamo-closed
+request_check 'Cerrar reclamo cerrado' POST "/api/v1/reclamos-postventa/${RECLAMO_CREADO_ID}/cerrar" 409 reclamo-close-conflict
+request_check 'Crear reclamo con producto ajeno a la orden' POST '/api/v1/reclamos-postventa' 400 reclamo-product-not-order '{"clienteId":1,"ordenCompraId":1,"productoId":2,"tipo":"Defecto","prioridad":"Alta","descripcion":"Producto no perteneciente a la orden"}'
+request_check 'Rechazar reclamo sin motivo' POST '/api/v1/reclamos-postventa/1/rechazar' 400 reclamo-no-rejection-motive '{"motivo":" "}'
 printf 'SMOKE OK\n'

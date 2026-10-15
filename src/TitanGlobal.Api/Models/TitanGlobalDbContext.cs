@@ -30,6 +30,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Promocion> Promociones { get; set; } = null!;
 
+    public DbSet<ReclamoPostventa> ReclamosPostventa { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -429,6 +431,61 @@ public class TitanGlobalDbContext : DbContext
             .WithOne(item => item.ListaPrecios)
             .HasForeignKey(item => item.ListaPreciosId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Numero)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Tipo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Prioridad)
+            .HasMaxLength(10)
+            .IsRequired();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Descripcion)
+            .HasMaxLength(1000)
+            .IsRequired();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.Resolucion)
+            .HasMaxLength(1000);
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .Property(reclamo => reclamo.MotivoRechazo)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .HasIndex(reclamo => reclamo.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .HasOne<Cliente>()
+            .WithMany()
+            .HasForeignKey(reclamo => reclamo.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .HasOne<OrdenCompra>()
+            .WithMany()
+            .HasForeignKey(reclamo => reclamo.OrdenCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ReclamoPostventa>()
+            .HasOne<Producto>()
+            .WithMany()
+            .HasForeignKey(reclamo => reclamo.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ItemListaPrecios>()
             .Property(item => item.Precio)
