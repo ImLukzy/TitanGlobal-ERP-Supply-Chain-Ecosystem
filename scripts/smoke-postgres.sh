@@ -9,6 +9,7 @@ PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
 SOLICITUD_CREADA_ID=""
 ORDEN_ABASTECIMIENTO_CREADA_ID=""
+ALMACEN_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -135,6 +136,14 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "warehouses-city": lambda data: data["total"] == 2 and [item["codigo"] for item in data["items"]] == ["ALM-LIM-01", "ALM-LIM-02"],
+    "warehouses-type": lambda data: data["total"] == 3 and [item["codigo"] for item in data["items"]] == ["ALM-ARE-01", "ALM-LIM-02", "ALM-TRU-01"],
+    "warehouses-inactive": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "ALM-TRU-01" and data["items"][0]["activo"] is False,
+    "warehouse-detail": lambda data: data["id"] == 1 and data["codigo"] == "ALM-LIM-01" and data["tipo"] == "Central" and data["capacidadM3"] == 500.0,
+    "warehouse-cities": lambda data: data == ["Arequipa", "Callao", "Lima", "Trujillo"],
+    "warehouses-summary": lambda data: data["totalAlmacenes"] == 5 and data["activos"] == 4 and data["inactivos"] == 1 and data["capacidadTotalM3"] == 1025.0 and data["capacidadActivaM3"] == 925.0 and [(item["tipo"], item["totalAlmacenes"], item["capacidadM3"]) for item in data["porTipo"]] == [("Central", 1, 500.0), ("Regional", 3, 450.0), ("Transito", 1, 75.0)] and [item["ciudad"] for item in data["porCiudad"]] == ["Lima", "Arequipa", "Callao", "Trujillo"],
+    "warehouse-created": lambda data: data["id"] > 0,
+    "warehouse-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un almacén con el código ALM-LIM-01.",
     "provider-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un proveedor con el RUC 20600000001.",
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
@@ -225,6 +234,10 @@ request_check() {
     if [[ "$validation" == "orden-created" ]]; then
         ORDEN_ABASTECIMIENTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+
+    if [[ "$validation" == "warehouse-created" ]]; then
+        ALMACEN_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -263,6 +276,15 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
+request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
+request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive
+request_check 'Detalle del almacén 1' GET '/api/v1/almacenes/1' 200 warehouse-detail
+request_check 'Ciudades de almacenes' GET '/api/v1/almacenes/ciudades' 200 warehouse-cities
+request_check 'Resumen de almacenes' GET '/api/v1/almacenes/resumen' 200 warehouses-summary
+request_check 'POST almacén válido' POST '/api/v1/almacenes' 200 warehouse-created '{"codigo":"ALM-SMK-01","nombre":"Almacén Smoke","tipo":"Regional","direccion":"Calle Smoke 1","ciudad":"Lima","capacidadM3":20,"responsable":"QA","activo":true}'
+request_check 'POST almacén con código del seed' POST '/api/v1/almacenes' 409 warehouse-duplicate '{"codigo":"ALM-LIM-01","nombre":"Duplicado","tipo":"Central","direccion":"Calle Smoke 2","ciudad":"Lima","capacidadM3":20}'
+request_check 'DELETE almacén recién creado' DELETE "/api/v1/almacenes/${ALMACEN_CREADO_ID}" 204 ''
 request_check 'Solicitudes pendientes' GET '/api/v1/solicitudes-compra?estado=pendiente' 200 solicitudes-pendientes
 request_check 'Solicitudes por rango de fechas' GET '/api/v1/solicitudes-compra?fechaDesde=2026-02-15&fechaHasta=2026-03-10' 200 solicitudes-rango
 request_check 'Detalle de solicitud 1' GET '/api/v1/solicitudes-compra/1' 200 solicitud-detalle

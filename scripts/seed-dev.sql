@@ -112,4 +112,22 @@ INSERT INTO "DetallesOrdenesAbastecimiento" ("OrdenAbastecimientoId", "ProductoI
 SELECT setval(pg_get_serial_sequence('"OrdenesAbastecimiento"', 'Id'), (SELECT MAX("Id") FROM "OrdenesAbastecimiento"));
 SELECT setval(pg_get_serial_sequence('"DetallesOrdenesAbastecimiento"', 'Id'), (SELECT MAX("Id") FROM "DetallesOrdenesAbastecimiento"));
 
+INSERT INTO "Almacenes" (
+    "Codigo", "Nombre", "Tipo", "Direccion", "Ciudad", "CapacidadM3", "Responsable", "Activo") VALUES
+    ('ALM-LIM-01', 'Central Lima', 'Central', 'Av. Industrial 100', 'Lima', 500.00, 'Ana Torres', TRUE),
+    ('ALM-LIM-02', 'Regional Lima', 'Regional', 'Jr. Logística 200', 'Lima', 200.00, 'Luis Rojas', TRUE),
+    ('ALM-ARE-01', 'Regional Arequipa', 'Regional', 'Av. Sur 300', 'Arequipa', 150.00, 'María León', TRUE),
+    ('ALM-TRU-01', 'Regional Trujillo', 'Regional', 'Av. Norte 400', 'Trujillo', 100.00, 'Carlos Díaz', FALSE),
+    ('ALM-CAL-TR', 'Tránsito Callao', 'Transito', 'Av. Puerto 500', 'Callao', 75.00, NULL, TRUE)
+ON CONFLICT ("Codigo") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "Tipo" = EXCLUDED."Tipo",
+    "Direccion" = EXCLUDED."Direccion",
+    "Ciudad" = EXCLUDED."Ciudad",
+    "CapacidadM3" = EXCLUDED."CapacidadM3",
+    "Responsable" = EXCLUDED."Responsable",
+    "Activo" = EXCLUDED."Activo";
+
+SELECT setval(pg_get_serial_sequence('"Almacenes"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Almacenes"));
+
 COMMIT;

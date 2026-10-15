@@ -12,6 +12,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Proveedor> Proveedores { get; set; } = null!;
 
+    public DbSet<Almacen> Almacenes { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -28,6 +30,43 @@ public class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Nombre)
+            .HasMaxLength(200)
+            .IsRequired();
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Tipo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Direccion)
+            .HasMaxLength(300)
+            .IsRequired();
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Ciudad)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.CapacidadM3)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Almacen>()
+            .Property(almacen => almacen.Responsable)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Almacen>()
+            .HasIndex(almacen => almacen.Codigo)
+            .IsUnique();
+
         modelBuilder.Entity<Proveedor>()
             .Property(proveedor => proveedor.RazonSocial)
             .HasMaxLength(200);
