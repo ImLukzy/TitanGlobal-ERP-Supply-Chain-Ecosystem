@@ -230,7 +230,7 @@ public sealed class OrdenesCompraApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<IDbContextOptionsConfiguration<TitanGlobalDbContext>>();
             services.AddDbContext<TitanGlobalDbContext>(options => options
                 .UseInMemoryDatabase("Modulo04OrdenesTests")
-                // EF InMemory ignores TransactionScope; PostgreSQL smoke verifies the atomic transaction behavior.
+                // EF InMemory ignora TransactionScope; el smoke contra PostgreSQL comprueba que la creación es atómica.
                 .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
         });
     }
