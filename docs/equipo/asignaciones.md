@@ -22,7 +22,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | Módulo | Dominio | Responsable | Estado | Specs |
 |---|---|---|---|---|
 | 01 Clientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 07, 08 |
-| 02 SegmentacionClientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 23, 24 |
+| 02 SegmentacionClientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla en curso | 23, 24 |
 | 03 Cotizaciones | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 25, 26 |
 | 04 OrdenesCompra | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 01–06 |
 | 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
@@ -44,7 +44,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 21 Productos | Inventarios y Almacenes (WMS) | Lukas Melgar (equipo Claude) | terminado | 09, 10 |
 | 22 CategoriasProducto | Inventarios y Almacenes (WMS) | Antony Huayhua | pendiente | — |
 | 23 Almacenes | Inventarios y Almacenes (WMS) | Lukas Melgar (equipo Claude) | terminado | 19, 20 |
-| 24 ZonasAlmacenaje | Inventarios y Almacenes (WMS) | Lukas Melgar (equipo Claude) | QA en curso | 21, 22 |
+| 24 ZonasAlmacenaje | Inventarios y Almacenes (WMS) | Lukas Melgar (equipo Claude) | terminado | 21, 22 |
 | 25 LotesSeries | Inventarios y Almacenes (WMS) | Antony Huayhua | pendiente | — |
 | 26 KardexValorizado | Inventarios y Almacenes (WMS) | Antony Huayhua | pendiente | — |
 | 27 TransferenciasAlmacen | Inventarios y Almacenes (WMS) | Antony Huayhua | pendiente | — |
