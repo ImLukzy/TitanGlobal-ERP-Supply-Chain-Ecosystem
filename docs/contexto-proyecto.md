@@ -92,14 +92,14 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-14 | Repositorio privado en GitHub a nombre de Lukas; despliegue en Neon, Render y Vercel; `main` al día | Lukas |
 | 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integrador (spec 18) |
 | 2026-10-15 | Siguiente módulo de los agentes: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integrador |
-| 2026-10-15 | Módulos propuestos a compañeros: 12 (Leonel), 22 (Antony), 19 (Kelvin) | Lukas |
+| 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
 
 ## 11. Cómo se mantiene este documento
 En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
 - **En curso:** QA de extremo a extremo del módulo 23 Almacenes (backend y pantalla integrados y desplegados) y módulo 24 ZonasAlmacenaje (specs 21 y 22).
-- **Asignados a compañeros:** 12 EvaluacionProveedores, 22 CategoriasProducto, 19 RecepcionMercaderia.
+- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). A Lukas le quedan 12 por empezar (02, 03, 05–10, 71, 72, 77, 78) más cerrar 23 y 24; Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel vacío más grande en SolicitudesCompra; números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
-- **Resto:** 71 módulos sin empezar.
+- **Resto:** ninguno sin dueño.

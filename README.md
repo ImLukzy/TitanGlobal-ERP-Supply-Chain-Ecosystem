@@ -8,7 +8,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 ## Empieza aquí
 0. Lee el [contexto del proyecto](docs/contexto-proyecto.md): qué es, qué pide el examen, cómo está construido, qué está implementado, decisiones y pendientes.
 1. Lee la [guía para compañeros](docs/guia-companeros.md): cómo instalar, levantar el proyecto en tu máquina y entregar trabajo sin pisar el de otros.
-2. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) qué módulo lleva cada uno y apúntate antes de empezar.
+2. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) tus 20 módulos (reparto equitativo por dominio) y el orden sugerido.
 3. Las reglas de código están en [`CLAUDE.md`](CLAUDE.md) y valen para personas y agentes.
 
 ## Estado
