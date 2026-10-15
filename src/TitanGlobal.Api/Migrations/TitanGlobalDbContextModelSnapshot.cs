@@ -523,6 +523,62 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("Productos");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.Promocion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("FechaFin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("MontoMinimo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("PorcentajeDescuento")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int?>("ProductoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SegmentoClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("SegmentoClienteId");
+
+                    b.ToTable("Promociones");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.Proveedor", b =>
                 {
                     b.Property<int>("Id")
@@ -864,6 +920,21 @@ namespace TitanGlobal.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.Promocion", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TitanGlobal.Api.Models.SegmentoCliente", "SegmentoCliente")
+                        .WithMany()
+                        .HasForeignKey("SegmentoClienteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("SegmentoCliente");
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.SolicitudCompra", b =>

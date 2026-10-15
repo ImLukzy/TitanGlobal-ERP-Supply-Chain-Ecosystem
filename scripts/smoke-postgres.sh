@@ -16,12 +16,16 @@ COTIZACION_CREADA_ID=""
 CONTRATO_CREADO_ID=""
 CONTRATO_BORRADOR_ID=""
 LISTA_PRECIOS_CREADA_ID=""
+PROMOCION_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
     trap - EXIT INT TERM
 
     if [[ -n "$API_PID" ]]; then
+        if [[ -n "$PROMOCION_CREADA_ID" ]]; then
+            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/promociones/${PROMOCION_CREADA_ID}" >/dev/null 2>&1 || true
+        fi
         if [[ -n "$LISTA_PRECIOS_CREADA_ID" ]]; then
             curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" >/dev/null 2>&1 || true
         fi
@@ -218,6 +222,16 @@ checks = {
     "listas-summary": lambda data: data["total"] == 3 and data["activas"] == 3 and data["vigentes"] == 2 and data["deSegmento"] == 1 and data["generales"] == 2 and data["productosConPrecioEspecial"] == 3,
     "lista-created": lambda data: data["id"] > 0,
     "lista-priority-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una lista de precios con la prioridad 1.",
+    "openapi-promociones": lambda data: all(path in data["paths"] for path in ["/api/v1/promociones", "/api/v1/promociones/{id}", "/api/v1/promociones/evaluar", "/api/v1/promociones/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/promociones", "get"), ("/api/v1/promociones", "post"), ("/api/v1/promociones/{id}", "get"), ("/api/v1/promociones/{id}", "put"), ("/api/v1/promociones/{id}", "delete"), ("/api/v1/promociones/evaluar", "post"), ("/api/v1/promociones/resumen", "get")]),
+    "promos-list": lambda data: data["total"] == 4 and [item["codigo"] for item in data["items"]] == ["COMPRA-3000", "LAPTOP-10", "LAPTOP-VIP-15", "VERANO-2025"],
+    "promos-vigentes": lambda data: data["total"] == 3 and all(item["vigente"] for item in data["items"]),
+    "promo-detail": lambda data: data["codigo"] == "LAPTOP-10" and data["tipo"] == "Producto" and data["productoId"] == 1 and data["porcentajeDescuento"] == 10.0,
+    "promo-acme": lambda data: data["subtotal"] == 5000.0 and data["totalTrasLineas"] == 4250.0 and data["descuentoCompra"] == 212.5 and data["total"] == 4037.5 and data["lineas"][0]["promocion"]["codigo"] == "LAPTOP-VIP-15" and data["promocionCompra"]["codigo"] == "COMPRA-3000",
+    "promo-beta": lambda data: data["subtotal"] == 5000.0 and data["totalTrasLineas"] == 4500.0 and data["descuentoCompra"] == 225.0 and data["total"] == 4275.0 and data["lineas"][0]["promocion"]["codigo"] == "LAPTOP-10",
+    "promo-empty": lambda data: data["StatusCode"] == 400 and data["Message"] == "La compra debe tener al menos una línea." and "Detail" not in data,
+    "promo-created": lambda data: data["id"] > 4,
+    "promo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una promoción con el código LAPTOP-10." and "Detail" not in data,
+    "promo-product-required": lambda data: data["StatusCode"] == 400 and data["Message"] == "La promoción de producto requiere un producto." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -312,6 +326,10 @@ request_check() {
 
     if [[ "$validation" == "lista-created" ]]; then
         LISTA_PRECIOS_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "promo-created" ]]; then
+        PROMOCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -432,4 +450,15 @@ request_check 'Resumen de listas de precios' GET '/api/v1/listas-precios/resumen
 request_check 'POST lista de precios válida' POST '/api/v1/listas-precios' 200 lista-created '{"codigo":"SMOKE-LP","nombre":"Lista Smoke","prioridad":99,"fechaInicio":"2026-01-01T00:00:00Z","activa":true,"items":[{"productoId":2,"precio":1400}]}'
 request_check 'POST lista con prioridad del seed' POST '/api/v1/listas-precios' 409 lista-priority-duplicate '{"codigo":"SMOKE-DUP-LP","nombre":"Duplicada","prioridad":1,"fechaInicio":"2026-01-01T00:00:00Z","activa":true,"items":[{"productoId":2,"precio":1400}]}'
 request_check 'DELETE lista recién creada' DELETE "/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" 204 ''
+request_check 'OpenAPI de promociones' GET '/openapi/v1.json' 200 openapi-promociones
+request_check 'Listado de promociones' GET '/api/v1/promociones' 200 promos-list
+request_check 'Promociones vigentes' GET '/api/v1/promociones?vigentes=true' 200 promos-vigentes
+request_check 'Detalle de promoción LAPTOP-10' GET '/api/v1/promociones/1' 200 promo-detail
+request_check 'Evaluar compra de Acme' POST '/api/v1/promociones/evaluar' 200 promo-acme '{"clienteId":1,"fecha":"2026-06-01T00:00:00Z","lineas":[{"productoId":1,"cantidad":2,"precioUnitario":2500}]}'
+request_check 'Evaluar compra de Beta' POST '/api/v1/promociones/evaluar' 200 promo-beta '{"clienteId":2,"fecha":"2026-06-01T00:00:00Z","lineas":[{"productoId":1,"cantidad":2,"precioUnitario":2500}]}'
+request_check 'Evaluar compra sin líneas' POST '/api/v1/promociones/evaluar' 400 promo-empty '{"clienteId":1,"lineas":[]}'
+request_check 'POST promoción válida' POST '/api/v1/promociones' 200 promo-created '{"codigo":"PROMO-SMOKE","nombre":"Promoción Smoke","tipo":"Producto","productoId":2,"porcentajeDescuento":5,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","activa":true}'
+request_check 'POST código de promoción del seed' POST '/api/v1/promociones' 409 promo-duplicate '{"codigo":"laptop-10","nombre":"Duplicada","tipo":"Producto","productoId":1,"porcentajeDescuento":5,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","activa":true}'
+request_check 'POST promoción de producto sin producto' POST '/api/v1/promociones' 400 promo-product-required '{"codigo":"PROMO-SIN-PRODUCTO","nombre":"Incompleta","tipo":"Producto","porcentajeDescuento":5,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","activa":true}'
+request_check 'DELETE promoción recién creada' DELETE "/api/v1/promociones/${PROMOCION_CREADA_ID}" 204 ''
 printf 'SMOKE OK\n'

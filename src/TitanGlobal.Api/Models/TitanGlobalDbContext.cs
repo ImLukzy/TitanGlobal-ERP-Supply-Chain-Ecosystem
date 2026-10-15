@@ -28,6 +28,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
 
+    public DbSet<Promocion> Promociones { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -358,6 +360,45 @@ public class TitanGlobalDbContext : DbContext
             .HasMany(cliente => cliente.OrdenesCompra)
             .WithOne(orden => orden.Cliente)
             .HasForeignKey(orden => orden.ClienteId);
+
+        modelBuilder.Entity<Promocion>()
+            .Property(promocion => promocion.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Promocion>()
+            .Property(promocion => promocion.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Promocion>()
+            .Property(promocion => promocion.Tipo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Promocion>()
+            .Property(promocion => promocion.MontoMinimo)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Promocion>()
+            .Property(promocion => promocion.PorcentajeDescuento)
+            .HasColumnType("decimal(5,2)");
+
+        modelBuilder.Entity<Promocion>()
+            .HasIndex(promocion => promocion.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<Promocion>()
+            .HasOne<Producto>()
+            .WithMany()
+            .HasForeignKey(promocion => promocion.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Promocion>()
+            .HasOne(promocion => promocion.SegmentoCliente)
+            .WithMany()
+            .HasForeignKey(promocion => promocion.SegmentoClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ListaPrecios>()
             .Property(lista => lista.Codigo)

@@ -218,4 +218,15 @@ INSERT INTO "ContratosComerciales" (
 
 SELECT setval(pg_get_serial_sequence('"ContratosComerciales"', 'Id'), (SELECT MAX("Id") FROM "ContratosComerciales"));
 
+TRUNCATE TABLE "Promociones" RESTART IDENTITY;
+
+INSERT INTO "Promociones" (
+    "Id", "Codigo", "Nombre", "Tipo", "ProductoId", "MontoMinimo", "PorcentajeDescuento", "SegmentoClienteId", "FechaInicio", "FechaFin", "Activa") VALUES
+    (1, 'LAPTOP-10', 'Laptop 10 %', 'Producto', 1, NULL, 10.00, NULL, TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', TRUE),
+    (2, 'LAPTOP-VIP-15', 'Laptop VIP 15 %', 'Producto', 1, NULL, 15.00, (SELECT "Id" FROM "SegmentosClientes" WHERE "Codigo" = 'VIP'), TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', TRUE),
+    (3, 'COMPRA-3000', 'Compra desde 3000', 'MontoMinimo', NULL, 3000.00, 5.00, NULL, TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', TRUE),
+    (4, 'VERANO-2025', 'Mouse de verano', 'Producto', 3, NULL, 20.00, NULL, TIMESTAMPTZ '2025-01-01 00:00:00+00', TIMESTAMPTZ '2025-12-31 00:00:00+00', TRUE);
+
+SELECT setval(pg_get_serial_sequence('"Promociones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Promociones"));
+
 COMMIT;
