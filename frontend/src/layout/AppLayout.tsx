@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { isUserRole } from '../api/roleStore';
 import { dominios } from '../modules/catalogo';
+import { AlertasIndicador } from './AlertasIndicador';
 import { useRole } from './RoleContext';
+import './alertas-indicador.css';
 
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,22 +45,25 @@ export function AppLayout() {
           <span className="brand-mark" aria-hidden="true">T</span>
           <span><strong>TitanGlobal</strong><small>ERP · Supply Chain</small></span>
         </NavLink>
-        <label className="role-picker">
-          <span>Rol de prueba</span>
-          <select
-            aria-label="Rol de prueba"
-            onChange={(event) => {
-              const value = event.currentTarget.value;
-              setRole(isUserRole(value) ? value : null);
-            }}
-            value={role ?? ''}
-          >
-            <option value="">Ninguno</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Bloqueado">Bloqueado</option>
-            <option value="SinPermiso">SinPermiso</option>
-          </select>
-        </label>
+        <div className="topbar-actions">
+          <AlertasIndicador />
+          <label className="role-picker">
+            <span>Rol de prueba</span>
+            <select
+              aria-label="Rol de prueba"
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                setRole(isUserRole(value) ? value : null);
+              }}
+              value={role ?? ''}
+            >
+              <option value="">Ninguno</option>
+              <option value="Administrador">Administrador</option>
+              <option value="Bloqueado">Bloqueado</option>
+              <option value="SinPermiso">SinPermiso</option>
+            </select>
+          </label>
+        </div>
       </header>
       <div className="workspace">
         <button

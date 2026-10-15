@@ -122,7 +122,13 @@ describe('navegación', () => {
 
 describe('portada', () => {
   it('informa que la API está en línea cuando salud responde', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === '/api/v1/alertas/resumen') {
+        return Promise.resolve(Response.json({ altas: 0 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }));
     renderApp();
 
     expect(await screen.findByText('API en línea')).toBeInTheDocument();
