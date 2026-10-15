@@ -25,7 +25,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 02 SegmentacionClientes | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla en curso | 23, 24 |
 | 03 Cotizaciones | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 25, 26 |
 | 04 OrdenesCompra | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 01–06 |
-| 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
+| 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 27, 28 |
 | 06 ListasPrecios | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
 | 07 PromocionesDescuentos | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
 | 08 ComisionesVendedores | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
