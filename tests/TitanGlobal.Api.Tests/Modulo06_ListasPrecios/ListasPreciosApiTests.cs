@@ -227,6 +227,46 @@ public class ListasPreciosApiTests : IDisposable
     }
 
     [Fact]
+    public async Task ListadoConSegmentoCeroDevuelveSoloGeneralesYTotalExacto()
+    {
+        await PrepararEscenarioFiltroSegmentosAsync();
+
+        PaginaListasDto? resultado = await _cliente.GetFromJsonAsync<PaginaListasDto>(
+            "/api/v1/listas-precios?segmentoId=0");
+
+        Assert.NotNull(resultado);
+        Assert.Equal(2, resultado.Total);
+        Assert.Equal(new[] { "GENERAL-VENCIDA", "GENERAL-ACTUAL" },
+            resultado.Items.Select(lista => lista.Codigo));
+    }
+
+    [Fact]
+    public async Task ListadoConSegmentoCeroYVigentesDevuelveSoloGeneralesVigentesYTotalExacto()
+    {
+        await PrepararEscenarioFiltroSegmentosAsync();
+
+        PaginaListasDto? resultado = await _cliente.GetFromJsonAsync<PaginaListasDto>(
+            "/api/v1/listas-precios?segmentoId=0&vigentes=true");
+
+        Assert.NotNull(resultado);
+        Assert.Equal(1, resultado.Total);
+        Assert.Equal("GENERAL-ACTUAL", Assert.Single(resultado.Items).Codigo);
+    }
+
+    [Fact]
+    public async Task ListadoConSegmentoMayorACeroDevuelveSoloEseSegmento()
+    {
+        await PrepararEscenarioFiltroSegmentosAsync();
+
+        PaginaListasDto? resultado = await _cliente.GetFromJsonAsync<PaginaListasDto>(
+            "/api/v1/listas-precios?segmentoId=1");
+
+        Assert.NotNull(resultado);
+        Assert.Equal(1, resultado.Total);
+        Assert.Equal("VIP-SEGMENTO", Assert.Single(resultado.Items).Codigo);
+    }
+
+    [Fact]
     public async Task ResumenCuentaListasYProductosDistintosVigentes()
     {
         await CrearListaAsync("GENERAL-UNO", 1, null, 100m);
@@ -239,6 +279,16 @@ public class ListasPreciosApiTests : IDisposable
         Assert.Equal(1, resumen.DeSegmento);
         Assert.Equal(1, resumen.Generales);
         Assert.Equal(1, resumen.ProductosConPrecioEspecial);
+    }
+
+    private async Task PrepararEscenarioFiltroSegmentosAsync()
+    {
+        DateTime hoy = DateTime.UtcNow.Date;
+        await CrearListaAsync("GENERAL-ACTUAL", 10, null, 2400m, true, hoy.AddDays(-1), hoy.AddDays(1));
+        await CrearListaAsync("GENERAL-VENCIDA", 5, null, 2000m, true,
+            new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2025, 12, 31, 0, 0, 0, DateTimeKind.Utc));
+        await CrearListaAsync("VIP-SEGMENTO", 1, 1, 2300m);
     }
 
     [Fact]

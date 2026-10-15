@@ -32,7 +32,14 @@ public class ListasPreciosUseCase
 
         if (segmentoId.HasValue)
         {
-            consulta = consulta.Where(lista => lista.SegmentoClienteId == segmentoId.Value);
+            if (segmentoId.Value == 0)
+            {
+                consulta = consulta.Where(lista => lista.SegmentoClienteId == null);
+            }
+            else
+            {
+                consulta = consulta.Where(lista => lista.SegmentoClienteId == segmentoId.Value);
+            }
         }
 
         DateTime hoy = FechasUtc.Normalizar(DateTime.UtcNow).Date;
