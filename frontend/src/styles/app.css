@@ -1287,6 +1287,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .auditoria-work-area { grid-template-columns: minmax(0, 1fr); }
   .auditoria-summary .auditoria-top { grid-column: span 2; }
   .auditoria-summary .auditoria-actividad { grid-column: span 2; }
+  .auditoria-table { min-width: 820px; }
 }
 @media (max-width: 720px) {
   .auditoria-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
