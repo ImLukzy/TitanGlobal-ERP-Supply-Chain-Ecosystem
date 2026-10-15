@@ -1250,18 +1250,22 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .auditoria-filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .auditoria-filtros input, .auditoria-filtros select { height: 36px; }
 .auditoria-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
-.auditoria-table { min-width: 1000px; table-layout: fixed; }
+.auditoria-table { width: 100%; min-width: 0; table-layout: fixed; }
 .auditoria-table thead th { white-space: nowrap; }
 .auditoria-table th, .auditoria-table td { padding: 8px 7px; font-size: 9px; }
-.auditoria-table th:nth-child(1) { width: 17%; }
-.auditoria-table th:nth-child(2) { width: 11%; }
-.auditoria-table th:nth-child(3) { width: 6%; }
-.auditoria-table th:nth-child(4) { width: 12%; }
-.auditoria-table th:nth-child(5) { width: 11%; }
-.auditoria-table th:nth-child(6) { width: 31%; }
-.auditoria-table th:nth-child(7) { width: 12%; }
-.auditoria-row-link { padding: 0; border: 0; background: transparent; color: var(--accent); font: inherit; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; }
+.auditoria-table th:nth-child(1) { width: 24%; }
+.auditoria-table th:nth-child(2) { width: 19%; }
+.auditoria-table th:nth-child(3) { width: 7%; }
+.auditoria-table th:nth-child(4) { width: 17%; }
+.auditoria-table th:nth-child(5) { width: 16%; }
+.auditoria-table th:nth-child(6) { width: 17%; }
+.auditoria-table tbody th { font-size: 9px; }
+.auditoria-table tbody td { overflow-wrap: anywhere; }
+.auditoria-entidad-cell > span, .auditoria-ruta { display: block; }
+.auditoria-ruta { margin-top: 3px; color: var(--ink-faint); font-size: 8px; overflow-wrap: anywhere; }
+.auditoria-row-link { padding: 0; border: 0; background: transparent; color: var(--accent); font: inherit; font-variant-numeric: tabular-nums; text-decoration: none; white-space: nowrap; cursor: pointer; }
 .auditoria-row-link:hover { text-decoration: underline; }
+.auditoria-row-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .auditoria-accion { display: inline-flex; align-items: center; padding: 3px 7px; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 8px; font-weight: 700; white-space: nowrap; }
 .auditoria-accion-alta { background: var(--good-soft); color: var(--good); }
 .auditoria-accion-modificacion { background: var(--accent-soft); color: var(--accent); }
@@ -1289,7 +1293,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .auditoria-summary .auditoria-top, .auditoria-summary .auditoria-actividad { grid-column: 1 / -1; }
   .auditoria-filtros { grid-template-columns: minmax(0, 1fr); }
   .auditoria-actividad ol { gap: 3px; }
-  .auditoria-actividad li > span { font-size: 7px; }
+  .auditoria-actividad li > span { font-size: 8px; }
   .auditoria-list-panel, .auditoria-detail { padding: 13px; }
   .auditoria-detail-grid { grid-template-columns: minmax(0, 1fr); }
 }

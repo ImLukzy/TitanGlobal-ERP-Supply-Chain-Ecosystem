@@ -89,7 +89,8 @@ describe('visor de auditoría transaccional', () => {
     const barras = within(actividad).getAllByRole('meter');
     expect(barras).toHaveLength(7);
     expect(within(actividad).getAllByText('0')).toHaveLength(2);
-    expect(within(actividad).getByText('15/10/2026')).toBeInTheDocument();
+    expect(within(actividad).getByText('15/10')).toBeInTheDocument();
+    expect(within(actividad).getByLabelText('15/10/2026')).toHaveAttribute('title', '15/10/2026');
     expect(barras[1]).toHaveAccessibleName('0 registros el 10/10/2026');
     expect(barras[1]).toHaveAttribute('aria-valuenow', '0');
   });

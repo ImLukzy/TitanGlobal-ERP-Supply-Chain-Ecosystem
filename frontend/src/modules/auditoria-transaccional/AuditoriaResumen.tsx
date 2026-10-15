@@ -1,4 +1,5 @@
 import { formatearFecha } from '../../lib/formato';
+import { formatearFechaCortaUtc } from './presentacion';
 import type { ResumenAuditoria } from './tipos';
 
 interface Props {
@@ -30,7 +31,7 @@ export function AuditoriaResumen({ datos, error }: Props) {
         <ol>{datos.ultimos7Dias.map((dia) => {
           const alto = Math.max(dia.registros === 0 ? 0 : 8, Math.round((dia.registros / mayorCantidad) * 100));
           return <li key={dia.fecha}>
-            <span>{formatearFecha(dia.fecha)}</span>
+            <span aria-label={formatearFecha(dia.fecha)} title={formatearFecha(dia.fecha)}>{formatearFechaCortaUtc(dia.fecha)}</span>
             <div aria-label={`${dia.registros} registros el ${formatearFecha(dia.fecha)}`} aria-valuemax={mayorCantidad} aria-valuemin={0} aria-valuenow={dia.registros} className="auditoria-barra" role="meter"><span style={{ height: `${alto}%` }} /></div>
             <strong>{dia.registros}</strong>
           </li>;
