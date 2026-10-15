@@ -753,6 +753,63 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .solicitud-reject-field { display: grid; gap: 6px; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
 .solicitud-reject-field textarea { resize: vertical; }
 
+.cotizaciones-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 14px; }
+.cotizaciones-summary .solicitudes-top-panel { grid-column: 1 / -1; }
+.cotizaciones-summary .solicitudes-top-panel ol { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.cotizaciones-filters { grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr)); }
+.cotizaciones-expired { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 9px; }
+.cotizaciones-expired input { width: auto; min-height: 0; }
+.cotizaciones-table { min-width: 900px; }
+.cotizaciones-table th, .cotizaciones-table td { overflow-wrap: normal; word-break: normal; }
+.cotizacion-expired-label { display: inline-flex; border-radius: 20px; padding: 4px 7px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; white-space: nowrap; }
+.solicitud-status.is-emitida { background: var(--accent-soft); color: var(--accent-ink); }
+.solicitud-status.is-aceptada { background: var(--good-soft); color: var(--good); }
+.cotizacion-lines-table { font-size: 8px; }
+.cotizacion-lines-table th:first-child { width: 23%; }
+.cotizacion-lines-table th:nth-child(2) { width: 14%; text-align: center; }
+.cotizacion-lines-table th:nth-child(3) { width: 19%; text-align: right; }
+.cotizacion-lines-table th:nth-child(4) { width: 21%; }
+.cotizacion-lines-table th:nth-child(5) { width: 23%; text-align: right; }
+.cotizacion-lines-table th, .cotizacion-lines-table td { padding-right: 3px; padding-left: 3px; }
+.cotizacion-lines-table td:nth-child(2) { text-align: center; }
+.cotizacion-lines-table td:nth-child(3), .cotizacion-lines-table td:nth-child(5) { text-align: right; white-space: nowrap; }
+.cotizacion-lines-table td, .cotizacion-lines-table th { overflow-wrap: normal; word-break: normal; }
+.cotizacion-totals { display: grid; gap: 6px; margin: 12px 0 0 auto; max-width: 260px; }
+.cotizacion-totals div { display: flex; justify-content: space-between; gap: 10px; color: var(--ink-soft); font-size: 10px; }
+.cotizacion-totals dd { margin: 0; color: var(--ink); font-weight: 700; }
+.cotizacion-totals div:last-child { border-top: 1px solid var(--line); padding-top: 6px; color: var(--ink); font-size: 12px; }
+.cotizacion-form-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cotizacion-line { grid-template-columns: minmax(0, 1.8fr) minmax(68px, .6fr) minmax(100px, .9fr) minmax(96px, .8fr) minmax(82px, .7fr) auto; }
+
+@media (min-width: 1024px) {
+  .cotizaciones-work-area { grid-template-columns: minmax(0, 1.4fr) minmax(320px, .6fr); }
+  .cotizaciones-table { min-width: 0; table-layout: fixed; }
+  .cotizaciones-table th:first-child, .cotizaciones-table td:first-child { width: 17%; white-space: nowrap; }
+  .cotizaciones-table th:nth-child(2), .cotizaciones-table td:nth-child(2) { width: 13%; white-space: nowrap; }
+  .cotizaciones-table th:nth-child(3), .cotizaciones-table td:nth-child(3) { width: 16%; }
+  .cotizaciones-table th:nth-child(4), .cotizaciones-table td:nth-child(4) { width: 13%; white-space: nowrap; }
+  .cotizaciones-table th:nth-child(5), .cotizaciones-table td:nth-child(5) { width: 12%; }
+  .cotizaciones-table th:nth-child(6), .cotizaciones-table td:nth-child(6) { width: 12%; white-space: nowrap; }
+  .cotizaciones-table th:nth-child(7), .cotizaciones-table td:nth-child(7) { width: 17%; white-space: normal; }
+  .cotizaciones-table .solicitud-status { padding: 3px 4px; font-size: 7px; }
+}
+
+@media (max-width: 900px) {
+  .cotizaciones-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cotizaciones-summary .solicitudes-top-panel ol { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cotizacion-line { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .cotizaciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cotizaciones-summary .solicitudes-top-panel ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cotizaciones-filters { grid-template-columns: minmax(0, 1fr); }
+  .cotizaciones-table { min-width: 900px; }
+  .cotizacion-lines-table { min-width: 560px; }
+  .cotizacion-form-fields { grid-template-columns: minmax(0, 1fr); }
+  .cotizacion-line { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (min-width: 1024px) {
   .solicitudes-work-area { grid-template-columns: minmax(0, 1.15fr) minmax(350px, .85fr); }
   .solicitudes-table { min-width: 0; table-layout: fixed; font-size: 8px; }
