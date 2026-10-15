@@ -33,7 +33,7 @@ export function ListasTabla({
     return <p role="status">No hay listas que coincidan con los filtros.</p>;
   return (
     <TablaPaginada
-      caption="Listas de precios"
+      caption="Listas de precios. La columna Prod. indica la cantidad de productos."
       etiquetaRegion="Tabla de listas de precios"
       columnas={[
         { id: "prioridad", etiqueta: "Prioridad" },
@@ -41,7 +41,7 @@ export function ListasTabla({
         { id: "nombre", etiqueta: "Nombre" },
         { id: "segmento", etiqueta: "Segmento" },
         { id: "vigencia", etiqueta: "Vigencia" },
-        { id: "productos", etiqueta: "Productos" },
+        { id: "productos", etiqueta: "Prod." },
         { id: "estado", etiqueta: "Estado" },
       ]}
       elementos={items}
