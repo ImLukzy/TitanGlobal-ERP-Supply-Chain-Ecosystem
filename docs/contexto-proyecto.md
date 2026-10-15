@@ -83,6 +83,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 78 NotificacionesAlertas | `api/v1/alertas` | centro de alertas calculadas desde los módulos (reclamos vencidos, órdenes atrasadas, contratos excedidos o por vencer, almacenes casi llenos, cotizaciones vencidas, solicitudes antiguas); descartar y restaurar | backend integrado; pantalla pendiente (spec 38) | 37, 38 |
 | 08 ComisionesVendedores | `api/v1/comisiones-vendedores` | vendedores con % de comisión; asignación de cada orden a un vendedor; comisiones del mes; liquidación mensual y pago | backend integrado; pantalla pendiente (spec 40) | 39, 40 |
 | 72 RolesPermisos | `api/v1/roles` | roles y permisos de lectura/escritura por módulo (80), matriz roles × módulos; solo datos: el 403 del enunciado no cambia | en desarrollo | 41, 42 |
+| 71 Usuarios | `api/v1/usuarios` | usuarios con varios roles y permisos efectivos por módulo (unión de roles); siempre queda un ADMIN activo; solo datos: el 403 del enunciado no cambia | en desarrollo | 43, 44 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
@@ -129,7 +130,8 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 10 DevolucionesComerciales: backend integrado y desplegado; pantalla por empezar.
   - 78 NotificacionesAlertas: backend integrado y desplegado; pantalla por empezar.
   - 08 ComisionesVendedores: backend integrado y desplegado; pantalla por empezar.
-  - 72 RolesPermisos: backend en desarrollo.
+  - 72 RolesPermisos: backend en auditoría.
+  - 71 Usuarios: backend en desarrollo.
 - **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 11 de 20 terminados (01, 02, 03, 04, 05, 11, 13, 15, 21, 23, 24); tiene 7 en curso (06, 07, 08, 09, 10 y 78 con el backend publicado y la pantalla pendiente; 72 con el backend en desarrollo) y 2 por empezar (71, 77). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones).

@@ -91,7 +91,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 68 EvaluacionDesempeno | Capital Humano y Nóminas (HCM) | Kelvin Pinto | pendiente | — |
 | 69 Capacitaciones | Capital Humano y Nóminas (HCM) | Kelvin Pinto | pendiente | — |
 | 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Antony Huayhua | pendiente | — |
-| 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar | pendiente | — |
+| 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | en curso | 43, 44 |
 | 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | en curso | 41, 42 |
 | 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
