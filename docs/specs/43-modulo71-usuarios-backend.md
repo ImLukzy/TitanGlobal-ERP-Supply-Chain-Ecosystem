@@ -76,11 +76,19 @@ Decisión de Lukas (2026-10-15): usuarios y roles se gestionan **como datos**; n
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 7 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidades, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases, controlador y regla 8 en el módulo 72.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidades, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases, controlador y regla 8 en el módulo 72.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Integración | ✅ | `50ba49a` (Michael) integrado como `dfd4845` en `ImLukzy/Claudio` por cherry-pick; `diff` de las líneas cambiadas idéntico al commit auditado |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` en la rama de integración → exit 0: build sin warnings, formato y reglas OK, 569 tests del backend y 232 del frontend (37 archivos) en verde |
+| 2026-10-15 | A2 | ✅ | `UsuariosApiTests` (25 casos): un caso por mensaje de §4 con código y literal sin `Detail`, minúsculas, PUT con los suyos, sin mutación en los inválidos |
+| 2026-10-15 | A3 | ✅ | tests de unión de roles, «Ninguno» sin roles o inactivo, último ADMIN (desactivar, quitar rol, borrar → 409; con otro activo → permitido), filtros, orden y resumen; `RolesPermisosApiTests.NoPermiteEliminarRolAsignadoAUsuarios` (regla 8) |
+| 2026-10-15 | A4 | ✅ | el commit no toca `Middlewares/` ni `Services/` (0 archivos); los tests del 403 sin cambios y en verde |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK` con la migración `20261015173321_Usuarios`: listado por rol, detalle y permisos de luis.compras (80 filas), resumen (5 usuarios, 1 sin rol), POST, email repetido → 409, desactivar admin → 409, borrar VENTAS → 409 literal, DELETE → 204 |
+| 2026-10-15 | A6 | ✅ | el smoke valida las 7 operaciones en `/openapi/v1.json` (`openapi-usuarios`) |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
