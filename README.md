@@ -34,7 +34,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 08 ComisionesVendedores | ✅ | pendiente | — |
 | 72 RolesPermisos | ✅ | pendiente | — |
 | 71 Usuarios | ✅ | pendiente | — |
-| 77 AuditoriaTransaccional | en curso | pendiente | — |
+| 77 AuditoriaTransaccional | ✅ | pendiente | — |
 
 El resto de módulos muestra «Pantalla pendiente». La lista completa está en [`docs/arquitectura.md`](docs/arquitectura.md).
 

@@ -85,7 +85,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 08 ComisionesVendedores | `api/v1/comisiones-vendedores` | vendedores con % de comisión; asignación de cada orden a un vendedor; comisiones del mes; liquidación mensual y pago | backend integrado; pantalla pendiente (spec 40) | 39, 40 |
 | 72 RolesPermisos | `api/v1/roles` | roles y permisos de lectura/escritura por módulo (80), matriz roles × módulos; solo datos: el 403 del enunciado no cambia | backend integrado; pantalla pendiente (spec 42) | 41, 42 |
 | 71 Usuarios | `api/v1/usuarios` | usuarios con varios roles y permisos efectivos por módulo (unión de roles); siempre queda un ADMIN activo; solo datos: el 403 del enunciado no cambia | backend integrado; pantalla pendiente (spec 44) | 43, 44 |
-| 77 AuditoriaTransaccional | `api/v1/auditoria` | registro automático de altas, modificaciones y bajas de todas las entidades (antes/después, usuario de `X-Usuario`, ruta); visor de solo lectura | en desarrollo | 45, 46 |
+| 77 AuditoriaTransaccional | `api/v1/auditoria` | registro automático de altas, modificaciones y bajas de todas las entidades (antes/después, usuario de `X-Usuario`, ruta) desde `SaveChanges` del `DbContext`; consultas de solo lectura | backend integrado; pantalla pendiente (spec 46) | 45, 46 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
@@ -93,7 +93,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 572 tests del backend y 242 del frontend en verde.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 585 tests del backend y 242 del frontend en verde.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
@@ -134,8 +134,8 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 08 ComisionesVendedores: backend integrado y desplegado; pantalla por empezar.
   - 72 RolesPermisos: backend integrado y desplegado; pantalla por empezar.
   - 71 Usuarios: backend integrado y desplegado; pantalla por empezar.
-  - 77 AuditoriaTransaccional: backend en desarrollo.
-- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 12 de 20 terminados (01, 02, 03, 04, 05, 06, 11, 13, 15, 21, 23, 24); tiene los otros 8 en curso: 07, 08, 09, 10, 71, 72 y 78 con el backend publicado y la pantalla pendiente o en desarrollo, y 77 con el backend en integración. Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
+  - 77 AuditoriaTransaccional: backend integrado y desplegado; pantalla por empezar.
+- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 12 de 20 terminados (01, 02, 03, 04, 05, 06, 11, 13, 15, 21, 23, 24); tiene los otros 8 en curso: 07, 08, 09, 10, 71, 72 y 78 con el backend publicado y la pantalla pendiente o en desarrollo, y 77 también. Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
-- **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones).
+- **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.

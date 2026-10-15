@@ -97,7 +97,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 76 SeriesNumeracion | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
-| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | en curso | 45, 46 |
+| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 45, 46 |
 | 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 37, 38 |
 | 79 ParametrosSistema | Gobierno Corporativo, Seguridad y Auditoría | Antony Huayhua | pendiente | — |
 | 80 CierresPeriodo | Gobierno Corporativo, Seguridad y Auditoría | Antony Huayhua | pendiente | — |
