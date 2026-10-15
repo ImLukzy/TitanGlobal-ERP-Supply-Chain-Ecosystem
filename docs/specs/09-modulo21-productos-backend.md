@@ -77,10 +77,17 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07).
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 7 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: DTOs, UseCases y controlador.
-- [ ] Tarea 2: tests y smoke.
-- [ ] Tarea 3: A1–A6.
+- [x] Tarea 1: DTOs, UseCases y controlador.
+- [x] Tarea 2: tests y smoke.
+- [x] Tarea 3: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`c9c23a9`, idéntico al auditado `6b0fe52` según `git patch-id`): backend 81/81, frontend 53/53 |
+| 2026-10-14 | A2–A3 | ✅ | `ProductosApiTests`: mensajes literales con su código y sin `Detail`, precio 0 → 400, categoría con espacios guardada sin ellos; búsqueda, categoría sin distinguir mayúsculas, rango de precio, paginación, detalle con ventas y a 0, categorías ordenadas, resumen exacto |
+| 2026-10-14 | A4 | ✅ | el commit no toca `Models/` ni `Migrations/` |
+| 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `categoria=computo`, rango 100–1000, detalle 1, categorías (5), resumen, POST → 200 `{id:11}`, DELETE producto 1 → 409 literal, DELETE recién creado → 204 |
+| 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `productos` (GET, POST), `productos/{id}` (GET, PUT, DELETE), `productos/categorias` (GET), `productos/resumen` (GET) |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; 2 observaciones menores informativas, sin cambios |
+| 2026-10-14 | Nota | ℹ️ | En PostgreSQL `precioPromedio` sale con 16 decimales (`994.5000000000000000`); el frontend lo formatea en PEN. Redondear en la API queda fuera de esta spec |
