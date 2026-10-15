@@ -50,8 +50,19 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<DetalleOrdenCompra> DetallesOrdenCompra { get; set; } = null!;
 
+    public DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AlertaDescartada>()
+            .Property(alerta => alerta.Clave)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<AlertaDescartada>()
+            .HasIndex(alerta => alerta.Clave)
+            .IsUnique();
+
         modelBuilder.Entity<Cotizacion>()
             .Property(cotizacion => cotizacion.Numero)
             .HasMaxLength(20)

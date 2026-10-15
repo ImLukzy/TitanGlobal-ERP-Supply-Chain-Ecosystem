@@ -242,6 +242,14 @@ checks = {
     "devolucion-over-available": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo quedan 1 unidades de Silla Ejecutiva por devolver en la orden OC-008." and "Detail" not in data,
     "devolucion-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 1 no está en la orden OC-008." and "Detail" not in data,
     "devolucion-rejection-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
+    "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
+    "alertas-seed": lambda data: data["total"] >= 3 and {item["tipo"] for item in data["items"]}.issuperset({"ReclamoVencido", "OrdenAbastecimientoAtrasada", "AlmacenCasiLleno"}) and any(item["clave"] == "almacen-lleno:1" and item["mensaje"] == "El almacén ALM-LIM-01 tiene asignado el 90.00 % de su capacidad." for item in data["items"]),
+    "alertas-altas": lambda data: data["total"] >= 2 and all(item["severidad"] == "Alta" for item in data["items"]),
+    "alertas-resumen": lambda data: data["total"] >= 3 and data["altas"] >= 2 and data["medias"] >= 1 and data["descartadas"] == 0,
+    "alerta-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La alerta reclamo-vencido:1 ya está descartada." and "Detail" not in data,
+    "alerta-inexistente": lambda data: data["StatusCode"] == 404 and data["Message"] == "La alerta reclamo-vencido:999999 no existe o ya no está activa." and "Detail" not in data,
+    "alerta-descartada": lambda data: not any(item["clave"] == "reclamo-vencido:1" for item in data["items"]),
+    "alerta-restaurada": lambda data: any(item["clave"] == "reclamo-vencido:1" and item["descartada"] is False for item in data["items"]),
     "promo-empty": lambda data: data["StatusCode"] == 400 and data["Message"] == "La compra debe tener al menos una línea." and "Detail" not in data,
     "promo-created": lambda data: data["id"] > 4,
     "promo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una promoción con el código LAPTOP-10." and "Detail" not in data,
@@ -519,4 +527,14 @@ request_check 'POST devolución válida' POST '/api/v1/devoluciones-comerciales'
 request_check 'Aprobar devolución creada' POST "/api/v1/devoluciones-comerciales/${DEVOLUCION_CREADA_ID}/aprobar" 200 devolucion-approved
 request_check 'Recibir devolución aprobada' POST "/api/v1/devoluciones-comerciales/${DEVOLUCION_CREADA_ID}/recibir" 200 devolucion-received
 request_check 'Recibir devolución recibida' POST '/api/v1/devoluciones-comerciales/1/recibir' 409 devolucion-already-received
+request_check 'OpenAPI de alertas' GET '/openapi/v1.json' 200 openapi-alertas
+request_check 'Alertas del seed y almacén de Lima al 90 %' GET '/api/v1/alertas?incluirDescartadas=true&tamanoPagina=100' 200 alertas-seed
+request_check 'Filtrar alertas de severidad alta' GET '/api/v1/alertas?severidad=Alta&tamanoPagina=100' 200 alertas-altas
+request_check 'Resumen de alertas' GET '/api/v1/alertas/resumen' 200 alertas-resumen
+request_check 'Descartar reclamo vencido del seed' POST '/api/v1/alertas/descartar' 204 '' '{"clave":"reclamo-vencido:1"}'
+request_check 'Alerta descartada fuera del listado por defecto' GET '/api/v1/alertas' 200 alerta-descartada
+request_check 'Descartar alerta otra vez' POST '/api/v1/alertas/descartar' 409 alerta-duplicada '{"clave":"reclamo-vencido:1"}'
+request_check 'Restaurar reclamo vencido del seed' POST '/api/v1/alertas/restaurar' 204 '' '{"clave":"reclamo-vencido:1"}'
+request_check 'Alerta restaurada reaparece' GET '/api/v1/alertas?incluirDescartadas=true' 200 alerta-restaurada
+request_check 'Descartar clave inexistente' POST '/api/v1/alertas/descartar' 404 alerta-inexistente '{"clave":"reclamo-vencido:999999"}'
 printf 'SMOKE OK\n'
