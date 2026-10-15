@@ -8,8 +8,9 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 ## Empieza aquí
 0. Lee el [contexto del proyecto](docs/contexto-proyecto.md): qué es, qué pide el examen, cómo está construido, qué está implementado, decisiones y pendientes.
 1. Lee la [guía para compañeros](docs/guia-companeros.md): cómo instalar, levantar el proyecto en tu máquina y entregar trabajo sin pisar el de otros.
-2. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) tus 20 módulos (reparto equitativo por dominio) y el orden sugerido.
-3. Las reglas de código están en [`CLAUDE.md`](CLAUDE.md) y valen para personas y agentes.
+2. Lee el [relevo](docs/equipo/relevo.md): dónde se quedó el trabajo de Lukas y qué pantallas quedan en ramas `pendiente/…`.
+3. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) tus 20 módulos (reparto equitativo por dominio) y el orden sugerido.
+4. Las reglas de código están en [`CLAUDE.md`](CLAUDE.md) y valen para personas y agentes.
 
 ## Estado
 
@@ -28,13 +29,13 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 05 ContratosComerciales | ✅ | ✅ | ✅ |
 | 06 ListasPrecios | ✅ | ✅ | ✅ |
 | 07 PromocionesDescuentos | ✅ | ✅ | ✅ |
-| 09 ReclamosPostventa | ✅ | pendiente | — |
-| 10 DevolucionesComerciales | ✅ | pendiente | — |
-| 78 NotificacionesAlertas | ✅ | pendiente | — |
-| 08 ComisionesVendedores | ✅ | pendiente | — |
+| 09 ReclamosPostventa | ✅ | en rama, falta QA | — |
+| 10 DevolucionesComerciales | ✅ | en rama, falta QA | — |
+| 78 NotificacionesAlertas | ✅ | en rama, falta QA | — |
+| 08 ComisionesVendedores | ✅ | en rama, falta QA | — |
 | 72 RolesPermisos | ✅ | pendiente | — |
 | 71 Usuarios | ✅ | pendiente | — |
-| 77 AuditoriaTransaccional | ✅ | pendiente | — |
+| 77 AuditoriaTransaccional | ✅ | en rama, falta QA | — |
 
 El resto de módulos muestra «Pantalla pendiente». La lista completa está en [`docs/arquitectura.md`](docs/arquitectura.md).
 

@@ -28,9 +28,9 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 27, 28 |
 | 06 ListasPrecios | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 29, 30 |
 | 07 PromocionesDescuentos | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | terminado | 31, 32 |
-| 08 ComisionesVendedores | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 39, 40 |
-| 09 ReclamosPostventa | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 33, 34 |
-| 10 DevolucionesComerciales | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 35, 36 |
+| 08 ComisionesVendedores | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado; pantalla en rama `pendiente/08-comisiones-vendedores` (falta QA) | 39, 40 |
+| 09 ReclamosPostventa | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado; pantalla en rama `pendiente/09-reclamos-postventa` (falta QA) | 33, 34 |
+| 10 DevolucionesComerciales | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado; pantalla en rama `pendiente/10-devoluciones-comerciales` (falta QA) | 35, 36 |
 | 11 Proveedores | Compras y Abastecimiento Global | Lukas Melgar (equipo Claude) | terminado | 12, 13 |
 | 12 EvaluacionProveedores | Compras y Abastecimiento Global | Leonel Portillo | pendiente | — |
 | 13 SolicitudesCompra | Compras y Abastecimiento Global | Lukas Melgar (equipo Claude) | terminado | 14, 15 |
@@ -97,7 +97,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 76 SeriesNumeracion | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
-| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 45, 46 |
-| 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 37, 38 |
+| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado; pantalla en rama `pendiente/77-auditoria-transaccional` (falta QA) | 45, 46 |
+| 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Lukas Melgar (equipo Claude) | backend terminado; pantalla en rama `pendiente/78-notificaciones-alertas` (falta QA) | 37, 38 |
 | 79 ParametrosSistema | Gobierno Corporativo, Seguridad y Auditoría | Antony Huayhua | pendiente | — |
 | 80 CierresPeriodo | Gobierno Corporativo, Seguridad y Auditoría | Antony Huayhua | pendiente | — |

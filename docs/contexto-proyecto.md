@@ -126,15 +126,10 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
-- **En curso** (parte de Lukas):
-  - 09 ReclamosPostventa: backend integrado y desplegado; pantalla por empezar (se adelanta al 08, que necesita decidir cómo se modelan los vendedores).
-  - 10 DevolucionesComerciales: backend integrado y desplegado; pantalla por empezar.
-  - 78 NotificacionesAlertas: backend integrado y desplegado; pantalla por empezar.
-  - 08 ComisionesVendedores: backend integrado y desplegado; pantalla por empezar.
-  - 72 RolesPermisos: backend integrado y desplegado; pantalla por empezar.
-  - 71 Usuarios: backend integrado y desplegado; pantalla por empezar.
-  - 77 AuditoriaTransaccional: backend integrado y desplegado; pantalla por empezar.
-- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 de 20 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24); tiene los otros 7 en curso: 08, 09, 10, 71, 72 y 78 con el backend publicado y la pantalla pendiente o en desarrollo, y 77 también. Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
+- **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo, en qué rama está cada pantalla pendiente y cómo terminarla: [`equipo/relevo.md`](equipo/relevo.md).
+  - Pantallas hechas en ramas `pendiente/…` (falta QA e integrar): 09 ReclamosPostventa, 10 DevolucionesComerciales, 77 AuditoriaTransaccional, 78 NotificacionesAlertas y 08 ComisionesVendedores.
+  - Pantallas por empezar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44).
+- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 de 20 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24); los otros 7 (08, 09, 10, 71, 72, 77 y 78) tienen el backend en producción y solo les falta la pantalla (ver [`equipo/relevo.md`](equipo/relevo.md)). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.
