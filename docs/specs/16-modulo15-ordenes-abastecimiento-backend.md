@@ -84,11 +84,16 @@ Decisión del humano (2026-10-14): continuar con el módulo recomendado.
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 8 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidades, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidades, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`dae900d`, mismas líneas que el auditado `0139c8e`): backend 172/172, frontend 120/120 |
+| 2026-10-14 | A2–A3 | ✅ | `OrdenesAbastecimientoApiTests` (21 casos nuevos): mensajes literales, transiciones prohibidas → 409, segunda orden desde la misma solicitud → 409, alta manual y desde solicitud, número `OA-` atómico, `atrasada`, filtros, orden, detalle y resumen |
+| 2026-10-14 | A4 | ✅ | `20261015035644_OrdenesAbastecimiento` (con `Designer` y snapshot) crea solo las 2 tablas nuevas; aplicada en el smoke y en Neon |
+| 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: emitidas, detalle `OA-DEV-001`, resumen 4/2/1/1 con 1 atrasada, generar desde solicitud, repetir → 409, recibir `OA-000005` → 200 y otra vez → 409, errores esperados |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; hallazgo de diseño: rutas de acciones sin cuerpo escritas en el middleware → resuelto en la spec 18 |
