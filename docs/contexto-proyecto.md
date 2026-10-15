@@ -69,6 +69,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | vistas Segmentos y Clasificación; terminado con QA | 23, 24 |
 | 03 Cotizaciones | `api/v1/cotizaciones` | presupuestos a clientes con descuento por línea; aceptar genera la orden de compra del módulo 04 (transaccional); rechazar con motivo; vencidas; resumen con tasa de aceptación | backend integrado; pantalla pendiente (spec 26) | 25, 26 |
 | 05 ContratosComerciales | `api/v1/contratos-comerciales` | acuerdos marco con cliente (Borrador → Vigente → Finalizado / Cancelado); consumo calculado con las órdenes del periodo; sin vigentes solapados por cliente | en desarrollo | 27, 28 |
+| 06 ListasPrecios | `api/v1/listas-precios` | listas con vigencia, prioridad y segmento opcional; resolución del precio de un producto para un cliente y fecha (segmento > general > base) | en desarrollo | 29, 30 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
