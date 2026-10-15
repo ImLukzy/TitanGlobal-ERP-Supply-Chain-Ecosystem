@@ -85,11 +85,18 @@ Decisión del humano (2026-10-14): seguir con el módulo recomendado, 13 Solicit
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 8 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidades, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidades, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Kelly: APROBADO con un hallazgo medio (doble guardado al crear sin transacción: podía quedar una fila `TMP-…`) y uno bajo (validador como UseCase inyectado). El integrador pidió corregir ambos antes de integrar |
+| 2026-10-14 | Auditoría ciclo 2 | ✅ | Kelly: APROBADO sobre `7799957` (`TransactionScope` con flujo asíncrono, `ValidacionSolicitudCompra` estático, test de número `SC-000NNN` sin `TMP-`); menor: comentario en inglés, traducido por Claudio en `12c1471` |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`ade661d`, idéntico a `7799957` según `git patch-id`): backend 151/151, frontend 96/96 |
+| 2026-10-14 | A2–A3 | ✅ | `SolicitudesCompraApiTests`: mensajes literales con su código y sin `Detail`, transiciones prohibidas → 409, sin cambios de filas en casos inválidos; alta con número y fecha UTC, edición que reemplaza líneas, aprobar y rechazar, filtros, orden, detalle y resumen exactos |
+| 2026-10-14 | A4 | ✅ | `20261015031106_SolicitudesCompra` (con `Designer` y snapshot) crea solo `SolicitudesCompra` y `DetallesSolicitudCompra`; `Producto` sin cambios; aplicada en el smoke y en Neon |
+| 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: pendientes, rango de fechas, detalle `SC-DEV-001` (4760.00), resumen 5/2/2/1, POST → `SC-000006`, aprobar → 200, otra vez → 409 «La solicitud SC-000006 ya está aprobada.», proveedor inactivo → 400, DELETE de aprobada → 409 |
+| 2026-10-14 | Nota | ℹ️ | El seed numera `SC-DEV-00N` a propósito: sus Id no son fijos y un `SC-00000N` sembrado podría chocar con el número que el servidor genera a partir del Id |
