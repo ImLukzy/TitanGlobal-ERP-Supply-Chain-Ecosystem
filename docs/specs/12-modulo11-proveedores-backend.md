@@ -90,3 +90,4 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07). Decisión del humano (2026-10
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `pais=peru` → 3, `activo=false` → 1, detalle 1, países `["Chile","China","Peru"]`, resumen 6/5/1/2, POST → `{id:7}` (secuencia bien tras el seed), RUC del seed → 409 literal, DELETE del creado → 204 |
 | 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `proveedores` (GET, POST), `proveedores/{id}` (GET, PUT, DELETE), `proveedores/paises` (GET), `proveedores/resumen` (GET) |
 | 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO |
+| 2026-10-14 | Tests intermitentes | ✅ | Dwight los hizo deterministas (`645b5ff`, `a428841`): 10/10 sin carga y 10/10 con 4 procesos de carga; gate rc=0 (111/111, 96/96) |

@@ -20,3 +20,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 ## Un test de regresión sustituido en un cambio de pulido (2026-10-14)
 - **Qué pasó:** en la spec 11, el test de `formatearFecha` (protege el bug de fechas UTC de la spec 04) se reemplazó por el del helper nuevo en vez de añadirse. La auditoría lo marcó como menor.
 - **Regla:** los tests existentes no se borran ni se sustituyen; los nuevos se añaden. Quitar un test es un hallazgo mayor salvo que la spec lo pida.
+
+## Tests de frontend que dependían del tiempo real (2026-10-14)
+- **Qué pasó:** dos tests (espera de 300 ms en Clientes; «sin peticiones» en Productos) fallaron en el gate con la máquina cargada y pasaban al repetir. Usaban `setTimeout` reales y exigían cero llamadas a `fetch` mientras aún llegaban cargas iniciales.
+- **Regla:** esperas con temporizadores falsos (`vi.advanceTimersByTimeAsync`); antes de `mockClear`, esperar a que termine toda la carga inicial; comprobar la ausencia de una petición concreta filtrando por URL. Antes de entregar, repetir la suite 10 veces y otra vez con carga.
