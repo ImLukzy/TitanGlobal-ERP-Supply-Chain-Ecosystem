@@ -39,11 +39,16 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro, con detalle abierto y con el diálogo de baja; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas ni códigos partidos en dos líneas a 1280 | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario y baja.
-- [ ] Tarea 4: tests, capturas y A1–A6.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario y baja.
+- [x] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Corrección 1 | ✅ | Claudio vio en las capturas la cifra de capacidad partida en dos líneas en las tarjetas, el estado del detalle como texto grande sin estilo y mocks con capacidades de miles; corregido (pastillas de estado en detalle y tabla, cifras en una línea, mocks del seed) |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`8037855`, mismas líneas que el auditado `79e2e44`): backend 199/199, frontend 169/169 |
+| 2026-10-15 | A2–A5 | ✅ | tests de `almacenes/` (api, página con filtros, una sola petición al cargar, formulario, baja con Escape); la suite pasó 10/10 seguidas según Dwight y Kelly |
+| 2026-10-15 | A6 | ✅ | `/tmp/titan-spec20/` (8 capturas) revisadas por Claudio tras la corrección |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
