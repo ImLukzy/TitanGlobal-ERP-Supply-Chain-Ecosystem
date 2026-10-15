@@ -12,11 +12,12 @@ export function DevolucionesFiltros({ busqueda, filtros, clientes, cambiarBusque
   return (
     <div className="solicitudes-filters devoluciones-filters">
       <div>
-        <label htmlFor="devoluciones-busqueda">Buscar</label>
+        <label htmlFor="devoluciones-busqueda">Buscar por número, orden o cliente</label>
         <input
+          aria-label="Buscar"
           id="devoluciones-busqueda"
           onChange={(event) => cambiarBusqueda(event.currentTarget.value)}
-          placeholder="Número, orden o cliente"
+          placeholder="Buscar…"
           type="search"
           value={busqueda}
         />
