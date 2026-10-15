@@ -55,9 +55,10 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 | `ListaPrecios`, `ItemListaPrecios` | 06 | vigencia, prioridad y segmento opcional; un precio por producto y lista; la resolución elige segmento > general > precio base |
 | `Promocion` | 07 | por producto o por monto mínimo, porcentaje, vigencia y segmento opcional; la evaluación aplica la mejor por línea y una por compra |
 | `ReclamoPostventa` | 09 | sobre una orden del cliente (y opcionalmente un producto de ella); plazo de 2/5/10 días según prioridad; Abierto → EnProceso → Resuelto → Cerrado o Rechazado |
+| `DevolucionComercial`, `DetalleDevolucion` | 10 | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; Solicitada → Aprobada → Recibida o Rechazada |
 | `ZonaAlmacenaje` | 24 | código único por almacén, tipo y temperatura; las zonas activas no superan la capacidad del almacén |
 
-Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`, `Cotizaciones`, `ContratosComerciales`, `ListasPrecios`, `Promociones`, `ReclamosPostventa`.
+Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`, `Cotizaciones`, `ContratosComerciales`, `ListasPrecios`, `Promociones`, `ReclamosPostventa`, `DevolucionesComerciales`.
 
 ## 6. Módulos implementados
 | Módulo | API | Lo que hace | Pantalla | Specs |
@@ -76,7 +77,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 06 ListasPrecios | `api/v1/listas-precios` | listas con vigencia, prioridad y segmento opcional; resolución del precio de un producto para un cliente y fecha (segmento > general > base) | backend integrado; pantalla pendiente (spec 30) | 29, 30 |
 | 07 PromocionesDescuentos | `api/v1/promociones` | promociones por producto o por monto mínimo, con vigencia y segmento opcional; evaluación de una compra (mejor promoción por línea y una por compra) | backend integrado; pantalla pendiente (spec 32) | 31, 32 |
 | 09 ReclamosPostventa | `api/v1/reclamos-postventa` | reclamos sobre órdenes del cliente con tipo y prioridad; plazo de atención (2/5/10 días) y vencidos; Abierto → EnProceso → Resuelto → Cerrado o Rechazado; cumplimiento de plazos | backend integrado; pantalla pendiente (spec 34) | 33, 34 |
-| 10 DevolucionesComerciales | `api/v1/devoluciones-comerciales` | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; importe con el precio de la orden; tasa de devolución | en desarrollo | 35, 36 |
+| 10 DevolucionesComerciales | `api/v1/devoluciones-comerciales` | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; importe con el precio de la orden; tasa de devolución | backend integrado; pantalla pendiente (spec 36) | 35, 36 |
 | 78 NotificacionesAlertas | `api/v1/alertas` | centro de alertas calculadas desde los módulos (reclamos vencidos, órdenes atrasadas, contratos excedidos o por vencer, almacenes casi llenos, cotizaciones vencidas, solicitudes antiguas); descartar y restaurar | en desarrollo | 37, 38 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
@@ -85,7 +86,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 422 tests del backend y 222 del frontend en verde.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 486 tests del backend y 222 del frontend en verde.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
@@ -122,9 +123,9 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 06 ListasPrecios: backend integrado y desplegado; pantalla por empezar.
   - 07 PromocionesDescuentos: backend integrado y desplegado; pantalla por empezar.
   - 09 ReclamosPostventa: backend integrado y desplegado; pantalla por empezar (se adelanta al 08, que necesita decidir cómo se modelan los vendedores).
-  - 10 DevolucionesComerciales: backend en auditoría.
+  - 10 DevolucionesComerciales: backend integrado y desplegado; pantalla por empezar.
   - 78 NotificacionesAlertas: backend en desarrollo.
 - **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 10 de 20 terminados (01, 02, 03, 04, 11, 13, 15, 21, 23, 24); tiene 4 en curso (05, 06, 07, 09) y 6 por empezar (08, 10, 71, 72, 77, 78). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
-- **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra y Cotizaciones (probablemente en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
+- **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra y Cotizaciones (probablemente en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones).
 - **Resto:** ninguno sin dueño.
