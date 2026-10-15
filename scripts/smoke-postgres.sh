@@ -8,6 +8,7 @@ CLIENTE_CREADO_ID=""
 PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
 SOLICITUD_CREADA_ID=""
+ORDEN_ABASTECIMIENTO_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -144,6 +145,15 @@ checks = {
     "solicitud-already-approved": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La solicitud SC-\d{6} ya está aprobada\.", data["Message"]) is not None,
     "solicitud-inactive-provider": lambda data: data["StatusCode"] == 400 and data["Message"] == "El proveedor 5 está inactivo.",
     "solicitud-delete-approved": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La solicitud SC-\d{6} ya está aprobada\.", data["Message"]) is not None,
+    "ordenes-emitidas": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["OA-DEV-001", "OA-DEV-002"] and all(item["estado"] == "Emitida" for item in data["items"]),
+    "orden-detalle": lambda data: data["numero"] == "OA-DEV-001" and data["estado"] == "Emitida" and data["solicitudNumero"] == "SC-DEV-003" and data["montoTotal"] == 8700.0 and [linea["productoId"] for linea in data["lineas"]] == [7] and [linea["subtotal"] for linea in data["lineas"]] == [8700.0],
+    "ordenes-resumen": lambda data: data["total"] == 4 and data["emitidas"] == 2 and data["recibidas"] == 1 and data["anuladas"] == 1 and data["atrasadas"] == 1 and data["montoPorRecibir"] == 9700.0 and data["montoRecibido"] == 250.0 and [(item["proveedorId"], item["ordenes"], item["monto"]) for item in data["topProveedores"]] == [(1, 1, 8700.0), (2, 1, 1000.0), (3, 1, 250.0)],
+    "orden-created": lambda data: data["id"] > 0 and data["numero"] == f"OA-{data['id']:06d}",
+    "orden-repeated": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La solicitud SC-DEV-004 ya tiene la orden OA-\d{6}\.", data["Message"]) is not None,
+    "orden-received": lambda data: data["estado"] == "Recibida" and data["fechaRecepcion"].endswith("Z"),
+    "orden-already-received": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"La orden OA-\d{6} ya está recibida\.", data["Message"]) is not None,
+    "orden-pending-request": lambda data: data["StatusCode"] == 409 and data["Message"] == "La solicitud SC-DEV-001 no está aprobada.",
+    "orden-missing-cancel-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de anulación es obligatorio.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -211,6 +221,10 @@ request_check() {
     if [[ "$validation" == "solicitud-created" ]]; then
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+
+    if [[ "$validation" == "orden-created" ]]; then
+        ORDEN_ABASTECIMIENTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -258,6 +272,15 @@ request_check 'Aprobar solicitud creada' POST "/api/v1/solicitudes-compra/${SOLI
 request_check 'Aprobar solicitud aprobada' POST "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}/aprobar" 409 solicitud-already-approved
 request_check 'POST solicitud con proveedor inactivo' POST '/api/v1/solicitudes-compra' 400 solicitud-inactive-provider '{"solicitante":"Solicitud Smoke","proveedorId":5,"lineas":[{"productoId":1,"cantidad":1,"precioEstimado":250}]}'
 request_check 'DELETE solicitud aprobada' DELETE "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}" 409 solicitud-delete-approved
+request_check 'Órdenes de abastecimiento emitidas' GET '/api/v1/ordenes-abastecimiento?estado=emitida' 200 ordenes-emitidas
+request_check 'Detalle de orden de abastecimiento 1' GET '/api/v1/ordenes-abastecimiento/1' 200 orden-detalle
+request_check 'Resumen de órdenes de abastecimiento' GET '/api/v1/ordenes-abastecimiento/resumen' 200 ordenes-resumen
+request_check 'Generar orden desde solicitud SC-DEV-004' POST '/api/v1/ordenes-abastecimiento/desde-solicitud/4' 200 orden-created '{"proveedorId":2,"fechaEntregaEstimada":"2099-01-01T00:00:00Z","observaciones":"Orden smoke"}'
+request_check 'Repetir orden desde solicitud SC-DEV-004' POST '/api/v1/ordenes-abastecimiento/desde-solicitud/4' 409 orden-repeated '{"proveedorId":2,"fechaEntregaEstimada":"2099-01-01T00:00:00Z"}'
+request_check 'Recibir orden creada' POST "/api/v1/ordenes-abastecimiento/${ORDEN_ABASTECIMIENTO_CREADA_ID}/recibir" 200 orden-received
+request_check 'Recibir orden ya recibida' POST "/api/v1/ordenes-abastecimiento/${ORDEN_ABASTECIMIENTO_CREADA_ID}/recibir" 409 orden-already-received
+request_check 'Generar orden desde solicitud pendiente' POST '/api/v1/ordenes-abastecimiento/desde-solicitud/1' 409 orden-pending-request '{"fechaEntregaEstimada":"2099-01-01T00:00:00Z"}'
+request_check 'Anular orden sin motivo' POST '/api/v1/ordenes-abastecimiento/2/anular' 400 orden-missing-cancel-reason '{"motivo":" "}'
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
 printf 'SMOKE OK\n'

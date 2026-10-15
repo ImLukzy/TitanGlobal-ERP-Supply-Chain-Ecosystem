@@ -16,6 +16,10 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
 
+    public DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
+
+    public DbSet<DetalleOrdenAbastecimiento> DetallesOrdenesAbastecimiento { get; set; } = null!;
+
     public DbSet<Producto> Productos { get; set; } = null!;
 
     public DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -89,6 +93,54 @@ public class TitanGlobalDbContext : DbContext
             .HasColumnType("decimal(18,2)");
 
         modelBuilder.Entity<DetalleSolicitudCompra>()
+            .HasOne(detalle => detalle.Producto)
+            .WithMany()
+            .HasForeignKey(detalle => detalle.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .Property(orden => orden.Numero)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .Property(orden => orden.Estado)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .Property(orden => orden.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .Property(orden => orden.MotivoAnulacion)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .HasIndex(orden => orden.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .HasOne(orden => orden.Proveedor)
+            .WithMany(proveedor => proveedor.OrdenesAbastecimiento)
+            .HasForeignKey(orden => orden.ProveedorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .HasOne(orden => orden.SolicitudCompra)
+            .WithMany(solicitud => solicitud.OrdenesAbastecimiento)
+            .HasForeignKey(orden => orden.SolicitudCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OrdenAbastecimiento>()
+            .HasMany(orden => orden.Detalles)
+            .WithOne(detalle => detalle.OrdenAbastecimiento)
+            .HasForeignKey(detalle => detalle.OrdenAbastecimientoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DetalleOrdenAbastecimiento>()
+            .Property(detalle => detalle.PrecioUnitario)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<DetalleOrdenAbastecimiento>()
             .HasOne(detalle => detalle.Producto)
             .WithMany()
             .HasForeignKey(detalle => detalle.ProductoId)

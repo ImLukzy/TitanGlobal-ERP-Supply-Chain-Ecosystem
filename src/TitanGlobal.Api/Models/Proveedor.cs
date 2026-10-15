@@ -17,4 +17,6 @@ public partial class Proveedor
     public bool Activo { get; set; } = true;
 
     public virtual ICollection<SolicitudCompra> SolicitudesCompra { get; set; } = new List<SolicitudCompra>();
+
+    public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 }

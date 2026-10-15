@@ -23,4 +23,6 @@ public partial class SolicitudCompra
     public DateTime? FechaDecision { get; set; }
 
     public virtual ICollection<DetalleSolicitudCompra> Detalles { get; set; } = new List<DetalleSolicitudCompra>();
+
+    public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 }
