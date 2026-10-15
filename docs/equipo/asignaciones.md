@@ -29,7 +29,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 06 ListasPrecios | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | backend terminado, pantalla pendiente | 29, 30 |
 | 07 PromocionesDescuentos | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 31, 32 |
 | 08 ComisionesVendedores | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
-| 09 ReclamosPostventa | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
+| 09 ReclamosPostventa | Comercial, Ventas y CRM | Lukas Melgar (equipo Claude) | en curso | 33, 34 |
 | 10 DevolucionesComerciales | Comercial, Ventas y CRM | Lukas Melgar | pendiente | — |
 | 11 Proveedores | Compras y Abastecimiento Global | Lukas Melgar (equipo Claude) | terminado | 12, 13 |
 | 12 EvaluacionProveedores | Compras y Abastecimiento Global | Leonel Portillo | pendiente | — |
