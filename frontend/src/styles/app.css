@@ -1072,3 +1072,95 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
   .promociones-table { min-width: 0; }
   .promociones-table th, .promociones-table td { overflow-wrap: normal; word-break: normal; }
 }
+
+.comisiones-page { padding-bottom: 42px; }
+html:has(.comisiones-page) { overflow-x: hidden; }
+.comisiones-tabs { flex-wrap: wrap; }
+.comisiones-tab-panel { min-width: 0; }
+.comisiones-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 12px; }
+.comisiones-list-panel, .comisiones-detail-panel { min-width: 0; margin-top: 0; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.comisiones-list-panel .clientes-panel-heading { margin-bottom: 12px; }
+.comisiones-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.asignacion-filtros { grid-template-columns: minmax(150px, 1fr) minmax(180px, 1.2fr) auto; align-items: end; }
+.periodo-filtros { max-width: 440px; }
+.comisiones-checkbox { display: flex; min-height: 35px; align-items: center; justify-content: flex-start; gap: 7px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.comisiones-checkbox input, .comision-active-field input { width: auto; min-width: 0; min-height: auto; padding: 0; border: 0; background: transparent; accent-color: var(--accent); }
+.comisiones-table { width: 100%; min-width: 0; table-layout: fixed; }
+.comisiones-table th, .comisiones-table td { padding: 8px 6px; font-size: 9px; }
+.comisiones-table thead th { white-space: nowrap; }
+.comisiones-table tbody td { border-bottom: 1px solid var(--line); color: var(--ink); }
+.comisiones-table td, .comisiones-table th { vertical-align: middle; }
+.comisiones-table tbody th { background: transparent; }
+.comisiones-table tbody th { overflow-wrap: anywhere; }
+.comisiones-table tbody tr.is-selected { background: var(--accent-soft); }
+.comisiones-table .comision-row-link { padding: 0; border: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.comisiones-table .comision-row-link:hover { text-decoration: underline; }
+.comision-row-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.vendedores-table th:nth-child(1) { width: 19%; }
+.vendedores-table th:nth-child(2) { width: 26%; }
+.vendedores-table th:nth-child(3) { width: 15%; }
+.vendedores-table th:nth-child(4) { width: 20%; }
+.vendedores-table th:nth-child(5) { width: 20%; }
+.comisiones-total-resultados { display: block; margin-top: 10px; color: var(--ink-faint); font-size: 9px; text-align: right; }
+.comisiones-ficha { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 12px 0 0; }
+.comisiones-ficha > div { min-width: 0; padding: 9px; border-radius: 9px; background: var(--surface-muted); }
+.comisiones-ficha dt { color: var(--ink-faint); font-size: 9px; }
+.comisiones-ficha dd { margin: 4px 0 0; overflow-wrap: anywhere; color: var(--ink); font-size: 10px; font-weight: 650; }
+.comisiones-empty-detail { display: grid; min-height: 100px; place-items: center; color: var(--ink-soft); font-size: 11px; text-align: center; }
+.comisiones-empty-detail p { margin: 0; }
+.comisiones-totales { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+.comisiones-totales article { display: grid; min-width: 0; min-height: 74px; align-content: space-between; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+.comisiones-totales article span { color: var(--ink-faint); font-size: 9px; }
+.comisiones-totales article strong { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.comision-locked-note { margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 10px; }
+.comisiones-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+.liquidacion-table th:nth-child(1) { width: 23%; }
+.liquidacion-table th:nth-child(2) { width: 10%; }
+.liquidacion-table th:nth-child(3) { width: 15%; }
+.liquidacion-table th:nth-child(4) { width: 12%; }
+.liquidacion-table th:nth-child(5) { width: 14%; }
+.liquidacion-table th:nth-child(6) { width: 11%; }
+.liquidacion-table th:nth-child(7) { width: 15%; }
+.ordenes-vendedor-table th:nth-child(1) { width: 14%; }
+.ordenes-vendedor-table th:nth-child(2) { width: 11%; }
+.ordenes-vendedor-table th:nth-child(3) { width: 18%; }
+.ordenes-vendedor-table th:nth-child(4) { width: 13%; }
+.ordenes-vendedor-table th:nth-child(5) { width: 15%; }
+.ordenes-vendedor-table th:nth-child(6) { width: 29%; }
+.ordenes-vendedor-table tbody td { overflow-wrap: anywhere; }
+.cantidad-sin-partir { white-space: nowrap; }
+.comision-status, .comision-unassigned { display: inline-flex; align-items: center; width: fit-content; padding: 4px 8px; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 8px; font-weight: 700; white-space: nowrap; }
+.comision-status.is-calculada { background: var(--accent-soft); color: var(--accent-ink); }
+.comision-status.is-pagada { background: var(--good-soft); color: var(--good); }
+.comision-status.is-pendiente { background: var(--surface-muted); color: var(--ink-soft); }
+.asignacion-control { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 5px; }
+.asignacion-control select, .comision-form select { width: 100%; min-width: 0; min-height: 34px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 9px; }
+.asignacion-control .secondary-button { min-height: 32px; padding: 0 8px; }
+.asignacion-control [role="alert"] { grid-column: 1 / -1; font-size: 8px; }
+.comision-form { display: grid; gap: 12px; }
+.comision-form .form-field input { height: 36px; font-size: 10px; }
+.comision-form .form-field label { font-size: 9px; }
+.comision-active-field { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 10px; }
+.comision-dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
+.comision-dialog .clientes-dialog-actions { flex-wrap: wrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+@media (min-width: 1024px) {
+  .comisiones-table { font-size: 9px; }
+}
+@media (max-width: 1023px) {
+  .comisiones-work-area { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .comisiones-page { padding-bottom: 28px; }
+  .comisiones-tabs { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .comisiones-tabs .segment-tab { text-align: left; }
+  .comisiones-list-panel, .comisiones-detail-panel { padding: 13px; }
+  .comisiones-filtros, .asignacion-filtros { grid-template-columns: minmax(0, 1fr); }
+  .comisiones-ficha { grid-template-columns: minmax(0, 1fr); }
+  .comisiones-totales article strong { font-size: 13px; }
+  .comisiones-table { min-width: 720px; }
+  .liquidacion-table { min-width: 950px; }
+  .ordenes-vendedor-table { min-width: 980px; }
+  .comision-dialog { padding: 18px; }
+  .comision-dialog .clientes-dialog-actions > button { flex: 1 1 auto; }
+}
