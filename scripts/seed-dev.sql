@@ -280,6 +280,7 @@ SELECT setval(pg_get_serial_sequence('"Vendedores"', 'Id'), (SELECT COALESCE(MAX
 SELECT setval(pg_get_serial_sequence('"AsignacionesVentas"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "AsignacionesVentas"));
 SELECT setval(pg_get_serial_sequence('"LiquidacionesComisiones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "LiquidacionesComisiones"));
 
+TRUNCATE TABLE "UsuariosRoles", "Usuarios" RESTART IDENTITY CASCADE;
 TRUNCATE TABLE "PermisosRoles", "Roles" RESTART IDENTITY CASCADE;
 
 INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema") VALUES
@@ -288,6 +289,23 @@ INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema") VALUE
     (3, 'COMPRAS', 'Compras', 'Gestión de abastecimiento', FALSE),
     (4, 'ALMACEN', 'Almacén', 'Gestión de inventarios', FALSE),
     (5, 'CONSULTA', 'Consulta', 'Solo lectura', FALSE);
+
+INSERT INTO "Usuarios" ("Id", "NombreUsuario", "NombreCompleto", "Email", "Activo", "FechaAlta") VALUES
+    (1, 'admin', 'Administrador del sistema', 'admin@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-01 00:00:00+00'),
+    (2, 'ana.ventas', 'Ana Torres', 'ana.ventas@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-02 00:00:00+00'),
+    (3, 'luis.compras', 'Luis Rojas', 'luis.compras@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-03 00:00:00+00'),
+    (4, 'maria.almacen', 'María León', 'maria.almacen@titanglobal.example', FALSE, TIMESTAMPTZ '2026-01-04 00:00:00+00'),
+    (5, 'invitado', 'Usuario Invitado', 'invitado@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-05 00:00:00+00');
+
+INSERT INTO "UsuariosRoles" ("Id", "UsuarioId", "RolId") VALUES
+    (1, 1, 1),
+    (2, 2, 2),
+    (3, 3, 3),
+    (4, 3, 5),
+    (5, 4, 4);
+
+SELECT setval(pg_get_serial_sequence('"Usuarios"', 'Id'), (SELECT MAX("Id") FROM "Usuarios"));
+SELECT setval(pg_get_serial_sequence('"UsuariosRoles"', 'Id'), (SELECT MAX("Id") FROM "UsuariosRoles"));
 
 INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribir") VALUES
     (1, 1, TRUE, TRUE),

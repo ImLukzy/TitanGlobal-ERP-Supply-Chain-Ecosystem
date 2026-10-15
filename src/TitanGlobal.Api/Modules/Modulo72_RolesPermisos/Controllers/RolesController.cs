@@ -9,10 +9,12 @@ namespace TitanGlobal.Api.Modules.Modulo72_RolesPermisos.Controllers;
 public class RolesController : ControllerBase
 {
     private readonly AdministrarRolesUseCase _administrarRoles;
+    private readonly EliminarRolUseCase _eliminarRol;
 
-    public RolesController(AdministrarRolesUseCase administrarRoles)
+    public RolesController(AdministrarRolesUseCase administrarRoles, EliminarRolUseCase eliminarRol)
     {
         _administrarRoles = administrarRoles;
+        _eliminarRol = eliminarRol;
     }
 
     [HttpGet]
@@ -53,7 +55,7 @@ public class RolesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _administrarRoles.EliminarAsync(id);
+        await _eliminarRol.EjecutarAsync(id);
         return NoContent();
     }
 

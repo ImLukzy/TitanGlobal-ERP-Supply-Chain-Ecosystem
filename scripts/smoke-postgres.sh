@@ -21,12 +21,16 @@ DEVOLUCION_CREADA_ID=""
 RECLAMO_CREADO_ID=""
 LIQUIDACION_COMISION_ID=""
 ROL_CREADO_ID=""
+USUARIO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
     trap - EXIT INT TERM
 
     if [[ -n "$API_PID" ]]; then
+        if [[ -n "$USUARIO_CREADO_ID" ]]; then
+            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/usuarios/${USUARIO_CREADO_ID}" >/dev/null 2>&1 || true
+        fi
         if [[ -n "$ROL_CREADO_ID" ]]; then
             curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/roles/${ROL_CREADO_ID}" >/dev/null 2>&1 || true
         fi
@@ -253,6 +257,15 @@ checks = {
     "devolucion-rejection-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
     "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
     "openapi-roles": lambda data: all(path in data["paths"] for path in ["/api/v1/roles", "/api/v1/roles/{id}", "/api/v1/roles/{id}/permisos", "/api/v1/roles/matriz"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/roles", "get"), ("/api/v1/roles", "post"), ("/api/v1/roles/{id}", "get"), ("/api/v1/roles/{id}", "put"), ("/api/v1/roles/{id}", "delete"), ("/api/v1/roles/{id}/permisos", "get"), ("/api/v1/roles/{id}/permisos", "put"), ("/api/v1/roles/matriz", "get")]),
+    "openapi-usuarios": lambda data: all(path in data["paths"] for path in ["/api/v1/usuarios", "/api/v1/usuarios/{id}", "/api/v1/usuarios/{id}/permisos", "/api/v1/usuarios/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/usuarios", "get"), ("/api/v1/usuarios", "post"), ("/api/v1/usuarios/{id}", "get"), ("/api/v1/usuarios/{id}", "put"), ("/api/v1/usuarios/{id}", "delete"), ("/api/v1/usuarios/{id}/permisos", "get"), ("/api/v1/usuarios/resumen", "get")]),
+    "usuarios-list": lambda data: data["total"] == 1 and data["items"][0]["nombreUsuario"] == "ana.ventas" and data["items"][0]["roles"] == ["VENTAS"],
+    "usuario-detail": lambda data: data["nombreUsuario"] == "luis.compras" and data["roles"] == ["COMPRAS", "CONSULTA"] and data["activo"] is True,
+    "usuario-permisos": lambda data: len(data) == 80 and data[0]["permiso"] == "Lectura" and data[0]["otorgadoPor"] == ["CONSULTA"] and data[10]["permiso"] == "Escritura" and data[10]["otorgadoPor"] == ["COMPRAS"],
+    "usuarios-summary": lambda data: data["total"] == 5 and data["activos"] == 4 and data["inactivos"] == 1 and data["sinRol"] == 1 and [(item["codigo"], item["usuarios"]) for item in data["porRol"]] == [("ADMIN", 1), ("ALMACEN", 1), ("COMPRAS", 1), ("CONSULTA", 1), ("VENTAS", 1)],
+    "usuario-created": lambda data: data["id"] > 0,
+    "usuario-duplicate-email": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un usuario con el email admin@titanglobal.example." and "Detail" not in data,
+    "usuario-last-admin": lambda data: data["StatusCode"] == 409 and data["Message"] == "Debe quedar al menos un usuario activo con el rol ADMIN." and "Detail" not in data,
+    "usuario-role-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el rol VENTAS porque tiene usuarios." and "Detail" not in data,
     "roles-list": lambda data: data["total"] == 5 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "VENTAS"],
     "role-detail": lambda data: data["codigo"] == "VENTAS" and data["modulosConLectura"] == 11 and data["modulosConEscritura"] == 10,
     "role-permissions": lambda data: len(data) == 80 and data[20]["puedeLeer"] is True and data[20]["puedeEscribir"] is False,
@@ -378,6 +391,10 @@ request_check() {
     fi
 
     if [[ "$validation" == "contract-created" ]]; then
+        CREATED_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "role-created" ]]; then
         CREATED_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
@@ -601,4 +618,15 @@ ROL_CREADO_ID="$CREATED_ID"
 request_check 'Impedir escritura sin lectura' PUT "/api/v1/roles/${ROL_CREADO_ID}/permisos" 400 role-invalid-write '{"permisos":[{"moduloNumero":1,"puedeLeer":false,"puedeEscribir":true}]}'
 request_check 'Proteger borrado de ADMIN' DELETE '/api/v1/roles/1' 409 role-system-delete
 request_check 'Eliminar rol smoke' DELETE "/api/v1/roles/${ROL_CREADO_ID}" 204 ''
+request_check 'OpenAPI de usuarios' GET '/openapi/v1.json' 200 openapi-usuarios
+request_check 'Usuarios con rol VENTAS' GET '/api/v1/usuarios?rolId=2' 200 usuarios-list
+request_check 'Detalle de luis.compras' GET '/api/v1/usuarios/3' 200 usuario-detail
+request_check 'Permisos efectivos de luis.compras' GET '/api/v1/usuarios/3/permisos' 200 usuario-permisos
+request_check 'Resumen de usuarios' GET '/api/v1/usuarios/resumen' 200 usuarios-summary
+request_check 'Crear usuario smoke' POST '/api/v1/usuarios' 200 usuario-created '{"nombreUsuario":"smoke.usuario","nombreCompleto":"Usuario Smoke","email":"smoke.usuario@titanglobal.example","activo":true,"rolIds":[]}'
+USUARIO_CREADO_ID="$CREATED_ID"
+request_check 'Rechazar correo de usuario duplicado' POST '/api/v1/usuarios' 409 usuario-duplicate-email '{"nombreUsuario":"admin.copia","nombreCompleto":"Copia Admin","email":"admin@titanglobal.example","activo":true,"rolIds":[]}'
+request_check 'Proteger último ADMIN activo' PUT '/api/v1/usuarios/1' 409 usuario-last-admin '{"nombreUsuario":"admin","nombreCompleto":"Administrador del sistema","email":"admin@titanglobal.example","activo":false,"rolIds":[1]}'
+request_check 'Proteger rol VENTAS asignado' DELETE '/api/v1/roles/2' 409 usuario-role-protected
+request_check 'Eliminar usuario smoke' DELETE "/api/v1/usuarios/${USUARIO_CREADO_ID}" 204 ''
 printf 'SMOKE OK\n'

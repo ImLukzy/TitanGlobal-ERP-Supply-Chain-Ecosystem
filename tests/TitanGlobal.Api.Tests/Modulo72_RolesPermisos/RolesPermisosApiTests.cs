@@ -47,6 +47,33 @@ public class RolesPermisosApiTests
     }
 
     [Fact]
+    public async Task NoPermiteEliminarRolAsignadoAUsuarios()
+    {
+        using (IServiceScope alcance = _fabrica.Services.CreateScope())
+        {
+            TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+            contexto.Usuarios.Add(new Usuario
+            {
+                NombreUsuario = "usuario.ventas",
+                NombreCompleto = "Usuario de Ventas",
+                Email = "usuario.ventas@titanglobal.example",
+                Activo = true,
+                FechaAlta = DateTime.UtcNow,
+                Roles = new List<UsuarioRol> { new UsuarioRol { RolId = 2 } }
+            });
+            await contexto.SaveChangesAsync();
+        }
+
+        HttpResponseMessage respuesta = await _cliente.DeleteAsync("/api/v1/roles/2");
+        await AssertErrorAsync(
+            respuesta,
+            HttpStatusCode.Conflict,
+            409,
+            "No se puede eliminar el rol VENTAS porque tiene usuarios.");
+        Assert.Equal("VENTAS", await ObtenerCodigoAsync(2));
+    }
+
+    [Fact]
     public async Task ObtenerPermisosDevuelveOchentaModulosYFalsosSiFaltaFila()
     {
         Assert.Equal(2, await ContarPermisosAsync(2));
@@ -262,6 +289,9 @@ public class RolesPermisosApiTests
     {
         using IServiceScope alcance = _fabrica.Services.CreateScope();
         TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.UsuariosRoles.RemoveRange(contexto.UsuariosRoles);
+        contexto.Usuarios.RemoveRange(contexto.Usuarios);
+        contexto.SaveChanges();
         contexto.PermisosRoles.RemoveRange(contexto.PermisosRoles);
         contexto.Roles.RemoveRange(contexto.Roles);
         contexto.SaveChanges();

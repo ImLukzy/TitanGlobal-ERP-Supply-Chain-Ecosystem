@@ -11,4 +11,6 @@ public class Rol
     public string? Descripcion { get; set; }
 
     public bool EsSistema { get; set; }
+
+    public ICollection<UsuarioRol> Usuarios { get; set; } = new List<UsuarioRol>();
 }

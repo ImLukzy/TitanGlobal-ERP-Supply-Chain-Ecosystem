@@ -126,18 +126,6 @@ public class AdministrarRolesUseCase
         return rol.Id;
     }
 
-    public async Task EliminarAsync(int id)
-    {
-        Rol rol = await ValidacionRol.ObtenerAsync(_unidad, id);
-        if (rol.EsSistema)
-        {
-            throw ConflictoSistema(rol.Codigo);
-        }
-
-        _unidad.Repository<Rol>().Remove(rol);
-        await _unidad.CompleteAsync();
-    }
-
     public async Task<List<PermisoModuloDto>> ObtenerPermisosAsync(int id)
     {
         await ValidacionRol.ObtenerAsync(_unidad, id);

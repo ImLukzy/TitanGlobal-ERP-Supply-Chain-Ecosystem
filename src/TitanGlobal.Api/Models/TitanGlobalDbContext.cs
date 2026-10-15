@@ -8,6 +8,10 @@ public class TitanGlobalDbContext : DbContext
     {
     }
 
+    public DbSet<Usuario> Usuarios { get; set; } = null!;
+
+    public DbSet<UsuarioRol> UsuariosRoles { get; set; } = null!;
+
     public DbSet<Rol> Roles { get; set; } = null!;
 
     public DbSet<PermisoRol> PermisosRoles { get; set; } = null!;
@@ -721,6 +725,50 @@ public class TitanGlobalDbContext : DbContext
             .WithMany()
             .HasForeignKey(permiso => permiso.RolId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Usuario>()
+            .Property(usuario => usuario.NombreUsuario)
+            .HasMaxLength(30)
+            .IsRequired();
+
+        modelBuilder.Entity<Usuario>()
+            .Property(usuario => usuario.NombreCompleto)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Usuario>()
+            .Property(usuario => usuario.Email)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        modelBuilder.Entity<Usuario>()
+            .Property(usuario => usuario.FechaAlta)
+            .HasColumnType("timestamp with time zone")
+            .IsRequired();
+
+        modelBuilder.Entity<Usuario>()
+            .HasIndex(usuario => usuario.NombreUsuario)
+            .IsUnique();
+
+        modelBuilder.Entity<Usuario>()
+            .HasIndex(usuario => usuario.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<UsuarioRol>()
+            .HasIndex(enlace => new { enlace.UsuarioId, enlace.RolId })
+            .IsUnique();
+
+        modelBuilder.Entity<UsuarioRol>()
+            .HasOne<Usuario>()
+            .WithMany(usuario => usuario.Roles)
+            .HasForeignKey(enlace => enlace.UsuarioId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Rol>()
+            .HasMany(rol => rol.Usuarios)
+            .WithOne()
+            .HasForeignKey(enlace => enlace.RolId)
+            .OnDelete(DeleteBehavior.Restrict);
 
     }
 }
