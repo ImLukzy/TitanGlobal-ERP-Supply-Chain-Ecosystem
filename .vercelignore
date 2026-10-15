@@ -1,0 +1,5 @@
+# Vercel solo necesita el frontend (Root Directory = frontend)
+/*
+!/frontend
+/frontend/node_modules
+/frontend/dist
