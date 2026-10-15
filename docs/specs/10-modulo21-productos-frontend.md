@@ -52,11 +52,19 @@
 | A7 | Visual | capturas (`page.route`) a 375 y 1280 px, en claro y oscuro, con detalle abierto; márgenes ≥ 16 px medidos; sin scroll horizontal | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos, `api.ts` y proxy configurable.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario y baja (extrayendo lo compartible).
-- [ ] Tarea 4: tests, capturas y A1–A7.
+- [x] Tarea 1: tipos, `api.ts` y proxy configurable.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario y baja (extrayendo lo compartible).
+- [x] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | Corrección 1 | ✅ | Claudio devolvió la primera entrega: mensajes distintos de la API, sin «Sin ventas registradas», nombre `listarCategorias`, tests de A2–A4 insuficientes, capturas perdidas. Corregido en la corrección 1 |
+| 2026-10-14 | Ajuste visual | ✅ | Claudio vio en la captura de 1280 px la columna «Descripción» cortada; Dwight lo ajustó solo en Productos (tabla 469/469 px sin recorte) |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`99a73fd`, idéntico al auditado `ed0a9d9` según `git patch-id`): backend 81/81, frontend 73/73 |
+| 2026-10-14 | A2–A4 | ✅ | `api.test.ts` (7 funciones, filtros vacíos fuera de la query) y `ProductosPage.test.tsx` (búsqueda con 300 ms, filtros y vuelta a la página 1, validación de precios sin petición, vacío y error, «Sin ventas registradas», errores literales por campo, 400 conservando lo escrito, 409 en el diálogo, Escape con foco devuelto) |
+| 2026-10-14 | A5 | ✅ | `vite.config.ts`: `resolveApiTarget()` usa `TITAN_API_URL` o `http://localhost:5080`; test con 5099 y con el valor por defecto; documentado en `frontend/README.md` |
+| 2026-10-14 | A6 | ✅ | tests de Clientes y OrdenesCompra en verde tras extraer `TablaPaginada`, `PanelDetalle`, `DialogoBaja` y `CampoConError` |
+| 2026-10-14 | A7 | ✅ | capturas de Dwight en `/tmp/titan-spec10/` revisadas por Claudio (375 y 1280, claro y oscuro, detalle abierto): márgenes ≥ 16 px, sin scroll horizontal de página |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; menores: algunos `if (…) return;` en una línea, y `listarProductos` enviaría «undefined» si se pasara `tamanoPagina: undefined` explícito (hoy no ocurre) |
