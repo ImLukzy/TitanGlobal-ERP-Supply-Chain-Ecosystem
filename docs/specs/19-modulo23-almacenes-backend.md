@@ -72,11 +72,16 @@ Decisión del humano (2026-10-14): seguir con el siguiente módulo.
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 7 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidad, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`9d41044`, mismas líneas que el auditado `64873b3`): backend 199/199, frontend 147/147 |
+| 2026-10-15 | A2–A3 | ✅ | `AlmacenesApiTests`: mensajes literales con su código y sin `Detail`, código en mayúsculas, tipo canónico, PUT con su propio código; búsqueda, ciudad, tipo, `activo`, paginación, ciudades y resumen exactos |
+| 2026-10-15 | A4 | ✅ | migración `Almacenes` (con `Designer` y snapshot) solo crea la tabla y su índice único; aplicada en el smoke y en Neon |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: detalle `ALM-LIM-01`, ciudades `["Arequipa","Callao","Lima","Trujillo"]`, resumen 5/4/1 y 1025.00 m³, POST → `{id:6}`, código del seed → 409 literal, DELETE del creado → 204 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
