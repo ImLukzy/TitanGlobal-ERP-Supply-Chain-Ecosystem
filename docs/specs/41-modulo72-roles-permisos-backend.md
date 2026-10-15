@@ -74,11 +74,17 @@ Decisión de Lukas (2026-10-15): roles y permisos se gestionan **como datos**; e
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 8 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidades, `DbContext`, migración y catálogo de módulos.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidades, `DbContext`, migración y catálogo de módulos.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`d8510ff`, mismas líneas que el auditado `d58712b`): backend 543/543, frontend 232/232 |
+| 2026-10-15 | A2–A3 | ✅ | `RolesPermisosApiTests` (20 tests): cada mensaje literal, rol de sistema protegido, escritura sin lectura, PUT que reemplaza, 80 módulos en permisos, matriz y catálogo igual a `docs/arquitectura.md` |
+| 2026-10-15 | A4 | ✅ | el commit no toca `Middlewares/` ni `Services/` (0 archivos); el smoke sigue devolviendo 403 literal con `X-User-Role: Bloqueado` |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado (ADMIN 80/80), detalle de VENTAS, permisos de VENTAS (80 filas), matriz, POST → `{id:6}`, borrar ADMIN → 409 literal, DELETE del creado → 204 |
+| 2026-10-15 | A6 | ✅ | el smoke valida las operaciones de `/openapi/v1.json` |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
