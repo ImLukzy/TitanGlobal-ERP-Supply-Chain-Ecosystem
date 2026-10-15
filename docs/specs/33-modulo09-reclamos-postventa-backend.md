@@ -79,11 +79,16 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 9 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidad, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`8c432aa`, mismas líneas que el auditado `152df78`): backend 422/422, frontend 222/222 |
+| 2026-10-15 | A2–A3 | ✅ | `ReclamosPostventaApiTests` (57 tests): cada mensaje literal, todas las transiciones, orden de otro cliente, producto fuera de la orden; plazo por prioridad y recalculado, vencido en el límite, atendido a tiempo, filtros, orden por prioridad y resumen |
+| 2026-10-15 | A4 | ✅ | migración `ReclamosPostventa` (con `Designer` y snapshot) solo crea la tabla; aplicada en el smoke y en Neon |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: vencidos, detalle `REC-DEV-001`, resumen 5 (1 vencido), POST → `REC-000006` → iniciar → resolver → cerrar (200), cerrar otra vez → 409 «El reclamo REC-000006 está cerrado.», producto ajeno a la orden → 400 literal, rechazar sin motivo → 400 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
