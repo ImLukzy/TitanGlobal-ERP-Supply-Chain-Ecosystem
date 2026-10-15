@@ -86,11 +86,16 @@ Decisión de Lukas (2026-10-15): el módulo tiene su propio maestro de vendedore
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 11 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidades, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidades, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`d823134`, mismas líneas que el auditado `7a591fe`): backend 523/523, frontend 222/222 |
+| 2026-10-15 | A2–A3 | ✅ | `ComisionesVendedoresApiTests` (27 tests): cada mensaje literal, límites de mes en UTC, redondeo, mes pendiente con el porcentaje actual y liquidado con los importes guardados, reasignación, liquidar y pagar dos veces → 409 |
+| 2026-10-15 | A4 | ✅ | migración `ComisionesVendedores` (con `Designer` y snapshot) solo crea las 3 tablas; `OrdenCompra` sin cambios; aplicada en el smoke y en Neon |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: vendedores, órdenes sin asignar, comisiones de enero (pagadas) y marzo (pendientes), reasignar OC-004 → 200, cambiar una de enero → 409 «El mes 01/2026 ya está liquidado; …», liquidar marzo → 200 y otra vez → 409, pagar → 200, borrar V-ANA → 409 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
