@@ -761,6 +761,56 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .cotizaciones-expired input { width: auto; min-height: 0; }
 .cotizaciones-table { min-width: 900px; }
 .cotizaciones-table th, .cotizaciones-table td { overflow-wrap: normal; word-break: normal; }
+
+.contratos-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.contratos-summary > article { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.contratos-summary > article { display: grid; min-height: 82px; align-content: space-between; color: var(--ink-soft); font-size: 10px; }
+.contratos-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.contratos-summary .contratos-consumption-summary { grid-column: span 2; }
+.contratos-consumption-summary strong { font-size: 13px !important; }
+.contratos-terms-summary { grid-column: 1 / -1; }
+.contratos-terms-summary ol { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.contratos-work-area { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 14px; margin-top: 14px; }
+.contratos-list-panel, .contratos-detail { min-width: 0; }
+.contratos-filters { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)) auto; gap: 9px; margin: 12px 0; }
+.contrato-form-dialog .form-field { display: grid; gap: 5px; color: var(--ink-soft); font-size: 10px; }
+.contratos-filters input, .contratos-filters select { width: 100%; }
+.contratos-filters .cotizaciones-expired input { width: auto; min-height: 0; }
+.contratos-table-scroll, .contrato-orders-scroll { width: 100%; overflow-x: auto; }
+.contratos-table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; }
+.contratos-table th, .contratos-table td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; word-break: normal; font-size: 8px; }
+.contratos-table th:first-child { width: 13%; white-space: nowrap; }
+.contratos-table th:nth-child(2) { width: 13%; }
+.contratos-table th:nth-child(3) { width: 18%; font-size: 7.5px; }
+.contratos-table th:nth-child(4), .contratos-table td:nth-child(4) { width: 18%; white-space: nowrap; font-size: 7px; }
+.contratos-table th:nth-child(5) { width: 12%; }
+.contratos-table th:nth-child(6), .contratos-table td:nth-child(6) { width: 14%; white-space: nowrap; font-size: 7px; }
+.contratos-table th:nth-child(7) { width: 12%; }
+.contratos-table .contrato-consumption-label { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; font-size: 8px; }
+.contratos-table .contrato-consumption-label span:first-child { white-space: nowrap; }
+.table-link { border: 0; padding: 0; background: none; color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; }
+.contrato-status, .contrato-expired-badge { display: inline-flex; margin: 0 2px 3px 0; padding: 3px 4px; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 7px; font-weight: 700; white-space: nowrap; }
+.contrato-status.is-vigente { background: color-mix(in srgb, var(--good) 16%, var(--surface)); color: var(--good); }
+.contrato-status.is-cancelado { background: color-mix(in srgb, var(--bad) 14%, var(--surface)); color: var(--bad); }
+.contrato-expired-badge { background: color-mix(in srgb, var(--bad) 14%, var(--surface)); color: var(--bad); }
+.contratos-detail h3 { margin: 12px 0 7px; font-size: 13px; }
+.contrato-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+.contrato-detail-grid div { min-width: 0; padding: 8px; border-radius: 8px; background: var(--surface-muted); }
+.contrato-detail-grid dt { color: var(--ink-soft); font-size: 8px; }
+.contrato-detail-grid dd { margin: 4px 0 0; overflow-wrap: anywhere; font-size: 10px; font-weight: 700; }
+.contrato-overdrawn { color: var(--bad); }
+.contrato-orders table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.contrato-orders th, .contrato-orders td { padding: 7px 5px; border-bottom: 1px solid var(--line); text-align: left; font-size: 9px; white-space: nowrap; }
+.contrato-orders th:first-child { width: 40%; }
+.contrato-orders th:nth-child(2) { width: 30%; }
+.contrato-orders th:nth-child(3) { width: 30%; }
+.contrato-form-dialog form { display: grid; gap: 10px; }
+.contrato-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.contrato-form-dialog input, .contrato-form-dialog select, .contrato-form-dialog textarea { width: 100%; }
+.contrato-action-dialog textarea { width: 100%; }
+@media (max-width: 1023px) { .contratos-work-area { grid-template-columns: minmax(0, 1fr); } .contratos-table { min-width: 1000px; } }
+@media (max-width: 760px) { .contratos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contratos-summary .contratos-consumption-summary { grid-column: span 2; } .contratos-filters { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 460px) { .contratos-work-area { gap: 10px; } .contratos-summary { gap: 7px; } .contratos-summary > article { padding: 10px; } .contrato-form-row { grid-template-columns: minmax(0, 1fr); } }
 .cotizacion-expired-label { display: inline-flex; border-radius: 20px; padding: 4px 7px; background: var(--bad-soft); color: var(--bad); font-size: 8px; font-weight: 750; white-space: nowrap; }
 .solicitud-status.is-emitida { background: var(--accent-soft); color: var(--accent-ink); }
 .solicitud-status.is-aceptada { background: var(--good-soft); color: var(--good); }

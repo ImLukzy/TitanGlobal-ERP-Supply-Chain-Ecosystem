@@ -1,14 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { limpiarZonas, prepararApiZonas, renderZonas, esperarCargaZonas } from './zonas.testUtils';
 
 afterEach(limpiarZonas);
 
 describe('ZonasAlmacenajePage', () => {
   it('carga listado, resumen de ocupación y detalle inicial', async () => {
+    vi.useFakeTimers();
     const { fetchMock } = prepararApiZonas();
     renderZonas();
-    await esperarCargaZonas(fetchMock);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(301);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    vi.useRealTimers();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/zonas-almacenaje?'))).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'REC-01' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Editar zona' })).toBeInTheDocument();
+    expect(screen.getByText('Casi lleno')).toBeInTheDocument();
     expect(screen.getByRole('meter', { name: 'Ocupación de ALM-LIM-01' })).toHaveAttribute('aria-valuenow', '90');
     expect(screen.getByText('450.00 de 500.00 m³ · 90.00%')).toBeInTheDocument();
     expect(screen.getByText('Recepción principal')).toBeInTheDocument();

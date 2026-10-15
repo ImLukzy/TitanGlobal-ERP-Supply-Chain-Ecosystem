@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SolicitudesCompraPage } from './SolicitudesCompraPage';
@@ -50,11 +50,20 @@ describe('generar orden desde solicitud aprobada', () => {
     expect(within(dialog).getByLabelText('Proveedor')).toHaveValue('1');
     fireEvent.change(within(dialog).getByLabelText('Fecha de entrega estimada'), { target: { value: '2030-01-01' } });
     fireEvent.change(within(dialog).getByLabelText('Observaciones'), { target: { value: 'Desde la solicitud aprobada' } });
+    vi.useFakeTimers();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Generar orden' }));
-    await waitFor(() => {
-      expect(fetchMock.mock.calls.filter((call) => String(call[0]) === '/api/v1/ordenes-abastecimiento/desde-solicitud/3' && call[1]?.method === 'POST')).toHaveLength(1);
-      expect(screen.getByRole('heading', { name: 'OA-000005' })).toBeInTheDocument();
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(301);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
     });
+    vi.useRealTimers();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]) === '/api/v1/ordenes-abastecimiento/desde-solicitud/3' && call[1]?.method === 'POST')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'OA-000005' })).toBeInTheDocument();
     expect(screen.getAllByText('SC-000003').length).toBeGreaterThan(0);
     const llamada = fetchMock.mock.calls.find((call) => String(call[0]) === '/api/v1/ordenes-abastecimiento/desde-solicitud/3');
     expect(llamada?.[1]).toMatchObject({ method: 'POST', body: JSON.stringify({ proveedorId: 1, fechaEntregaEstimada: '2030-01-01', observaciones: 'Desde la solicitud aprobada' }) });

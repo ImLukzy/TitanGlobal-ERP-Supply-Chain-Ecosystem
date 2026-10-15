@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getSelectedRole, setSelectedRole } from './api/roleStore';
 import { AppRoutes } from './App';
 import { RoleProvider } from './layout/RoleContext';
-import { dominios } from './modules/catalogo';
+import { dominios, modulos } from './modules/catalogo';
+import { pantallas } from './modules/pantallas';
 import { MemoryRouter } from 'react-router';
 
 function renderApp(path = '/') {
@@ -84,7 +85,11 @@ describe('navegación', () => {
   });
 
   it('muestra la pantalla pendiente para un módulo aún no implementado', () => {
-    renderApp('/modulos/05-contratos-comerciales');
+    const moduloPendiente = modulos.find((modulo) => pantallas[modulo.slug] === undefined);
+    if (moduloPendiente === undefined) {
+      throw new Error('El catálogo no tiene módulos pendientes.');
+    }
+    renderApp(`/modulos/${moduloPendiente.slug}`);
     expect(screen.getByText('Pantalla pendiente')).toBeInTheDocument();
   });
 
