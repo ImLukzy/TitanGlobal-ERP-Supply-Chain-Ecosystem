@@ -99,3 +99,4 @@ Evaluación:
 | 2026-10-15 | A4 | ✅ | migración `Promociones` (con `Designer` y snapshot) solo crea la tabla; aplicada en Neon |
 | 2026-10-15 | Producción | ✅ | `POST https://titanglobal-erp.vercel.app/api/v1/promociones/evaluar` con 2 Laptop Pro a 2500 para Acme → 200, total 4037.50 |
 | 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado y vigentes, detalle LAPTOP-10, evaluar Acme y Beta, evaluar sin líneas → 400 literal, POST → `{id:5}`, código del seed → 409, promoción de producto sin producto → 400, DELETE → 204 |
