@@ -59,7 +59,7 @@ Decisión del humano (2026-10-15): seguir con el siguiente módulo.
 
 **Consultas.** Desde `Repository<T>().AsQueryable()`, asíncronas y proyectadas a DTO. Búsqueda por código o nombre sin distinguir mayúsculas. Orden por código de almacén, código de zona e `Id`. Comentarios `// PATRÓN LINQ N` donde se reutilice un patrón del Lab 08.
 
-**Seed:** 8 zonas: `ALM-LIM-01` (capacidad 500) con `REC-01` Recepcion 50, `ALM-A` Almacenamiento 300, `PIC-01` Picking 60, `DES-01` Despacho 40; `ALM-ARE-01` con `ALM-A` 150 y `FRIO-01` Refrigerada 30; `ALM-CAL-TR` con `TRAN-01` 80 y `CUA-01` Cuarentena 20 (inactiva). Comprueba que ningún almacén supera su capacidad con los datos de la spec 19.
+**Seed:** 8 zonas sobre las capacidades del seed de la spec 19 (`ALM-LIM-01` 500, `ALM-ARE-01` 150, `ALM-CAL-TR` 75 m³): `ALM-LIM-01` con `REC-01` Recepcion 50, `ALM-A` Almacenamiento 300, `PIC-01` Picking 60 y `DES-01` Despacho 40 (450 de 500 = 90.00 %, sirve para ver «Casi lleno»); `ALM-ARE-01` con `ALM-A` Almacenamiento 100 y `FRIO-01` Almacenamiento Refrigerada 30 (130 de 150); `ALM-CAL-TR` con `TRAN-01` Recepcion 60 y `CUA-01` Cuarentena 20 inactiva (60 de 75: la inactiva no cuenta). Ninguno supera su capacidad.
 
 ## 5. Criterios de aceptación (medibles)
 | # | Criterio | Cómo se verifica | Umbral |
