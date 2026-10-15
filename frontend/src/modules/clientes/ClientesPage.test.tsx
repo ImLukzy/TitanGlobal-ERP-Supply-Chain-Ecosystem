@@ -1,6 +1,12 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as renderBase, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ClientesPage } from './ClientesPage';
+
+function render(ui: ReactNode) {
+  return renderBase(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 interface ClientePrueba {
   id: number;
@@ -46,7 +52,10 @@ function prepararApi(opciones: { errorCrear?: number; errorEliminar?: number; er
         totalClientes: 5,
         clientesConOrdenes: 4,
         clientesSinDescripcion: 1,
-        topClientesPorMonto: [{ clienteId: 1, nombre: 'Acme Industrial', montoTotal: 10000, totalOrdenes: 4 }],
+        topClientesPorMonto: [
+          { clienteId: 1, nombre: 'Acme Industrial', montoTotal: 10000, totalOrdenes: 4 },
+          { clienteId: 3, nombre: 'Gamma Manufactura', montoTotal: 800, totalOrdenes: 1 },
+        ],
       }));
     }
     if (url.includes('/clientes?')) {
@@ -94,6 +103,8 @@ describe('pantalla de Clientes', () => {
     const { fetchMock, llamadas } = prepararApi();
     render(<ClientesPage />);
     expect(await screen.findByRole('heading', { name: 'Acme Industrial' })).toBeInTheDocument();
+    expect(screen.getByText('4 órdenes')).toBeInTheDocument();
+    expect(screen.getByText('1 orden')).toBeInTheDocument();
     await new Promise((resolver) => window.setTimeout(resolver, 350));
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(llamadas.some((llamada) => llamada.url.includes('pagina=2'))).toBe(true));

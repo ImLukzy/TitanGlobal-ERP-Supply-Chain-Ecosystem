@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { modulos } from '../modules/catalogo';
 
 interface PaginaModuloProps {
@@ -25,11 +26,11 @@ export function PaginaModulo({ modulo: referencia, className = '', children }: P
   return (
     <div className={`page-content module-page ${className}`.trim()}>
       <nav aria-label="Miga de pan" className="breadcrumbs">
-        <span>Inicio</span>
+        <Link to="/">Inicio</Link>
         <span aria-hidden="true">/</span>
         <span>{modulo.dominio}</span>
         <span aria-hidden="true">/</span>
-        <span>{numero}</span>
+        <span aria-current="page">{numero} · {modulo.nombre}</span>
       </nav>
       <header className="module-page-heading">
         <div className="page-eyebrow">MÓDULO {numero} · {modulo.dominio}</div>

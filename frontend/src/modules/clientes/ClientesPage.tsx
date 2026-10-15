@@ -5,7 +5,7 @@ import { DialogoBaja } from '../../components/DialogoBaja';
 import { PaginaModulo } from '../../components/PaginaModulo';
 import { PanelDetalle } from '../../components/PanelDetalle';
 import { TablaPaginada } from '../../components/TablaPaginada';
-import { formateadorMoneda, formatearFecha } from '../../lib/formato';
+import { formateadorMoneda, formatearCantidad, formatearFecha } from '../../lib/formato';
 import { actualizarCliente, crearCliente, eliminarCliente, listarClientes, obtenerCliente, obtenerResumenClientes } from './api';
 import type { ClienteDetalle, GuardarClienteRequest, PaginaClientes, ResumenClientes } from './tipos';
 
@@ -37,7 +37,7 @@ function Resumen({ datos, error }: { datos: ResumenClientes | null; error: strin
             {datos.topClientesPorMonto.map((cliente) => (
               <li key={cliente.clienteId}>
                 <strong>{cliente.nombre}</strong>
-                <span>{cliente.totalOrdenes} órdenes</span>
+                <span>{formatearCantidad(cliente.totalOrdenes, 'orden', 'órdenes')}</span>
                 <b>{formateadorMoneda.format(cliente.montoTotal)}</b>
               </li>
             ))}

@@ -131,6 +131,9 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .card-arrow { color: var(--ink-faint); font-size: 16px; }
 .home-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 10px; }
 .breadcrumbs { display: flex; gap: 9px; margin-bottom: 30px; color: var(--ink-faint); font-size: 11px; }
+.breadcrumbs a { color: var(--ink-soft); text-decoration: none; }
+.breadcrumbs a:hover { text-decoration: underline; }
+.breadcrumbs a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .module-page h1 { margin-top: 12px; }
 .module-domain { margin-top: 10px; }
 .module-intro { margin: 10px 0 22px; color: var(--ink-soft); font-size: 13px; }
@@ -281,6 +284,7 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .productos-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; }
 .productos-filters { display: grid; grid-template-columns: 2fr repeat(3, minmax(100px, 1fr)); gap: 9px; margin-bottom: 13px; }
 .productos-filters label, .productos-form label { display: grid; gap: 5px; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.productos-filters label { grid-template-rows: auto 36px minmax(16px, auto); align-content: start; }
 .productos-filters input, .productos-filters select, .productos-form input, .productos-form select, .productos-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
 .productos-table { min-width: 540px; }
 .producto-row-select { padding: 0; border: 0; background: none; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }

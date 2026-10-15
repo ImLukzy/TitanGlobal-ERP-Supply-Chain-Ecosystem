@@ -10,3 +10,8 @@ export const formateadorFecha = new Intl.DateTimeFormat('es-PE', {
 export function formatearFecha(fecha: string): string {
   return formateadorFecha.format(new Date(fecha));
 }
+
+export function formatearCantidad(cantidad: number, singular: string, plural: string): string {
+  const sustantivo = cantidad === 1 ? singular : plural;
+  return `${cantidad} ${sustantivo}`;
+}

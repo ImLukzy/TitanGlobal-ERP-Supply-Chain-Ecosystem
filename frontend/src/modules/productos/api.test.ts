@@ -24,6 +24,19 @@ describe('API de productos', () => {
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'GET' });
   });
 
+  it('omite los filtros vacíos y las claves undefined', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respuestaJson({ items: [], total: 0 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await listarProductos({
+      busqueda: '',
+      categoria: undefined as unknown as string,
+      precioMin: '',
+      precioMax: '',
+      pagina: 1,
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/v1/productos?pagina=1');
+  });
+
   it('obtiene un producto por id', async () => {
     const fetchMock = vi.fn().mockResolvedValue(respuestaJson({ id: 9 }));
     vi.stubGlobal('fetch', fetchMock);

@@ -4,7 +4,9 @@ import type { FiltrosProducto, PaginaProductos, ProductoDetalle, ProductoRequest
 export function listarProductos(filtros: FiltrosProducto): Promise<PaginaProductos> {
   const consulta = new URLSearchParams();
   for (const [clave, valor] of Object.entries(filtros)) {
-    if (valor !== '') consulta.set(clave, String(valor));
+    if (valor !== '' && valor !== undefined) {
+      consulta.set(clave, String(valor));
+    }
   }
   return apiGet<PaginaProductos>(`/productos?${consulta.toString()}`);
 }

@@ -1,7 +1,13 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as renderBase, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import config, { resolveApiTarget } from '../../../vite.config';
 import { ProductosPage } from './ProductosPage';
+
+function render(ui: ReactNode) {
+  return renderBase(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 interface OpcionesApi {
   vacio?: boolean;
@@ -28,7 +34,10 @@ const resumen = {
   productosSinDescripcion: 2,
   precioPromedio: 800,
   porCategoria: [{ categoria: 'Computo', totalProductos: 2, precioPromedio: 2500, precioMaximo: 2500 }],
-  masVendidos: [{ productoId: 1, nombre: 'Laptop Pro', unidadesVendidas: 4, montoVendido: 10000 }],
+  masVendidos: [
+    { productoId: 1, nombre: 'Laptop Pro', unidadesVendidas: 4, montoVendido: 10000 },
+    { productoId: 4, nombre: 'Teclado Mecánico', unidadesVendidas: 1, montoVendido: 200 },
+  ],
 };
 
 function detalle(id: number) {
@@ -109,8 +118,9 @@ describe('pantalla de Productos', () => {
     render(<ProductosPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
     expect(await screen.findByText('Equipo portátil de alto rendimiento')).toBeInTheDocument();
+    expect(screen.getByText('1 unidad')).toBeInTheDocument();
     expect(screen.getAllByText(/10,000\.00/)).toHaveLength(2);
-    expect(screen.getByText('Teclado Mecánico')).toBeInTheDocument();
+    expect(screen.getAllByText('Teclado Mecánico').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Sin descripción').length).toBeGreaterThan(0);
   });
 

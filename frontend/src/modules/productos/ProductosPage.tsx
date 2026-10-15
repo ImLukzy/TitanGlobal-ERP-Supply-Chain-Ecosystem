@@ -5,7 +5,7 @@ import { DialogoBaja } from '../../components/DialogoBaja';
 import { PaginaModulo } from '../../components/PaginaModulo';
 import { PanelDetalle } from '../../components/PanelDetalle';
 import { TablaPaginada } from '../../components/TablaPaginada';
-import { formateadorMoneda } from '../../lib/formato';
+import { formateadorMoneda, formatearCantidad } from '../../lib/formato';
 import { actualizarProducto, crearProducto, eliminarProducto, listarCategoriasProducto, listarProductos, obtenerProducto, obtenerResumenProductos } from './api';
 import type { FiltrosProducto, PaginaProductos, ProductoDetalle, ProductoRequest, ResumenProductos } from './tipos';
 
@@ -189,7 +189,9 @@ export function ProductosPage() {
       obtenerResumenProductos(),
       listarCategoriasProducto(),
     ]).then(([productos, stats, cats]) => {
-      if (!vivo) return;
+      if (!vivo) {
+        return;
+      }
       setLista(productos);
       setResumen(stats);
       setCategorias(cats);
@@ -233,7 +235,9 @@ export function ProductosPage() {
     setActualizacion((value) => value + 1);
   }
   async function baja() {
-    if (!detalle) return;
+    if (!detalle) {
+      return;
+    }
     setEliminando(true);
     try {
       await eliminarProducto(detalle.id);
@@ -302,7 +306,7 @@ export function ProductosPage() {
               {resumen.masVendidos.slice(0, 5).map((item) => (
                 <li key={item.productoId}>
                   <span>{item.nombre}</span>
-                  <span>{item.unidadesVendidas} unidades</span>
+                  <span>{formatearCantidad(item.unidadesVendidas, 'unidad', 'unidades')}</span>
                   <strong>{formateadorMoneda.format(item.montoVendido)}</strong>
                 </li>
               ))}
