@@ -65,6 +65,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 23 Almacenes | `api/v1/almacenes` | maestro de almacenes con tipo, ciudad y capacidad, ciudades, resumen | mantenimiento completo | 19, 20 |
 | 24 ZonasAlmacenaje | `api/v1/zonas-almacenaje` | zonas de cada almacén (tipo, temperatura, capacidad), ocupación por almacén; un almacén con zonas no se borra | zonas con barra de ocupación por almacén («Casi lleno» desde el 90 %) | 21, 22 |
 | 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | en desarrollo | 23, 24 |
+| 03 Cotizaciones | `api/v1/cotizaciones` | presupuestos a clientes con descuento por línea; aceptar genera la orden de compra del módulo 04 (transaccional); rechazar con motivo; vencidas; resumen con tasa de aceptación | en desarrollo | 25, 26 |
 | 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
 
 Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
@@ -94,6 +95,7 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-14 | Repositorio privado en GitHub a nombre de Lukas; despliegue en Neon, Render y Vercel; `main` al día | Lukas |
 | 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integrador (spec 18) |
 | 2026-10-15 | Siguiente módulo de los agentes: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integrador |
+| 2026-10-15 | Al aceptar una cotización se crea una `OrdenCompra` del enunciado sin modificar su entidad (el enlace vive en `Cotizacion`) | integrador (spec 25) |
 | 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
 
 ## 11. Cómo se mantiene este documento
