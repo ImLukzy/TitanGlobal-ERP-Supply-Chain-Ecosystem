@@ -41,10 +41,16 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: Productos con el error de «Precio mínimo» visible (inputs a la misma coordenada `top` medida) y la miga de pan de las tres pantallas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: miga de pan y plurales.
-- [ ] Tarea 2: filtros de Productos y observaciones de la auditoría.
-- [ ] Tarea 3: tests, capturas y A1–A6.
+- [x] Tarea 1: miga de pan y plurales.
+- [x] Tarea 2: filtros de Productos y observaciones de la auditoría.
+- [x] Tarea 3: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | Corrección 1 | ✅ | Claudio vio en la captura oscura «Inicio» con el azul por defecto del navegador (contraste insuficiente) y faltaban las capturas de la miga en las tres pantallas. Corregido: `--ink-soft`, contraste 5.12:1 en claro y 8.20:1 en oscuro |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`2ea428d`, idéntico al auditado `9140478` según `git patch-id`): backend 81/81, frontend 76/76 |
+| 2026-10-14 | A2–A4 | ✅ | test de `PaginaModulo` (enlace a `/`, «NN · Nombre» con `aria-current`); `formatearCantidad` con 0/1/2 y «1 unidad»/«1 orden» en pantallas; `listarProductos` omite `undefined` |
+| 2026-10-14 | A5 | ⚠️→✅ | el commit sustituyó el test de `formatearFecha` (UTC, spec 04) por el de plurales. Claudio lo restauró en `e792983`; pasa con `TZ=America/Lima` |
+| 2026-10-14 | A6 | ✅ | `/tmp/titan-spec11/`: filtros de Productos con error alineados (top 630 px) a 1280; miga de pan de Clientes, OrdenesCompra y Productos en claro y oscuro revisada por Claudio |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; menores: el test de fechas quitado (resuelto arriba) y un `if (vivo) setError(…)` en una línea |

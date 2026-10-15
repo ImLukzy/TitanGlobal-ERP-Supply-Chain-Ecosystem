@@ -16,3 +16,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Qué pasó:** tras reiniciarse Orca, Antigravity no pasaba la comprobación de «listo» y los encargos se enviaron escribiendo en su terminal. Sus `worker_done` se rechazaron (sin tarea activa) y Claude, que solo miraba `orchestration check`, no vio los avisos.
 - **Causa principal:** el run seguía teniendo como coordinador la terminal anterior de Claude (`term_ff3b0c37`, ya cerrada), así que `check` no entregaba los avisos a la terminal nueva.
 - **Regla:** si Claude cambia de terminal o de sesión, lo primero es `orca orchestration run-use --id <run>` y confirmarlo con `run-current`. Después de despachar, esperar con `orca orchestration check --wait` en vez de terminar el turno. Sin tarea activa, el agente avisa con `--type status` a `run:<run>` (ver `equipo.md`, «Cómo avisar al terminar»).
+
+## Un test de regresión sustituido en un cambio de pulido (2026-10-14)
+- **Qué pasó:** en la spec 11, el test de `formatearFecha` (protege el bug de fechas UTC de la spec 04) se reemplazó por el del helper nuevo en vez de añadirse. La auditoría lo marcó como menor.
+- **Regla:** los tests existentes no se borran ni se sustituyen; los nuevos se añaden. Quitar un test es un hallazgo mayor salvo que la spec lo pida.
