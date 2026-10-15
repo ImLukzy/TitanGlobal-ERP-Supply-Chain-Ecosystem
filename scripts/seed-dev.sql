@@ -9,6 +9,20 @@ INSERT INTO "Clientes" ("Id", "Nombre", "Ruc", "Descripcion") VALUES
     (4, 'Delta Logística', '20444444444', NULL),
     (5, 'Cliente sin órdenes', '20555555555', NULL);
 
+INSERT INTO "Proveedores" ("Id", "RazonSocial", "Ruc", "Pais", "Email", "Telefono", "Activo") VALUES
+    (1, 'Andes Suministros S.A.C.', '20600000001', 'Peru', 'ventas@andes.example', '+51 1 555-0101', TRUE),
+    (2, 'Minerales del Sur S.A.C.', '20600000002', 'Peru', 'contacto@minerales.example', '01 555 0102', TRUE),
+    (3, 'Logística Pacífico S.A.C.', '20600000003', 'Peru', NULL, NULL, TRUE),
+    (4, 'Cobre Austral SpA', '76000000004', 'Chile', 'compras@cobreaustral.example', '+56 2 555-0104', TRUE),
+    (5, 'Servicios Andinos SpA', '76000000005', 'Chile', NULL, '+56 2 555-0105', FALSE),
+    (6, 'Shenzhen Parts Ltd.', '91000000006', 'China', 'sales@shenzhen.example', '+86 755 555 0106', TRUE)
+ON CONFLICT ("Ruc") DO UPDATE SET
+    "RazonSocial" = EXCLUDED."RazonSocial",
+    "Pais" = EXCLUDED."Pais",
+    "Email" = EXCLUDED."Email",
+    "Telefono" = EXCLUDED."Telefono",
+    "Activo" = EXCLUDED."Activo";
+
 INSERT INTO "Productos" ("Id", "Nombre", "Categoria", "Precio", "Descripcion") VALUES
     (1, 'Laptop Pro', 'Computo', 2500.00, 'Laptop de alto rendimiento'),
     (2, 'Laptop Básica', 'Computo', 1500.00, 'Laptop de oficina'),
@@ -43,6 +57,7 @@ INSERT INTO "DetallesOrdenCompra" ("Id", "OrdenCompraId", "ProductoId", "Cantida
     (9, 8, 9, 1, 800.00);
 
 SELECT setval(pg_get_serial_sequence('"Clientes"', 'Id'), (SELECT MAX("Id") FROM "Clientes"));
+SELECT setval(pg_get_serial_sequence('"Proveedores"', 'Id'), (SELECT MAX("Id") FROM "Proveedores"));
 SELECT setval(pg_get_serial_sequence('"Productos"', 'Id'), (SELECT MAX("Id") FROM "Productos"));
 SELECT setval(pg_get_serial_sequence('"OrdenesCompra"', 'Id'), (SELECT MAX("Id") FROM "OrdenesCompra"));
 SELECT setval(pg_get_serial_sequence('"DetallesOrdenCompra"', 'Id'), (SELECT MAX("Id") FROM "DetallesOrdenCompra"));

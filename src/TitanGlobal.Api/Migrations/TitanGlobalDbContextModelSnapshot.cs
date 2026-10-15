@@ -139,6 +139,48 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("Productos");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.Proveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Pais")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RazonSocial")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Ruc")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ruc")
+                        .IsUnique();
+
+                    b.ToTable("Proveedores");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.DetalleOrdenCompra", b =>
                 {
                     b.HasOne("TitanGlobal.Api.Models.OrdenCompra", "OrdenCompra")

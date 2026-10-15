@@ -6,6 +6,7 @@ API_PID=""
 COMPOSE_CLEANUP_REQUIRED=0
 CLIENTE_CREADO_ID=""
 PRODUCTO_CREADO_ID=""
+PROVEEDOR_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -125,6 +126,13 @@ checks = {
     "products-summary": lambda data: data["totalProductos"] == 10 and data["productosSinDescripcion"] == 3 and data["precioPromedio"] == 994.5 and [(item["categoria"], item["totalProductos"], item["precioMaximo"]) for item in data["porCategoria"]] == [("Accesorios", 1, 25.0), ("Computo", 3, 3200.0), ("Oficina", 1, 800.0), ("Pantallas", 2, 900.0), ("Perifericos", 3, 200.0)] and [item["productoId"] for item in data["masVendidos"]] == [3, 7, 1, 5, 9],
     "product-created": lambda data: data["id"] > 0,
     "product-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el producto 1 porque tiene ventas registradas.",
+    "providers-list": lambda data: data["total"] == 3 and [item["id"] for item in data["items"]] == [1, 3, 2] and all(item["pais"] == "Peru" for item in data["items"]),
+    "providers-inactive": lambda data: data["total"] == 1 and data["items"][0]["id"] == 5 and data["items"][0]["activo"] is False,
+    "provider-detail": lambda data: data["id"] == 1 and data["razonSocial"] == "Andes Suministros S.A.C." and data["ruc"] == "20600000001" and data["pais"] == "Peru" and data["activo"] is True,
+    "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
+    "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
+    "provider-created": lambda data: data["id"] > 0,
+    "provider-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un proveedor con el RUC 20600000001.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -184,6 +192,10 @@ request_check() {
     if [[ "$validation" == "product-created" ]]; then
         PRODUCTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+
+    if [[ "$validation" == "provider-created" ]]; then
+        PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
 }
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
@@ -214,6 +226,14 @@ request_check 'Resumen de productos' GET '/api/v1/productos/resumen' 200 product
 request_check 'POST producto válido' POST '/api/v1/productos' 200 product-created '{"nombre":"Producto Smoke","categoria":"Pruebas","precio":12.50,"descripcion":"Alta de smoke"}'
 request_check 'DELETE producto con ventas' DELETE '/api/v1/productos/1' 409 product-delete-protected
 request_check 'DELETE producto recién creado' DELETE "/api/v1/productos/${PRODUCTO_CREADO_ID}" 204 ''
+request_check 'Proveedores por país peru' GET '/api/v1/proveedores?pais=peru' 200 providers-list
+request_check 'Proveedores inactivos' GET '/api/v1/proveedores?activo=false' 200 providers-inactive
+request_check 'Detalle del proveedor 1' GET '/api/v1/proveedores/1' 200 provider-detail
+request_check 'Países de proveedores' GET '/api/v1/proveedores/paises' 200 provider-countries
+request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 providers-summary
+request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
+request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
+request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
 request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
 printf 'SMOKE OK\n'
