@@ -13,6 +13,7 @@ import { ContratosComercialesPage } from './contratos-comerciales/ContratosComer
 import { ListasPreciosPage } from './listas-precios/ListasPreciosPage';
 import { PromocionesPage } from './promociones-descuentos/PromocionesPage';
 import { ComisionesVendedoresPage } from './comisiones-vendedores/ComisionesVendedoresPage';
+import { ReclamosPostventaPage } from './reclamos-postventa/ReclamosPostventaPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -29,4 +30,5 @@ export const pantallas: Record<string, ComponentType> = {
   '21-productos': ProductosPage,
   '23-almacenes': AlmacenesPage,
   '24-zonas-almacenaje': ZonasAlmacenajePage,
+  '09-reclamos-postventa': ReclamosPostventaPage,
 };
