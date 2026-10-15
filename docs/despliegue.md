@@ -22,7 +22,8 @@ Entorno para ir viendo el avance. No es producción con datos reales: la base ti
 2. Si hay migraciones nuevas: aplicarlas a Neon (arriba) antes de subir el código.
 3. `git push origin ImLukzy/Claudio` → Render reconstruye la API (comprobar `render deploys list srv-db849hivcj2c73859c9g` hasta `live`).
 4. En `frontend/`: `npx vercel deploy --prod --yes`.
-5. Comprobar `https://titanglobal-erp.vercel.app/api/v1/sistema/salud` → 200 y la pantalla nueva en el navegador.
+5. Actualizar `docs/contexto-proyecto.md` (§5, §6, §7, §10, §12), el estado del `README.md` y `docs/equipo/asignaciones.md`.
+6. Comprobar `https://titanglobal-erp.vercel.app/api/v1/sistema/salud` → 200 y la pantalla nueva en el navegador.
 
 ## Limitaciones conocidas
 - Render free se duerme tras ~15 min sin tráfico: la primera petición puede tardar ~1 minuto.

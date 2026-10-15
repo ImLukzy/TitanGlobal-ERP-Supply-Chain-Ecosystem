@@ -1,0 +1,103 @@
+# Contexto del proyecto TitanGlobal
+
+Documento único con todo lo que hay que saber del proyecto: qué es, qué pide el examen, cómo está construido, qué está implementado, qué decisiones se tomaron y qué falta. **Se actualiza en cada integración** (ver §11). Última actualización: 2026-10-15.
+
+## 1. Qué es
+ERP transaccional para una corporación manufacturera y logística ficticia, **TitanGlobal**: 80 módulos en 8 dominios (comercial y CRM, compras e importaciones, inventarios WMS, manufactura MRP, logística TMS, finanzas, capital humano HCM y gobierno y seguridad). La lista completa está en [`arquitectura.md`](arquitectura.md).
+
+- **Demo:** https://titanglobal-erp.vercel.app (la API va detrás de `/api`; tras ~15 min sin uso tarda ~1 min en despertar).
+- **Código:** GitHub `ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem` (privado). Rama de integración y despliegue: `ImLukzy/Claudio`; `main` se avanza con el OK de Lukas.
+
+## 2. Qué se evalúa (Lab 08 / Examen)
+El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
+- **Backend en .NET 10** con EF Core y PostgreSQL, arquitectura por módulos (vertical slices).
+- **Modelo del enunciado:** `Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra` (no se modifican).
+- **Contratos fijos:** `IGenericRepository<T>` (`AsQueryable`, `AddAsync`, `Update`, `Remove`) e `IUnitOfWork` (`Repository<T>()`, `CompleteAsync()`).
+- **12 patrones LINQ** en el módulo de órdenes de compra (`api/v1/ordenes-compra`).
+- **3 middlewares** con mensajes literales: 500 «Ocurrió un error interno en el servidor.», 400 «El cuerpo de la petición (Body) no puede estar vacío.», 403 «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.»
+- Además, el equipo decidió (y el humano aprobó) hacer **frontend** en React.
+
+**Estado frente al examen: todo lo que pide el enunciado está implementado y probado contra PostgreSQL real** (specs 01, 02, 05 y 06).
+
+## 3. Stack
+| Capa | Tecnología |
+|---|---|
+| API | .NET 10, ASP.NET Core con controladores, OpenAPI nativo |
+| Datos | EF Core + Npgsql, PostgreSQL 16 en local (Docker, puerto 5433) y 18 en Neon |
+| Tests backend | xUnit + `WebApplicationFactory` + EF InMemory; smoke contra PostgreSQL real |
+| Frontend | React 19, React Router, Vite, TypeScript estricto, Vitest, ESLint sin warnings |
+| Despliegue | Neon (BD), Render (API en Docker), Vercel (frontend) |
+
+## 4. Arquitectura
+- **Vertical slices:** `src/TitanGlobal.Api/Modules/ModuloNN_Nombre/{Controllers,Dtos,UseCases}`; `NN` sigue el orden de `arquitectura.md`, y el namespace sigue a la carpeta.
+- **UseCases** concretos sin interfaz, registrados por reflexión. Controladores delgados. Validaciones en un helper estático por módulo (`ValidacionX`).
+- **Persistencia** solo con `IUnitOfWork` / `IGenericRepository<T>`, consultas asíncronas proyectadas a DTO (sin N+1).
+- **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403, cabecera `X-User-Role`: `Bloqueado` y `SinPermiso` se rechazan) → Authorization → Controllers.
+- **Errores de negocio:** `ReglaNegocioException(statusCode, mensaje)` → `{ StatusCode, Message }` sin `Detail` (400, 404, 409). Las carreras de PostgreSQL se traducen: `23505` → 409 y `23503` → 400/409.
+- **Acciones POST sin cuerpo** (`aprobar`, `recibir`): atributo `[PermitirCuerpoVacio]`; el middleware no contiene rutas.
+- **Fechas:** se guardan en UTC (`FechasUtc.Normalizar`); el frontend las muestra en UTC.
+- **Números de documento** (`SC-000NNN`, `OA-000NNN`): los asigna el servidor a partir del Id, dentro de una transacción (`TransactionScope`). Los datos de ejemplo usan `SC-DEV-…` y `OA-DEV-…` para no chocar.
+- **Reglas de código** (las revisa la auditoría): [`../CLAUDE.md`](../CLAUDE.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef`.
+
+## 5. Modelo de datos
+| Entidad | Módulo | Relaciones y notas |
+|---|---|---|
+| `Cliente` | enunciado / 01 | RUC único (11 dígitos) |
+| `Producto` | enunciado / 21 | categoría como texto; sin navegaciones nuevas |
+| `OrdenCompra`, `DetalleOrdenCompra` | enunciado / 04 | pedidos de clientes; número único |
+| `Proveedor` | 11 | RUC único, país, email y teléfono opcionales, `Activo` |
+| `SolicitudCompra`, `DetalleSolicitudCompra` | 13 | estados Pendiente → Aprobada / Rechazada; proveedor sugerido opcional |
+| `OrdenAbastecimiento`, `DetalleOrdenAbastecimiento` | 15 | estados Emitida → Recibida / Anulada; origen manual o desde una solicitud aprobada (una por solicitud) |
+| `Almacen` | 23 | código único en mayúsculas, tipo Central / Regional / Transito, capacidad en m³ (en integración) |
+
+Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento` (y `Almacenes` al integrar la spec 19).
+
+## 6. Módulos implementados
+| Módulo | API | Lo que hace | Pantalla | Specs |
+|---|---|---|---|---|
+| 04 OrdenesCompra | `api/v1/ordenes-compra` | alta de orden (409 número repetido, 400 cliente inexistente) y las 9 consultas de los 12 patrones LINQ | formulario y analítica | 01–06 |
+| 01 Clientes | `api/v1/clientes` | listado con búsqueda, detalle con monto y última orden, alta, edición, baja (409 si tiene órdenes), resumen | mantenimiento completo | 07, 08 |
+| 21 Productos | `api/v1/productos` | listado con categoría y rango de precio, detalle con ventas, alta, edición, baja (409 si tiene ventas), categorías, resumen | mantenimiento completo | 09, 10 |
+| 11 Proveedores | `api/v1/proveedores` | listado por país y estado, detalle, alta, edición, baja, países, resumen | mantenimiento completo | 12, 13 |
+| 13 SolicitudesCompra | `api/v1/solicitudes-compra` | solicitudes con líneas, aprobar (sin cuerpo), rechazar con motivo, editar y borrar solo pendientes, resumen | líneas dinámicas y diálogos | 14, 15 |
+| 15 OrdenesAbastecimiento | `api/v1/ordenes-abastecimiento` | órdenes al proveedor manuales o desde una solicitud aprobada, recibir (sin cuerpo), anular con motivo, «atrasada», resumen | órdenes y botón «Generar orden» en solicitudes | 16, 17, 18 |
+| 23 Almacenes | `api/v1/almacenes` | maestro de almacenes con tipo, ciudad y capacidad, resumen | en curso | 19, 20 |
+| 00 Sistema | `api/v1/sistema/salud` | salud de la API | — | 01 |
+
+Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes literales) y su evidencia en §7.
+
+**Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
+
+## 7. Calidad
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado: 175 tests del backend y 147 del frontend en verde.
+- **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
+- **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
+
+## 8. Despliegue
+Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `ImLukzy/Claudio`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
+
+## 9. Equipo
+- **Personas:** Lukas Melgar (integrador), Leonel Portillo, Antony Huayhua y Kelvin Pinto. Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`guia-companeros.md`](guia-companeros.md).
+- **Agentes de Lukas** (coordinados con Orca): Claudio (integrador), Michael y Dwight (escriben backend y frontend), Kelly (auditoría), Pam (QA), Jim (exploración). Flujo: [`equipo/equipo.md`](equipo/equipo.md).
+- **Errores que no hay que repetir:** [`equipo/lecciones.md`](equipo/lecciones.md).
+
+## 10. Decisiones tomadas
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-14 | Frontend en React + Vite + TS dentro del mismo repositorio (`frontend/`) | Lukas |
+| 2026-10-14 | Numeración de módulos según la lista de `arquitectura.md` (`Modulo04_OrdenesCompra`, no `Modulo02`) | Lukas |
+| 2026-10-14 | Número de orden repetido → 409; cliente inexistente → 400 | Lukas |
+| 2026-10-14 | Orden de módulos: 01 Clientes, 21 Productos, 11 Proveedores, 13 SolicitudesCompra, 15 OrdenesAbastecimiento, 23 Almacenes | Lukas (por recomendación del integrador) |
+| 2026-10-14 | Repositorio privado en GitHub a nombre de Lukas; despliegue en Neon, Render y Vercel; `main` al día | Lukas |
+| 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integrador (spec 18) |
+| 2026-10-15 | Módulos propuestos a compañeros: 12 (Leonel), 22 (Antony), 19 (Kelvin) | Lukas |
+
+## 11. Cómo se mantiene este documento
+En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
+
+## 12. Pendiente
+- **En curso:** módulo 23 Almacenes (backend en auditoría, pantalla en desarrollo).
+- **Asignados a compañeros:** 12 EvaluacionProveedores, 22 CategoriasProducto, 19 RecepcionMercaderia.
+- **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
+- **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel vacío más grande en SolicitudesCompra; números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
+- **Resto:** 72 módulos con «Pantalla pendiente».

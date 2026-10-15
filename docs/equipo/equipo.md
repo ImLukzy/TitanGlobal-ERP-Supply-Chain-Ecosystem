@@ -16,7 +16,7 @@ Claude es el integrador: trabaja en el worktree `titan-claudio` (rama `ImLukzy/C
 3. **Implementar** (Michael o Dwight): un commit, con `./scripts/verify.sh` en verde.
 4. **Auditar** (Kelly): máximo 3 ciclos de corrección. Un cambio pequeño sin lógica puede saltarse este paso.
 5. **QA** (Pam).
-6. **Integrar** en `ImLukzy/Claudio`, con el gate en verde y la evidencia en la spec.
+6. **Integrar** en `ImLukzy/Claudio`, con el gate en verde, la evidencia en la spec y `docs/contexto-proyecto.md`, el README y las asignaciones actualizados.
 7. **Publicar** en `main` solo con el OK explícito del humano.
 
 ## Reglas
