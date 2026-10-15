@@ -130,4 +130,23 @@ ON CONFLICT ("Codigo") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"Almacenes"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Almacenes"));
 
+INSERT INTO "ZonasAlmacenaje" (
+    "AlmacenId", "Codigo", "Nombre", "Tipo", "Temperatura", "CapacidadM3", "Activa") VALUES
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 'REC-01', 'Recepción principal', 'Recepcion', 'Ambiente', 50.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 'ALM-A', 'Almacenamiento A', 'Almacenamiento', 'Ambiente', 300.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 'PIC-01', 'Picking 01', 'Picking', 'Ambiente', 60.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 'DES-01', 'Despacho 01', 'Despacho', 'Ambiente', 40.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-ARE-01'), 'ALM-A', 'Almacenamiento A', 'Almacenamiento', 'Ambiente', 100.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-ARE-01'), 'FRIO-01', 'Pasillo frío', 'Almacenamiento', 'Refrigerada', 30.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-CAL-TR'), 'TRAN-01', 'Tránsito 01', 'Recepcion', 'Ambiente', 60.00, TRUE),
+    ((SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-CAL-TR'), 'CUA-01', 'Cuarentena 01', 'Cuarentena', 'Ambiente', 20.00, FALSE)
+ON CONFLICT ("AlmacenId", "Codigo") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "Tipo" = EXCLUDED."Tipo",
+    "Temperatura" = EXCLUDED."Temperatura",
+    "CapacidadM3" = EXCLUDED."CapacidadM3",
+    "Activa" = EXCLUDED."Activa";
+
+SELECT setval(pg_get_serial_sequence('"ZonasAlmacenaje"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "ZonasAlmacenaje"));
+
 COMMIT;

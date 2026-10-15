@@ -245,6 +245,37 @@ public class AlmacenesApiTests
     }
 
     [Fact]
+    public async Task AlmacenConZonaInactivaNoPuedeEliminarse()
+    {
+        using (IServiceScope scope = _fabrica.Services.CreateScope())
+        {
+            TitanGlobalDbContext contexto = scope.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+            contexto.ZonasAlmacenaje.Add(new ZonaAlmacenaje
+            {
+                AlmacenId = 1,
+                Codigo = "ZONA-01",
+                Nombre = "Zona inactiva",
+                Tipo = "Cuarentena",
+                Temperatura = "Ambiente",
+                CapacidadM3 = 1m,
+                Activa = false
+            });
+            await contexto.SaveChangesAsync();
+        }
+
+        HttpResponseMessage respuesta = await _clienteHttp.DeleteAsync("/api/v1/almacenes/1");
+
+        await AssertBusinessErrorAsync(
+            respuesta,
+            HttpStatusCode.Conflict,
+            409,
+            "No se puede eliminar el almacén 1 porque tiene zonas.");
+        AlmacenDetalleDto? almacen = await _clienteHttp.GetFromJsonAsync<AlmacenDetalleDto>("/api/v1/almacenes/1");
+        Assert.NotNull(almacen);
+        Assert.Equal("ALM-LIM-01", almacen.Codigo);
+    }
+
+    [Fact]
     public async Task OpenApiContainsSevenWarehouseOperations()
     {
         HttpResponseMessage respuesta = await _clienteHttp.GetAsync("/openapi/v1.json");
@@ -265,6 +296,7 @@ public class AlmacenesApiTests
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
         TitanGlobalDbContext contexto = scope.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.ZonasAlmacenaje.RemoveRange(contexto.ZonasAlmacenaje);
         contexto.Almacenes.RemoveRange(contexto.Almacenes);
         contexto.Almacenes.AddRange(
             CrearAlmacen(1, "ALM-LIM-01", "Central Lima", "Central", "Av. Industrial 100", "Lima", 500m, "Ana Torres", true),

@@ -393,6 +393,51 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("SolicitudesCompra");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.ZonaAlmacenaje", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("AlmacenId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("CapacidadM3")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Temperatura")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlmacenId", "Codigo")
+                        .IsUnique();
+
+                    b.ToTable("ZonasAlmacenaje");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.DetalleOrdenAbastecimiento", b =>
                 {
                     b.HasOne("TitanGlobal.Api.Models.OrdenAbastecimiento", "OrdenAbastecimiento")
@@ -487,6 +532,22 @@ namespace TitanGlobal.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.ZonaAlmacenaje", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Almacen", "Almacen")
+                        .WithMany("Zonas")
+                        .HasForeignKey("AlmacenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Almacen");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.Almacen", b =>
+                {
+                    b.Navigation("Zonas");
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.Cliente", b =>

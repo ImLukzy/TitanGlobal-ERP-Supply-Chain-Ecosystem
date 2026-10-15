@@ -24,6 +24,16 @@ public class EliminarAlmacenUseCase
             throw new ReglaNegocioException(StatusCodes.Status404NotFound, $"El almacén {id} no existe.");
         }
 
+        bool tieneZonas = await _unitOfWork.Repository<ZonaAlmacenaje>()
+            .AsQueryable()
+            .AnyAsync(zona => zona.AlmacenId == id);
+        if (tieneZonas)
+        {
+            throw new ReglaNegocioException(
+                StatusCodes.Status409Conflict,
+                $"No se puede eliminar el almacén {id} porque tiene zonas.");
+        }
+
         _unitOfWork.Repository<Almacen>().Remove(almacen);
         await _unitOfWork.CompleteAsync();
     }

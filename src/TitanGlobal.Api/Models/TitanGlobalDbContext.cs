@@ -14,6 +14,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Almacen> Almacenes { get; set; } = null!;
 
+    public DbSet<ZonaAlmacenaje> ZonasAlmacenaje { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -66,6 +68,40 @@ public class TitanGlobalDbContext : DbContext
         modelBuilder.Entity<Almacen>()
             .HasIndex(almacen => almacen.Codigo)
             .IsUnique();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .Property(zona => zona.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .Property(zona => zona.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .Property(zona => zona.Tipo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .Property(zona => zona.Temperatura)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .Property(zona => zona.CapacidadM3)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .HasIndex(zona => new { zona.AlmacenId, zona.Codigo })
+            .IsUnique();
+
+        modelBuilder.Entity<ZonaAlmacenaje>()
+            .HasOne(zona => zona.Almacen)
+            .WithMany(almacen => almacen.Zonas)
+            .HasForeignKey(zona => zona.AlmacenId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Proveedor>()
             .Property(proveedor => proveedor.RazonSocial)

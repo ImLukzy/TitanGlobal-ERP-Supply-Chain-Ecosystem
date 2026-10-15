@@ -19,4 +19,6 @@ public partial class Almacen
     public string? Responsable { get; set; }
 
     public bool Activo { get; set; } = true;
+
+    public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();
 }
