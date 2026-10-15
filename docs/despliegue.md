@@ -4,10 +4,11 @@ Entorno para ir viendo el avance. No es producción con datos reales: la base ti
 
 | Pieza | Servicio | Detalle |
 |---|---|---|
+| URL pública | https://titanglobal-erp.vercel.app | API detrás de `/api` (Render: https://titanglobal-api.onrender.com) |
 | Código | GitHub `ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem` (privado) | rama desplegada: `ImLukzy/Claudio` |
 | Base de datos | Neon, proyecto `titanglobal-erp` (aws-us-east-1, PostgreSQL 18) | base `titanglobal` |
-| API | Render, servicio web Docker (`Dockerfile` de la raíz) | salud: `/api/v1/sistema/salud` |
-| Frontend | Vercel, raíz `frontend/` | `vercel.json` reenvía `/api/*` a la API de Render |
+| API | Render `titanglobal-api` (`srv-db849hivcj2c73859c9g`, plan free, virginia), Docker con el `Dockerfile` de la raíz, despliegue automático al hacer push a `ImLukzy/Claudio` | salud: `/api/v1/sistema/salud` |
+| Frontend | Vercel `titanglobal-erp`, enlazado desde `frontend/` con el CLI; se despliega a mano (`npx vercel deploy --prod` en `frontend/`) | `vercel.json` reenvía `/api/*` a la API de Render |
 
 ## Secretos
 - La cadena de conexión de Neon solo vive en la variable de entorno `ConnectionStrings__DefaultConnection` de Render (formato Npgsql, `SSL Mode=VerifyFull`). Nunca en el repositorio, en `appsettings*.json` ni en la documentación.
@@ -15,3 +16,14 @@ Entorno para ir viendo el avance. No es producción con datos reales: la base ti
 ## Migraciones y datos
 - Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina del integrador, y comprobar después con la API desplegada.
 - Datos de demostración: `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql` (idempotente; reinicia los datos de las tablas del enunciado).
+
+## Tras cada integración (lo hace el integrador)
+1. `./scripts/verify.sh` en verde en `ImLukzy/Claudio`.
+2. Si hay migraciones nuevas: aplicarlas a Neon (arriba) antes de subir el código.
+3. `git push origin ImLukzy/Claudio` → Render reconstruye la API (comprobar `render deploys list srv-db849hivcj2c73859c9g` hasta `live`).
+4. En `frontend/`: `npx vercel deploy --prod --yes`.
+5. Comprobar `https://titanglobal-erp.vercel.app/api/v1/sistema/salud` → 200 y la pantalla nueva en el navegador.
+
+## Limitaciones conocidas
+- Render free se duerme tras ~15 min sin tráfico: la primera petición puede tardar ~1 minuto.
+- La demo no tiene autenticación (el enunciado no la pide): cualquiera con la URL puede crear o borrar datos de demostración. Se restauran con el seed.
