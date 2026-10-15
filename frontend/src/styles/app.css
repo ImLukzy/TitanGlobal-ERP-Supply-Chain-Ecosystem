@@ -882,10 +882,11 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 /* Reclamos postventa */
 .reclamos-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
 .reclamos-summary > article, .reclamos-types { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
-.reclamos-summary > article { display: grid; min-height: 74px; align-content: space-between; color: var(--ink-soft); font-size: 10px; }
+.reclamos-summary > article { display: grid; min-height: 74px; align-content: start; gap: 4px; color: var(--ink-soft); font-size: 10px; }
 .reclamos-summary > article strong { color: var(--ink); font-size: 17px; }
-.reclamos-summary > .reclamos-overdue strong { color: var(--danger); }
-.reclamos-types { grid-column: span 2; }
+.reclamos-summary > article small { color: var(--ink-soft); font-size: 9px; }
+.reclamos-summary > .reclamos-overdue.has-overdue strong { color: var(--bad); }
+.reclamos-types { grid-column: 1 / -1; }
 .reclamos-types h2 { margin: 0 0 8px; font-size: 12px; }
 .reclamos-types ul { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
 .reclamos-types li { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 10px; }
@@ -894,10 +895,11 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .reclamos-panel { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: var(--shadow); }
 .reclamos-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .reclamos-panel-heading h2 { margin: 3px 0 0; font-size: 16px; }
-.reclamos-filters { display: grid; grid-template-columns: minmax(100px, 1.2fr) repeat(4, minmax(80px, 1fr)) auto; gap: 8px; margin-bottom: 12px; }
+.reclamos-filters { display: grid; grid-template-columns: minmax(100px, 1.2fr) repeat(4, minmax(80px, 1fr)); gap: 8px; margin-bottom: 12px; }
 .reclamos-filters > label, .reclamo-form-fields > label, .reclamo-action-field { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
 .reclamos-filters input:not([type=checkbox]), .reclamos-filters select, .reclamo-form input, .reclamo-form select, .reclamo-form textarea, .reclamo-action-field textarea { width: 100%; min-width: 0; min-height: 34px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
 .reclamos-filters .reclamos-checkbox { display: flex; align-items: center; white-space: nowrap; }
+.reclamos-filters .reclamos-checkbox { grid-column: 1 / -1; justify-self: start; }
 .reclamos-checkbox input { width: 14px; height: 14px; margin: 0 3px 0 0; accent-color: var(--accent); }
 .reclamos-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
 .reclamos-table { width: 100%; min-width: 0; table-layout: fixed; }
@@ -911,10 +913,11 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .reclamos-table th:nth-child(6) { width: 15%; }
 .reclamos-table th:nth-child(7) { width: 19%; }
 .reclamos-table td:nth-child(1) { white-space: nowrap; }
-.reclamo-status, .reclamo-priority { display: inline-flex; align-items: center; padding: 4px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-raised); color: var(--ink); font-size: 9px; font-weight: 700; white-space: nowrap; }
-.reclamo-status.is-abierto, .reclamo-priority.is-alta { border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); color: var(--danger); }
-.reclamo-status.is-enproceso, .reclamo-priority.is-media { color: var(--accent); }
-.reclamo-status.is-resuelto, .reclamo-status.is-cerrado, .reclamo-priority.is-baja { color: var(--success); }
+.reclamo-status, .reclamo-priority { display: inline-flex; align-items: center; padding: 4px 7px; border: 0; border-radius: 999px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.reclamo-status.is-abierto, .reclamo-status.is-enproceso, .reclamo-priority.is-media { background: var(--accent-soft); color: var(--accent-ink); }
+.reclamo-status.is-rechazado, .reclamo-priority.is-alta { background: var(--bad-soft); color: var(--bad); }
+.reclamo-status.is-resuelto, .reclamo-status.is-cerrado, .reclamo-priority.is-baja { background: var(--good-soft); color: var(--good); }
+.reclamo-order-link { color: var(--accent-ink); }
 .reclamo-overdue-label, .reclamo-late { color: var(--danger); }
 .reclamo-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin: 0; }
 .reclamo-detail-grid > div { min-width: 0; }

@@ -11,7 +11,8 @@ describe('bandeja de reclamos postventa', () => {
     await esperarCargaInicial(fetchMock);
     expect(screen.getByText('Vencido')).toBeInTheDocument();
     expect(screen.getAllByText('Alta').length).toBeGreaterThan(1);
-    expect(screen.getByText('80.00 % atendidos a tiempo')).toBeInTheDocument();
+    expect(screen.getByText('80.00 %')).toBeInTheDocument();
+    expect(screen.getByText('atendidos a tiempo')).toBeInTheDocument();
     expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/reclamos-postventa?'))).toHaveLength(1);
   });
 
