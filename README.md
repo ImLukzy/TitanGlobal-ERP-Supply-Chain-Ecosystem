@@ -26,7 +26,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 02 SegmentacionClientes | ✅ | ✅ | ✅ |
 | 03 Cotizaciones | ✅ | ✅ | ✅ |
 | 05 ContratosComerciales | ✅ | ✅ | ✅ |
-| 06 ListasPrecios | ✅ | pendiente | — |
+| 06 ListasPrecios | ✅ | ✅ | ✅ |
 | 07 PromocionesDescuentos | ✅ | pendiente | — |
 | 09 ReclamosPostventa | ✅ | pendiente | — |
 | 10 DevolucionesComerciales | ✅ | pendiente | — |

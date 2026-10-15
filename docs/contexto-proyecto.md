@@ -77,7 +77,7 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 02 SegmentacionClientes | `api/v1/segmentos-clientes` | segmentos con criterios (monto y órdenes mínimas) y prioridad; clasificación calculada de cada cliente; resumen | vistas Segmentos y Clasificación; terminado con QA | 23, 24 |
 | 03 Cotizaciones | `api/v1/cotizaciones` | presupuestos a clientes con descuento por línea; aceptar genera la orden de compra del módulo 04 (transaccional); rechazar con motivo; vencidas; resumen con tasa de aceptación | cotizaciones con líneas, descuentos y aceptación que genera la orden; terminado con QA | 25, 26 |
 | 05 ContratosComerciales | `api/v1/contratos-comerciales` | acuerdos marco con cliente (Borrador → Vigente → Finalizado / Cancelado); consumo calculado con las órdenes del periodo; sin vigentes solapados por cliente | contratos con barra de consumo, órdenes del periodo y acciones por estado; terminado con QA | 27, 28 |
-| 06 ListasPrecios | `api/v1/listas-precios` | listas con vigencia, prioridad y segmento opcional; resolución del precio de un producto para un cliente y fecha (segmento > general > base) | backend integrado; pantalla pendiente (spec 30) | 29, 30 |
+| 06 ListasPrecios | `api/v1/listas-precios` | listas con vigencia, prioridad y segmento opcional; resolución del precio de un producto para un cliente y fecha (segmento > general > base); `segmentoId=0` = listas generales; pantalla con simulador | terminado (backend, pantalla y QA) | 29, 30 |
 | 07 PromocionesDescuentos | `api/v1/promociones` | promociones por producto o por monto mínimo, con vigencia y segmento opcional; evaluación de una compra (mejor promoción por línea y una por compra) | backend integrado; pantalla pendiente (spec 32) | 31, 32 |
 | 09 ReclamosPostventa | `api/v1/reclamos-postventa` | reclamos sobre órdenes del cliente con tipo y prioridad; plazo de atención (2/5/10 días) y vencidos; Abierto → EnProceso → Resuelto → Cerrado o Rechazado; cumplimiento de plazos | backend integrado; pantalla pendiente (spec 34) | 33, 34 |
 | 10 DevolucionesComerciales | `api/v1/devoluciones-comerciales` | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; importe con el precio de la orden; tasa de devolución | backend integrado; pantalla pendiente (spec 36) | 35, 36 |
@@ -93,7 +93,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 569 tests del backend y 232 del frontend en verde.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 572 tests del backend y 242 del frontend en verde.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
@@ -127,7 +127,6 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
 
 ## 12. Pendiente
 - **En curso** (parte de Lukas):
-  - 06 ListasPrecios: backend integrado y desplegado; pantalla por empezar.
   - 07 PromocionesDescuentos: backend integrado y desplegado; pantalla por empezar.
   - 09 ReclamosPostventa: backend integrado y desplegado; pantalla por empezar (se adelanta al 08, que necesita decidir cómo se modelan los vendedores).
   - 10 DevolucionesComerciales: backend integrado y desplegado; pantalla por empezar.
@@ -136,7 +135,7 @@ En cada integración, el integrador actualiza aquí: §5 (entidades y migracione
   - 72 RolesPermisos: backend integrado y desplegado; pantalla por empezar.
   - 71 Usuarios: backend integrado y desplegado; pantalla por empezar.
   - 77 AuditoriaTransaccional: backend en desarrollo.
-- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 11 de 20 terminados (01, 02, 03, 04, 05, 11, 13, 15, 21, 23, 24); tiene los otros 9 en curso: 06, 07, 08, 09, 10, 71, 72 y 78 con el backend publicado y la pantalla pendiente, y 77 con el backend en desarrollo. Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
+- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 12 de 20 terminados (01, 02, 03, 04, 05, 06, 11, 13, 15, 21, 23, 24); tiene los otros 8 en curso: 07, 08, 09, 10, 71, 72 y 78 con el backend publicado y la pantalla pendiente o en desarrollo, y 77 con el backend en integración. Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones).
 - **Resto:** ninguno sin dueño.

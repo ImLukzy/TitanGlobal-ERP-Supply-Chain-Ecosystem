@@ -38,11 +38,18 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: simulador con resultado, detalle de una lista y diálogo de baja; márgenes ≥ 16 px, sin scroll horizontal, celdas recortadas ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen y simulador.
-- [ ] Tarea 3: filtros, tabla, detalle, formulario y baja.
-- [ ] Tarea 4: tests, capturas y A1–A6.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen y simulador.
+- [x] Tarea 3: filtros, tabla, detalle, formulario y baja.
+- [x] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Integración | ✅ | `c21e6a0` + `00bf089` (Dwight) integrados como `3597e39` y `3415fc2` en `ImLukzy/Claudio` por cherry-pick, con líneas idénticas; junto con el ajuste del backend `c48b5ec` (spec 29, `segmentoId=0`) |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 572 tests del backend y 242 del frontend en verde; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-10-15 | A2–A4 | ✅ | `api.test.ts` (7 funciones con URL, método, query y cuerpo), tests del simulador (sin petición hasta «Calcular», tres orígenes, error visible) y del listado, formulario y baja |
+| 2026-10-15 | A5 | ✅ | suite del frontend 10/10 seguidas con 4 procesos `yes` de carga (Dwight, corrección 2) |
+| 2026-10-15 | A6 | ✅ | dos correcciones de diseño frente a Contratos (tarjetas, ficha del simulador y del detalle, cabeceras en una línea y del mismo tamaño, fondo uniforme por fila en oscuro, «Solo vigentes» en una línea); capturas `/tmp/titan-spec30/c2-*.png` a 375 y 1280 px en claro y oscuro, revisadas por el integrador (fondo de fila medido por píxel) |
+| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen, simulador con signo − Unicode, detalle, validaciones y CRUD correctos; hallazgo 1 (el filtro «Generales» devolvía 0 filas) resuelto en el backend con `segmentoId=0` (spec 29), aprobado por Kelly |
+| 2026-10-15 | Producción | ✅ | Render `live 3415fc2` y Vercel: `GET /api/v1/listas-precios?segmentoId=0` → 2 (`PROMO-2025`, `GENERAL-2026`); con `vigentes=true` → 1 (`GENERAL-2026`); `/modulos/06-listas-precios` → 200 |
