@@ -7,9 +7,11 @@ import { SolicitudesCompraPage } from './solicitudes-compra/SolicitudesCompraPag
 import { OrdenesAbastecimientoPage } from './ordenes-abastecimiento/OrdenesAbastecimientoPage';
 import { AlmacenesPage } from './almacenes/AlmacenesPage';
 import { ZonasAlmacenajePage } from './zonas-almacenaje/ZonasAlmacenajePage';
+import { SegmentacionClientesPage } from './segmentacion-clientes/SegmentacionClientesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
+  '02-segmentacion-clientes': SegmentacionClientesPage,
   '04-ordenes-compra': OrdenesCompraPage,
   '11-proveedores': ProveedoresPage,
   '13-solicitudes-compra': SolicitudesCompraPage,

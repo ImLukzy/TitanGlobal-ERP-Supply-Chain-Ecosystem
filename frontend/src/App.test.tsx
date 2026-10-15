@@ -62,6 +62,12 @@ describe('navegación', () => {
       if (url.endsWith('/clientes/frecuencia')) {
         return Promise.resolve(new Response('[]', { status: 200 }));
       }
+      if (url.endsWith('/segmentos-clientes/resumen')) {
+        return Promise.resolve(new Response(JSON.stringify({ totalClientes: 5, clientesSegmentados: 4, clientesSinSegmento: 1, porSegmento: [] }), { status: 200 }));
+      }
+      if (url.includes('/segmentos-clientes?')) {
+        return Promise.resolve(new Response(JSON.stringify({ items: [], total: 0, pagina: 1, tamanoPagina: 10 }), { status: 200 }));
+      }
       return Promise.resolve(new Response('{}', { status: 200 }));
     }));
     const { unmount } = renderApp('/modulos/04-ordenes-compra');
@@ -74,6 +80,11 @@ describe('navegación', () => {
     expect(screen.getByRole('heading', { name: '01 · Clientes' })).toBeInTheDocument();
     unmount();
     renderApp('/modulos/02-segmentacion-clientes');
+    expect(screen.getByRole('heading', { name: '02 · SegmentacionClientes' })).toBeInTheDocument();
+  });
+
+  it('muestra la pantalla pendiente para un módulo aún no implementado', () => {
+    renderApp('/modulos/05-contratos-comerciales');
     expect(screen.getByText('Pantalla pendiente')).toBeInTheDocument();
   });
 
