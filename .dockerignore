@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+frontend/
+tests/
+docs/
+.git/
+**/*.user
+.env
