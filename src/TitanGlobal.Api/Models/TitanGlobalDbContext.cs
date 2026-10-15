@@ -10,6 +10,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Cliente> Clientes { get; set; } = null!;
 
+    public DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
+
     public DbSet<Proveedor> Proveedores { get; set; } = null!;
 
     public DbSet<Almacen> Almacenes { get; set; } = null!;
@@ -32,6 +34,31 @@ public class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SegmentoCliente>()
+            .Property(segmento => segmento.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<SegmentoCliente>()
+            .Property(segmento => segmento.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<SegmentoCliente>()
+            .Property(segmento => segmento.Descripcion)
+            .HasMaxLength(300);
+
+        modelBuilder.Entity<SegmentoCliente>()
+            .Property(segmento => segmento.MontoMinimo)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<SegmentoCliente>()
+            .HasIndex(segmento => segmento.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<SegmentoCliente>()
+            .HasIndex(segmento => segmento.Prioridad)
+            .IsUnique();
         modelBuilder.Entity<Almacen>()
             .Property(almacen => almacen.Codigo)
             .HasMaxLength(20)

@@ -343,6 +343,51 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("Proveedores");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.SegmentoCliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<decimal>("MontoMinimo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("OrdenesMinimas")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Prioridad")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("Prioridad")
+                        .IsUnique();
+
+                    b.ToTable("SegmentosClientes");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.SolicitudCompra", b =>
                 {
                     b.Property<int>("Id")

@@ -11,6 +11,7 @@ SOLICITUD_CREADA_ID=""
 ORDEN_ABASTECIMIENTO_CREADA_ID=""
 ALMACEN_CREADO_ID=""
 ZONA_CREADA_ID=""
+SEGMENTO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -137,6 +138,14 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
+    "segments-list": lambda data: data["total"] == 4 and [item["codigo"] for item in data["items"]] == ["VIP", "FRECUENTE", "OCASIONAL", "PREMIUM-OLD"] and [item["clientes"] for item in data["items"]] == [1, 1, 2, 0],
+    "segments-classification": lambda data: data["total"] == 5 and [(item["clienteId"], item["segmentoCodigo"]) for item in data["items"]] == [(1, "VIP"), (2, "FRECUENTE"), (4, "OCASIONAL"), (3, "OCASIONAL"), (5, None)],
+    "segments-unassigned": lambda data: data["total"] == 1 and data["items"][0]["clienteId"] == 5 and data["items"][0]["segmentoId"] is None,
+    "segment-customers": lambda data: data["total"] == 1 and data["items"][0]["clienteId"] == 2,
+    "segments-summary": lambda data: data["totalClientes"] == 5 and data["clientesSegmentados"] == 4 and data["clientesSinSegmento"] == 1 and [(item["codigo"], item["clientes"], item["montoTotal"]) for item in data["porSegmento"]] == [("VIP", 1, 10000.0), ("FRECUENTE", 1, 2000.0), ("OCASIONAL", 2, 1250.0)],
+    "segment-created": lambda data: data["id"] > 4,
+    "segment-priority-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un segmento con la prioridad 1.",
     "warehouses-city": lambda data: data["total"] == 2 and [item["codigo"] for item in data["items"]] == ["ALM-LIM-01", "ALM-LIM-02"],
     "warehouses-type": lambda data: data["total"] == 3 and [item["codigo"] for item in data["items"]] == ["ALM-ARE-01", "ALM-LIM-02", "ALM-TRU-01"],
     "warehouses-inactive": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "ALM-TRU-01" and data["items"][0]["activo"] is False,
@@ -240,6 +249,10 @@ request_check() {
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "segment-created" ]]; then
+        SEGMENTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "orden-created" ]]; then
         ORDEN_ABASTECIMIENTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -298,6 +311,15 @@ request_check 'Resumen de almacenes' GET '/api/v1/almacenes/resumen' 200 warehou
 request_check 'POST almacén válido' POST '/api/v1/almacenes' 200 warehouse-created '{"codigo":"ALM-SMK-01","nombre":"Almacén Smoke","tipo":"Regional","direccion":"Calle Smoke 1","ciudad":"Lima","capacidadM3":20,"responsable":"QA","activo":true}'
 request_check 'POST almacén con código del seed' POST '/api/v1/almacenes' 409 warehouse-duplicate '{"codigo":"ALM-LIM-01","nombre":"Duplicado","tipo":"Central","direccion":"Calle Smoke 2","ciudad":"Lima","capacidadM3":20}'
 request_check 'DELETE almacén recién creado' DELETE "/api/v1/almacenes/${ALMACEN_CREADO_ID}" 204 ''
+request_check 'OpenAPI de segmentación' GET '/openapi/v1.json' 200 openapi-segmentos
+request_check 'Segmentos listados y clientes asignados' GET '/api/v1/segmentos-clientes' 200 segments-list
+request_check 'Clasificación de clientes' GET '/api/v1/segmentos-clientes/clasificacion' 200 segments-classification
+request_check 'Clientes sin segmento' GET '/api/v1/segmentos-clientes/clasificacion?sinSegmento=true' 200 segments-unassigned
+request_check 'Clientes del segmento frecuente' GET '/api/v1/segmentos-clientes/2/clientes' 200 segment-customers
+request_check 'Resumen de segmentación' GET '/api/v1/segmentos-clientes/resumen' 200 segments-summary
+request_check 'POST segmento válido' POST '/api/v1/segmentos-clientes' 200 segment-created '{"codigo":"SMOKE-SEG","nombre":"Segmento Smoke","prioridad":10,"montoMinimo":100,"ordenesMinimas":1,"activo":true}'
+request_check 'POST prioridad repetida' POST '/api/v1/segmentos-clientes' 409 segment-priority-duplicate '{"codigo":"SMOKE-DUP","nombre":"Duplicado","prioridad":1,"montoMinimo":1,"ordenesMinimas":1,"activo":true}'
+request_check 'DELETE segmento recién creado' DELETE "/api/v1/segmentos-clientes/${SEGMENTO_CREADO_ID}" 204 ''
 request_check 'Zonas del almacén 1' GET '/api/v1/zonas-almacenaje?almacenId=1' 200 zones-warehouse
 request_check 'Zonas de tipo picking' GET '/api/v1/zonas-almacenaje?tipo=picking' 200 zones-picking
 request_check 'Detalle de zona 1' GET '/api/v1/zonas-almacenaje/1' 200 zone-detail

@@ -149,4 +149,20 @@ ON CONFLICT ("AlmacenId", "Codigo") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"ZonasAlmacenaje"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "ZonasAlmacenaje"));
 
+INSERT INTO "SegmentosClientes" (
+    "Id", "Codigo", "Nombre", "Descripcion", "Prioridad", "MontoMinimo", "OrdenesMinimas", "Activo") VALUES
+    (1, 'VIP', 'Cliente VIP', 'Criterio de alto valor', 1, 5000.00, 3, TRUE),
+    (2, 'FRECUENTE', 'Cliente frecuente', NULL, 2, 0.00, 2, TRUE),
+    (3, 'OCASIONAL', 'Cliente ocasional', NULL, 3, 0.00, 1, TRUE),
+    (4, 'PREMIUM-OLD', 'Premium antiguo', NULL, 4, 1000.00, 1, FALSE)
+ON CONFLICT ("Codigo") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "Descripcion" = EXCLUDED."Descripcion",
+    "Prioridad" = EXCLUDED."Prioridad",
+    "MontoMinimo" = EXCLUDED."MontoMinimo",
+    "OrdenesMinimas" = EXCLUDED."OrdenesMinimas",
+    "Activo" = EXCLUDED."Activo";
+
+SELECT setval(pg_get_serial_sequence('"SegmentosClientes"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "SegmentosClientes"));
+
 COMMIT;
