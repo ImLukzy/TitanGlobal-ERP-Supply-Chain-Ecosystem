@@ -1,0 +1,66 @@
+.devoluciones-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.devoluciones-summary > article { display: grid; min-width: 0; min-height: 82px; align-content: space-between; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink-soft); font-size: 10px; }
+.devoluciones-summary > article strong { color: var(--ink); font-size: 17px; font-variant-numeric: tabular-nums; }
+.devoluciones-reason-summary { grid-column: 1 / -1; }
+.devoluciones-reason-summary ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.devoluciones-reason-summary li { display: grid; gap: 4px; color: var(--ink-soft); font-size: 11px; }
+.devoluciones-reason-summary li strong { color: var(--ink); font-size: 12px; }
+.devoluciones-work-area { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 14px; margin-top: 14px; }
+.devoluciones-list-panel, .devoluciones-detail { min-width: 0; }
+.devoluciones-filters { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 9px; margin: 12px 0; }
+.devoluciones-filters input, .devoluciones-filters select { width: 100%; }
+.devoluciones-table-scroll, .devolucion-lines-scroll { width: 100%; overflow-x: auto; }
+.devoluciones-table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; }
+.solicitudes-table.devoluciones-table th, .solicitudes-table.devoluciones-table td { padding: 7px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; word-break: normal; font-size: 8px; }
+.devoluciones-table thead th { font-size: 8px; line-height: 1.2; }
+.devoluciones-table th:first-child, .devoluciones-table td:first-child { width: 14%; }
+.devoluciones-table th:first-child button { width: auto; white-space: nowrap; font-size: 7px; }
+.devoluciones-table th:nth-child(2), .devoluciones-table td:nth-child(2) { width: 11%; }
+.devoluciones-table th:nth-child(3), .devoluciones-table td:nth-child(3) { width: 9%; white-space: nowrap; }
+.devoluciones-table th:nth-child(4), .devoluciones-table td:nth-child(4) { width: 13%; white-space: nowrap; font-size: 7px; }
+.devoluciones-table th:nth-child(5), .devoluciones-table td:nth-child(5) { width: 15%; }
+.devoluciones-table td:nth-child(5) { font-size: 7.5px; }
+.devoluciones-table th:nth-child(6), .devoluciones-table td:nth-child(6) { width: 11%; white-space: nowrap; }
+.devoluciones-table th:nth-child(7), .devoluciones-table td:nth-child(7) { width: 15%; white-space: nowrap; }
+.devoluciones-table th:nth-child(8), .devoluciones-table td:nth-child(8) { width: 12%; }
+.devoluciones-table tbody th:first-child { white-space: normal; }
+.devoluciones-table tbody th:first-child small { white-space: nowrap; }
+.devoluciones-table tbody th small { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 7px; font-weight: 400; }
+.devoluciones-table tbody th button { padding: 0; border: 0; background: transparent; color: var(--accent); font-size: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.devoluciones-table td:nth-child(7) { font-variant-numeric: tabular-nums; }
+.devolucion-status { display: inline-flex; max-width: 100%; align-items: center; padding: 3px 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-raised); color: var(--ink); font-size: 7px; font-weight: 700; white-space: nowrap; }
+.devolucion-status.is-solicitada { border-color: var(--warning-line, var(--line)); color: var(--warning-ink, var(--ink)); }
+.devolucion-status.is-aprobada { border-color: var(--accent); color: var(--accent); }
+.devolucion-status.is-recibida { border-color: var(--success-line, var(--line)); color: var(--success-ink, var(--ink)); }
+.devolucion-status.is-rechazada { border-color: var(--danger-line, var(--line)); color: var(--danger-ink, var(--ink)); }
+.devolucion-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 12px; margin: 12px 0; }
+.devolucion-detail-grid div { min-width: 0; }
+.devolucion-detail-grid dt { margin-bottom: 3px; color: var(--ink-soft); font-size: 9px; }
+.devolucion-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: normal; word-break: normal; }
+.devolucion-lines-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; }
+.devolucion-lines-table th, .devolucion-lines-table td { padding: 7px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 8px; }
+.devolucion-lines-table th:first-child, .devolucion-lines-table td:first-child { width: 28%; }
+.devolucion-lines-table th:nth-child(2), .devolucion-lines-table td:nth-child(2) { width: 20%; }
+.devolucion-lines-table th:nth-child(3), .devolucion-lines-table td:nth-child(3) { width: 23%; }
+.devolucion-lines-table th:nth-child(4), .devolucion-lines-table td:nth-child(4) { width: 27%; }
+.devolucion-lines-table th:not(:first-child), .devolucion-lines-table td:not(:first-child) { white-space: nowrap; }
+.devolucion-lines-table td input { width: 68px; }
+.devolucion-availability { margin-top: 12px; }
+.devolucion-availability h3 { margin: 0 0 7px; font-size: 13px; }
+.devolucion-availability .devolucion-lines-table { min-width: 680px; }
+.devolucion-availability .devolucion-lines-table th:first-child, .devolucion-availability .devolucion-lines-table td:first-child { width: 28%; }
+.devolucion-availability .devolucion-lines-table th:nth-child(2), .devolucion-availability .devolucion-lines-table td:nth-child(2), .devolucion-availability .devolucion-lines-table th:nth-child(3), .devolucion-availability .devolucion-lines-table td:nth-child(3), .devolucion-availability .devolucion-lines-table th:nth-child(4), .devolucion-availability .devolucion-lines-table td:nth-child(4) { width: 10%; }
+.devolucion-availability .devolucion-lines-table th:nth-child(5), .devolucion-availability .devolucion-lines-table td:nth-child(5) { width: 15%; }
+.devolucion-availability .devolucion-lines-table th:nth-child(6), .devolucion-availability .devolucion-lines-table td:nth-child(6) { width: 12%; }
+.devolucion-availability .devolucion-lines-table th:nth-child(7), .devolucion-availability .devolucion-lines-table td:nth-child(7) { width: 15%; }
+.devolucion-live-total { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 12px 0; font-size: 12px; }
+.devolucion-live-total strong { font-size: 17px; }
+.clientes-dialog.devolucion-form-dialog { width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; }
+.devolucion-form-dialog form { display: grid; gap: 10px; }
+.devolucion-form-dialog form > * { min-width: 0; }
+.devolucion-availability { min-width: 0; }
+.devolucion-form-dialog select, .devolucion-form-dialog input, .devolucion-form-dialog textarea, .devolucion-action-dialog textarea { width: 100%; }
+.devolucion-action-dialog textarea { min-height: 100px; }
+@media (max-width: 1023px) { .devoluciones-work-area { grid-template-columns: minmax(0, 1fr); } .devoluciones-table { min-width: 880px; } }
+@media (max-width: 760px) { .devoluciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .devoluciones-reason-summary { grid-column: 1 / -1; } .devoluciones-reason-summary ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } .devoluciones-filters { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 460px) { .devoluciones-summary { gap: 7px; } .devoluciones-summary > article { padding: 10px; } .devolucion-detail-grid { grid-template-columns: minmax(0, 1fr); } .clientes-dialog.devolucion-form-dialog { padding: 18px; } }

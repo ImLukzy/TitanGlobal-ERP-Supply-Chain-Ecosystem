@@ -14,6 +14,7 @@ import { ListasPreciosPage } from './listas-precios/ListasPreciosPage';
 import { PromocionesPage } from './promociones-descuentos/PromocionesPage';
 import { ComisionesVendedoresPage } from './comisiones-vendedores/ComisionesVendedoresPage';
 import { ReclamosPostventaPage } from './reclamos-postventa/ReclamosPostventaPage';
+import { DevolucionesComercialesPage } from './devoluciones-comerciales/DevolucionesComercialesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -23,6 +24,7 @@ export const pantallas: Record<string, ComponentType> = {
   '06-listas-precios': ListasPreciosPage,
   '07-promociones-descuentos': PromocionesPage,
   '08-comisiones-vendedores': ComisionesVendedoresPage,
+  '10-devoluciones-comerciales': DevolucionesComercialesPage,
   '04-ordenes-compra': OrdenesCompraPage,
   '11-proveedores': ProveedoresPage,
   '13-solicitudes-compra': SolicitudesCompraPage,
