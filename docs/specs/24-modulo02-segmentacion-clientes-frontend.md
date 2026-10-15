@@ -37,11 +37,16 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: vista Segmentos con detalle, vista Clasificación y diálogo de baja; márgenes ≥ 16 px, sin scroll horizontal, celdas recortadas ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: pestañas, resumen y vista Segmentos.
-- [ ] Tarea 3: vista Clasificación.
-- [ ] Tarea 4: tests, capturas y A1–A6.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: pestañas, resumen y vista Segmentos.
+- [x] Tarea 3: vista Clasificación.
+- [x] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Corrección 1 | ✅ | Claudio vio que el cambio en `App.test.tsx` dejaba sin test la «Pantalla pendiente» (usaba el módulo 02), el código «PREMIUM-OLD» partido en dos líneas y la descripción pegada al título. Corregido: test de pantalla pendiente con otro módulo, códigos sin partir, espaciado común |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`5ab2e08`, mismas líneas que el auditado `7ca8ab0`): backend 272/272, frontend 201/201 |
+| 2026-10-15 | A2–A5 | ✅ | tests de `segmentacion-clientes/` (api, pestañas con teclado y `?vista=`, filtros, «Sin segmento», formulario con «al menos un criterio», 409 de código y prioridad, baja con Escape); 10/10 seguidas según Dwight y Kelly |
+| 2026-10-15 | A6 | ✅ | `/tmp/titan-spec24/` (12 capturas) revisadas por Claudio tras la corrección |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
