@@ -76,11 +76,16 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 8 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidad, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`359ccff`, mismas líneas que el auditado `433cc63`): backend 247/247, frontend 185/185 |
+| 2026-10-15 | A2–A3 | ✅ | `SegmentacionClientesApiTests` (17 tests): mensajes literales, código en mayúsculas, unicidad de código y prioridad, clasificación por prioridad, límite exacto, segmento inactivo, cliente sin órdenes, filtros, paginación y resumen |
+| 2026-10-15 | A4 | ✅ | migración `SegmentosClientes` (con `Designer` y snapshot) solo crea la tabla y sus índices únicos; aplicada en el smoke y en Neon |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: Acme → VIP, cliente sin órdenes → `null`, `sinSegmento=true`, clientes de FRECUENTE (Beta Comercio), resumen 5/4/1, POST → `{id:5}`, prioridad repetida → 409 literal, DELETE → 204 |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO. Observación no bloqueante: la clasificación usa 3 consultas fijas (sin N+1) pero pagina en memoria con todos los clientes cargados; suficiente para el volumen actual, a revisar si crece |

@@ -49,9 +49,10 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 | `SolicitudCompra`, `DetalleSolicitudCompra` | 13 | estados Pendiente → Aprobada / Rechazada; proveedor sugerido opcional |
 | `OrdenAbastecimiento`, `DetalleOrdenAbastecimiento` | 15 | estados Emitida → Recibida / Anulada; origen manual o desde una solicitud aprobada (una por solicitud) |
 | `Almacen` | 23 | código único en mayúsculas, tipo Central / Regional / Transito, capacidad en m³; no se borra si tiene zonas |
+| `SegmentoCliente` | 02 | código y prioridad únicos, criterios de monto y órdenes mínimas; el segmento de cada cliente se calcula, no se guarda |
 | `ZonaAlmacenaje` | 24 | código único por almacén, tipo y temperatura; las zonas activas no superan la capacidad del almacén |
 
-Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`.
+Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`.
 
 ## 6. Módulos implementados
 | Módulo | API | Lo que hace | Pantalla | Specs |
