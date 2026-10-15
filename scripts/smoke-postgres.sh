@@ -13,6 +13,8 @@ ALMACEN_CREADO_ID=""
 ZONA_CREADA_ID=""
 SEGMENTO_CREADO_ID=""
 COTIZACION_CREADA_ID=""
+CONTRATO_CREADO_ID=""
+CONTRATO_BORRADOR_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -140,6 +142,16 @@ checks = {
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
+    "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
+    "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
+    "contract-detail": lambda data: data["numero"] == "CC-DEV-001" and data["clienteNombre"] == "Acme Industrial" and data["montoConsumido"] == 9000.0 and data["saldo"] == 11000.0 and [item["numeroOrden"] for item in data["ordenesPeriodo"]] == ["OC-004", "OC-002", "OC-001"],
+    "contracts-summary": lambda data: data["total"] == 3 and data["borradores"] == 1 and data["vigentes"] == 1 and data["cancelados"] == 1 and data["montoComprometidoVigente"] == 20000.0 and data["montoConsumidoVigente"] == 9000.0 and data["porcentajeConsumoVigente"] == 45.0 and data["porCondicion"] == [{"condicionPago":"Contado","contratos":1},{"condicionPago":"Credito30","contratos":1},{"condicionPago":"Credito60","contratos":1}],
+    "contract-created": lambda data: data["id"] > 3 and data["numero"] == f"CC-{data['id']:06d}",
+    "contract-overlap": lambda data: data["StatusCode"] == 409 and data["Message"] == "El cliente ya tiene el contrato vigente CC-DEV-001 en ese periodo.",
+    "contract-activated": lambda data: data["estado"] == "Vigente" and data["numero"] == "CC-DEV-002" and data["fechaActivacion"] is not None,
+    "contract-finalize-draft": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CC-\d{6} ya está borrador\.", data["Message"]) is not None,
+    "contract-cancel-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de cancelación es obligatorio.",
+    "contract-delete-active": lambda data: data["StatusCode"] == 409 and data["Message"] == "El contrato CC-DEV-001 ya está vigente.",
     "cotizaciones-list": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["COT-DEV-001", "COT-DEV-002"] and data["items"][0]["total"] == 180.0,
     "cotizaciones-expired": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "COT-DEV-002" and data["items"][0]["vencida"] is True,
     "cotizacion-detail": lambda data: data["numero"] == "COT-DEV-001" and data["clienteNombre"] == "Acme Industrial" and data["subtotal"] == 200.0 and data["descuento"] == 20.0 and data["total"] == 180.0 and data["lineas"][0]["importe"] == 180.0,
@@ -265,6 +277,10 @@ request_check() {
         COTIZACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "contract-created" ]]; then
+        CREATED_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "segment-created" ]]; then
         SEGMENTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -363,8 +379,21 @@ request_check 'Recibir orden creada' POST "/api/v1/ordenes-abastecimiento/${ORDE
 request_check 'Recibir orden ya recibida' POST "/api/v1/ordenes-abastecimiento/${ORDEN_ABASTECIMIENTO_CREADA_ID}/recibir" 409 orden-already-received
 request_check 'Generar orden desde solicitud pendiente' POST '/api/v1/ordenes-abastecimiento/desde-solicitud/1' 409 orden-pending-request '{"fechaEntregaEstimada":"2099-01-01T00:00:00Z"}'
 request_check 'Anular orden sin motivo' POST '/api/v1/ordenes-abastecimiento/2/anular' 400 orden-missing-cancel-reason '{"motivo":" "}'
-request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 
+request_check 'OpenAPI de contratos comerciales' GET '/openapi/v1.json' 200 openapi-contracts
+request_check 'Contratos de Acme con consumo' GET '/api/v1/contratos-comerciales?clienteId=1' 200 contracts-list
+request_check 'Detalle del contrato vigente de Acme' GET '/api/v1/contratos-comerciales/1' 200 contract-detail
+request_check 'Resumen de contratos comerciales' GET '/api/v1/contratos-comerciales/resumen' 200 contracts-summary
+request_check 'Crear contrato para probar solapamiento' POST '/api/v1/contratos-comerciales' 200 contract-created '{"clienteId":1,"titulo":"Contrato solapado","fechaInicio":"2026-06-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","montoComprometido":1000,"condicionPago":"Credito30"}'
+CONTRATO_CREADO_ID="$CREATED_ID"
+request_check 'Activar contrato con periodo solapado' POST "/api/v1/contratos-comerciales/${CONTRATO_CREADO_ID}/activar" 409 contract-overlap
+request_check 'Activar contrato de Beta' POST '/api/v1/contratos-comerciales/2/activar' 200 contract-activated
+request_check 'Crear borrador para probar transiciones' POST '/api/v1/contratos-comerciales' 200 contract-created '{"clienteId":5,"titulo":"Borrador smoke","fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2026-12-31T00:00:00Z","montoComprometido":1000,"condicionPago":"Contado"}'
+CONTRATO_BORRADOR_ID="$CREATED_ID"
+request_check 'Finalizar un borrador' POST "/api/v1/contratos-comerciales/${CONTRATO_BORRADOR_ID}/finalizar" 409 contract-finalize-draft
+request_check 'Cancelar contrato sin motivo' POST "/api/v1/contratos-comerciales/${CONTRATO_BORRADOR_ID}/cancelar" 400 contract-cancel-reason '{"motivo":" "}'
+request_check 'Eliminar contrato vigente' DELETE '/api/v1/contratos-comerciales/1' 409 contract-delete-active
+request_check 'POST correcto' POST '/api/v1/ordenes-compra' 200 created '{"numeroOrden":"OC-SMOKE-001","clienteId":1,"total":1}'
 request_check 'OpenAPI de cotizaciones' GET '/openapi/v1.json' 200 openapi-cotizaciones
 request_check 'Listado de cotizaciones emitidas' GET '/api/v1/cotizaciones?estado=emitida' 200 cotizaciones-list
 request_check 'Cotizaciones vencidas' GET '/api/v1/cotizaciones?vencidas=true' 200 cotizaciones-expired

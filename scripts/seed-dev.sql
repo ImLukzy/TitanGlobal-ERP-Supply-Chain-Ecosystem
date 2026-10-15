@@ -185,4 +185,15 @@ INSERT INTO "DetallesCotizacion" (
 SELECT setval(pg_get_serial_sequence('"Cotizaciones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Cotizaciones"));
 SELECT setval(pg_get_serial_sequence('"DetallesCotizacion"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "DetallesCotizacion"));
 
+
+TRUNCATE TABLE "ContratosComerciales" RESTART IDENTITY;
+
+INSERT INTO "ContratosComerciales" (
+    "Id", "Numero", "ClienteId", "Titulo", "FechaInicio", "FechaFin", "MontoComprometido", "CondicionPago", "Estado", "Observaciones", "MotivoCancelacion", "FechaActivacion", "FechaCierre") VALUES
+    (1, 'CC-DEV-001', 1, 'Acuerdo marco Acme 2026', TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', 20000.00, 'Credito30', 'Vigente', 'Contrato anual', NULL, TIMESTAMPTZ '2026-01-01 00:00:00+00', NULL),
+    (2, 'CC-DEV-002', 2, 'Acuerdo Beta 2027', TIMESTAMPTZ '2027-01-01 00:00:00+00', TIMESTAMPTZ '2027-12-31 00:00:00+00', 8000.00, 'Contado', 'Borrador', NULL, NULL, NULL, NULL),
+    (3, 'CC-DEV-003', 3, 'Acuerdo Gamma cancelado', TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-12-31 00:00:00+00', 5000.00, 'Credito60', 'Cancelado', NULL, 'Acuerdo reemplazado', NULL, TIMESTAMPTZ '2026-01-05 00:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"ContratosComerciales"', 'Id'), (SELECT MAX("Id") FROM "ContratosComerciales"));
+
 COMMIT;

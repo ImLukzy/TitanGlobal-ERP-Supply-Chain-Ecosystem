@@ -10,6 +10,8 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<Cliente> Clientes { get; set; } = null!;
 
+    public DbSet<ContratoComercial> ContratosComerciales { get; set; } = null!;
+
     public DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
     public DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
@@ -305,6 +307,48 @@ public class TitanGlobalDbContext : DbContext
             .HasForeignKey(detalle => detalle.ProductoId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.Numero)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.Titulo)
+            .HasMaxLength(200)
+            .IsRequired();
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.MontoComprometido)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.CondicionPago)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<ContratoComercial>()
+            .Property(contrato => contrato.MotivoCancelacion)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<ContratoComercial>()
+            .HasIndex(contrato => contrato.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<ContratoComercial>()
+            .HasOne(contrato => contrato.Cliente)
+            .WithMany()
+            .HasForeignKey(contrato => contrato.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Cliente>()
             .HasMany(cliente => cliente.OrdenesCompra)
