@@ -24,7 +24,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 23 Almacenes | ✅ | ✅ | ✅ |
 | 24 ZonasAlmacenaje | ✅ | ✅ | ✅ |
 | 02 SegmentacionClientes | ✅ | ✅ | ✅ |
-| 03 Cotizaciones | ✅ | pendiente | — |
+| 03 Cotizaciones | ✅ | ✅ | en curso |
 | 05 ContratosComerciales | ✅ | pendiente | — |
 | 06 ListasPrecios | ✅ | pendiente | — |
 | 07 PromocionesDescuentos | en curso | pendiente | — |

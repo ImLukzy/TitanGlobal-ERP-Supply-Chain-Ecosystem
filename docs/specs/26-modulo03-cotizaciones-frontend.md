@@ -40,11 +40,16 @@
 | A7 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: detalle con descuentos, formulario con 3 líneas, diálogo de aceptación y una vencida; márgenes ≥ 16 px, sin scroll horizontal, celdas recortadas ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario de líneas con descuento y diálogos.
-- [ ] Tarea 4: tests, capturas y A1–A7.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario de líneas con descuento y diálogos.
+- [x] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | Corrección 1 | ✅ | Claudio vio en la captura del detalle «Subtotal 2,500 − Descuento 187.50 = Total 2,812.50»: los mocks eran incoherentes (el código muestra los totales de la API). Corregido: mocks calculados como la API y test de coherencia subtotal − descuento = total; además, observaciones con el estilo común y columnas del detalle separadas |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`736c7f7`, mismas líneas que el auditado `975c055`): backend 329/329, frontend 222/222 |
+| 2026-10-15 | A2–A6 | ✅ | tests de `cotizaciones/` (api con aceptar sin cuerpo, filtros y «Solo vencidas», formulario con descuentos y totales en vivo, aceptar con orden generada, vencida sin «Aceptar», rechazo, 409 en el diálogo, Escape); 10/10 seguidas según Dwight |
+| 2026-10-15 | A7 | ✅ | `/tmp/titan-spec26/` (16 capturas) revisadas por Claudio tras la corrección: totales coherentes, detalle sin recortes |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
