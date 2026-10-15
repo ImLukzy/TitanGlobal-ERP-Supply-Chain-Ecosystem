@@ -35,7 +35,8 @@ describe('Devoluciones comerciales: bandeja, formulario y acciones', () => {
     expect(screen.getByText('DEV-DEV-001')).toBeInTheDocument();
     expect(screen.getAllByText('Recibida')).toHaveLength(2);
     expect(screen.getByText('Tasa de devolución')).toBeInTheDocument();
-    expect(screen.getByText('10.00 % de las unidades vendidas')).toBeInTheDocument();
+    expect(screen.getByText('10.00 %')).toBeInTheDocument();
+    expect(screen.getByText('de las unidades vendidas')).toBeInTheDocument();
   });
 
   it('A3 filtra por búsqueda, estado, motivo y cliente regresando a página 1', async () => {

@@ -35,13 +35,13 @@ export function DevolucionDetallePanel({ devolucion, error, cargando, editar, ac
           </div>
           <div>
             <dt>Orden de compra</dt>
-            <dd><Link to="/modulos/04-ordenes-compra">{devolucion.numeroOrden}</Link></dd>
+            <dd><Link className="devolucion-link" to="/modulos/04-ordenes-compra">{devolucion.numeroOrden}</Link></dd>
           </div>
           <div>
             <dt>Reclamo</dt>
             <dd>
               {devolucion.reclamoNumero ? (
-                <Link to="/modulos/09-reclamos-postventa">{devolucion.reclamoNumero}</Link>
+                <Link className="devolucion-link" to="/modulos/09-reclamos-postventa">{devolucion.reclamoNumero}</Link>
               ) : '—'}
             </dd>
           </div>

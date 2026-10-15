@@ -52,8 +52,8 @@ export function DevolucionesTabla({ items, total, pagina, error, cargando, selec
               <small>{formatearFecha(item.fecha)}</small>
             </th>
             <td>{item.clienteNombre}</td>
-            <td><Link to="/modulos/04-ordenes-compra">{item.numeroOrden}</Link></td>
-            <td>{item.reclamoNumero ?? '—'}</td>
+            <td><Link className="devolucion-link" to="/modulos/04-ordenes-compra">{item.numeroOrden}</Link></td>
+            <td>{item.reclamoNumero ? <Link className="devolucion-link" to="/modulos/09-reclamos-postventa">{item.reclamoNumero}</Link> : '—'}</td>
             <td>{nombreMotivo(item.motivo)}</td>
             <td>{item.unidades}</td>
             <td>{formateadorMoneda.format(item.total)}</td>

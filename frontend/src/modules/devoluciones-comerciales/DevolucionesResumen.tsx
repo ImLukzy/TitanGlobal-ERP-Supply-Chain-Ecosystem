@@ -31,7 +31,8 @@ export function DevolucionesResumen({ datos, error }: Props) {
       </article>
       <article>
         <span>Tasa de devolución</span>
-        <strong>{datos.tasaDevolucion.toFixed(2)} % de las unidades vendidas</strong>
+        <strong>{datos.tasaDevolucion.toFixed(2)} %</strong>
+        <small>de las unidades vendidas</small>
       </article>
       <section className="solicitudes-top-panel devoluciones-reason-summary">
         <h2>Devoluciones por motivo</h2>
