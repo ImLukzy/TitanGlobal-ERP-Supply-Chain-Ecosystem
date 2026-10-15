@@ -53,3 +53,4 @@
 | 2026-10-15 | A2–A5 | ✅ | tests de `contratos-comerciales/` (api con activar y finalizar sin cuerpo, filtros y «Solo vencidos», medidor accesible y «Excedido», acciones por estado, 409 en el diálogo, Escape); 10/10 seguidas con carga |
 | 2026-10-15 | A6 | ✅ | `/tmp/titan-spec28/` (12 capturas) revisadas por Claudio tras la corrección 2 |
 | 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed y consumo de Acme S/ 9,000.00 de S/ 20,000.00 (45.00 %) igual a la suma de sus órdenes de 2026; filtros y «Solo vencidos»; acciones por estado; borrador de Acme en 2026 → activar → 409 de solapamiento en el diálogo, movido a 2027 → 200; validaciones locales sin petición; activar, finalizar y cancelar con y sin motivo; contrato excedido; importes y fechas sin partir; 12 capturas sin recortes ni scroll horizontal |
