@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Api.Modules.Modulo13_SolicitudesCompra.Dtos;
 using TitanGlobal.Api.Modules.Modulo13_SolicitudesCompra.UseCases;
 
@@ -99,6 +100,7 @@ public class SolicitudesCompraController : ControllerBase
     }
 
     [HttpPost("{id:int}/aprobar")]
+    [PermitirCuerpoVacio]
     public async Task<IActionResult> Aprobar(int id)
     {
         SolicitudDetalleDto resultado = await _aprobarSolicitudCompraUseCase.ExecuteAsync(id);

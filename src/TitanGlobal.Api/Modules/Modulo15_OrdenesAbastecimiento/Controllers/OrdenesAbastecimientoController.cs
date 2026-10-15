@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Api.Modules.Modulo15_OrdenesAbastecimiento.Dtos;
 using TitanGlobal.Api.Modules.Modulo15_OrdenesAbastecimiento.UseCases;
 
@@ -108,6 +109,7 @@ public class OrdenesAbastecimientoController : ControllerBase
     }
 
     [HttpPost("{id:int}/recibir")]
+    [PermitirCuerpoVacio]
     public async Task<ActionResult<OrdenAbastecimientoDetalleDto>> Recibir(int id)
     {
         OrdenAbastecimientoDetalleDto resultado = await _recibirOrdenAbastecimientoUseCase.ExecuteAsync(id);

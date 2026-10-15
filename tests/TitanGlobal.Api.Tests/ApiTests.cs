@@ -73,6 +73,22 @@ public class ApiTests : IClassFixture<ApiFactory>
             document.RootElement.GetProperty("Message").GetString());
     }
 
+    [Theory]
+    [InlineData("/api/v1/clientes")]
+    [InlineData("/api/v1/solicitudes-compra/1/rechazar")]
+    [InlineData("/api/v1/ordenes-abastecimiento/1/anular")]
+    public async Task EmptyBodyOnActionsThatRequireBodyReturnsLiteralBadRequest(string ruta)
+    {
+        HttpResponseMessage respuesta = await _client.PostAsync(ruta, null);
+        JsonDocument documento = await JsonDocument.ParseAsync(await respuesta.Content.ReadAsStreamAsync());
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+        Assert.Equal(400, documento.RootElement.GetProperty("StatusCode").GetInt32());
+        Assert.Equal(
+            "El cuerpo de la petición (Body) no puede estar vacío.",
+            documento.RootElement.GetProperty("Message").GetString());
+    }
+
     [Fact]
     public async Task BodyIsReadableAfterValidation()
     {

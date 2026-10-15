@@ -14,7 +14,9 @@ public class ParameterValidationMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         bool validarCuerpo = HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method);
-        if (validarCuerpo && !EsAccionSinCuerpo(context.Request))
+        bool permiteCuerpoVacio = context.GetEndpoint()?
+            .Metadata.GetMetadata<PermitirCuerpoVacioAttribute>() != null;
+        if (validarCuerpo && !permiteCuerpoVacio)
         {
             context.Request.EnableBuffering();
 
@@ -42,28 +44,4 @@ public class ParameterValidationMiddleware
         await _next(context);
     }
 
-    private static bool EsAccionSinCuerpo(HttpRequest solicitud)
-    {
-        if (!HttpMethods.IsPost(solicitud.Method))
-        {
-            return false;
-        }
-
-        string ruta = solicitud.Path.Value ?? string.Empty;
-        return EsRutaAccionSinCuerpo(ruta, "/api/v1/solicitudes-compra/", "/aprobar")
-            || EsRutaAccionSinCuerpo(ruta, "/api/v1/ordenes-abastecimiento/", "/recibir");
-    }
-
-    private static bool EsRutaAccionSinCuerpo(string ruta, string prefijo, string sufijo)
-    {
-        if (!ruta.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase)
-            || !ruta.EndsWith(sufijo, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        string idTexto = ruta.Substring(prefijo.Length, ruta.Length - prefijo.Length - sufijo.Length);
-        int id;
-        return int.TryParse(idTexto, out id);
-    }
 }
