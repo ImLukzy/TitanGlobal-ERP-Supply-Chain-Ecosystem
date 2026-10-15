@@ -1,0 +1,13 @@
+.topbar-actions { display: flex; align-items: center; gap: 16px; }
+.alertas-indicator-link { position: relative; display: inline-flex; min-height: 34px; align-items: center; gap: 7px; color: var(--accent-ink); text-decoration: none; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.alertas-indicator-link:hover { text-decoration: underline; }
+.alertas-indicator-icon { font-size: 16px; line-height: 1; }
+.alertas-indicator-count { display: none; }
+@media (max-width: 720px) {
+  .topbar-actions { gap: 6px; margin-left: auto; }
+  .topbar-actions .role-picker { margin-left: 0; }
+  .alertas-indicator-link { width: 30px; min-height: 32px; justify-content: center; gap: 0; }
+  .alertas-indicator-icon { font-size: 17px; }
+  .alertas-indicator-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .alertas-indicator-count { position: absolute; top: 0; right: -2px; display: grid; min-width: 14px; height: 14px; place-items: center; padding: 0 3px; border-radius: 10px; background: var(--bad); color: #fff; font-size: 8px; font-weight: 800; }
+}
