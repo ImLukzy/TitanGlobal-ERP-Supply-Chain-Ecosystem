@@ -688,6 +688,34 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("OrdenesCompra");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.PermisoRol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ModuloNumero")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("PuedeEscribir")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PuedeLeer")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RolId", "ModuloNumero")
+                        .IsUnique();
+
+                    b.ToTable("PermisosRoles");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.Producto", b =>
                 {
                     b.Property<int>("Id")
@@ -890,6 +918,39 @@ namespace TitanGlobal.Api.Migrations
                     b.HasIndex("ProductoId");
 
                     b.ToTable("ReclamosPostventa");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<bool>("EsSistema")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.SegmentoCliente", b =>
@@ -1290,6 +1351,15 @@ namespace TitanGlobal.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.PermisoRol", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Rol", null)
+                        .WithMany()
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.Promocion", b =>

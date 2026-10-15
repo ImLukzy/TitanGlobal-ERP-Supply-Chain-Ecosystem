@@ -20,12 +20,16 @@ PROMOCION_CREADA_ID=""
 DEVOLUCION_CREADA_ID=""
 RECLAMO_CREADO_ID=""
 LIQUIDACION_COMISION_ID=""
+ROL_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
     trap - EXIT INT TERM
 
     if [[ -n "$API_PID" ]]; then
+        if [[ -n "$ROL_CREADO_ID" ]]; then
+            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/roles/${ROL_CREADO_ID}" >/dev/null 2>&1 || true
+        fi
         if [[ -n "$PROMOCION_CREADA_ID" ]]; then
             curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/promociones/${PROMOCION_CREADA_ID}" >/dev/null 2>&1 || true
         fi
@@ -248,6 +252,14 @@ checks = {
     "devolucion-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 1 no está en la orden OC-008." and "Detail" not in data,
     "devolucion-rejection-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
     "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
+    "openapi-roles": lambda data: all(path in data["paths"] for path in ["/api/v1/roles", "/api/v1/roles/{id}", "/api/v1/roles/{id}/permisos", "/api/v1/roles/matriz"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/roles", "get"), ("/api/v1/roles", "post"), ("/api/v1/roles/{id}", "get"), ("/api/v1/roles/{id}", "put"), ("/api/v1/roles/{id}", "delete"), ("/api/v1/roles/{id}/permisos", "get"), ("/api/v1/roles/{id}/permisos", "put"), ("/api/v1/roles/matriz", "get")]),
+    "roles-list": lambda data: data["total"] == 5 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "VENTAS"],
+    "role-detail": lambda data: data["codigo"] == "VENTAS" and data["modulosConLectura"] == 11 and data["modulosConEscritura"] == 10,
+    "role-permissions": lambda data: len(data) == 80 and data[20]["puedeLeer"] is True and data[20]["puedeEscribir"] is False,
+    "roles-matrix": lambda data: len(data["roles"]) == 5 and len(data["modulos"]) == 80 and data["modulos"][0]["permisos"] == ["Escritura", "Ninguno", "Ninguno", "Lectura", "Escritura"],
+    "role-created": lambda data: data["id"] > 0,
+    "role-invalid-write": lambda data: data["StatusCode"] == 400 and data["Message"] == "El módulo 1 no puede tener escritura sin lectura." and "Detail" not in data,
+    "role-system-delete": lambda data: data["StatusCode"] == 409 and data["Message"] == "El rol ADMIN es de sistema y no se puede modificar de esa forma." and "Detail" not in data,
     "openapi-comisiones": lambda data: all(path in data["paths"] for path in ["/api/v1/comisiones-vendedores/vendedores", "/api/v1/comisiones-vendedores/vendedores/{id}", "/api/v1/comisiones-vendedores/ordenes", "/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "/api/v1/comisiones-vendedores/comisiones", "/api/v1/comisiones-vendedores/liquidaciones", "/api/v1/comisiones-vendedores/liquidaciones/{id}/pagar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/comisiones-vendedores/vendedores", "get"), ("/api/v1/comisiones-vendedores/vendedores", "post"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "get"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "put"), ("/api/v1/comisiones-vendedores/vendedores/{id}", "delete"), ("/api/v1/comisiones-vendedores/ordenes", "get"), ("/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "put"), ("/api/v1/comisiones-vendedores/ordenes/{ordenCompraId}/vendedor", "delete"), ("/api/v1/comisiones-vendedores/comisiones", "get"), ("/api/v1/comisiones-vendedores/liquidaciones", "post"), ("/api/v1/comisiones-vendedores/liquidaciones/{id}/pagar", "post")]),
     "comisiones-vendedores": lambda data: data["total"] == 3 and [item["codigo"] for item in data["items"]] == ["V-ANA", "V-LUIS", "V-OLD"],
     "comisiones-sin-asignar": lambda data: data["total"] == len(data["items"]) and all(item["vendedorId"] is None for item in data["items"]) and any(item["numeroOrden"] == "OC-007" for item in data["items"]),
@@ -579,4 +591,14 @@ request_check 'Liquidar marzo' POST '/api/v1/comisiones-vendedores/liquidaciones
 request_check 'Liquidar marzo por segunda vez' POST '/api/v1/comisiones-vendedores/liquidaciones' 409 comisiones-marzo-duplicada '{"anio":2026,"mes":3}'
 request_check 'Pagar liquidación de marzo' POST "/api/v1/comisiones-vendedores/liquidaciones/${LIQUIDACION_COMISION_ID}/pagar" 200 comision-pagada
 request_check 'Proteger vendedor con órdenes asignadas' DELETE '/api/v1/comisiones-vendedores/vendedores/1' 409 comision-delete-protected
+request_check 'OpenAPI de roles y permisos' GET '/openapi/v1.json' 200 openapi-roles
+request_check 'Listado de roles' GET '/api/v1/roles' 200 roles-list
+request_check 'Detalle del rol VENTAS' GET '/api/v1/roles/2' 200 role-detail
+request_check 'Permisos de VENTAS (80 módulos)' GET '/api/v1/roles/2/permisos' 200 role-permissions
+request_check 'Matriz de roles y permisos' GET '/api/v1/roles/matriz' 200 roles-matrix
+request_check 'Crear rol smoke' POST '/api/v1/roles' 200 role-created '{"codigo":"SMOKE-ROL","nombre":"Rol smoke"}'
+ROL_CREADO_ID="$CREATED_ID"
+request_check 'Impedir escritura sin lectura' PUT "/api/v1/roles/${ROL_CREADO_ID}/permisos" 400 role-invalid-write '{"permisos":[{"moduloNumero":1,"puedeLeer":false,"puedeEscribir":true}]}'
+request_check 'Proteger borrado de ADMIN' DELETE '/api/v1/roles/1' 409 role-system-delete
+request_check 'Eliminar rol smoke' DELETE "/api/v1/roles/${ROL_CREADO_ID}" 204 ''
 printf 'SMOKE OK\n'

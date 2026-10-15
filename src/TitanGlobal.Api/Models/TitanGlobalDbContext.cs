@@ -8,6 +8,10 @@ public class TitanGlobalDbContext : DbContext
     {
     }
 
+    public DbSet<Rol> Roles { get; set; } = null!;
+
+    public DbSet<PermisoRol> PermisosRoles { get; set; } = null!;
+
     public DbSet<Cliente> Clientes { get; set; } = null!;
 
     public DbSet<ContratoComercial> ContratosComerciales { get; set; } = null!;
@@ -689,5 +693,34 @@ public class TitanGlobalDbContext : DbContext
             .HasMany(producto => producto.DetallesOrdenCompra)
             .WithOne(detalle => detalle.Producto)
             .HasForeignKey(detalle => detalle.ProductoId);
+
+        modelBuilder.Entity<Rol>()
+            .Property(rol => rol.Codigo)
+            .HasMaxLength(30)
+            .IsRequired();
+
+        modelBuilder.Entity<Rol>()
+            .Property(rol => rol.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Rol>()
+            .Property(rol => rol.Descripcion)
+            .HasMaxLength(300);
+
+        modelBuilder.Entity<Rol>()
+            .HasIndex(rol => rol.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<PermisoRol>()
+            .HasIndex(permiso => new { permiso.RolId, permiso.ModuloNumero })
+            .IsUnique();
+
+        modelBuilder.Entity<PermisoRol>()
+            .HasOne<Rol>()
+            .WithMany()
+            .HasForeignKey(permiso => permiso.RolId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }
