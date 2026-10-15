@@ -29,3 +29,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 ## Cobertura de tests del backend (2026-10-15)
 - **Qué pasó:** la primera entrega de la spec 27 traía 5 tests muy amplios para un módulo con ~20 mensajes de error, transiciones de estado, solapamientos y cálculo por periodo; la spec pedía un caso por mensaje.
 - **Regla:** un test por cada mensaje literal de §4 (con `[Theory]` si encaja), los límites que la spec nombra y la comprobación de que los casos inválidos no cambian datos. Como referencia, los módulos con estados tienen 17–25 tests.
+
+## Pantallas que no siguen el diseño común (2026-10-15)
+- **Qué pasó:** varias pantallas nuevas (Contratos, ListasPrecios) llegaron con controles con el aspecto del navegador, tarjetas de resumen invertidas, captions grandes, detalle a todo el ancho sin cabecera o importes partidos en dos líneas, aunque la spec pedía los componentes compartidos.
+- **Regla:** antes de entregar una pantalla, compararla a 1280 px en claro con una de referencia ya integrada (Contratos o Cotizaciones) con los mismos mocks: tarjetas (etiqueta pequeña, cifra grande), filtros y casillas comunes, `TablaPaginada`, captions pequeños, panel de detalle lateral con cabecera y ficha, importes y fechas sin partir y espaciado de `PaginaModulo` sin sobrescribir. Adjuntar ambas capturas al reporte.
