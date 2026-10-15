@@ -46,7 +46,7 @@ public partial class TitanGlobalDbContext
         IDbContextTransaction? transaccion = IniciarTransaccionLocalSiCorresponde();
         try
         {
-            int cantidad = base.SaveChanges(acceptAllChangesOnSuccess);
+            int cantidad = base.SaveChanges(true);
             AgregarRegistrosAuditoria(cambiosPendientes);
             base.SaveChanges(acceptAllChangesOnSuccess);
             transaccion?.Commit();
@@ -75,7 +75,7 @@ public partial class TitanGlobalDbContext
         IDbContextTransaction? transaccion = await IniciarTransaccionLocalAsyncSiCorresponde(cancellationToken);
         try
         {
-            int cantidad = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            int cantidad = await base.SaveChangesAsync(true, cancellationToken);
             AgregarRegistrosAuditoria(cambiosPendientes);
             await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             if (transaccion != null)

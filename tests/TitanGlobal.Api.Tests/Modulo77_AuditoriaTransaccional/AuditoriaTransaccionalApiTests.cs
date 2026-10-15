@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Models;
 using TitanGlobal.Api.Modules.Modulo01_Clientes.Dtos;
@@ -132,6 +133,90 @@ public class AuditoriaTransaccionalApiTests
     }
 
     [Fact]
+    public void SaveChangesFalseGuardaNegocioUnaVezYDejaAuditoria()
+    {
+        string nombreBaseDatos = "AuditoriaSaveChangesFalse-" + Guid.NewGuid();
+        DbContextOptions<TitanGlobalDbContext> opciones = new DbContextOptionsBuilder<TitanGlobalDbContext>()
+            .UseInMemoryDatabase(nombreBaseDatos)
+            .Options;
+
+        using (TitanGlobalDbContext contexto = new TitanGlobalDbContext(opciones))
+        {
+            contexto.Clientes.Add(new Cliente
+            {
+                Nombre = "Cliente SaveChanges false",
+                Ruc = CrearRucUnico()
+            });
+
+            int cantidad = contexto.SaveChanges(false);
+
+            Assert.Equal(1, cantidad);
+        }
+
+        using TitanGlobalDbContext lectura = new TitanGlobalDbContext(opciones);
+        Assert.Equal(1, lectura.Clientes.Count());
+        RegistroAuditoria registro = Assert.Single(lectura.RegistrosAuditoria);
+        Assert.Equal("Alta", registro.Accion);
+        Assert.Equal("Cliente", registro.Entidad);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsyncFalseGuardaNegocioUnaVezYDejaAuditoria()
+    {
+        string nombreBaseDatos = "AuditoriaSaveChangesAsyncFalse-" + Guid.NewGuid();
+        DbContextOptions<TitanGlobalDbContext> opciones = new DbContextOptionsBuilder<TitanGlobalDbContext>()
+            .UseInMemoryDatabase(nombreBaseDatos)
+            .Options;
+
+        using (TitanGlobalDbContext contexto = new TitanGlobalDbContext(opciones))
+        {
+            contexto.Clientes.Add(new Cliente
+            {
+                Nombre = "Cliente SaveChangesAsync false",
+                Ruc = CrearRucUnico()
+            });
+
+            int cantidad = await contexto.SaveChangesAsync(false);
+
+            Assert.Equal(1, cantidad);
+        }
+
+        using TitanGlobalDbContext lectura = new TitanGlobalDbContext(opciones);
+        Assert.Equal(1, await lectura.Clientes.CountAsync());
+        RegistroAuditoria registro = Assert.Single(await lectura.RegistrosAuditoria.ToListAsync());
+        Assert.Equal("Alta", registro.Accion);
+        Assert.Equal("Cliente", registro.Entidad);
+    }
+
+    [Fact]
+    public void FalloAlPersistirNegocioNoDejaFilasNiAuditoria()
+    {
+        string nombreBaseDatos = "AuditoriaFalloNegocio-" + Guid.NewGuid();
+        DbContextOptions<TitanGlobalDbContext> opcionesConFallo = new DbContextOptionsBuilder<TitanGlobalDbContext>()
+            .UseInMemoryDatabase(nombreBaseDatos)
+            .AddInterceptors(new FallarPersistenciaNegocioInterceptor())
+            .Options;
+        DbContextOptions<TitanGlobalDbContext> opcionesLectura = new DbContextOptionsBuilder<TitanGlobalDbContext>()
+            .UseInMemoryDatabase(nombreBaseDatos)
+            .Options;
+
+        using (TitanGlobalDbContext contexto = new TitanGlobalDbContext(opcionesConFallo))
+        {
+            contexto.Clientes.Add(new Cliente
+            {
+                Nombre = "Cliente con fallo de persistencia",
+                Ruc = CrearRucUnico()
+            });
+
+            Assert.Throws<InvalidOperationException>(() => contexto.SaveChanges());
+        }
+
+        using TitanGlobalDbContext lectura = new TitanGlobalDbContext(opcionesLectura);
+        Assert.Equal(0, lectura.Clientes.Count());
+        Assert.Equal(0, lectura.RegistrosAuditoria.Count());
+    }
+
+    [Fact]
     public async Task UsuarioSeRecortaATreintaCaracteresDespuesDeTrim()
     {
         await LimpiarAuditoriaAsync();
@@ -227,6 +312,20 @@ public class AuditoriaTransaccionalApiTests
             "La fecha desde no puede ser posterior a la fecha hasta.",
             errorFechas.RootElement.GetProperty("Message").GetString());
         Assert.False(errorFechas.RootElement.TryGetProperty("Detail", out _));
+    }
+
+    [Theory]
+    [InlineData("?pagina=0", "La página debe ser mayor o igual a 1.")]
+    [InlineData("?tamanoPagina=101", "El tamaño de página debe estar entre 1 y 100.")]
+    public async Task PaginacionInvalidaDevuelve400ConMensajeLiteralSinDetalle(string consulta, string mensaje)
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.GetAsync("/api/v1/auditoria" + consulta);
+        JsonDocument error = await JsonDocument.ParseAsync(await respuesta.Content.ReadAsStreamAsync());
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+        Assert.Equal(400, error.RootElement.GetProperty("StatusCode").GetInt32());
+        Assert.Equal(mensaje, error.RootElement.GetProperty("Message").GetString());
+        Assert.False(error.RootElement.TryGetProperty("Detail", out _));
     }
 
     [Fact]
@@ -372,5 +471,25 @@ public class AuditoriaTransaccionalApiTests
     private static string CrearRucUnico()
     {
         return "20" + Random.Shared.Next(100000000, 1000000000).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private sealed class FallarPersistenciaNegocioInterceptor : SaveChangesInterceptor
+    {
+        public override InterceptionResult<int> SavingChanges(
+            DbContextEventData eventData,
+            InterceptionResult<int> result)
+        {
+            DbContext? contexto = eventData.Context;
+            if (contexto != null && contexto.ChangeTracker.Entries().Any(entrada =>
+                entrada.Entity is not RegistroAuditoria
+                    && (entrada.State == EntityState.Added
+                        || entrada.State == EntityState.Modified
+                        || entrada.State == EntityState.Deleted)))
+            {
+                throw new InvalidOperationException("Fallo simulado al persistir la entidad de negocio.");
+            }
+
+            return result;
+        }
     }
 }
