@@ -1,4 +1,4 @@
-import { formateadorMoneda } from '../../lib/formato';
+import { formateadorMoneda, formatearCantidad } from '../../lib/formato';
 import type { ResumenOrdenesAbastecimiento } from './tipos';
 
 interface OrdenesResumenProps {
@@ -38,7 +38,7 @@ export function OrdenesResumen({ datos, error }: OrdenesResumenProps) {
             {datos.topProveedores.map((proveedor) => (
               <li key={proveedor.proveedorId}>
                 <span>{proveedor.razonSocial}</span>
-                <strong>{proveedor.ordenes} órdenes · {formateadorMoneda.format(proveedor.monto)}</strong>
+                <strong>{formatearCantidad(proveedor.ordenes, 'orden', 'órdenes')} · {formateadorMoneda.format(proveedor.monto)}</strong>
               </li>
             ))}
           </ol>
