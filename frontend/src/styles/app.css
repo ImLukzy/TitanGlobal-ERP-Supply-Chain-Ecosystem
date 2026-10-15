@@ -259,8 +259,8 @@ h1 { margin-bottom: 7px; color: var(--ink); font-size: clamp(29px, 3vw, 39px); f
 .tabla-paginada-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
 .tabla-paginada { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
 .tabla-paginada caption { padding: 0 0 8px; color: var(--ink-faint); text-align: left; font-size: 9px; }
-.tabla-paginada thead th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
-.tabla-paginada tbody th { padding: 10px; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font-size: inherit; font-weight: inherit; text-align: left; vertical-align: top; }
+.tabla-paginada th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.tabla-paginada tbody th { background: transparent; }
 .tabla-paginada td { padding: 10px; border-bottom: 1px solid var(--line); color: var(--ink); }
 .tabla-paginada-nav { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 12px; }
 .tabla-paginada-nav span { color: var(--ink-soft); font-size: 10px; font-variant-numeric: tabular-nums; }
