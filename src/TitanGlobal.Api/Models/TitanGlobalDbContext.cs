@@ -32,6 +32,10 @@ public class TitanGlobalDbContext : DbContext
 
     public DbSet<ReclamoPostventa> ReclamosPostventa { get; set; } = null!;
 
+    public DbSet<DevolucionComercial> DevolucionesComerciales { get; set; } = null!;
+
+    public DbSet<DetalleDevolucion> DetallesDevolucion { get; set; } = null!;
+
     public DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
@@ -473,6 +477,67 @@ public class TitanGlobalDbContext : DbContext
             .HasOne<Cliente>()
             .WithMany()
             .HasForeignKey(reclamo => reclamo.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .Property(devolucion => devolucion.Numero)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .Property(devolucion => devolucion.Motivo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .Property(devolucion => devolucion.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .Property(devolucion => devolucion.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .Property(devolucion => devolucion.MotivoRechazo)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .HasIndex(devolucion => devolucion.Numero)
+            .IsUnique();
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .HasOne<Cliente>()
+            .WithMany()
+            .HasForeignKey(devolucion => devolucion.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .HasOne<OrdenCompra>()
+            .WithMany()
+            .HasForeignKey(devolucion => devolucion.OrdenCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .HasOne<ReclamoPostventa>()
+            .WithMany()
+            .HasForeignKey(devolucion => devolucion.ReclamoPostventaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DevolucionComercial>()
+            .HasMany(devolucion => devolucion.Detalles)
+            .WithOne(detalle => detalle.DevolucionComercial)
+            .HasForeignKey(detalle => detalle.DevolucionComercialId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DetalleDevolucion>()
+            .HasIndex(detalle => new { detalle.DevolucionComercialId, detalle.ProductoId })
+            .IsUnique();
+
+        modelBuilder.Entity<DetalleDevolucion>()
+            .HasOne(detalle => detalle.Producto)
+            .WithMany()
+            .HasForeignKey(detalle => detalle.ProductoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ReclamoPostventa>()

@@ -229,7 +229,7 @@ INSERT INTO "Promociones" (
 
 SELECT setval(pg_get_serial_sequence('"Promociones"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "Promociones"));
 
-TRUNCATE TABLE "ReclamosPostventa" RESTART IDENTITY;
+TRUNCATE TABLE "DetallesDevolucion", "DevolucionesComerciales", "ReclamosPostventa" RESTART IDENTITY;
 
 INSERT INTO "ReclamosPostventa" (
     "Id", "Numero", "Fecha", "ClienteId", "OrdenCompraId", "ProductoId", "Tipo", "Prioridad", "Descripcion", "Estado", "FechaLimite", "Resolucion", "MotivoRechazo", "FechaInicio", "FechaResolucion", "FechaCierre") VALUES
@@ -240,5 +240,21 @@ INSERT INTO "ReclamosPostventa" (
     (5, 'REC-DEV-005', TIMESTAMPTZ '2026-09-01 09:00:00+00', 4, 8, 9, 'Otro', 'Baja', 'Consulta sobre garantía', 'Rechazado', TIMESTAMPTZ '2026-09-11 09:00:00+00', NULL, 'La consulta no corresponde a la compra', NULL, NULL, TIMESTAMPTZ '2026-09-02 09:00:00+00');
 
 SELECT setval(pg_get_serial_sequence('"ReclamosPostventa"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "ReclamosPostventa"));
+
+INSERT INTO "DevolucionesComerciales" (
+    "Id", "Numero", "Fecha", "ClienteId", "OrdenCompraId", "ReclamoPostventaId", "Motivo", "Estado", "Observaciones", "MotivoRechazo", "FechaAprobacion", "FechaRecepcion", "FechaRechazo") VALUES
+    (1, 'DEV-DEV-001', TIMESTAMPTZ '2026-10-15 08:00:00+00', 1, 1, 1, 'Defecto', 'Recibida', 'Laptop con falla', NULL, TIMESTAMPTZ '2026-10-15 09:00:00+00', TIMESTAMPTZ '2026-10-15 10:00:00+00', NULL),
+    (2, 'DEV-DEV-002', TIMESTAMPTZ '2026-10-14 08:00:00+00', 1, 2, NULL, 'ErrorPedido', 'Aprobada', 'Monitor equivocado', NULL, TIMESTAMPTZ '2026-10-14 09:00:00+00', NULL, NULL),
+    (3, 'DEV-DEV-003', TIMESTAMPTZ '2026-10-13 08:00:00+00', 2, 5, NULL, 'Arrepentimiento', 'Solicitada', NULL, NULL, NULL, NULL, NULL),
+    (4, 'DEV-DEV-004', TIMESTAMPTZ '2026-10-12 08:00:00+00', 4, 8, NULL, 'Otro', 'Rechazada', 'Consulta de garantía', 'Fuera del plazo de devolución', NULL, NULL, TIMESTAMPTZ '2026-10-12 09:00:00+00');
+
+INSERT INTO "DetallesDevolucion" ("DevolucionComercialId", "ProductoId", "Cantidad") VALUES
+    (1, 1, 1),
+    (2, 5, 1),
+    (3, 3, 1),
+    (4, 9, 1);
+
+SELECT setval(pg_get_serial_sequence('"DevolucionesComerciales"', 'Id'), (SELECT MAX("Id") FROM "DevolucionesComerciales"));
+SELECT setval(pg_get_serial_sequence('"DetallesDevolucion"', 'Id'), (SELECT MAX("Id") FROM "DetallesDevolucion"));
 
 COMMIT;

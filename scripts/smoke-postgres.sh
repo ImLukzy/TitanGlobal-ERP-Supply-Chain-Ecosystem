@@ -17,6 +17,7 @@ CONTRATO_CREADO_ID=""
 CONTRATO_BORRADOR_ID=""
 LISTA_PRECIOS_CREADA_ID=""
 PROMOCION_CREADA_ID=""
+DEVOLUCION_CREADA_ID=""
 RECLAMO_CREADO_ID=""
 
 cleanup() {
@@ -229,6 +230,18 @@ checks = {
     "promo-detail": lambda data: data["codigo"] == "LAPTOP-10" and data["tipo"] == "Producto" and data["productoId"] == 1 and data["porcentajeDescuento"] == 10.0,
     "promo-acme": lambda data: data["subtotal"] == 5000.0 and data["totalTrasLineas"] == 4250.0 and data["descuentoCompra"] == 212.5 and data["total"] == 4037.5 and data["lineas"][0]["promocion"]["codigo"] == "LAPTOP-VIP-15" and data["promocionCompra"]["codigo"] == "COMPRA-3000",
     "promo-beta": lambda data: data["subtotal"] == 5000.0 and data["totalTrasLineas"] == 4500.0 and data["descuentoCompra"] == 225.0 and data["total"] == 4275.0 and data["lineas"][0]["promocion"]["codigo"] == "LAPTOP-10",
+    "openapi-devoluciones": lambda data: all(path in data["paths"] for path in ["/api/v1/devoluciones-comerciales", "/api/v1/devoluciones-comerciales/{id}", "/api/v1/devoluciones-comerciales/ordenes/{ordenId}/disponible", "/api/v1/devoluciones-comerciales/{id}/aprobar", "/api/v1/devoluciones-comerciales/{id}/recibir", "/api/v1/devoluciones-comerciales/{id}/rechazar", "/api/v1/devoluciones-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/devoluciones-comerciales", "get"), ("/api/v1/devoluciones-comerciales", "post"), ("/api/v1/devoluciones-comerciales/{id}", "get"), ("/api/v1/devoluciones-comerciales/{id}", "put"), ("/api/v1/devoluciones-comerciales/{id}", "delete"), ("/api/v1/devoluciones-comerciales/{id}/aprobar", "post"), ("/api/v1/devoluciones-comerciales/{id}/recibir", "post"), ("/api/v1/devoluciones-comerciales/{id}/rechazar", "post"), ("/api/v1/devoluciones-comerciales/ordenes/{ordenId}/disponible", "get"), ("/api/v1/devoluciones-comerciales/resumen", "get")]),
+    "devoluciones-list": lambda data: data["total"] == 4 and [item["numero"] for item in data["items"]] == ["DEV-DEV-001", "DEV-DEV-002", "DEV-DEV-003", "DEV-DEV-004"],
+    "devolucion-detail": lambda data: data["numero"] == "DEV-DEV-001" and data["clienteNombre"] == "Acme Industrial" and data["numeroOrden"] == "OC-001" and data["reclamoNumero"] == "REC-DEV-001" and data["estado"] == "Recibida" and data["total"] == 2500.0 and data["lineas"][0]["importe"] == 2500.0,
+    "devolucion-disponible": lambda data: len(data) == 1 and data[0]["productoId"] == 9 and data[0]["productoNombre"] == "Silla Ejecutiva" and data[0]["comprado"] == 1 and data[0]["devuelto"] == 0 and data[0]["disponible"] == 1 and data[0]["precioUnitario"] == 800.0,
+    "devoluciones-summary": lambda data: data["total"] == 4 and data["solicitadas"] == 1 and data["aprobadas"] == 1 and data["recibidas"] == 1 and data["rechazadas"] == 1 and data["montoReembolsado"] == 2500.0 and data["tasaDevolucion"] == 8.33 and [(item["motivo"], item["devoluciones"], item["unidades"]) for item in data["porMotivo"]] == [("Defecto", 1, 1), ("ErrorPedido", 1, 1), ("Arrepentimiento", 1, 1), ("Otro", 1, 1)],
+    "devolucion-created": lambda data: data["id"] > 4 and data["numero"] == f"DEV-{data['id']:06d}",
+    "devolucion-approved": lambda data: data["estado"] == "Aprobada" and data["fechaAprobacion"] is not None,
+    "devolucion-received": lambda data: data["estado"] == "Recibida" and data["fechaRecepcion"] is not None,
+    "devolucion-already-received": lambda data: data["StatusCode"] == 409 and data["Message"] == "La devolución DEV-DEV-001 está recibida." and "Detail" not in data,
+    "devolucion-over-available": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo quedan 1 unidades de Silla Ejecutiva por devolver en la orden OC-008." and "Detail" not in data,
+    "devolucion-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 1 no está en la orden OC-008." and "Detail" not in data,
+    "devolucion-rejection-reason": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
     "promo-empty": lambda data: data["StatusCode"] == 400 and data["Message"] == "La compra debe tener al menos una línea." and "Detail" not in data,
     "promo-created": lambda data: data["id"] > 4,
     "promo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una promoción con el código LAPTOP-10." and "Detail" not in data,
@@ -347,6 +360,10 @@ request_check() {
 
     if [[ "$validation" == "reclamo-created" ]]; then
         RECLAMO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "devolucion-created" ]]; then
+        DEVOLUCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -490,4 +507,16 @@ request_check 'Cerrar reclamo creado' POST "/api/v1/reclamos-postventa/${RECLAMO
 request_check 'Cerrar reclamo cerrado' POST "/api/v1/reclamos-postventa/${RECLAMO_CREADO_ID}/cerrar" 409 reclamo-close-conflict
 request_check 'Crear reclamo con producto ajeno a la orden' POST '/api/v1/reclamos-postventa' 400 reclamo-product-not-order '{"clienteId":1,"ordenCompraId":1,"productoId":2,"tipo":"Defecto","prioridad":"Alta","descripcion":"Producto no perteneciente a la orden"}'
 request_check 'Rechazar reclamo sin motivo' POST '/api/v1/reclamos-postventa/1/rechazar' 400 reclamo-no-rejection-motive '{"motivo":" "}'
+request_check 'OpenAPI de devoluciones comerciales' GET '/openapi/v1.json' 200 openapi-devoluciones
+request_check 'Listado de devoluciones comerciales' GET '/api/v1/devoluciones-comerciales' 200 devoluciones-list
+request_check 'Detalle de devolución DEV-DEV-001' GET '/api/v1/devoluciones-comerciales/1' 200 devolucion-detail
+request_check 'Productos disponibles para devolver en la orden 8' GET '/api/v1/devoluciones-comerciales/ordenes/8/disponible' 200 devolucion-disponible
+request_check 'Resumen de devoluciones comerciales' GET '/api/v1/devoluciones-comerciales/resumen' 200 devoluciones-summary
+request_check 'POST que supera lo disponible' POST '/api/v1/devoluciones-comerciales' 409 devolucion-over-available '{"clienteId":4,"ordenCompraId":8,"motivo":"Defecto","lineas":[{"productoId":9,"cantidad":2}]}'
+request_check 'POST con producto que no está en la orden' POST '/api/v1/devoluciones-comerciales' 400 devolucion-product-not-order '{"clienteId":4,"ordenCompraId":8,"motivo":"Defecto","lineas":[{"productoId":1,"cantidad":1}]}'
+request_check 'Rechazar devolución solicitada sin motivo' POST '/api/v1/devoluciones-comerciales/3/rechazar' 400 devolucion-rejection-reason '{"motivo":" "}'
+request_check 'POST devolución válida' POST '/api/v1/devoluciones-comerciales' 200 devolucion-created '{"clienteId":4,"ordenCompraId":8,"motivo":"Defecto","observaciones":"Devolución smoke","lineas":[{"productoId":9,"cantidad":1}]}'
+request_check 'Aprobar devolución creada' POST "/api/v1/devoluciones-comerciales/${DEVOLUCION_CREADA_ID}/aprobar" 200 devolucion-approved
+request_check 'Recibir devolución aprobada' POST "/api/v1/devoluciones-comerciales/${DEVOLUCION_CREADA_ID}/recibir" 200 devolucion-received
+request_check 'Recibir devolución recibida' POST '/api/v1/devoluciones-comerciales/1/recibir' 409 devolucion-already-received
 printf 'SMOKE OK\n'
