@@ -27,3 +27,11 @@ Claude es el integrador: trabaja en el worktree `titan-claudio` (rama `ImLukzy/C
 - Puertos de desarrollo: API 5080, frontend 5173, PostgreSQL 5433.
 - Los agentes Codex usan `/home/lukzy/.local/bin/orca-ide` en lugar de `orca`.
 - Hay que verificar los reportes de los agentes. Un fallo puede venir de su entorno; por ejemplo, de dependencias sin restaurar (`dotnet restore`).
+
+## Cómo avisar al terminar (para que el mensaje llegue)
+El run del equipo es `run_88f9b99f511a`. Al acabar un encargo, escribe el informe en el archivo que indique el encargo y avisa a Claude con UNO de estos comandos (Codex: `/home/lukzy/.local/bin/orca-ide` en lugar de `orca`):
+- **Encargo despachado por Orca** (el texto empieza con «You are working inside Orca… dispatched worker» y trae tu handle y el id de la tarea): `orca orchestration send --type worker_done --from <tu handle> --task-id <task> --dispatch-id <dispatch> --outcome succeeded|failed --report-path <informe> --subject "…" --body "…"`. Usa exactamente el `--from` que da el preámbulo.
+- **Encargo escrito directamente en tu terminal** (sin preámbulo de Orca): `worker_done` se rechaza porque no hay tarea activa. Usa `orca orchestration send --run run_88f9b99f511a --to run:run_88f9b99f511a --type status --report-path <informe> --subject "…" --body "…"`.
+- Comprueba la respuesta del comando: si dice «Rejected», envía de nuevo con `--type status`. No des el trabajo por entregado sin un aviso aceptado.
+- El asunto empieza por el resultado: `OK`, `BLOQUEADO`, `APROBADO` o `CAMBIOS`.
+- `/tmp` se borra al reiniciar la máquina: el informe y las capturas se entregan en cuanto terminas.
