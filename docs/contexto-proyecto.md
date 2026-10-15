@@ -105,7 +105,7 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
-- **En curso:** módulo 02 SegmentacionClientes (backend integrado y desplegado; pantalla en corrección) módulo 03 Cotizaciones (backend integrado y desplegado; pantalla, spec 26, por empezar) y módulo 05 ContratosComerciales (backend en desarrollo).
+- **En curso:** QA de extremo a extremo del módulo 02 SegmentacionClientes (integrado y desplegado); módulo 03 Cotizaciones (backend integrado y desplegado; pantalla en desarrollo) y módulo 05 ContratosComerciales (backend en desarrollo).
 - **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). A Lukas le quedan 12 por empezar (02, 03, 05–10, 71, 72, 77, 78) más cerrar 23 y 24; Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel vacío más grande en SolicitudesCompra; números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas).
