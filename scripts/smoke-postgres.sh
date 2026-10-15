@@ -22,6 +22,9 @@ RECLAMO_CREADO_ID=""
 LIQUIDACION_COMISION_ID=""
 ROL_CREADO_ID=""
 USUARIO_CREADO_ID=""
+AUDITORIA_ALTA_ID=""
+AUDITORIA_MODIFICACION_ID=""
+AUDITORIA_BAJA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -149,6 +152,7 @@ checks = {
     "cliente-detail": lambda data: data["id"] == 1 and data["nombre"] == "Acme Industrial" and data["ruc"] == "20111111111" and data["totalOrdenes"] == 4 and data["montoTotal"] == 10000.0 and data["ultimaOrdenFecha"] == "2026-03-10T00:00:00Z",
     "clientes-summary": lambda data: data["totalClientes"] == 5 and data["clientesConOrdenes"] == 4 and data["clientesSinDescripcion"] == 3 and [(item["clienteId"], item["montoTotal"]) for item in data["topClientesPorMonto"]] == [(1, 10000.0), (2, 2000.0), (4, 750.0), (3, 500.0)],
     "cliente-created": lambda data: data["id"] > 0,
+    "cliente-updated": lambda data: data["id"] > 0,
     "cliente-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un cliente con el RUC 20111111111.",
     "cliente-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el cliente 1 porque tiene órdenes de compra.",
     "products-category": lambda data: data["total"] == 3 and [item["id"] for item in data["items"]] == [7, 2, 1] and all(item["categoria"] == "Computo" for item in data["items"]),
@@ -258,6 +262,14 @@ checks = {
     "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
     "openapi-roles": lambda data: all(path in data["paths"] for path in ["/api/v1/roles", "/api/v1/roles/{id}", "/api/v1/roles/{id}/permisos", "/api/v1/roles/matriz"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/roles", "get"), ("/api/v1/roles", "post"), ("/api/v1/roles/{id}", "get"), ("/api/v1/roles/{id}", "put"), ("/api/v1/roles/{id}", "delete"), ("/api/v1/roles/{id}/permisos", "get"), ("/api/v1/roles/{id}/permisos", "put"), ("/api/v1/roles/matriz", "get")]),
     "openapi-usuarios": lambda data: all(path in data["paths"] for path in ["/api/v1/usuarios", "/api/v1/usuarios/{id}", "/api/v1/usuarios/{id}/permisos", "/api/v1/usuarios/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/usuarios", "get"), ("/api/v1/usuarios", "post"), ("/api/v1/usuarios/{id}", "get"), ("/api/v1/usuarios/{id}", "put"), ("/api/v1/usuarios/{id}", "delete"), ("/api/v1/usuarios/{id}/permisos", "get"), ("/api/v1/usuarios/resumen", "get")]),
+    "openapi-auditoria": lambda data: all(path in data["paths"] for path in ["/api/v1/auditoria", "/api/v1/auditoria/{id}", "/api/v1/auditoria/entidades", "/api/v1/auditoria/resumen"]) and all(list(data["paths"][path]) == ["get"] for path in ["/api/v1/auditoria", "/api/v1/auditoria/{id}", "/api/v1/auditoria/entidades", "/api/v1/auditoria/resumen"]),
+    "auditoria-clientes": lambda data: data["total"] == 3 and [item["accion"] for item in data["items"]] == ["Baja", "Modificacion", "Alta"] and all(item["entidad"] == "Cliente" and item["usuario"] == "smoke" for item in data["items"]) and [item["camposCambiados"] for item in data["items"]] == [4, 2, 4],
+    "auditoria-alta": lambda data: data["entidad"] == "Cliente" and data["accion"] == "Alta" and data["entidadId"] == str(data["cambios"][0]["despues"]) and all(campo["antes"] is None for campo in data["cambios"]) and {campo["campo"]: campo["despues"] for campo in data["cambios"]} == {"Id": data["entidadId"], "Nombre": "Cliente Smoke", "Ruc": "20987654321", "Descripcion": "Alta de smoke"},
+    "auditoria-modificacion": lambda data: data["entidad"] == "Cliente" and data["accion"] == "Modificacion" and {campo["campo"]: (campo["antes"], campo["despues"]) for campo in data["cambios"]} == {"Nombre": ("Cliente Smoke", "Cliente Smoke Editado"), "Descripcion": ("Alta de smoke", "Actualización de smoke")},
+    "auditoria-baja": lambda data: data["entidad"] == "Cliente" and data["accion"] == "Baja" and {campo["campo"]: (campo["antes"], campo["despues"]) for campo in data["cambios"]} == {"Id": (data["entidadId"], None), "Nombre": ("Cliente Smoke Editado", None), "Ruc": ("20987654321", None), "Descripcion": ("Actualización de smoke", None)},
+    "auditoria-solicitud": lambda data: data["total"] >= 3 and sorted(item["entidad"] for item in data["items"]).count("SolicitudCompra") >= 1 and sorted(item["entidad"] for item in data["items"]).count("DetalleSolicitudCompra") == 2,
+    "auditoria-summary": lambda data: data["total"] >= 3 and data["altas"] > 0 and data["modificaciones"] > 0 and data["bajas"] > 0 and len(data["ultimos7Dias"]) == 7,
+    "auditoria-missing": lambda data: data["StatusCode"] == 404 and data["Message"] == "El registro de auditoría 99999999 no existe." and "Detail" not in data,
     "usuarios-list": lambda data: data["total"] == 1 and data["items"][0]["nombreUsuario"] == "ana.ventas" and data["items"][0]["roles"] == ["VENTAS"],
     "usuario-detail": lambda data: data["nombreUsuario"] == "luis.compras" and data["roles"] == ["COMPRAS", "CONSULTA"] and data["activo"] is True,
     "usuario-permisos": lambda data: len(data) == 80 and data[0]["permiso"] == "Lectura" and data[0]["otorgadoPor"] == ["CONSULTA"] and data[10]["permiso"] == "Escritura" and data[10]["otorgadoPor"] == ["COMPRAS"],
@@ -329,22 +341,28 @@ request_check() {
     local validation="$5"
     local payload="${6:-}"
     local role="${7:-}"
+    local usuario="${8:-}"
+    local -a cabecera_usuario=()
     local response
     local status
     local body
 
+    if [[ -n "$usuario" ]]; then
+        cabecera_usuario=(-H "X-Usuario: $usuario")
+    fi
+
     if [[ -n "$payload" ]]; then
-        if ! response="$(curl -sS --max-time 10 -X "$method" -H 'Content-Type: application/json' -H "X-User-Role: $role" -d "$payload" -w $'\n%{http_code}' "$BASE_URL$path")"; then
+        if ! response="$(curl -sS --max-time 10 -X "$method" -H 'Content-Type: application/json' -H "X-User-Role: $role" "${cabecera_usuario[@]}" -d "$payload" -w $'\n%{http_code}' "$BASE_URL$path")"; then
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
             return 1
         fi
     elif [[ "$method" == "POST" ]]; then
-        if ! response="$(curl -sS --max-time 10 -X POST -H 'Content-Type: application/json' -d '' -w $'\n%{http_code}' "$BASE_URL$path")"; then
+        if ! response="$(curl -sS --max-time 10 -X POST -H 'Content-Type: application/json' "${cabecera_usuario[@]}" -d '' -w $'\n%{http_code}' "$BASE_URL$path")"; then
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
             return 1
         fi
     else
-        if ! response="$(curl -sS --max-time 10 -X "$method" -w $'\n%{http_code}' "$BASE_URL$path")"; then
+        if ! response="$(curl -sS --max-time 10 -X "$method" "${cabecera_usuario[@]}" -w $'\n%{http_code}' "$BASE_URL$path")"; then
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
             return 1
         fi
@@ -372,6 +390,12 @@ request_check() {
 
     if [[ "$validation" == "cliente-created" ]]; then
         CLIENTE_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "auditoria-clientes" ]]; then
+        AUDITORIA_ALTA_ID="$(python3 -c 'import json,sys; print(next(item["id"] for item in json.loads(sys.argv[1])["items"] if item["accion"] == "Alta"))' "$body")"
+        AUDITORIA_MODIFICACION_ID="$(python3 -c 'import json,sys; print(next(item["id"] for item in json.loads(sys.argv[1])["items"] if item["accion"] == "Modificacion"))' "$body")"
+        AUDITORIA_BAJA_ID="$(python3 -c 'import json,sys; print(next(item["id"] for item in json.loads(sys.argv[1])["items"] if item["accion"] == "Baja"))' "$body")"
     fi
 
     if [[ "$validation" == "product-created" ]]; then
@@ -451,10 +475,17 @@ request_check 'POST rol bloqueado' POST '/api/v1/ordenes-compra' 403 blocked '{"
 request_check 'Clientes listado por nombre' GET '/api/v1/clientes?busqueda=acme&pagina=1&tamanoPagina=20' 200 clients-list
 request_check 'Detalle de cliente 1' GET '/api/v1/clientes/1' 200 cliente-detail
 request_check 'Resumen de clientes' GET '/api/v1/clientes/resumen' 200 clientes-summary
-request_check 'POST cliente válido' POST '/api/v1/clientes' 200 cliente-created '{"nombre":"Cliente Smoke","ruc":"20987654321","descripcion":"Alta de smoke"}'
+request_check 'POST cliente válido' POST '/api/v1/clientes' 200 cliente-created '{"nombre":"Cliente Smoke","ruc":"20987654321","descripcion":"Alta de smoke"}' '' smoke
+request_check 'PUT cliente para auditar' PUT "/api/v1/clientes/${CLIENTE_CREADO_ID}" 200 cliente-updated '{"nombre":"Cliente Smoke Editado","ruc":"20987654321","descripcion":"Actualización de smoke"}' '' smoke
 request_check 'POST cliente con RUC existente' POST '/api/v1/clientes' 409 cliente-duplicate '{"nombre":"Duplicado Smoke","ruc":"20111111111"}'
 request_check 'DELETE cliente con órdenes' DELETE '/api/v1/clientes/1' 409 cliente-delete-protected
-request_check 'DELETE cliente recién creado' DELETE "/api/v1/clientes/${CLIENTE_CREADO_ID}" 204 ''
+request_check 'DELETE cliente recién creado' DELETE "/api/v1/clientes/${CLIENTE_CREADO_ID}" 204 '' '' '' smoke
+request_check 'Auditoría de alta, modificación y baja del cliente smoke' GET "/api/v1/auditoria?entidad=Cliente&entidadId=${CLIENTE_CREADO_ID}&usuario=smoke&pagina=1&tamanoPagina=20" 200 auditoria-clientes
+request_check 'Detalle de auditoría de alta del cliente smoke' GET "/api/v1/auditoria/${AUDITORIA_ALTA_ID}" 200 auditoria-alta
+request_check 'Detalle de auditoría de modificación del cliente smoke' GET "/api/v1/auditoria/${AUDITORIA_MODIFICACION_ID}" 200 auditoria-modificacion
+request_check 'Detalle de auditoría de baja del cliente smoke' GET "/api/v1/auditoria/${AUDITORIA_BAJA_ID}" 200 auditoria-baja
+request_check 'Resumen de auditoría' GET '/api/v1/auditoria/resumen' 200 auditoria-summary
+request_check 'Detalle inexistente de auditoría' GET '/api/v1/auditoria/99999999' 404 auditoria-missing
 request_check 'Productos por categoría computo' GET '/api/v1/productos?categoria=computo' 200 products-category
 request_check 'Productos por rango de precio' GET '/api/v1/productos?precioMin=100&precioMax=1000' 200 products-price
 request_check 'Detalle del producto 1' GET '/api/v1/productos/1' 200 product-detail
@@ -502,7 +533,8 @@ request_check 'Solicitudes pendientes' GET '/api/v1/solicitudes-compra?estado=pe
 request_check 'Solicitudes por rango de fechas' GET '/api/v1/solicitudes-compra?fechaDesde=2026-02-15&fechaHasta=2026-03-10' 200 solicitudes-rango
 request_check 'Detalle de solicitud 1' GET '/api/v1/solicitudes-compra/1' 200 solicitud-detalle
 request_check 'Resumen de solicitudes' GET '/api/v1/solicitudes-compra/resumen' 200 solicitudes-resumen
-request_check 'POST solicitud válida' POST '/api/v1/solicitudes-compra' 200 solicitud-created '{"solicitante":"Solicitud Smoke","proveedorId":1,"observaciones":"Prueba de smoke","lineas":[{"productoId":1,"cantidad":2,"precioEstimado":250}]}'
+request_check 'POST solicitud válida' POST '/api/v1/solicitudes-compra' 200 solicitud-created '{"solicitante":"Solicitud Smoke","proveedorId":1,"observaciones":"Prueba de smoke","lineas":[{"productoId":1,"cantidad":2,"precioEstimado":250},{"productoId":3,"cantidad":1,"precioEstimado":40}]}' '' solicitud-smoke
+request_check 'Auditoría atómica de solicitud y dos líneas' GET '/api/v1/auditoria?usuario=solicitud-smoke&pagina=1&tamanoPagina=20' 200 auditoria-solicitud
 request_check 'Aprobar solicitud creada' POST "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}/aprobar" 200 solicitud-approved
 request_check 'Aprobar solicitud aprobada' POST "/api/v1/solicitudes-compra/${SOLICITUD_CREADA_ID}/aprobar" 409 solicitud-already-approved
 request_check 'POST solicitud con proveedor inactivo' POST '/api/v1/solicitudes-compra' 400 solicitud-inactive-provider '{"solicitante":"Solicitud Smoke","proveedorId":5,"lineas":[{"productoId":1,"cantidad":1,"precioEstimado":250}]}'
@@ -629,4 +661,5 @@ request_check 'Rechazar correo de usuario duplicado' POST '/api/v1/usuarios' 409
 request_check 'Proteger último ADMIN activo' PUT '/api/v1/usuarios/1' 409 usuario-last-admin '{"nombreUsuario":"admin","nombreCompleto":"Administrador del sistema","email":"admin@titanglobal.example","activo":false,"rolIds":[1]}'
 request_check 'Proteger rol VENTAS asignado' DELETE '/api/v1/roles/2' 409 usuario-role-protected
 request_check 'Eliminar usuario smoke' DELETE "/api/v1/usuarios/${USUARIO_CREADO_ID}" 204 ''
+request_check 'OpenAPI de auditoría transaccional' GET '/openapi/v1.json' 200 openapi-auditoria
 printf 'SMOKE OK\n'

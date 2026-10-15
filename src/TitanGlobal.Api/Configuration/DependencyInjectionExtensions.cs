@@ -12,6 +12,7 @@ public static class DependencyInjectionExtensions
     {
         string connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Falta ConnectionStrings:DefaultConnection.");
+        services.AddHttpContextAccessor();
         services.AddDbContext<TitanGlobalDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

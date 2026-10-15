@@ -1,5 +1,7 @@
 BEGIN;
 
+TRUNCATE TABLE "RegistrosAuditoria" RESTART IDENTITY;
+
 TRUNCATE TABLE "DetallesOrdenCompra", "OrdenesCompra", "Clientes", "Productos" RESTART IDENTITY CASCADE;
 
 INSERT INTO "Clientes" ("Id", "Nombre", "Ruc", "Descripcion") VALUES

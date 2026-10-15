@@ -1,12 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace TitanGlobal.Api.Models;
 
-public class TitanGlobalDbContext : DbContext
+public partial class TitanGlobalDbContext : DbContext
 {
-    public TitanGlobalDbContext(DbContextOptions<TitanGlobalDbContext> options) : base(options)
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+
+    public TitanGlobalDbContext(
+        DbContextOptions<TitanGlobalDbContext> options,
+        IHttpContextAccessor? httpContextAccessor = null) : base(options)
     {
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    public DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; } = null!;
 
     public DbSet<Usuario> Usuarios { get; set; } = null!;
 
@@ -68,6 +76,7 @@ public class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ConfigurarAuditoria(modelBuilder);
         modelBuilder.Entity<Vendedor>()
             .Property(vendedor => vendedor.Codigo)
             .HasMaxLength(20)
