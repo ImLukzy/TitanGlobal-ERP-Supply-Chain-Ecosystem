@@ -12,7 +12,7 @@ Antes de empezar un módulo, apúntate aquí (PR pequeño o avisando a Lukas). U
 | 15 OrdenesAbastecimiento | Lukas (equipo Claude) | terminado | 16, 17, 18 |
 | 12 EvaluacionProveedores | libre | — | — |
 | 22 CategoriasProducto | libre | — | — |
-| 23 Almacenes | libre | — | — |
+| 23 Almacenes | Lukas (equipo Claude) | en curso | 19, 20 |
 | 19 RecepcionMercaderia | libre (depende de 15 y 23) | — | — |
 
 Para los demás módulos, añade una fila al apuntarte.
