@@ -27,7 +27,8 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 03 Cotizaciones | ✅ | ✅ | en curso |
 | 05 ContratosComerciales | ✅ | pendiente | — |
 | 06 ListasPrecios | ✅ | pendiente | — |
-| 07 PromocionesDescuentos | en curso | pendiente | — |
+| 07 PromocionesDescuentos | ✅ | pendiente | — |
+| 09 ReclamosPostventa | en curso | pendiente | — |
 
 El resto de módulos muestra «Pantalla pendiente». La lista completa está en [`docs/arquitectura.md`](docs/arquitectura.md).
 
