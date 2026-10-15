@@ -52,3 +52,4 @@
 | 2026-10-15 | A2–A5 | ✅ | tests de `almacenes/` (api, página con filtros, una sola petición al cargar, formulario, baja con Escape); la suite pasó 10/10 seguidas según Dwight y Kelly |
 | 2026-10-15 | A6 | ✅ | `/tmp/titan-spec20/` (8 capturas) revisadas por Claudio tras la corrección |
 | 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen 5/4/1 con 1,025.00 y 925.00 m³ en una línea y plurales correctos; filtros por código, nombre, ciudad, tipo y estado, una sola petición del listado al cargar; detalle con pastilla y «Sin responsable»; alta con código en minúsculas guardado en mayúsculas; validaciones locales sin petición; ALM-LIM-01 → 409 conservando lo escrito; edición; baja con Escape; demás pantallas sin regresiones; 9 capturas sin recortes ni scroll horizontal |

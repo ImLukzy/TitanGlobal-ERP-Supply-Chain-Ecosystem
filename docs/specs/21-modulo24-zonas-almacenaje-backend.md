@@ -72,11 +72,17 @@ Decisión del humano (2026-10-15): seguir con el siguiente módulo.
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 6 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases, controlador y regla 10 en Almacenes.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: entidad, `DbContext` y migración.
+- [x] Tarea 2: DTOs, UseCases, controlador y regla 10 en Almacenes.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`517862c`, mismas líneas que el auditado `fd4e439`): backend 230/230, frontend 169/169 |
+| 2026-10-15 | A2–A3 | ✅ | `ZonasAlmacenajeApiTests` y `AlmacenesApiTests`: mensajes literales, código por almacén, capacidad igual al límite → 200 y superada → 409, zona inactiva no cuenta, borrar almacén con zonas → 409, filtros, orden y resumen con porcentajes |
+| 2026-10-15 | A4 | ✅ | migración `ZonasAlmacenaje` (con `Designer` y snapshot) solo crea la tabla con FK restrictiva e índice único compuesto; aplicada en Neon antes de subir el código |
+| 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: detalle REC-01, resumen del almacén 1 (4 zonas), POST → `{id:9}`, superar capacidad → 409 «La capacidad de las zonas activas (510.00 m³) superaría la del almacén ALM-LIM-01…», código repetido → 409, DELETE almacén 1 → 409, DELETE de la zona creada → 204 |
+| 2026-10-15 | Producción | ✅ | `https://titanglobal-erp.vercel.app/api/v1/zonas-almacenaje/resumen?almacenId=1` → 200 (4 zonas); DELETE del almacén 1 → 409 literal sin borrar nada |
+| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
