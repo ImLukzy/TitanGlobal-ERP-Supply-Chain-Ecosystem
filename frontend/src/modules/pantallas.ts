@@ -15,6 +15,7 @@ import { PromocionesPage } from './promociones-descuentos/PromocionesPage';
 import { ComisionesVendedoresPage } from './comisiones-vendedores/ComisionesVendedoresPage';
 import { ReclamosPostventaPage } from './reclamos-postventa/ReclamosPostventaPage';
 import { DevolucionesComercialesPage } from './devoluciones-comerciales/DevolucionesComercialesPage';
+import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -25,6 +26,7 @@ export const pantallas: Record<string, ComponentType> = {
   '07-promociones-descuentos': PromocionesPage,
   '08-comisiones-vendedores': ComisionesVendedoresPage,
   '10-devoluciones-comerciales': DevolucionesComercialesPage,
+  '77-auditoria-transaccional': AuditoriaPage,
   '04-ordenes-compra': OrdenesCompraPage,
   '11-proveedores': ProveedoresPage,
   '13-solicitudes-compra': SolicitudesCompraPage,

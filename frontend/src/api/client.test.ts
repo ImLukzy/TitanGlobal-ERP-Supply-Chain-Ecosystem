@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiGet, apiPost, ApiError } from './client';
+import { apiDelete, apiGet, apiPost, apiPostSinCuerpo, apiPut, ApiError, configurarUsuarioSolicitud } from './client';
 import { setSelectedRole } from './roleStore';
 
 afterEach(() => {
   setSelectedRole(null);
+  configurarUsuarioSolicitud('demo');
   vi.unstubAllGlobals();
 });
 
@@ -67,5 +68,33 @@ describe('cliente HTTP', () => {
       statusCode: 0,
       message: 'No se pudo conectar con la API.',
     } satisfies Partial<ApiError>));
+  });
+
+  it('envía X-Usuario en todas las peticiones y permite configurar el valor', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response('{}', { status: 200 })));
+    vi.stubGlobal('fetch', fetchMock);
+    configurarUsuarioSolicitud('  Ana Auditoría  ');
+
+    await apiGet('/auditoria');
+    await apiPost('/recurso', { valor: 1 });
+    await apiPostSinCuerpo('/recurso/1/accion');
+    await apiPut('/recurso/1', { valor: 2 });
+    await apiDelete('/recurso/1');
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    for (const llamada of fetchMock.mock.calls) {
+      const headers = llamada[1]?.headers as Headers;
+      expect(headers.get('X-Usuario')).toBe('Ana Auditoría');
+    }
+  });
+
+  it('usa demo como valor predeterminado de X-Usuario', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiGet('/auditoria');
+
+    const headers = fetchMock.mock.calls[0][1]?.headers as Headers;
+    expect(headers.get('X-Usuario')).toBe('demo');
   });
 });

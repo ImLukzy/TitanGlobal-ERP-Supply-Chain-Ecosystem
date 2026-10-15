@@ -4,6 +4,12 @@ const API_BASE = '/api/v1';
 const GENERIC_ERROR = 'No se pudo completar la solicitud.';
 const SERVER_GENERIC_ERROR = 'La API no está disponible o no respondió correctamente.';
 const NETWORK_ERROR = 'No se pudo conectar con la API.';
+let usuarioSolicitud = 'demo';
+
+export function configurarUsuarioSolicitud(usuario: string): void {
+  const usuarioNormalizado = usuario.trim();
+  usuarioSolicitud = usuarioNormalizado === '' ? 'demo' : usuarioNormalizado;
+}
 
 export class ApiError extends Error {
   readonly statusCode: number;
@@ -18,6 +24,7 @@ export class ApiError extends Error {
 function crearHeaders(): Headers {
   const headers = new Headers();
   const role = getSelectedRole();
+  headers.set('X-Usuario', usuarioSolicitud);
   if (role !== null) {
     headers.set('X-User-Role', role);
   }
