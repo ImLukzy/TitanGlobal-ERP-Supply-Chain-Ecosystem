@@ -73,11 +73,17 @@ Sigue el patrón del módulo de referencia (`Modulo04_OrdenesCompra`) y los erro
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 6 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: DTOs, UseCases y controlador.
-- [ ] Tarea 2: índice único y migración.
-- [ ] Tarea 3: tests y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: DTOs, UseCases y controlador.
+- [x] Tarea 2: índice único y migración.
+- [x] Tarea 3: tests y smoke.
+- [x] Tarea 4: A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`12451d6`, contenido idéntico al auditado `39e5074` según `git patch-id`): backend 56/56, frontend 36/36 |
+| 2026-10-14 | A2–A3 | ✅ | `ClientesApiTests` (14 tests): mensajes literales 400/404/409 sin `Detail`, RUC con espacios, PUT con su propio RUC, búsqueda, paginación, detalle y resumen exactos |
+| 2026-10-14 | A4 | ✅ | `20261014213804_ClientesRucUnico` con `Designer` y cambio en `ModelSnapshot`; el smoke la aplica sobre la BD con el seed sin errores |
+| 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `busqueda=acme` → 1 cliente; resumen 5/4/3; POST con RUC `20111111111` → 409; DELETE cliente 1 → 409; DELETE recién creado → 204 |
+| 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `api/v1/clientes` (GET, POST), `api/v1/clientes/{id}` (GET, PUT, DELETE), `api/v1/clientes/resumen` (GET) |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
