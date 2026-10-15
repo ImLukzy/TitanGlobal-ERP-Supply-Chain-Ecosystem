@@ -40,11 +40,16 @@
 | A7 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: detalle pendiente, formulario con 3 líneas y diálogo de rechazo; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario de líneas y diálogos.
-- [ ] Tarea 4: tests, capturas y A1–A7.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario de líneas y diálogos.
+- [x] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-14 | Corrección 1 | ✅ | Claudio devolvió la entrega: «El producto 0 no existe.» para una línea sin producto (ahora «Selecciona un producto.»), columna Subtotal recortada a 1280 en el detalle (ahora 323/323 px) y captura de 3 líneas vacías (ahora con total S/ 4,800.00) |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`4b2e774`, mismas líneas que el auditado `0b1a22d`): backend 151/151, frontend 120/120 |
+| 2026-10-14 | A2–A6 | ✅ | tests de `solicitudes-compra/` (api, página, formulario y decisiones) con temporizadores falsos; la suite pasó 10/10 seguidas según Dwight |
+| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec15/` (12 capturas) revisadas por Claudio: detalle sin recortes a 1280, formulario con 3 líneas y total, diálogo de rechazo; márgenes 16 px |
+| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO |
