@@ -33,3 +33,10 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 ## Pantallas que no siguen el diseño común (2026-10-15)
 - **Qué pasó:** varias pantallas nuevas (Contratos, ListasPrecios) llegaron con controles con el aspecto del navegador, tarjetas de resumen invertidas, captions grandes, detalle a todo el ancho sin cabecera o importes partidos en dos líneas, aunque la spec pedía los componentes compartidos.
 - **Regla:** antes de entregar una pantalla, compararla a 1280 px en claro con una de referencia ya integrada (Contratos o Cotizaciones) con los mismos mocks: tarjetas (etiqueta pequeña, cifra grande), filtros y casillas comunes, `TablaPaginada`, captions pequeños, panel de detalle lateral con cabecera y ficha, importes y fechas sin partir y espaciado de `PaginaModulo` sin sobrescribir. Adjuntar ambas capturas al reporte.
+- **Lista de comprobación (añadida tras las specs 30, 32, 34, 36 y 46, que repitieron estos fallos):**
+  - comparar también en **modo oscuro**: enlaces con contraste ≥ 4.5:1 (nunca azul oscuro sobre fondo oscuro), pastillas sin contorno blanco y el mismo fondo en todas las celdas de una fila;
+  - tarjetas: la cifra es solo el número («80.00 %», «36.00 h»); el texto explicativo va pequeño debajo, nunca dentro de la cifra;
+  - todas las cabeceras de tabla con el mismo tamaño y en una línea; ninguna palabra, fecha ni importe partidos;
+  - selects y campos con el estilo común también dentro de diálogos y del simulador/evaluador; placeholders que se lean completos;
+  - nada se sale de su panel a 1280 px (casillas de filtros, columnas de la derecha);
+  - **CSS común** (`app.css`, `.tabla-paginada`): no cambiar selectores de reglas compartidas, porque subir su especificidad (p. ej. `th` → `thead th`) pisa los estilos de cabecera de otras pantallas. Si hay que corregir algo común, hacerlo con una regla mínima nueva y adjuntar capturas de al menos 3 pantallas existentes antes y después.
