@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { montar, prepararFetch } from './cotizaciones.testUtils';
 
@@ -8,10 +8,25 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+async function montarConCargaInicial(fetchMock: ReturnType<typeof prepararFetch>) {
+  vi.useFakeTimers();
+  montar();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/cotizaciones?'))).toHaveLength(1);
+  });
+}
+
 describe('pantalla de cotizaciones', () => {
   it('A3 carga el listado una sola vez y muestra resumen y vacío', async () => {
     const fetchMock = prepararFetch();
-    montar();
+    await montarConCargaInicial(fetchMock);
     expect(
       await screen.findByRole('button', { name: 'COT-DEV-001' }),
     ).toBeInTheDocument();
@@ -26,8 +41,8 @@ describe('pantalla de cotizaciones', () => {
   });
 
   it('A3 informa cuando el filtro no tiene resultados', async () => {
-    prepararFetch({ listaVacia: true });
-    montar();
+    const fetchMock = prepararFetch({ listaVacia: true });
+    await montarConCargaInicial(fetchMock);
     expect(
       await screen.findByText(
         'No hay cotizaciones que coincidan con los filtros.',
@@ -36,8 +51,8 @@ describe('pantalla de cotizaciones', () => {
   });
 
   it('A3 muestra el error del listado como alerta', async () => {
-    prepararFetch({ errorLista: true });
-    montar();
+    const fetchMock = prepararFetch({ errorLista: true });
+    await montarConCargaInicial(fetchMock);
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Servicio temporalmente no disponible.',
     );
@@ -45,13 +60,8 @@ describe('pantalla de cotizaciones', () => {
 
   it('A3 espera 300 ms para la búsqueda y vuelve a página 1', async () => {
     const fetchMock = prepararFetch();
+    await montarConCargaInicial(fetchMock);
     vi.useFakeTimers();
-    montar();
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-      await vi.advanceTimersByTimeAsync(301);
-    });
     const busqueda = screen.getByLabelText('Buscar por número o cliente');
     fireEvent.change(busqueda, { target: { value: 'Acme' } });
     await act(async () => vi.advanceTimersByTimeAsync(299));
@@ -76,7 +86,7 @@ describe('pantalla de cotizaciones', () => {
 
   it('A3 valida el rango de fechas localmente sin pedir el listado', async () => {
     const fetchMock = prepararFetch();
-    montar();
+    await montarConCargaInicial(fetchMock);
     await screen.findByRole('button', { name: 'COT-DEV-001' });
     fireEvent.change(screen.getByLabelText('Desde'), {
       target: { value: '2026-02-01' },
@@ -103,7 +113,7 @@ describe('pantalla de cotizaciones', () => {
 
   it('A3 envía solo vencidas y excluye la acción Aceptar del detalle vencido', async () => {
     const fetchMock = prepararFetch();
-    montar();
+    await montarConCargaInicial(fetchMock);
     fireEvent.click(await screen.findByLabelText('Solo vencidas'));
     await act(async () => {
       await Promise.resolve();
@@ -125,8 +135,8 @@ describe('pantalla de cotizaciones', () => {
   });
 
   it('A4 precarga precio y calcula descuento redondeado por línea', async () => {
-    prepararFetch();
-    montar();
+    const fetchMock = prepararFetch();
+    await montarConCargaInicial(fetchMock);
     fireEvent.click(
       await screen.findByRole('button', { name: 'Nueva cotización' }),
     );
@@ -160,7 +170,7 @@ describe('pantalla de cotizaciones', () => {
 
   it('A4 valida localmente sin petición y conserva los valores tras un 400', async () => {
     const fetchMock = prepararFetch();
-    montar();
+    await montarConCargaInicial(fetchMock);
     fireEvent.click(
       await screen.findByRole('button', { name: 'Nueva cotización' }),
     );

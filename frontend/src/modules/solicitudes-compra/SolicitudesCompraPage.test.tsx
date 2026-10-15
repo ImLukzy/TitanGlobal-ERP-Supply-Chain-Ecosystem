@@ -12,6 +12,19 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+async function montarConCargaInicial(fetchMock: ReturnType<typeof prepararApi>['fetchMock']) {
+  vi.useFakeTimers();
+  renderPagina();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await esperarCargaInicial(fetchMock);
+}
+
 describe('SolicitudesCompra: resumen, filtros y tabla', () => {
   it('A3 solicita el listado una sola vez durante la carga inicial', async () => {
     const { fetchMock } = prepararApi();
@@ -28,8 +41,7 @@ describe('SolicitudesCompra: resumen, filtros y tabla', () => {
 
   it('A3 presenta resumen, tabla, fechas y detalle con líneas y subtotales', async () => {
     const { fetchMock } = prepararApi();
-    renderPagina();
-    await esperarCargaInicial(fetchMock);
+    await montarConCargaInicial(fetchMock);
     expect(screen.getByText('Pendientes')).toBeInTheDocument();
     expect(screen.getByText('Aprobadas')).toBeInTheDocument();
     expect(screen.getByText('Rechazadas')).toBeInTheDocument();
@@ -44,8 +56,8 @@ describe('SolicitudesCompra: resumen, filtros y tabla', () => {
 
   it('A3 usa temporizadores falsos para el debounce de 300 ms', async () => {
     const { fetchMock, llamadas } = prepararApi();
-    renderPagina();
-    await esperarCargaInicial(fetchMock, llamadas);
+    await montarConCargaInicial(fetchMock);
+    llamadas.splice(0, llamadas.length);
     vi.useFakeTimers();
     fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar por número o solicitante' }), { target: { value: 'S' } });
     fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar por número o solicitante' }), { target: { value: 'SC-' } });
@@ -64,8 +76,7 @@ describe('SolicitudesCompra: resumen, filtros y tabla', () => {
 
   it('A3 aplica estado, proveedor y fechas; fecha inválida no consulta y los filtros vuelven a página 1', async () => {
     const { fetchMock, llamadas } = prepararApi({ paginado: true });
-    renderPagina();
-    await esperarCargaInicial(fetchMock);
+    await montarConCargaInicial(fetchMock);
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     expect(await screen.findByText('Página 2 de 2')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'Pendiente' } });
@@ -88,12 +99,26 @@ describe('SolicitudesCompra: resumen, filtros y tabla', () => {
 
   it('A3 muestra los estados vacío y error de la lista', async () => {
     const vacio = prepararApi({ listaVacia: true });
+    vi.useFakeTimers();
     renderPagina();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(301);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    vi.useRealTimers();
     expect(await screen.findByText('No hay solicitudes que coincidan con los filtros.')).toBeInTheDocument();
     cleanup();
     vi.unstubAllGlobals();
     const error = prepararApi({ errorLista: true });
+    vi.useFakeTimers();
     renderPagina();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(301);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    vi.useRealTimers();
     expect(await screen.findByText('No se pudo cargar la lista de solicitudes.')).toBeInTheDocument();
     expect(vacio.fetchMock).toHaveBeenCalled();
     expect(error.fetchMock).toHaveBeenCalled();

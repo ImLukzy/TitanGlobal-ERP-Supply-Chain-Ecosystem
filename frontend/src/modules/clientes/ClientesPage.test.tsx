@@ -92,6 +92,25 @@ function prepararApi(opciones: { errorCrear?: number; errorEliminar?: number; er
   return { fetchMock, llamadas };
 }
 
+async function esperarCargaInicialClientes(fetchMock: ReturnType<typeof vi.fn>) {
+  vi.useFakeTimers();
+  render(<ClientesPage />);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Acme Industrial' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Acme Industrial' })).toBeInTheDocument();
+    expect(screen.getByText('Total de clientes')).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/clientes?'))).toHaveLength(1);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/clientes/resumen'))).toBe(true);
+  });
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -101,7 +120,7 @@ afterEach(() => {
 describe('pantalla de Clientes', () => {
   it('espera 300 ms para buscar y vuelve a página 1 al cambiar búsqueda', async () => {
     const { fetchMock, llamadas } = prepararApi();
-    render(<ClientesPage />);
+    await esperarCargaInicialClientes(fetchMock);
     expect(await screen.findByRole('button', { name: 'Acme Industrial' }, { timeout: 10000 })).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Acme Industrial' }, { timeout: 10000 })).toBeInTheDocument();
     expect(screen.getByText('4 órdenes')).toBeInTheDocument();
@@ -159,7 +178,7 @@ describe('pantalla de Clientes', () => {
 
   it('valida nombre y RUC localmente sin llamar al API', async () => {
     const { fetchMock } = prepararApi();
-    render(<ClientesPage />);
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: 'Nuevo cliente' }));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cliente' }));
@@ -169,8 +188,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('crea un cliente y refresca el directorio y resumen', async () => {
-    const { llamadas } = prepararApi();
-    render(<ClientesPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: 'Nuevo cliente' }));
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Nuevo Cliente' } });
@@ -184,8 +203,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('muestra un 409 de alta sin perder los campos escritos', async () => {
-    prepararApi({ errorCrear: 409 });
-    render(<ClientesPage />);
+    const { fetchMock } = prepararApi({ errorCrear: 409 });
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: 'Nuevo cliente' }));
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Cliente repetido' } });
@@ -197,8 +216,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('precarga y actualiza un cliente mediante PUT con su id', async () => {
-    const { llamadas } = prepararApi();
-    render(<ClientesPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
     expect(screen.getByLabelText('Nombre')).toHaveValue('Acme Industrial');
@@ -209,8 +228,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('cancela la baja con Escape, no envía DELETE y devuelve el foco', async () => {
-    const { llamadas } = prepararApi();
-    render(<ClientesPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     const botonEliminar = screen.getByRole('button', { name: /^Eliminar$/ });
     fireEvent.click(botonEliminar);
@@ -223,8 +242,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('confirma la baja y muestra un 409 dentro del diálogo', async () => {
-    const { llamadas } = prepararApi({ errorEliminar: 409 });
-    render(<ClientesPage />);
+    const { fetchMock, llamadas } = prepararApi({ errorEliminar: 409 });
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: /^Eliminar$/ }));
     const dialogo = screen.getByRole('dialog');
@@ -235,8 +254,8 @@ describe('pantalla de Clientes', () => {
   });
 
   it('elimina con 204 y refresca el listado y resumen', async () => {
-    const { llamadas } = prepararApi();
-    render(<ClientesPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialClientes(fetchMock);
     await screen.findByRole('heading', { name: 'Acme Industrial' });
     fireEvent.click(screen.getByRole('button', { name: /^Eliminar$/ }));
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Eliminar cliente' }));

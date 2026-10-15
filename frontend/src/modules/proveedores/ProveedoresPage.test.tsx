@@ -112,6 +112,27 @@ function prepararApi(opciones: OpcionesApi = {}) {
   return { fetchMock, llamadas };
 }
 
+async function esperarCargaInicialProveedores(fetchMock: ReturnType<typeof vi.fn>) {
+  vi.useFakeTimers();
+  render(<ProveedoresPage />);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Andina Suministros' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Andina Suministros' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'China' })).toBeInTheDocument();
+    expect(screen.getByText('Total de proveedores')).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/proveedores?'))).toHaveLength(1);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/proveedores/resumen'))).toBe(true);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/proveedores/paises'))).toBe(true);
+  });
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -120,9 +141,9 @@ afterEach(() => {
 
 describe('pantalla de Proveedores', () => {
   it('A2 presenta resumen, tabla, estado y detalle del proveedor inicial', async () => {
-    prepararApi();
-    render(<ProveedoresPage />);
-    expect(await screen.findByText('Andina Suministros')).toBeInTheDocument();
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialProveedores(fetchMock);
+    expect(screen.getAllByText('Andina Suministros')).toHaveLength(2);
     expect(screen.getByText('Total de proveedores')).toBeInTheDocument();
     expect(screen.getAllByText('Perú').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Activo').length).toBeGreaterThan(0);
@@ -132,7 +153,7 @@ describe('pantalla de Proveedores', () => {
 
   it('A3 aplica la búsqueda tras 300 ms y solo consulta el último texto', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProveedoresPage />);
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('button', { name: 'Andina Suministros' }, { timeout: 10000 });
     await screen.findByRole('heading', { name: 'Andina Suministros' }, { timeout: 10000 });
     await screen.findByText('6');
@@ -165,7 +186,7 @@ describe('pantalla de Proveedores', () => {
 
   it('A3 consulta país y estado, y devuelve la paginación a página 1', async () => {
     const { fetchMock } = prepararApi({ paginado: true });
-    render(<ProveedoresPage />);
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('button', { name: 'Andina Suministros' });
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(screen.getByText('Página 2 de 2')).toBeInTheDocument());
@@ -189,8 +210,8 @@ describe('pantalla de Proveedores', () => {
   });
 
   it('A4 muestra «Sin email» y «Sin teléfono» cuando el detalle carece de esos datos', async () => {
-    prepararApi();
-    render(<ProveedoresPage />);
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('button', { name: 'Maquinaria Sur' });
     fireEvent.click(screen.getByRole('button', { name: 'Asia Components' }));
     const tituloDetalle = await screen.findByRole('heading', { name: 'Asia Components' });
@@ -203,7 +224,7 @@ describe('pantalla de Proveedores', () => {
 
   it('A4 valida todos los campos localmente y no llama a POST', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProveedoresPage />);
+    await esperarCargaInicialProveedores(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Nuevo proveedor' }));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar proveedor' }));
     expect(screen.getByText('La razón social es obligatoria.')).toBeInTheDocument();
@@ -226,8 +247,8 @@ describe('pantalla de Proveedores', () => {
   });
 
   it('A4 muestra el 409 de RUC sin perder los datos del formulario', async () => {
-    prepararApi({ errorGuardar: true });
-    render(<ProveedoresPage />);
+    const { fetchMock } = prepararApi({ errorGuardar: true });
+    await esperarCargaInicialProveedores(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Nuevo proveedor' }));
     fireEvent.change(screen.getByLabelText('Razón social'), { target: { value: 'Proveedor nuevo' } });
     fireEvent.change(screen.getByLabelText('RUC'), { target: { value: '20777777777' } });
@@ -240,7 +261,7 @@ describe('pantalla de Proveedores', () => {
 
   it('A4 precarga la edición y envía PUT al id del proveedor', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProveedoresPage />);
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('heading', { name: 'Andina Suministros' });
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
     expect(screen.getByRole('heading', { name: 'Editar proveedor' })).toBeInTheDocument();
@@ -251,8 +272,8 @@ describe('pantalla de Proveedores', () => {
   });
 
   it('A4 confirma la baja y refresca la lista', async () => {
-    const { llamadas } = prepararApi();
-    render(<ProveedoresPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('heading', { name: 'Andina Suministros' });
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar proveedor' }));
@@ -262,7 +283,7 @@ describe('pantalla de Proveedores', () => {
 
   it('A4 Escape cancela la baja sin petición y devuelve el foco', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProveedoresPage />);
+    await esperarCargaInicialProveedores(fetchMock);
     await screen.findByRole('heading', { name: 'Andina Suministros' });
     const abrirBaja = screen.getByRole('button', { name: 'Eliminar' });
     fireEvent.click(abrirBaja);

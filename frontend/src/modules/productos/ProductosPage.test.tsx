@@ -124,6 +124,26 @@ async function limpiarCargaInicial(fetchMock: ReturnType<typeof vi.fn>) {
   fetchMock.mockClear();
 }
 
+async function esperarCargaInicialProductos(fetchMock: ReturnType<typeof vi.fn>) {
+  vi.useFakeTimers();
+  render(<ProductosPage />);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Laptop Pro' })).toBeInTheDocument();
+    expect(screen.getByText('20')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Pantallas' })).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/productos?'))).toHaveLength(1);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/productos/resumen'))).toBe(true);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/productos/categorias'))).toBe(true);
+  });
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -145,8 +165,8 @@ describe('pantalla de Productos', () => {
   });
 
   it('A2 muestra listado, resumen y detalle de productos con ventas', async () => {
-    prepararApi();
-    render(<ProductosPage />);
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
     expect(await screen.findByText('Equipo portátil de alto rendimiento')).toBeInTheDocument();
     expect(screen.getByText('1 unidad')).toBeInTheDocument();
@@ -157,10 +177,7 @@ describe('pantalla de Productos', () => {
 
   it('A3 aplica búsqueda tras 300 ms y solo envía la última escritura', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' }, { timeout: 10000 });
-    await screen.findByText('20');
-    await screen.findByRole('option', { name: 'Pantallas' });
+    await esperarCargaInicialProductos(fetchMock);
     await limpiarCargaInicial(fetchMock);
     vi.useFakeTimers();
     const busqueda = screen.getByRole('searchbox', { name: 'Buscar' });
@@ -180,8 +197,7 @@ describe('pantalla de Productos', () => {
 
   it('A3 envía categoría y ambos precios; un filtro vuelve a página 1', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' });
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(screen.getByText('Página 2 de 2')).toBeInTheDocument());
     fireEvent.change(screen.getAllByLabelText('Categoría')[0]!, { target: { value: 'Computo' } });
@@ -197,10 +213,7 @@ describe('pantalla de Productos', () => {
 
   it('A3 valida precios negativos y rango incorrecto sin enviar peticiones', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' }, { timeout: 10000 });
-    await screen.findByText('20');
-    await screen.findByRole('option', { name: 'Pantallas' });
+    await esperarCargaInicialProductos(fetchMock);
     await limpiarCargaInicial(fetchMock);
     fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '-1' } });
     expect(screen.getByText('Los precios del filtro no pueden ser negativos.')).toBeInTheDocument();
@@ -228,16 +241,15 @@ describe('pantalla de Productos', () => {
   });
 
   it('A4 muestra ventas y el estado «Sin ventas registradas»', async () => {
-    prepararApi();
-    render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Teclado Mecánico' });
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(screen.getByRole('button', { name: 'Teclado Mecánico' }));
     expect(await screen.findByText('Sin ventas registradas')).toBeInTheDocument();
   });
 
   it('A4 presenta cada error local literal por campo sin llamar al API', async () => {
     const { fetchMock } = prepararApi();
-    render(<ProductosPage />);
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Nuevo producto' }));
     const enviar = screen.getByRole('button', { name: 'Guardar producto' });
     fireEvent.click(enviar);
@@ -256,8 +268,8 @@ describe('pantalla de Productos', () => {
   });
 
   it('A4 muestra el 400 literal de la API y conserva los campos escritos', async () => {
-    prepararApi({ errorCrear: true });
-    render(<ProductosPage />);
+    const { fetchMock } = prepararApi({ errorCrear: true });
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Nuevo producto' }));
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Nuevo producto' } });
     fireEvent.change(screen.getAllByLabelText('Categoría')[1]!, { target: { value: 'Computo' } });
@@ -269,8 +281,8 @@ describe('pantalla de Productos', () => {
   });
 
   it('A4 muestra el 409 literal con id en el diálogo de baja', async () => {
-    prepararApi({ errorBaja: true });
-    render(<ProductosPage />);
+    const { fetchMock } = prepararApi({ errorBaja: true });
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Eliminar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar producto' }));
@@ -278,8 +290,8 @@ describe('pantalla de Productos', () => {
   });
 
   it('A4 una baja correcta refresca el catálogo', async () => {
-    const { llamadas } = prepararApi();
-    render(<ProductosPage />);
+    const { fetchMock, llamadas } = prepararApi();
+    await esperarCargaInicialProductos(fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: 'Laptop Pro' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Eliminar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar producto' }));
@@ -289,10 +301,7 @@ describe('pantalla de Productos', () => {
 
   it('A4 Escape cierra la baja sin petición y devuelve el foco al botón', async () => {
     const { fetchMock, llamadas } = prepararApi();
-    render(<ProductosPage />);
-    await screen.findByRole('button', { name: 'Laptop Pro' });
-    await screen.findByText('20');
-    await screen.findByRole('option', { name: 'Pantallas' });
+    await esperarCargaInicialProductos(fetchMock);
     await limpiarCargaInicial(fetchMock);
     fireEvent.click(screen.getByRole('button', { name: 'Laptop Pro' }));
     await screen.findByText('4 unidades');
