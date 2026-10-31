@@ -28,7 +28,7 @@
 Namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.{Dtos,UseCases,Controllers}`.
 
 ## 4. Diseño y lógica
-- **Código:** el de `docs/enunciado.md` §3, adaptado solo en el namespace (desviación decidida en `docs/arquitectura.md`) y en las reglas de `CLAUDE.md`: sin `var`, sin `=>` en miembros, una sentencia por línea.
+- **Código:** el de `docs/enunciado.md` §3, adaptado solo en el namespace (desviación decidida en `docs/arquitectura.md`) y en las reglas de `CONTRIBUTING.md`: sin `var`, sin `=>` en miembros, una sentencia por línea.
 - **UseCases** sin interfaz; los registra la reflexión de la spec 01, nunca a mano. Todas las consultas parten de `_unitOfWork.Repository<T>().AsQueryable()` y terminan en un operador asíncrono de EF Core.
 - **Controlador** delgado: solo llama al UseCase y devuelve `Ok(...)`; campos `private readonly _camelCase`.
 - **Patrón 7:** si el cliente no tiene órdenes, devuelve `0` sin llamar a `AverageAsync`.

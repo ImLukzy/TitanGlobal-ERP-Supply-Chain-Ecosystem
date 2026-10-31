@@ -28,7 +28,7 @@ Rutas verificadas con `ls`/`grep` antes de redactar. Nada de "o equivalente".
 - **UI:** clases del sistema (`docs/specs/13-design-system-rudo.md`): `.btn-*`, `.card*`, `.input`, `.chip`; acentos solo con `primary`/`primary-soft`/`primary-ink`; motion solo con `SPRING` de `lib/motion.ts`.
 - **API:** endpoints, contrato `{ data }` / `{ error: { code, message } }`, códigos nuevos.
 - **Datos:** modelos y migraciones (nueva, fechada; nunca editar una aplicada).
-- **Invariantes:** reglas de negocio del dominio (estados, cálculos, cierres de periodo) solo en UseCases; reglas de código de `CLAUDE.md`.
+- **Invariantes:** reglas de negocio del dominio (estados, cálculos, cierres de periodo) solo en UseCases; reglas de código de `CONTRIBUTING.md`.
 
 ## 5. Criterios de aceptación (medibles)
 Cada criterio debe poder comprobarse con un comando o una medición. Borra los que no apliquen.

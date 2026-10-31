@@ -4,6 +4,9 @@ El equipo lo forman 7 personas. Cada módulo lo lleva una sola persona de princi
 
 Lukas Melgar hace además la integración: revisa cada pull request, integra en `main` y despliega la demo.
 
+- **Meta:** 3 módulos terminados por semana en todo el equipo. Cómo se organiza la semana: [`cadencia.md`](cadencia.md).
+- **Primer día:** instalación, comprobaciones y primer encargo: [`primer-dia.md`](primer-dia.md).
+
 ## Personas
 
 | Persona | Módulos | Bloque |
@@ -21,7 +24,7 @@ Lukas Melgar hace además la integración: revisa cada pull request, integra en 
 1. **Spec** en `docs/specs/NN-*.md` (plantilla `_TEMPLATE.md`). Lukas la revisa antes de programar.
 2. **Rama propia** desde la de integración: `git switch -c tu-nombre/moduloXX-nombre main`.
 3. **Gate:** `./scripts/verify.sh` en verde antes de pedir revisión.
-4. **Auditoría:** revisión por otro compañero, que lee solo la spec y el diff. Máximo 3 ciclos de corrección. Un cambio pequeño sin lógica puede saltarse este paso.
+4. **Revisión:** otro compañero lee solo la spec y el diff. Máximo 3 ciclos de corrección. Un cambio pequeño sin lógica puede saltarse este paso.
 5. **QA** a 375 px y 1280 px, en claro y en oscuro, con la lista de comprobación de [`lecciones.md`](lecciones.md).
 6. **Pull request** contra `main`, con la salida del gate, la evidencia en la spec y capturas.
 7. **Integración:** Lukas revisa, integra en `main` con el gate en verde, actualiza la evidencia, [`contexto-proyecto.md`](../contexto-proyecto.md), el README y las asignaciones, y despliega.
@@ -29,7 +32,7 @@ Lukas Melgar hace además la integración: revisa cada pull request, integra en 
 
 ## Reglas
 
-- Commits con la identidad git de quien los hace, sin trailers ni menciones a herramientas de IA.
+- Commits con la identidad git de quien los hace, sin trailers.
 - Solo la integración (Lukas) escribe en §6 y §7 de las specs.
 - Fuente de requisitos: `docs/enunciado.md` (backend) y `docs/arquitectura.md` (desviaciones decididas y frontend). Ninguna spec cita documentos que no estén en el repo.
 - Puertos de desarrollo: API 5080, frontend 5173, PostgreSQL 5433.

@@ -37,7 +37,7 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 - **Acciones POST sin cuerpo** (`aprobar`, `recibir`): atributo `[PermitirCuerpoVacio]`; el middleware no contiene rutas.
 - **Fechas:** se guardan en UTC (`FechasUtc.Normalizar`); el frontend las muestra en UTC.
 - **Números de documento** (`SC-000NNN`, `OA-000NNN`): los asigna el servidor a partir del Id, dentro de una transacción (`TransactionScope`). Los datos de ejemplo usan `SC-DEV-…` y `OA-DEV-…` para no chocar.
-- **Reglas de código** (las revisa la auditoría): [`../CLAUDE.md`](../CLAUDE.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef`.
+- **Reglas de código** (las revisa el revisor): [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef`.
 
 ## 5. Modelo de datos
 | Entidad | Módulo | Relaciones y notas |
@@ -95,14 +95,14 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 ## 7. Calidad
 - **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 585 tests del backend y 253 del frontend en verde.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
-- **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
+- **Proceso por tarea:** spec → implementación → revisión por otro compañero (máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
 ## 8. Despliegue
 Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `main`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
 
 ## 9. Equipo
-- **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`guia-companeros.md`](guia-companeros.md).
-- **Flujo:** spec, rama propia, gate, auditoría por otro compañero, QA, pull request e integración por Lukas: [`equipo/equipo.md`](equipo/equipo.md).
+- **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`equipo/primer-dia.md`](equipo/primer-dia.md) y [`guia-companeros.md`](guia-companeros.md). Cadencia y meta de 3 módulos por semana: [`equipo/cadencia.md`](equipo/cadencia.md).
+- **Flujo:** spec, rama propia, gate, revisión por otro compañero, QA, pull request e integración por Lukas: [`equipo/equipo.md`](equipo/equipo.md).
 - **Errores que no hay que repetir:** [`equipo/lecciones.md`](equipo/lecciones.md).
 
 ## 10. Decisiones tomadas

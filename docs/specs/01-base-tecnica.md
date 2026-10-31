@@ -1,7 +1,7 @@
 # Especificación: 01 - Base técnica de la API
 
 ## 1. Objetivo
-**Problema:** el repositorio solo tiene documentación. No hay solución .NET, ni pipeline, ni persistencia, ni un gate de calidad que haga cumplir las reglas de código de `CLAUDE.md`.
+**Problema:** el repositorio solo tiene documentación. No hay solución .NET, ni pipeline, ni persistencia, ni un gate de calidad que haga cumplir las reglas de código de `CONTRIBUTING.md`.
 **Resultado esperado:** existe la solución `TitanGlobal.sln` con:
 - La API `src/TitanGlobal.Api` en .NET 10, que arranca con el pipeline institucional de 3 middlewares, persistencia EF Core/PostgreSQL mediante repositorio genérico y unidad de trabajo, `AuthService` técnico y registro de UseCases por reflexión.
 - El proyecto de tests `tests/TitanGlobal.Api.Tests`.
@@ -37,7 +37,7 @@
 | `.editorconfig` | crear | estilo C#: llaves, `var` prohibido (`csharp_style_var_* = false:error`), miembros con cuerpo de expresión prohibidos (`csharp_style_expression_bodied_* = false:error`) |
 
 ## 4. Diseño y lógica
-- **Reglas de código** (`CLAUDE.md`):
+- **Reglas de código** (`CONTRIBUTING.md`):
   - Sin `=>` en miembros, salvo lambdas.
   - Sin `var`.
   - UseCases concretos sin interfaz.

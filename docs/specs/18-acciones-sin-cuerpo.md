@@ -24,7 +24,7 @@
 - Una acción con `[PermitirCuerpoVacio]` pasa el middleware con cuerpo vacío; con cuerpo, se valida igual que siempre.
 - Cualquier otro POST/PUT sin cuerpo sigue devolviendo el 400 literal, también los de las rutas `rechazar` y `anular`, que sí requieren cuerpo.
 - Una ruta inexistente sin cuerpo se comporta como hoy (no se rompe el 404 ni el orden del pipeline).
-- Reglas de `CLAUDE.md`: sin `var`, sin `=>` en miembros, nombres en español.
+- Reglas de `CONTRIBUTING.md`: sin `var`, sin `=>` en miembros, nombres en español.
 
 ## 5. Criterios de aceptación (medibles)
 | # | Criterio | Cómo se verifica | Umbral |

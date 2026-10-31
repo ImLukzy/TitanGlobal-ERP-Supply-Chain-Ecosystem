@@ -10,7 +10,7 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
 - **Casos de uso concretos sin interfaz**, registrados por reflexión (toda clase concreta terminada en `UseCase`).
 - **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers. Como Routing va antes, ParameterValidation lee los metadatos del endpoint: las acciones sin cuerpo se declaran con `[PermitirCuerpoVacio]` (spec 18).
 
-Las reglas de código están en `CLAUDE.md` § Reglas de código.
+Las reglas de código están en `CONTRIBUTING.md` § Reglas de código.
 
 ## Los 80 módulos (8 dominios)
 

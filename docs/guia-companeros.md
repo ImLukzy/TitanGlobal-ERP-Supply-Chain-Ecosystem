@@ -2,6 +2,8 @@
 
 Todo lo necesario para trabajar en TitanGlobal sin perderse ni pisar el trabajo de otros. Si algo no funciona como dice aquí, avisa a Lukas y se corrige la guía.
 
+Para el arranque en una máquina nueva, sigue [`equipo/primer-dia.md`](equipo/primer-dia.md). Para la organización semanal y la meta de 3 módulos por semana, [`equipo/cadencia.md`](equipo/cadencia.md).
+
 ## 1. Accesos
 | Servicio | Para qué | Quién lo da |
 |---|---|---|
@@ -13,7 +15,7 @@ Para desarrollar **no necesitas ninguna cuenta en la nube**: todo funciona en tu
 
 ## 2. Instalar
 - .NET SDK 10 (`dotnet --version` → 10.x)
-- Node.js 22 o superior y npm
+- Node.js 22 LTS y npm (`nvm use` lee el `.nvmrc`)
 - Docker con Docker Compose
 - Git configurado con **tu** nombre y correo (`git config --global user.name "…"` y `user.email "…"`)
 
@@ -36,12 +38,14 @@ Puertos: API 5080, frontend 5173, PostgreSQL 5433. La contraseña de `docker-com
 Comprobación rápida: http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}` y http://localhost:5173/modulos/01-clientes muestra clientes.
 
 ## 4. Cómo se trabaja (en orden)
-1. **Elige un módulo** libre en [`equipo/asignaciones.md`](equipo/asignaciones.md) y apúntate en un PR pequeño o avisando a Lukas. Un módulo = una persona: así nadie toca los mismos archivos.
+La meta del equipo es **3 módulos terminados por semana**. El detalle de roles, tablero y límites está en [`equipo/cadencia.md`](equipo/cadencia.md).
+
+1. **Elige un módulo** libre en [`equipo/asignaciones.md`](equipo/asignaciones.md) y apúntate en el issue del módulo. Un módulo = una persona: así nadie toca los mismos archivos.
 2. **Spec primero.** Copia [`specs/_TEMPLATE.md`](specs/_TEMPLATE.md) a `docs/specs/NN-moduloXX-nombre-{backend|frontend}.md` (NN = siguiente número libre). Usa como modelo las specs 12 y 13 (Proveedores) o 14 y 15 (SolicitudesCompra): contrato de la API con rutas, DTOs y **mensajes de error literales**, reglas en orden y criterios medibles. Lukas la revisa antes de programar.
 3. **Rama propia** desde la de integración: `git switch -c tu-nombre/moduloXX-nombre main`.
-4. **Programa siguiendo el módulo de referencia**: backend `src/TitanGlobal.Api/Modules/Modulo11_Proveedores/` (o `Modulo13_SolicitudesCompra` si tu módulo tiene líneas y estados); frontend `frontend/src/modules/proveedores/` (o `solicitudes-compra/`). Reglas de código: [`CLAUDE.md`](../CLAUDE.md) — sin `var`, sin `=>` en miembros, UseCases sin interfaz, nombres en español, mensajes literales.
+4. **Programa siguiendo el módulo de referencia**: backend `src/TitanGlobal.Api/Modules/Modulo11_Proveedores/` (o `Modulo13_SolicitudesCompra` si tu módulo tiene líneas y estados); frontend `frontend/src/modules/proveedores/` (o `solicitudes-compra/`). Reglas de código: [`CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, UseCases sin interfaz, nombres en español, mensajes literales.
 5. **Gate antes de entregar:** `./scripts/verify.sh` en verde (build sin warnings, formato, reglas, tests de backend y frontend). Si tocaste base de datos, también `./scripts/smoke-postgres.sh` → `SMOKE OK`.
-6. **Pull request contra `main`**. Descripción: qué spec cumple, salida del gate y capturas a 375 y 1280 px si hay pantalla. Lukas revisa, integra y despliega.
+6. **Pull request contra `main`** con la plantilla del repositorio: qué spec cumple, salida del gate y capturas a 375 y 1280 px si hay pantalla. El revisor asignado lo revisa y Lukas integra y despliega.
 
 ## 5. Para no pisarse
 - **Migraciones:** son el punto de choque más común (todas tocan `TitanGlobalDbContextModelSnapshot.cs`). Antes de generar la tuya, actualiza tu rama (`git fetch && git rebase origin/main`) y genera con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Api`. **Nunca** edites a mano una migración ni el snapshot; si hay conflicto en el snapshot, borra tu migración, rebasa y vuelve a generarla.

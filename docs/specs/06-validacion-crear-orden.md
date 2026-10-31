@@ -38,7 +38,7 @@ El mecanismo sirve igual para los 79 módulos restantes.
   - Cualquier otra excepción se propaga (500).
 - El `NumeroOrden` se guarda sin espacios al principio ni al final (`Trim()`).
 - **Controlador:** sin cambios. Sigue delgado; la traducción a HTTP la hace el middleware.
-- **Reglas de `CLAUDE.md`:** sin `var`, sin `=>` en miembros y una sentencia por línea.
+- **Reglas de `CONTRIBUTING.md`:** sin `var`, sin `=>` en miembros y una sentencia por línea.
 
 ## 5. Criterios de aceptación (medibles)
 | # | Criterio | Cómo se verifica | Umbral |

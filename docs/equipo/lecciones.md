@@ -18,7 +18,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Regla:** si cambia la sesión de integración, lo primero es confirmar que las tareas y los avisos apuntan a la sesión nueva. Después de despachar, la espera va en segundo plano y la integración termina su turno con un resumen breve para el humano. Al recibir el aviso: procesarlo, confirmarlo, despachar lo siguiente y volver a esperar. Nunca una espera en primer plano: bloquea al humano durante decenas de minutos. Sin tarea activa, el aviso se hace como mensaje de estado en la pull request (ver `equipo.md`, «Cómo avisar al terminar»).
 
 ## Un test de regresión sustituido en un cambio de pulido (2026-10-14)
-- **Qué pasó:** en la spec 11, el test de `formatearFecha` (protege el bug de fechas UTC de la spec 04) se reemplazó por el del helper nuevo en vez de añadirse. La auditoría lo marcó como menor.
+- **Qué pasó:** en la spec 11, el test de `formatearFecha` (protege el bug de fechas UTC de la spec 04) se reemplazó por el del helper nuevo en vez de añadirse. La revisión lo marcó como menor.
 - **Regla:** los tests existentes no se borran ni se sustituyen; los nuevos se añaden. Quitar un test es un hallazgo mayor salvo que la spec lo pida.
 
 ## Tests de frontend que dependían del tiempo real (2026-10-14)
