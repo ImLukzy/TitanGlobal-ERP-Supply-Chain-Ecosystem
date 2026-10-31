@@ -15,7 +15,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Cambios en las 4 entidades del enunciado (relaciones sin navegación inversa).
 - El frontend (spec 36).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: las unidades «comprometidas» de una orden son las de devoluciones no rechazadas (solicitadas, aprobadas o recibidas); el reembolso solo cuenta las recibidas; un reclamo ligado debe ser de la misma orden.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: las unidades «comprometidas» de una orden son las de devoluciones no rechazadas (solicitadas, aprobadas o recibidas); el reembolso solo cuenta las recibidas; un reclamo ligado debe ser de la misma orden.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -96,5 +96,5 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | 2026-10-15 | A2–A3 | ✅ | `DevolucionesComercialesApiTests` (64 tests): cada mensaje literal, todas las transiciones, exactamente lo disponible y una unidad más, rechazo que libera unidades, edición sin contar la propia, precio medio, resumen |
 | 2026-10-15 | A4 | ✅ | migración `DevolucionesComerciales` (con `Designer` y snapshot) solo crea las 2 tablas; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado, detalle `DEV-DEV-001`, disponible de la orden 8, resumen (reembolsado 2500.00), superar lo disponible → 409, rechazar sin motivo → 400, POST → `DEV-000005` → aprobar → recibir (200), recibir otra vez → 409 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
 | 2026-10-15 | Pendiente menor | ℹ️ | el literal de la regla 7 dice «Solo quedan {n} unidades…» también con n = 1 («1 unidades»); corregir el plural en la spec, el backend y sus tests en un ciclo de acabado |

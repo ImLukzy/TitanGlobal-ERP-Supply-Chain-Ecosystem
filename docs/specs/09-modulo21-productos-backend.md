@@ -15,7 +15,7 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07).
 - Nuevos campos en `Producto` o migraciones. No hace falta ningún índice nuevo.
 - El frontend (spec 10).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador, coherentes con las specs 06 y 07: un producto vendido no se borra → 409; el nombre del producto no es único.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración, coherentes con las specs 06 y 07: un producto vendido no se borra → 409; el nombre del producto no es único.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -89,6 +89,6 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07).
 | 2026-10-14 | A4 | ✅ | el commit no toca `Models/` ni `Migrations/` |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `categoria=computo`, rango 100–1000, detalle 1, categorías (5), resumen, POST → 200 `{id:11}`, DELETE producto 1 → 409 literal, DELETE recién creado → 204 |
 | 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `productos` (GET, POST), `productos/{id}` (GET, PUT, DELETE), `productos/categorias` (GET), `productos/resumen` (GET) |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; 2 observaciones menores informativas, sin cambios |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO; 2 observaciones menores informativas, sin cambios |
 | 2026-10-14 | Nota | ℹ️ | En PostgreSQL `precioPromedio` sale con 16 decimales (`994.5000000000000000`); el frontend lo formatea en PEN. Redondear en la API queda fuera de esta spec |
-| 2026-10-14 | QA E2E | ✅ | Pam con frontend (Vite 5174) + API + PostgreSQL en `22f3215`: resumen del seed (10 productos, 3 sin descripción, S/ 994.50, 5 categorías, top vendidos); búsqueda, categoría, rango y vuelta a la página 1; precios negativos y mínimo > máximo con literales y sin petición; detalle de Laptop Pro y «Sin ventas registradas»; alta, edición, validación local; baja de Laptop Pro → 409 en el diálogo, Escape, baja del creado; Clientes y OrdenesCompra sin regresiones; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas a 1280 |
+| 2026-10-14 | QA E2E | ✅ | QA con frontend (Vite 5174) + API + PostgreSQL en `22f3215`: resumen del seed (10 productos, 3 sin descripción, S/ 994.50, 5 categorías, top vendidos); búsqueda, categoría, rango y vuelta a la página 1; precios negativos y mínimo > máximo con literales y sin petición; detalle de Laptop Pro y «Sin ventas registradas»; alta, edición, validación local; baja de Laptop Pro → 409 en el diálogo, Escape, baja del creado; Clientes y OrdenesCompra sin regresiones; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas a 1280 |

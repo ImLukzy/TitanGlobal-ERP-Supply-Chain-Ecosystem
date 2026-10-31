@@ -15,7 +15,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Cambios en las 4 entidades del enunciado (relaciones sin navegación inversa).
 - El frontend (spec 34).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: plazo de atención de 2 días para prioridad Alta, 5 para Media y 10 para Baja, contados desde el alta; si se indica un producto, debe estar en la orden reclamada.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: plazo de atención de 2 días para prioridad Alta, 5 para Media y 10 para Baja, contados desde el alta; si se indica un producto, debe estar en la orden reclamada.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -91,4 +91,4 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | 2026-10-15 | A2–A3 | ✅ | `ReclamosPostventaApiTests` (57 tests): cada mensaje literal, todas las transiciones, orden de otro cliente, producto fuera de la orden; plazo por prioridad y recalculado, vencido en el límite, atendido a tiempo, filtros, orden por prioridad y resumen |
 | 2026-10-15 | A4 | ✅ | migración `ReclamosPostventa` (con `Designer` y snapshot) solo crea la tabla; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: vencidos, detalle `REC-DEV-001`, resumen 5 (1 vencido), POST → `REC-000006` → iniciar → resolver → cerrar (200), cerrar otra vez → 409 «El reclamo REC-000006 está cerrado.», producto ajeno a la orden → 400 literal, rechazar sin motivo → 400 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

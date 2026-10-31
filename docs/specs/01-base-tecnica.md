@@ -87,12 +87,12 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (Claudio en `ImLukzy/Claudio` tras el fast-forward a `0a739d6`) |
+| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (la integración en `ImLukzy/Claudio` tras el fast-forward a `0a739d6`) |
 | 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (restore, build, format, reglas + fixtures, tests) |
-| 2026-10-14 | A3 | ✅ | `ApiTests`: 500 JSON, 400 en POST/PUT vacío, cuerpo legible tras validar, 403 con `Bloqueado`/`SinPermiso`, 200 sin cabecera; 9/9 tests. QA (Pam) con `curl` a la API real: mensajes literales y `application/json` |
+| 2026-10-14 | A3 | ✅ | `ApiTests`: 500 JSON, 400 en POST/PUT vacío, cuerpo legible tras validar, 403 con `Bloqueado`/`SinPermiso`, 200 sin cabecera; 9/9 tests. QA con `curl` a la API real: mensajes literales y `application/json` |
 | 2026-10-14 | A4 | ✅ | test y QA: POST vacío con `X-User-Role: Bloqueado` → 400 (no 403); excepción en controlador → 500 JSON |
 | 2026-10-14 | A5 | ✅ | test `UseCasesAreRegisteredByReflection`: `ConsultarSaludUseCase` se resuelve sin registro manual |
-| 2026-10-14 | A6 | ✅ | fixtures buenos y malos por regla (a–e) en `verify.sh`; Claudio probó variantes propias (propiedad `=>`, ctor `=>`, `static`, `foreach var`, `var (a, b)`). Hueco conocido: `{ get => x; }` en una línea y `=>` en la línea siguiente, que cubre `dotnet format` (IDE0025/IDE0027) |
-| 2026-10-14 | A7 | ✅ | QA (Pam): `docker compose up -d db` + `dotnet ef database update` aplica `20261014205301_Inicial`; `\d "OrdenesCompra"` con las columnas del enunciado y el índice único de `NumeroOrden` |
-| 2026-10-14 | A8 | ✅ | QA (Pam): `GET /openapi/v1.json` → 200 e incluye `/api/v1/sistema/salud` |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO, 0 bloqueantes; menores: `public partial class Program { }` en una línea y sin test automático de A8 → se corrigen en la spec 02 |
+| 2026-10-14 | A6 | ✅ | fixtures buenos y malos por regla (a–e) en `verify.sh`; la integración probó variantes propias (propiedad `=>`, ctor `=>`, `static`, `foreach var`, `var (a, b)`). Hueco conocido: `{ get => x; }` en una línea y `=>` en la línea siguiente, que cubre `dotnet format` (IDE0025/IDE0027) |
+| 2026-10-14 | A7 | ✅ | QA: `docker compose up -d db` + `dotnet ef database update` aplica `20261014205301_Inicial`; `\d "OrdenesCompra"` con las columnas del enunciado y el índice único de `NumeroOrden` |
+| 2026-10-14 | A8 | ✅ | QA: `GET /openapi/v1.json` → 200 e incluye `/api/v1/sistema/salud` |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO, 0 bloqueantes; menores: `public partial class Program { }` en una línea y sin test automático de A8 → se corrigen en la spec 02 |

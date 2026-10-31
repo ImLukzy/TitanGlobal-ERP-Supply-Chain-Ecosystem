@@ -7,7 +7,7 @@
 **Resultado esperado:** qué podrá hacer el usuario o qué garantiza el sistema al terminar, en 1–3 frases.
 
 ## 2. Fuera de alcance
-Lo que el agente **no** debe tocar aunque parezca relacionado. Ejemplos:
+Lo que quien implementa **no** debe tocar aunque parezca relacionado. Ejemplos:
 - Textos legales, de cobro o de comisión (requieren aprobación explícita).
 - Eliminar páginas, rutas o funcionalidades existentes.
 - Migraciones EF Core no listadas en §3.

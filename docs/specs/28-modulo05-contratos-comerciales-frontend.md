@@ -47,10 +47,10 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Corrección 1 | ✅ | Claudio vio en las capturas filtros y paginación con el aspecto del navegador, captions grandes, condiciones de pago en texto suelto y el porcentaje de la barra partido; corregido con los componentes y estilos compartidos; además, el test de «Pantalla pendiente» elige ahora un módulo sin pantalla de forma dinámica |
+| 2026-10-15 | Corrección 1 | ✅ | La integración vio en las capturas filtros y paginación con el aspecto del navegador, captions grandes, condiciones de pago en texto suelto y el porcentaje de la barra partido; corregido con los componentes y estilos compartidos; además, el test de «Pantalla pendiente» elige ahora un módulo sin pantalla de forma dinámica |
 | 2026-10-15 | Corrección 2 | ✅ | importe de «Comprometido» partido a mitad de número, casilla con letra grande y «Credito30» en el detalle; corregido (importes y fechas sin partir, casilla común, «Crédito 30 días»); de paso, tests de Zonas y SolicitudesGenerarOrden deterministas sin perder comprobaciones |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`2daa127`, mismas líneas que el auditado `f621df0`): backend 523/523, frontend 232/232 |
 | 2026-10-15 | A2–A5 | ✅ | tests de `contratos-comerciales/` (api con activar y finalizar sin cuerpo, filtros y «Solo vencidos», medidor accesible y «Excedido», acciones por estado, 409 en el diálogo, Escape); 10/10 seguidas con carga |
-| 2026-10-15 | A6 | ✅ | `/tmp/titan-spec28/` (12 capturas) revisadas por Claudio tras la corrección 2 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed y consumo de Acme S/ 9,000.00 de S/ 20,000.00 (45.00 %) igual a la suma de sus órdenes de 2026; filtros y «Solo vencidos»; acciones por estado; borrador de Acme en 2026 → activar → 409 de solapamiento en el diálogo, movido a 2027 → 200; validaciones locales sin petición; activar, finalizar y cancelar con y sin motivo; contrato excedido; importes y fechas sin partir; 12 capturas sin recortes ni scroll horizontal |
+| 2026-10-15 | A6 | ✅ | `/tmp/titan-spec28/` (12 capturas) revisadas por la integración tras la corrección 2 |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed y consumo de Acme S/ 9,000.00 de S/ 20,000.00 (45.00 %) igual a la suma de sus órdenes de 2026; filtros y «Solo vencidos»; acciones por estado; borrador de Acme en 2026 → activar → 409 de solapamiento en el diálogo, movido a 2027 → 200; validaciones locales sin petición; activar, finalizar y cancelar con y sin motivo; contrato excedido; importes y fechas sin partir; 12 capturas sin recortes ni scroll horizontal |

@@ -11,7 +11,7 @@ Decisión del humano (2026-10-15): seguir con el siguiente módulo.
 - Cambios en las 4 entidades del enunciado.
 - El frontend (spec 22).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: el código de zona es único dentro de su almacén; la suma de capacidad de las zonas activas no puede superar la del almacén; no se crean zonas en almacenes inactivos.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: el código de zona es único dentro de su almacén; la suma de capacidad de las zonas activas no puede superar la del almacén; no se crean zonas en almacenes inactivos.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -85,5 +85,5 @@ Decisión del humano (2026-10-15): seguir con el siguiente módulo.
 | 2026-10-15 | A4 | ✅ | migración `ZonasAlmacenaje` (con `Designer` y snapshot) solo crea la tabla con FK restrictiva e índice único compuesto; aplicada en Neon antes de subir el código |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: detalle REC-01, resumen del almacén 1 (4 zonas), POST → `{id:9}`, superar capacidad → 409 «La capacidad de las zonas activas (510.00 m³) superaría la del almacén ALM-LIM-01…», código repetido → 409, DELETE almacén 1 → 409, DELETE de la zona creada → 204 |
 | 2026-10-15 | Producción | ✅ | `https://titanglobal-erp.vercel.app/api/v1/zonas-almacenaje/resumen?almacenId=1` → 200 (4 zonas); DELETE del almacén 1 → 409 literal sin borrar nada |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: ocupación con `role="meter"` (ALM-LIM-01 90.00 % «Casi lleno», ALM-ARE-01 86.67 % sin aviso, ALM-CAL-TR sin contar la inactiva); `?almacen=` y filtros; una sola petición al cargar; alta hasta el 100 % → 200 y 1 m³ más → 409 literal conservando lo escrito; código repetido en el mismo almacén → 409 y permitido en otro; inactivar baja la ocupación; baja con Escape; borrar ALM-LIM-01 en Almacenes → 409 en el diálogo; sin regresiones; 13 capturas sin recortes, palabras partidas ni scroll horizontal |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: ocupación con `role="meter"` (ALM-LIM-01 90.00 % «Casi lleno», ALM-ARE-01 86.67 % sin aviso, ALM-CAL-TR sin contar la inactiva); `?almacen=` y filtros; una sola petición al cargar; alta hasta el 100 % → 200 y 1 m³ más → 409 literal conservando lo escrito; código repetido en el mismo almacén → 409 y permitido en otro; inactivar baja la ocupación; baja con Escape; borrar ALM-LIM-01 en Almacenes → 409 en el diálogo; sin regresiones; 13 capturas sin recortes, palabras partidas ni scroll horizontal |

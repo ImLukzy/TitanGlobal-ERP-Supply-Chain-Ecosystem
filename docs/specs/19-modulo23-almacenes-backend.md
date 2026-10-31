@@ -11,7 +11,7 @@ Decisión del humano (2026-10-14): seguir con el siguiente módulo.
 - Cambios en las 4 entidades del enunciado.
 - El frontend (spec 20).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador con el criterio de Proveedores: código único; baja física mientras ningún módulo dependa del almacén; `Activo` para retirarlo sin borrarlo.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración con el criterio de Proveedores: código único; baja física mientras ningún módulo dependa del almacén; `Activo` para retirarlo sin borrarlo.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -84,5 +84,5 @@ Decisión del humano (2026-10-14): seguir con el siguiente módulo.
 | 2026-10-15 | A2–A3 | ✅ | `AlmacenesApiTests`: mensajes literales con su código y sin `Detail`, código en mayúsculas, tipo canónico, PUT con su propio código; búsqueda, ciudad, tipo, `activo`, paginación, ciudades y resumen exactos |
 | 2026-10-15 | A4 | ✅ | migración `Almacenes` (con `Designer` y snapshot) solo crea la tabla y su índice único; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: detalle `ALM-LIM-01`, ciudades `["Arequipa","Callao","Lima","Trujillo"]`, resumen 5/4/1 y 1025.00 m³, POST → `{id:6}`, código del seed → 409 literal, DELETE del creado → 204 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen 5/4/1 con 1,025.00 y 925.00 m³ en una línea y plurales correctos; filtros por código, nombre, ciudad, tipo y estado, una sola petición del listado al cargar; detalle con pastilla y «Sin responsable»; alta con código en minúsculas guardado en mayúsculas; validaciones locales sin petición; ALM-LIM-01 → 409 conservando lo escrito; edición; baja con Escape; demás pantallas sin regresiones; 9 capturas sin recortes ni scroll horizontal |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen 5/4/1 con 1,025.00 y 925.00 m³ en una línea y plurales correctos; filtros por código, nombre, ciudad, tipo y estado, una sola petición del listado al cargar; detalle con pastilla y «Sin responsable»; alta con código en minúsculas guardado en mayúsculas; validaciones locales sin petición; ALM-LIM-01 → 409 conservando lo escrito; edición; baja con Escape; demás pantallas sin regresiones; 9 capturas sin recortes ni scroll horizontal |

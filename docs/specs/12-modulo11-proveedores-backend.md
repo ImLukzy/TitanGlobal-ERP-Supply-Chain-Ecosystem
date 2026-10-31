@@ -15,7 +15,7 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07). Decisión del humano (2026-10
 - Relaciones con otros módulos (evaluación, órdenes de abastecimiento, importaciones): llegarán con sus specs.
 - El frontend (spec 13).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Campos y reglas tomados por el integrador con el criterio de Clientes: RUC único de 11 dígitos; la baja es física mientras ningún módulo dependa del proveedor; `Activo` sirve para retirarlo sin borrarlo.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Campos y reglas tomados por la integración con el criterio de Clientes: RUC único de 11 dígitos; la baja es física mientras ningún módulo dependa del proveedor; `Activo` sirve para retirarlo sin borrarlo.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -89,6 +89,6 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07). Decisión del humano (2026-10
 | 2026-10-14 | A4 | ✅ | `20261015023548_Proveedores` (con `Designer` y snapshot) crea solo `Proveedores` e `IX_Proveedores_Ruc`; el smoke la aplica sobre la BD con el seed sin errores |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `pais=peru` → 3, `activo=false` → 1, detalle 1, países `["Chile","China","Peru"]`, resumen 6/5/1/2, POST → `{id:7}` (secuencia bien tras el seed), RUC del seed → 409 literal, DELETE del creado → 204 |
 | 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `proveedores` (GET, POST), `proveedores/{id}` (GET, PUT, DELETE), `proveedores/paises` (GET), `proveedores/resumen` (GET) |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO |
-| 2026-10-14 | Tests intermitentes | ✅ | Dwight los hizo deterministas (`645b5ff`, `a428841`): 10/10 sin carga y 10/10 con 4 procesos de carga; gate rc=0 (111/111, 96/96) |
-| 2026-10-14 | QA E2E | ✅ | Pam con frontend (Vite 5174) + API + PostgreSQL en `d0bb258` (migración Proveedores aplicada): resumen del seed 6/5/1/2 y por país; búsqueda por razón social y por RUC, país, «Inactivos» → Servicios Andinos SpA; detalle con y sin email; validación local con literales sin petición; RUC 20600000001 → 409 conservando lo escrito; edición a Inactivo refleja tabla, detalle y resumen; baja con Escape; Clientes, Productos y OrdenesCompra sin regresiones; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO |
+| 2026-10-14 | Tests intermitentes | ✅ | La implementación los hizo deterministas (`645b5ff`, `a428841`): 10/10 sin carga y 10/10 con 4 procesos de carga; gate rc=0 (111/111, 96/96) |
+| 2026-10-14 | QA E2E | ✅ | QA con frontend (Vite 5174) + API + PostgreSQL en `d0bb258` (migración Proveedores aplicada): resumen del seed 6/5/1/2 y por país; búsqueda por razón social y por RUC, país, «Inactivos» → Servicios Andinos SpA; detalle con y sin email; validación local con literales sin petición; RUC 20600000001 → 409 conservando lo escrito; edición a Inactivo refleja tabla, detalle y resumen; baja con Escape; Clientes, Productos y OrdenesCompra sin regresiones; márgenes ≥ 16 px, sin scroll horizontal ni celdas recortadas |

@@ -14,7 +14,7 @@ Decisión de Lukas (2026-10-15): usuarios y roles se gestionan **como datos**; n
 - Auditoría de acciones de los usuarios (módulo 77).
 - El frontend (spec 44).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: siempre debe quedar al menos un usuario activo con el rol `ADMIN`; un rol con usuarios no se puede borrar (regla 8 de la spec 41, que se activa aquí).
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: siempre debe quedar al menos un usuario activo con el rol `ADMIN`; un rol con usuarios no se puede borrar (regla 8 de la spec 41, que se activa aquí).
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -84,11 +84,11 @@ Decisión de Lukas (2026-10-15): usuarios y roles se gestionan **como datos**; n
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `50ba49a` (Michael) integrado como `dfd4845` en `ImLukzy/Claudio` por cherry-pick; `diff` de las líneas cambiadas idéntico al commit auditado |
+| 2026-10-15 | Integración | ✅ | `50ba49a` integrado como `dfd4845` en `ImLukzy/Claudio` por cherry-pick; `diff` de las líneas cambiadas idéntico al commit auditado |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` en la rama de integración → exit 0: build sin warnings, formato y reglas OK, 569 tests del backend y 232 del frontend (37 archivos) en verde |
 | 2026-10-15 | A2 | ✅ | `UsuariosApiTests` (25 casos): un caso por mensaje de §4 con código y literal sin `Detail`, minúsculas, PUT con los suyos, sin mutación en los inválidos |
 | 2026-10-15 | A3 | ✅ | tests de unión de roles, «Ninguno» sin roles o inactivo, último ADMIN (desactivar, quitar rol, borrar → 409; con otro activo → permitido), filtros, orden y resumen; `RolesPermisosApiTests.NoPermiteEliminarRolAsignadoAUsuarios` (regla 8) |
 | 2026-10-15 | A4 | ✅ | el commit no toca `Middlewares/` ni `Services/` (0 archivos); los tests del 403 sin cambios y en verde |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK` con la migración `20261015173321_Usuarios`: listado por rol, detalle y permisos de luis.compras (80 filas), resumen (5 usuarios, 1 sin rol), POST, email repetido → 409, desactivar admin → 409, borrar VENTAS → 409 literal, DELETE → 204 |
 | 2026-10-15 | A6 | ✅ | el smoke valida las 7 operaciones en `/openapi/v1.json` (`openapi-usuarios`) |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

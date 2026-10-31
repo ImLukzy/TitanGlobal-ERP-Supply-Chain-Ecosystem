@@ -7,7 +7,7 @@ Todo lo necesario para trabajar en TitanGlobal sin perderse ni pisar el trabajo 
 |---|---|---|
 | GitHub `ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem` (privado) | código, ramas y pull requests | Lukas te invita como colaborador |
 | Neon (PostgreSQL en la nube) | solo si necesitas probar contra una base en la nube: se te da **una rama propia** de la base, nunca la de la demo | Lukas |
-| Render (API) y Vercel (frontend) | la demo pública | los despliega el integrador; no hace falta acceso para desarrollar |
+| Render (API) y Vercel (frontend) | la demo pública | los despliega la integración; no hace falta acceso para desarrollar |
 
 Para desarrollar **no necesitas ninguna cuenta en la nube**: todo funciona en tu máquina con Docker.
 

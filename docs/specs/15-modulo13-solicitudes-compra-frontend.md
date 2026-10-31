@@ -48,10 +48,10 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | Corrección 1 | ✅ | Claudio devolvió la entrega: «El producto 0 no existe.» para una línea sin producto (ahora «Selecciona un producto.»), columna Subtotal recortada a 1280 en el detalle (ahora 323/323 px) y captura de 3 líneas vacías (ahora con total S/ 4,800.00) |
+| 2026-10-14 | Corrección 1 | ✅ | La integración devolvió la entrega: «El producto 0 no existe.» para una línea sin producto (ahora «Selecciona un producto.»), columna Subtotal recortada a 1280 en el detalle (ahora 323/323 px) y captura de 3 líneas vacías (ahora con total S/ 4,800.00) |
 | 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`4b2e774`, mismas líneas que el auditado `0b1a22d`): backend 151/151, frontend 120/120 |
-| 2026-10-14 | A2–A6 | ✅ | tests de `solicitudes-compra/` (api, página, formulario y decisiones) con temporizadores falsos; la suite pasó 10/10 seguidas según Dwight |
-| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec15/` (12 capturas) revisadas por Claudio: detalle sin recortes a 1280, formulario con 3 líneas y total, diálogo de rechazo; márgenes 16 px |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO |
-| 2026-10-14 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL, `9e21623`) y en producción (https://titanglobal-erp.vercel.app, solo lectura): resumen del seed 2/2/1; filtros por número, solicitante, estado, proveedor y fechas; detalle con subtotales y rechazada sin acciones; alta con 3 líneas → `SC-000NNN`, validaciones locales sin petición, proveedor inactivo fuera del selector; edición quitando una línea; aprobar; rechazar sin motivo (error local) y con motivo; eliminar con Escape; demás pantallas sin regresiones; 13 capturas sin recortes ni scroll horizontal |
-| 2026-10-14 | Pendiente menor | ℹ️ | visto por Claudio en la captura de producción: el estado vacío del detalle («Selecciona una solicitud para ver el detalle.») usa un tamaño de letra mayor que el resto de la pantalla |
+| 2026-10-14 | A2–A6 | ✅ | tests de `solicitudes-compra/` (api, página, formulario y decisiones) con temporizadores falsos; la suite pasó 10/10 seguidas según la implementación |
+| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec15/` (12 capturas) revisadas por la integración: detalle sin recortes a 1280, formulario con 3 líneas y total, diálogo de rechazo; márgenes 16 px |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO |
+| 2026-10-14 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL, `9e21623`) y en producción (https://titanglobal-erp.vercel.app, solo lectura): resumen del seed 2/2/1; filtros por número, solicitante, estado, proveedor y fechas; detalle con subtotales y rechazada sin acciones; alta con 3 líneas → `SC-000NNN`, validaciones locales sin petición, proveedor inactivo fuera del selector; edición quitando una línea; aprobar; rechazar sin motivo (error local) y con motivo; eliminar con Escape; demás pantallas sin regresiones; 13 capturas sin recortes ni scroll horizontal |
+| 2026-10-14 | Pendiente menor | ℹ️ | visto por la integración en la captura de producción: el estado vacío del detalle («Selecciona una solicitud para ver el detalle.») usa un tamaño de letra mayor que el resto de la pantalla |

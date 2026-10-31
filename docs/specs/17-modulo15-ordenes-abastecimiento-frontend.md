@@ -50,12 +50,12 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | Revisión del integrador | ⚠️ | Claudio vio en la entrega «1 órdenes» en el resumen y que `limpiarCargaInicial` de Productos esperaba 2 peticiones del listado al cargar: consolidaba un bug real (petición duplicada en Productos y SolicitudesCompra por el efecto de búsqueda) |
-| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Kelly: CAMBIOS por esos dos puntos |
-| 2026-10-14 | Correcciones | ✅ | Dwight: `425f509` (una sola petición al cargar, con test por pantalla; 10/10 sin carga y 10/10 con carga) y `60de5db` (plurales con `formatearCantidad`) |
-| 2026-10-14 | Auditoría ciclo 2 | ✅ | Kelly: APROBADO |
+| 2026-10-14 | Revisión de la integración | ⚠️ | La integración vio en la entrega «1 órdenes» en el resumen y que `limpiarCargaInicial` de Productos esperaba 2 peticiones del listado al cargar: consolidaba un bug real (petición duplicada en Productos y SolicitudesCompra por el efecto de búsqueda) |
+| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Auditoría: CAMBIOS por esos dos puntos |
+| 2026-10-14 | Correcciones | ✅ | La implementación: `425f509` (una sola petición al cargar, con test por pantalla; 10/10 sin carga y 10/10 con carga) y `60de5db` (plurales con `formatearCantidad`) |
+| 2026-10-14 | Auditoría ciclo 2 | ✅ | Auditoría: APROBADO |
 | 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`1e5611c`, `425f509`, `60de5db`): backend 175/175, frontend 147/147 |
 | 2026-10-14 | A2–A6 | ✅ | tests de `ordenes-abastecimiento/` (página, formulario, acciones) y `SolicitudesGenerarOrden.test.tsx` (botón solo en aprobadas, POST `desde-solicitud`, 409, navegación) |
-| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec17/` (16 capturas) revisadas por Claudio: etiqueta «Atrasada» con texto, sin celdas recortadas a 1280, márgenes 16 px |
-| 2026-10-14 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |
-| 2026-10-14 | Pendiente menor | ℹ️ | visto por Claudio en la captura de producción: los números `OA-DEV-00N` se parten en dos líneas en la columna «Número» a 1280 |
+| 2026-10-14 | A7 | ✅ | `/tmp/titan-spec17/` (16 capturas) revisadas por la integración: etiqueta «Atrasada» con texto, sin celdas recortadas a 1280, márgenes 16 px |
+| 2026-10-14 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |
+| 2026-10-14 | Pendiente menor | ℹ️ | visto por la integración en la captura de producción: los números `OA-DEV-00N` se parten en dos líneas en la columna «Número» a 1280 |

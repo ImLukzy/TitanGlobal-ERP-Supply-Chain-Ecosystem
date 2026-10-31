@@ -14,7 +14,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Auditar lecturas (GET) o cambios hechos fuera de EF (SQL manual o el seed).
 - El frontend (spec 46).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: el usuario sale de la cabecera opcional `X-Usuario` (máx. 30 caracteres; si falta o está vacía, `"sistema"`); se auditan todas las entidades salvo la propia auditoría; los valores se guardan como texto.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: el usuario sale de la cabecera opcional `X-Usuario` (máx. 30 caracteres; si falta o está vacía, `"sistema"`); se auditan todas las entidades salvo la propia auditoría; los valores se guardan como texto.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -74,12 +74,12 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `0007684` + `e67109c` (Michael) integrados como `997c146` y `39e200e` en `ImLukzy/Claudio` por cherry-pick, con líneas idénticas a las auditadas |
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 585 tests del backend y 242 del frontend (39 archivos). Un primer intento dio 13 tests del frontend con «Test timed out in 5000ms» con la máquina a load average 25 (tres agentes con suites en paralelo); repetido con la misma rama → 242/242, sin cambios de código |
+| 2026-10-15 | Integración | ✅ | `0007684` + `e67109c` integrados como `997c146` y `39e200e` en `ImLukzy/Claudio` por cherry-pick, con líneas idénticas a las auditadas |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 585 tests del backend y 242 del frontend (39 archivos). Un primer intento dio 13 tests del frontend con «Test timed out in 5000ms» con la máquina a load average 25 (tres suites en paralelo); repetido con la misma rama → 242/242, sin cambios de código |
 | 2026-10-15 | A2 | ✅ | tests de captura: alta, modificación (solo campos cambiados) y baja con valores exactos; modificación sin cambios sin registro; `X-Usuario` recortado a 30 y «sistema» por defecto; `Ruta`; un registro por entidad en operaciones con líneas; regla 409 y fallo real de persistencia (interceptor) sin auditoría ni filas de negocio; `SaveChanges(false)` y `SaveChangesAsync(false)` guardan una sola vez |
 | 2026-10-15 | A3 | ✅ | tests de filtros, orden, paginación (`pagina=0` y `tamanoPagina=101` → 400 literal sin `Detail`), acción y rango de fechas inválidos, detalle, 404, entidades y resumen con los 7 días incluidos los vacíos |
 | 2026-10-15 | A4 | ✅ | `git diff` de los dos commits sobre `Middlewares/` y `Services/` → 0 archivos; tests del 403 sin cambios |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK` con la migración `20261015174858_AuditoriaTransaccional`: cliente con `X-Usuario: smoke` → Alta (4 campos), Modificacion (Nombre y Descripcion con antes y después) y Baja (4 campos, después nulo) con su ruta; solicitud de compra con número atómico → SolicitudCompra (alta y modificación) y 2 DetalleSolicitudCompra; resumen con 7 días; detalle inexistente → 404 literal |
 | 2026-10-15 | A6 | ✅ | el smoke y un test validan las 4 operaciones GET de `/openapi/v1.json` (sin POST/PUT/DELETE) |
-| 2026-10-15 | Auditoría | ✅ | Kelly: ciclo 1 CAMBIOS (doble guardado con `acceptAllChangesOnSuccess=false`, faltaban tests de fallo de persistencia y de paginación); ciclo 2 APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría: ciclo 1 CAMBIOS (doble guardado con `acceptAllChangesOnSuccess=false`, faltaban tests de fallo de persistencia y de paginación); ciclo 2 APROBADO sin hallazgos |
 | 2026-10-15 | Producción | ✅ | Neon migrado (`20261015174858_AuditoriaTransaccional`) y Render `live adbf580`: alta, PUT y DELETE de un cliente de prueba con `X-Usuario: verificacion` → 3 registros (Alta 4 campos, Modificacion 1, Baja 4) con su ruta; `GET /api/v1/auditoria/resumen` → total 3 y 3 registros hoy |

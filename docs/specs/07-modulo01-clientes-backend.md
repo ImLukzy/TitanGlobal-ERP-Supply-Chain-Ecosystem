@@ -16,7 +16,7 @@ Sigue el patrón del módulo de referencia (`Modulo04_OrdenesCompra`) y los erro
 - Validar el dígito verificador del RUC contra SUNAT; solo el formato.
 - El frontend (spec 08).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador, coherentes con la spec 06: RUC único → 409; cliente con órdenes no se borra → 409.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración, coherentes con la spec 06: RUC único → 409; cliente con órdenes no se borra → 409.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -86,5 +86,5 @@ Sigue el patrón del módulo de referencia (`Modulo04_OrdenesCompra`) y los erro
 | 2026-10-14 | A4 | ✅ | `20261014213804_ClientesRucUnico` con `Designer` y cambio en `ModelSnapshot`; el smoke la aplica sobre la BD con el seed sin errores |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `busqueda=acme` → 1 cliente; resumen 5/4/3; POST con RUC `20111111111` → 409; DELETE cliente 1 → 409; DELETE recién creado → 204 |
 | 2026-10-14 | A6 | ✅ | `/openapi/v1.json`: `api/v1/clientes` (GET, POST), `api/v1/clientes/{id}` (GET, PUT, DELETE), `api/v1/clientes/resumen` (GET) |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-14 | QA E2E | ✅ | Pam con frontend (Vite 5174) + API + PostgreSQL en `aa209c5`: resumen del seed (5/4/3, Acme S/ 10,000.00 primero); búsqueda «acme» → 1; detalle con fecha UTC y «Sin órdenes»; alta, RUC repetido → 409 conservando lo escrito, validación local sin petición; edición con su RUC; baja de Acme → 409 en el diálogo, Escape; baja del creado; OrdenesCompra sin regresiones; márgenes 18 px a 375 sin scroll horizontal, claro y oscuro, con detalle y diálogo |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-14 | QA E2E | ✅ | QA con frontend (Vite 5174) + API + PostgreSQL en `aa209c5`: resumen del seed (5/4/3, Acme S/ 10,000.00 primero); búsqueda «acme» → 1; detalle con fecha UTC y «Sin órdenes»; alta, RUC repetido → 409 conservando lo escrito, validación local sin petición; edición con su RUC; baja de Acme → 409 en el diálogo, Escape; baja del creado; OrdenesCompra sin regresiones; márgenes 18 px a 375 sin scroll horizontal, claro y oscuro, con detalle y diálogo |

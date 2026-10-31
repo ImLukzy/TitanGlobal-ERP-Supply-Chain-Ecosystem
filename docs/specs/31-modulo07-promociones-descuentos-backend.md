@@ -14,7 +14,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Cupones, límites de usos y combinaciones complejas.
 - Cambios en las 4 entidades del enunciado. El frontend (spec 32).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: a cada línea se le aplica como máximo una promoción de producto (la de mayor porcentaje); a la compra, como máximo una promoción por monto mínimo (la de mayor porcentaje), calculada sobre el total ya descontado por línea; las promociones de segmento solo aplican a clientes de ese segmento (módulo 02).
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: a cada línea se le aplica como máximo una promoción de producto (la de mayor porcentaje); a la compra, como máximo una promoción por monto mínimo (la de mayor porcentaje), calculada sobre el total ya descontado por línea; las promociones de segmento solo aplican a clientes de ese segmento (módulo 02).
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -98,5 +98,5 @@ Evaluación:
 | 2026-10-15 | A2–A3 | ✅ | `PromocionesDescuentosApiTests` (36 tests): cada mensaje literal, combinaciones tipo/producto/monto, evaluación con desempate por Id, monto mínimo tras descuentos (justo en el mínimo y un céntimo menos), segmento ajeno, inactiva y fechas límite, ejemplos Acme 4037.50 y Beta 4275.00 |
 | 2026-10-15 | A4 | ✅ | migración `Promociones` (con `Designer` y snapshot) solo crea la tabla; aplicada en Neon |
 | 2026-10-15 | Producción | ✅ | `POST https://titanglobal-erp.vercel.app/api/v1/promociones/evaluar` con 2 Laptop Pro a 2500 para Acme → 200, total 4037.50 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado y vigentes, detalle LAPTOP-10, evaluar Acme y Beta, evaluar sin líneas → 400 literal, POST → `{id:5}`, código del seed → 409, promoción de producto sin producto → 400, DELETE → 204 |

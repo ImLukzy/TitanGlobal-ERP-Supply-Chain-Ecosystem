@@ -14,7 +14,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Facturación, cuentas por cobrar (51, 53) o renovación automática.
 - El frontend (spec 28).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: un cliente no puede tener dos contratos vigentes con periodos que se solapen; solo un borrador se edita o se borra; el consumo es informativo (no bloquea órdenes).
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: un cliente no puede tener dos contratos vigentes con periodos que se solapen; solo un borrador se edita o se borra; el consumo es informativo (no bloquea órdenes).
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -89,11 +89,11 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Revisión del integrador | ⚠️ | la primera entrega (`aec2e1a`) traía 5 tests amplios para ~20 mensajes; Claudio la devolvió. Corrección: 32 tests del módulo sin tocar producción (`71dada7`). Lección añadida en `docs/equipo/lecciones.md` |
+| 2026-10-15 | Revisión de la integración | ⚠️ | la primera entrega (`aec2e1a`) traía 5 tests amplios para ~20 mensajes; la integración la devolvió. Corrección: 32 tests del módulo sin tocar producción (`71dada7`). Lección añadida en `docs/equipo/lecciones.md` |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`723351c`, mismas líneas que el auditado `71dada7`): backend 304/304, frontend 201/201 |
 | 2026-10-15 | A2–A3 | ✅ | `ContratosComercialesApiTests` (32 tests): cada mensaje literal, transiciones, solapamiento (un día compartido ya solapa; contiguos y cancelados no), consumo con límites del primer y último día, porcentaje > 100, saldo negativo, filtros, orden y resumen |
 | 2026-10-15 | A4 | ✅ | migración `ContratosComerciales` (con `Designer` y snapshot) solo crea la tabla; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: contratos de Acme con consumo, detalle `CC-DEV-001`, resumen, activar uno solapado → 409 «El cliente ya tiene el contrato vigente CC-DEV-001 en ese periodo.», activar el de Beta → 200, finalizar un borrador → 409, cancelar sin motivo → 400, DELETE de un vigente → 409 |
 | 2026-10-15 | A6 | ✅ | el smoke comprueba las 9 operaciones en `/openapi/v1.json` |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed y consumo de Acme S/ 9,000.00 de S/ 20,000.00 (45.00 %) igual a la suma de sus órdenes de 2026; filtros y «Solo vencidos»; acciones por estado; borrador de Acme en 2026 → activar → 409 de solapamiento en el diálogo, movido a 2027 → 200; validaciones locales sin petición; activar, finalizar y cancelar con y sin motivo; contrato excedido; importes y fechas sin partir; 12 capturas sin recortes ni scroll horizontal |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed y consumo de Acme S/ 9,000.00 de S/ 20,000.00 (45.00 %) igual a la suma de sus órdenes de 2026; filtros y «Solo vencidos»; acciones por estado; borrador de Acme en 2026 → activar → 409 de solapamiento en el diálogo, movido a 2027 → 200; validaciones locales sin petición; activar, finalizar y cancelar con y sin motivo; contrato excedido; importes y fechas sin partir; 12 capturas sin recortes ni scroll horizontal |

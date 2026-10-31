@@ -14,7 +14,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Monedas (módulo 74): todo en PEN.
 - El frontend (spec 30).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: una lista de segmento gana a una general; entre listas del mismo tipo gana la de menor número de prioridad; si ninguna lista vigente tiene el producto, se usa el precio base.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: una lista de segmento gana a una general; entre listas del mismo tipo gana la de menor número de prioridad; si ninguna lista vigente tiene el producto, se usa el precio base.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -95,5 +95,5 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | 2026-10-15 | A2–A3 | ✅ | `ListasPreciosApiTests` (25 tests): cada mensaje literal, código en mayúsculas, unicidad de código y prioridad; resolución segmento > general > base, prioridad dentro del grupo, lista inactiva, fuera de fecha o sin el producto, límites de fecha, cliente sin segmento; diferencia porcentual y resumen |
 | 2026-10-15 | A4 | ✅ | migración `ListasPrecios` (con `Designer` y snapshot) solo crea las 2 tablas; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: vigentes, detalle de VIP-2026 (Laptop Pro −8.00 %), precio de Laptop Pro para Acme 2300.00 «Segmento», para Beta 2450.00 «General», Teclado Mecánico 200.00 «Base», resumen, POST → `{id:4}`, prioridad repetida → 409 literal, DELETE → 204 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO. Observaciones no bloqueantes: obtener el segmento de un cliente clasifica a todos (3 consultas fijas, aceptable a esta escala; Kelly propone filtrar por `ClienteId` si crece) y `ConsultaSegmentacionClientes` pasó a `public` sin necesidad |
-| 2026-10-15 | Ajuste `segmentoId=0` | ✅ | `f0f6a75` (Michael) integrado como `c48b5ec`: `segmentoId=0` filtra las listas generales; 3 tests nuevos (con y sin `vigentes`, total exacto, VIP sin cambios); auditoría de Kelly APROBADO sin hallazgos; producción → 2 generales y 1 vigente |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO. Observaciones no bloqueantes: obtener el segmento de un cliente clasifica a todos (3 consultas fijas, aceptable a esta escala; la auditoría propone filtrar por `ClienteId` si crece) y `ConsultaSegmentacionClientes` pasó a `public` sin necesidad |
+| 2026-10-15 | Ajuste `segmentoId=0` | ✅ | `f0f6a75` integrado como `c48b5ec`: `segmentoId=0` filtra las listas generales; 3 tests nuevos (con y sin `vigentes`, total exacto, VIP sin cambios); auditoría de la auditoría APROBADO sin hallazgos; producción → 2 generales y 1 vigente |

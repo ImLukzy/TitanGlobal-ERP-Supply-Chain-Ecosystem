@@ -101,8 +101,8 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `ImLukzy/Claudio`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
 
 ## 9. Equipo
-- **Personas:** Lukas Melgar (integrador), Leonel Portillo, Antony Huayhua y Kelvin Pinto. Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`guia-companeros.md`](guia-companeros.md).
-- **Agentes de Lukas** (coordinados con Orca): Claudio (integrador), Michael y Dwight (escriben backend y frontend), Kelly (auditoría), Pam (QA), Jim (exploración). Flujo: [`equipo/equipo.md`](equipo/equipo.md).
+- **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`guia-companeros.md`](guia-companeros.md).
+- **Flujo:** spec, rama propia, gate, auditoría por otro compañero, QA, pull request e integración por Lukas: [`equipo/equipo.md`](equipo/equipo.md).
 - **Errores que no hay que repetir:** [`equipo/lecciones.md`](equipo/lecciones.md).
 
 ## 10. Decisiones tomadas
@@ -111,25 +111,26 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-14 | Frontend en React + Vite + TS dentro del mismo repositorio (`frontend/`) | Lukas |
 | 2026-10-14 | Numeración de módulos según la lista de `arquitectura.md` (`Modulo04_OrdenesCompra`, no `Modulo02`) | Lukas |
 | 2026-10-14 | Número de orden repetido → 409; cliente inexistente → 400 | Lukas |
-| 2026-10-14 | Orden de módulos: 01 Clientes, 21 Productos, 11 Proveedores, 13 SolicitudesCompra, 15 OrdenesAbastecimiento, 23 Almacenes | Lukas (por recomendación del integrador) |
+| 2026-10-14 | Orden de módulos: 01 Clientes, 21 Productos, 11 Proveedores, 13 SolicitudesCompra, 15 OrdenesAbastecimiento, 23 Almacenes | Lukas (por recomendación de la integración) |
 | 2026-10-14 | Repositorio privado en GitHub a nombre de Lukas; despliegue en Neon, Render y Vercel; `main` al día | Lukas |
-| 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integrador (spec 18) |
-| 2026-10-15 | Siguiente módulo de los agentes: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integrador |
-| 2026-10-15 | Al aceptar una cotización se crea una `OrdenCompra` del enunciado sin modificar su entidad (el enlace vive en `Cotizacion`) | integrador (spec 25) |
-| 2026-10-15 | Se adelanta 09 ReclamosPostventa al 08 ComisionesVendedores: el 08 necesita vendedores y los empleados son el módulo 61 (Kelvin) | integrador |
+| 2026-10-14 | Acciones sin cuerpo con atributo `[PermitirCuerpoVacio]` en lugar de rutas en el middleware | integración (spec 18) |
+| 2026-10-15 | Siguiente módulo: 24 ZonasAlmacenaje (capacidad de zonas activas limitada a la del almacén) | Lukas («sigue con el siguiente módulo») e integración |
+| 2026-10-15 | Al aceptar una cotización se crea una `OrdenCompra` del enunciado sin modificar su entidad (el enlace vive en `Cotizacion`) | integración (spec 25) |
+| 2026-10-15 | Se adelanta 09 ReclamosPostventa al 08 ComisionesVendedores: el 08 necesita vendedores y los empleados son el módulo 61 (Kelvin) | integración |
 | 2026-10-15 | 08 ComisionesVendedores con su propio maestro de vendedores y una asignación de órdenes a vendedores (enlazable más adelante con Empleados, módulo 61) | Lukas |
 | 2026-10-15 | 71 Usuarios y 72 RolesPermisos se gestionan como datos; el middleware de roles del enunciado (cabecera `X-User-Role`, 403 literal) no cambia | Lukas |
-| 2026-10-15 | La auditoría (77) se captura en `SaveChanges` del `DbContext` (funciona igual en la API y en los tests); el usuario sale de la cabecera opcional `X-Usuario` y no se toca el pipeline del enunciado | integrador (spec 45) |
+| 2026-10-15 | La auditoría (77) se captura en `SaveChanges` del `DbContext` (funciona igual en la API y en los tests); el usuario sale de la cabecera opcional `X-Usuario` y no se toca el pipeline del enunciado | integración (spec 45) |
 | 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
+| 2026-10-31 | Reparto entre 7 personas (sustituye al de 4): Lukas 13 (terminados, más la integración), Leonel 11, Antony 11, Kelvin 11, Alexander 11, Sergio 11 y Maxi 12 | Lukas |
 
 ## 11. Cómo se mantiene este documento
-En cada integración, el integrador actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
+En cada integración, la integración actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
 - **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo, en qué rama está cada pantalla pendiente y cómo terminarla: [`equipo/relevo.md`](equipo/relevo.md).
   - Pantallas hechas en ramas `pendiente/…` (falta QA e integrar): 09 ReclamosPostventa, 10 DevolucionesComerciales, 77 AuditoriaTransaccional, 78 NotificacionesAlertas y 08 ComisionesVendedores.
   - Pantallas por empezar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44).
-- **Reparto:** 20 módulos por persona en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 de 20 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24); los otros 7 (08, 09, 10, 71, 72, 77 y 78) tienen el backend en producción y solo les falta la pantalla (ver [`equipo/relevo.md`](equipo/relevo.md)). Leonel, Antony y Kelvin tienen 20 cada uno por empezar.
+- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Los 7 módulos con el backend en producción y pantalla pendiente (08, 09, 10, 71, 72, 77 y 78) tienen responsable: Maxi (08, 09, 10, 77, 78), Alexander (71) y Sergio (72) (ver [`equipo/relevo.md`](equipo/relevo.md)). El resto de módulos está por empezar.
 - **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.

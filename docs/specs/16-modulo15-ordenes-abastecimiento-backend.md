@@ -18,7 +18,7 @@ Decisión del humano (2026-10-14): continuar con el módulo recomendado.
 - Borrado físico: una orden se anula, no se borra.
 - El frontend (spec 17).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: flujo Emitida → Recibida | Anulada; una solicitud aprobada genera como máximo una orden no anulada; el proveedor de la orden es obligatorio y debe estar activo.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: flujo Emitida → Recibida | Anulada; una solicitud aprobada genera como máximo una orden no anulada; el proveedor de la orden es obligatorio y debe estar activo.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -96,5 +96,5 @@ Decisión del humano (2026-10-14): continuar con el módulo recomendado.
 | 2026-10-14 | A2–A3 | ✅ | `OrdenesAbastecimientoApiTests` (21 casos nuevos): mensajes literales, transiciones prohibidas → 409, segunda orden desde la misma solicitud → 409, alta manual y desde solicitud, número `OA-` atómico, `atrasada`, filtros, orden, detalle y resumen |
 | 2026-10-14 | A4 | ✅ | `20261015035644_OrdenesAbastecimiento` (con `Designer` y snapshot) crea solo las 2 tablas nuevas; aplicada en el smoke y en Neon |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: emitidas, detalle `OA-DEV-001`, resumen 4/2/1/1 con 1 atrasada, generar desde solicitud, repetir → 409, recibir `OA-000005` → 200 y otra vez → 409, errores esperados |
-| 2026-10-14 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO; hallazgo de diseño: rutas de acciones sin cuerpo escritas en el middleware → resuelto en la spec 18 |
-| 2026-10-14 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |
+| 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO; hallazgo de diseño: rutas de acciones sin cuerpo escritas en el middleware → resuelto en la spec 18 |
+| 2026-10-14 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |

@@ -17,7 +17,7 @@ Decisión del humano (2026-10-14): seguir con el módulo recomendado, 13 Solicit
 - Convertir la solicitud en orden de abastecimiento (módulo 15), presupuestos, usuarios o firmas. El solicitante es texto.
 - El frontend (spec 15).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: flujo Pendiente → Aprobada | Rechazada; solo una solicitud Pendiente se edita o se borra; el proveedor sugerido es opcional pero, si se indica, debe existir y estar activo.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: flujo Pendiente → Aprobada | Rechazada; solo una solicitud Pendiente se edita o se borra; el proveedor sugerido es opcional pero, si se indica, debe existir y estar activo.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -93,11 +93,11 @@ Decisión del humano (2026-10-14): seguir con el módulo recomendado, 13 Solicit
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Kelly: APROBADO con un hallazgo medio (doble guardado al crear sin transacción: podía quedar una fila `TMP-…`) y uno bajo (validador como UseCase inyectado). El integrador pidió corregir ambos antes de integrar |
-| 2026-10-14 | Auditoría ciclo 2 | ✅ | Kelly: APROBADO sobre `7799957` (`TransactionScope` con flujo asíncrono, `ValidacionSolicitudCompra` estático, test de número `SC-000NNN` sin `TMP-`); menor: comentario en inglés, traducido por Claudio en `12c1471` |
+| 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Auditoría: APROBADO con un hallazgo medio (doble guardado al crear sin transacción: podía quedar una fila `TMP-…`) y uno bajo (validador como UseCase inyectado). La integración pidió corregir ambos antes de integrar |
+| 2026-10-14 | Auditoría ciclo 2 | ✅ | Auditoría: APROBADO sobre `7799957` (`TransactionScope` con flujo asíncrono, `ValidacionSolicitudCompra` estático, test de número `SC-000NNN` sin `TMP-`); menor: comentario en inglés, traducido por la integración en `12c1471` |
 | 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`ade661d`, idéntico a `7799957` según `git patch-id`): backend 151/151, frontend 96/96 |
 | 2026-10-14 | A2–A3 | ✅ | `SolicitudesCompraApiTests`: mensajes literales con su código y sin `Detail`, transiciones prohibidas → 409, sin cambios de filas en casos inválidos; alta con número y fecha UTC, edición que reemplaza líneas, aprobar y rechazar, filtros, orden, detalle y resumen exactos |
 | 2026-10-14 | A4 | ✅ | `20261015031106_SolicitudesCompra` (con `Designer` y snapshot) crea solo `SolicitudesCompra` y `DetallesSolicitudCompra`; `Producto` sin cambios; aplicada en el smoke y en Neon |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: pendientes, rango de fechas, detalle `SC-DEV-001` (4760.00), resumen 5/2/2/1, POST → `SC-000006`, aprobar → 200, otra vez → 409 «La solicitud SC-000006 ya está aprobada.», proveedor inactivo → 400, DELETE de aprobada → 409 |
 | 2026-10-14 | Nota | ℹ️ | El seed numera `SC-DEV-00N` a propósito: sus Id no son fijos y un `SC-00000N` sembrado podría chocar con el número que el servidor genera a partir del Id |
-| 2026-10-14 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL, `9e21623`) y en producción (https://titanglobal-erp.vercel.app, solo lectura): resumen del seed 2/2/1; filtros por número, solicitante, estado, proveedor y fechas; detalle con subtotales y rechazada sin acciones; alta con 3 líneas → `SC-000NNN`, validaciones locales sin petición, proveedor inactivo fuera del selector; edición quitando una línea; aprobar; rechazar sin motivo (error local) y con motivo; eliminar con Escape; demás pantallas sin regresiones; 13 capturas sin recortes ni scroll horizontal |
+| 2026-10-14 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL, `9e21623`) y en producción (https://titanglobal-erp.vercel.app, solo lectura): resumen del seed 2/2/1; filtros por número, solicitante, estado, proveedor y fechas; detalle con subtotales y rechazada sin acciones; alta con 3 líneas → `SC-000NNN`, validaciones locales sin petición, proveedor inactivo fuera del selector; edición quitando una línea; aprobar; rechazar sin motivo (error local) y con motivo; eliminar con Escape; demás pantallas sin regresiones; 13 capturas sin recortes ni scroll horizontal |

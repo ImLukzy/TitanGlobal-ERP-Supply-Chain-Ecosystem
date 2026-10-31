@@ -45,10 +45,10 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `d95d88a` + `25a9512` + `27d7ce1` (Michael) integrados como `44fac5d`, `b0a9ef7` y `94f1d09` (conflicto de registro en `pantallas.ts` con el 06 resuelto conservando ambos); líneas cambiadas idénticas a las revisadas |
+| 2026-10-15 | Integración | ✅ | `d95d88a` + `25a9512` + `27d7ce1` integrados como `44fac5d`, `b0a9ef7` y `94f1d09` (conflicto de registro en `pantallas.ts` con el 06 resuelto conservando ambos); líneas cambiadas idénticas a las revisadas |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 585 tests del backend y 253 del frontend en verde |
 | 2026-10-15 | A2–A4 | ✅ | `api.test.ts` (7 funciones), tests del evaluador (sin petición hasta «Evaluar», Acme → total 4037.50, sin promociones, validaciones y error visible) y del listado, formulario por producto y por monto mínimo, 409 conservando datos, PUT y baja con Escape |
 | 2026-10-15 | A5 | ✅ | suite del frontend 10/10 con 4 procesos `yes`; un fallo intermitente ajeno (`AlmacenesPage`) en una serie previa, anotado como pendiente |
 | 2026-10-15 | A6 | ✅ | dos correcciones: (1) selects comunes, fechas sin partir, casilla en móvil y título; (2) el cambio de `.tabla-paginada` subía la especificidad y partía cabeceras de otras pantallas («Consum / o» en Contratos): se restauró la regla y la franja oscura de la primera columna se quita con `.tabla-paginada tbody th { background: transparent; }`. Capturas `/tmp/titan-spec32/c1/` y `c2/` (6 pantallas a 1280 claro y oscuro) |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen, filtros, evaluador Acme VIP S/ 4,037.50, detalle, CRUD con 409/400 en el diálogo; Contratos, Cotizaciones, ListasPrecios, SolicitudesCompra y Almacenes sin cambios salvo la franja → OK |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: resumen, filtros, evaluador Acme VIP S/ 4,037.50, detalle, CRUD con 409/400 en el diálogo; Contratos, Cotizaciones, ListasPrecios, SolicitudesCompra y Almacenes sin cambios salvo la franja → OK |
 | 2026-10-15 | Producción | ✅ | Render `live 94f1d09` y Vercel: `/modulos/07-promociones-descuentos` → 200 con la pantalla registrada en el bundle; `GET /api/v1/promociones/resumen` → 200 |

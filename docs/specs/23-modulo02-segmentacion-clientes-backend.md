@@ -14,7 +14,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Campañas, precios por segmento (módulo 06) o promociones (07).
 - El frontend (spec 24).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: un cliente pertenece como máximo a un segmento (el activo de menor número de prioridad que cumpla todos sus criterios); los criterios se evalúan sobre todas las órdenes del cliente.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: un cliente pertenece como máximo a un segmento (el activo de menor número de prioridad que cumpla todos sus criterios); los criterios se evalúan sobre todas las órdenes del cliente.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -88,5 +88,5 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 | 2026-10-15 | A2–A3 | ✅ | `SegmentacionClientesApiTests` (17 tests): mensajes literales, código en mayúsculas, unicidad de código y prioridad, clasificación por prioridad, límite exacto, segmento inactivo, cliente sin órdenes, filtros, paginación y resumen |
 | 2026-10-15 | A4 | ✅ | migración `SegmentosClientes` (con `Designer` y snapshot) solo crea la tabla y sus índices únicos; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: Acme → VIP, cliente sin órdenes → `null`, `sinSegmento=true`, clientes de FRECUENTE (Beta Comercio), resumen 5/4/1, POST → `{id:5}`, prioridad repetida → 409 literal, DELETE → 204 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO. Observación no bloqueante: la clasificación usa 3 consultas fijas (sin N+1) pero pagina en memoria con todos los clientes cargados; suficiente para el volumen actual, a revisar si crece |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen 5/4/1 y tarjetas con plurales correctos; pestañas con flechas y `?vista=`; criterios en texto y detalle de VIP con Acme; clasificación Acme → VIP, Beta → FRECUENTE, Gamma y Delta → OCASIONAL, cliente sin órdenes → «Sin segmento» (`sinSegmento=true` en la red); un segmento de menor prioridad no cambia la clasificación; ambos criterios en 0 → error local; prioridad 1 repetida → 409 conservando lo escrito; inactivar OCASIONAL reasigna y se restaura; baja con Escape; sin regresiones; 13 capturas sin recortes ni scroll horizontal |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO. Observación no bloqueante: la clasificación usa 3 consultas fijas (sin N+1) pero pagina en memoria con todos los clientes cargados; suficiente para el volumen actual, a revisar si crece |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: resumen 5/4/1 y tarjetas con plurales correctos; pestañas con flechas y `?vista=`; criterios en texto y detalle de VIP con Acme; clasificación Acme → VIP, Beta → FRECUENTE, Gamma y Delta → OCASIONAL, cliente sin órdenes → «Sin segmento» (`sinSegmento=true` en la red); un segmento de menor prioridad no cambia la clasificación; ambos criterios en 0 → error local; prioridad 1 repetida → 409 conservando lo escrito; inactivar OCASIONAL reasigna y se restaura; baja con Escape; sin regresiones; 13 capturas sin recortes ni scroll horizontal |

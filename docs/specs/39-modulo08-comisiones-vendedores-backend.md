@@ -15,7 +15,7 @@ Decisión de Lukas (2026-10-15): el módulo tiene su propio maestro de vendedore
 - Empleados (61), planillas (66) y pagos reales.
 - El frontend (spec 40).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: una orden se asigna a un solo vendedor; la comisión de un mes se calcula sobre las órdenes asignadas cuya fecha cae en ese mes (UTC) con el porcentaje vigente del vendedor al liquidar; una liquidación guarda los importes y no cambia aunque luego cambien el porcentaje o las asignaciones; un mes pagado no se puede volver a liquidar ni modificar sus asignaciones.
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: una orden se asigna a un solo vendedor; la comisión de un mes se calcula sobre las órdenes asignadas cuya fecha cae en ese mes (UTC) con el porcentaje vigente del vendedor al liquidar; una liquidación guarda los importes y no cambia aunque luego cambien el porcentaje o las asignaciones; un mes pagado no se puede volver a liquidar ni modificar sus asignaciones.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -98,4 +98,4 @@ Decisión de Lukas (2026-10-15): el módulo tiene su propio maestro de vendedore
 | 2026-10-15 | A2–A3 | ✅ | `ComisionesVendedoresApiTests` (27 tests): cada mensaje literal, límites de mes en UTC, redondeo, mes pendiente con el porcentaje actual y liquidado con los importes guardados, reasignación, liquidar y pagar dos veces → 409 |
 | 2026-10-15 | A4 | ✅ | migración `ComisionesVendedores` (con `Designer` y snapshot) solo crea las 3 tablas; `OrdenCompra` sin cambios; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: vendedores, órdenes sin asignar, comisiones de enero (pagadas) y marzo (pendientes), reasignar OC-004 → 200, cambiar una de enero → 409 «El mes 01/2026 ya está liquidado; …», liquidar marzo → 200 y otra vez → 409, pagar → 200, borrar V-ANA → 409 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

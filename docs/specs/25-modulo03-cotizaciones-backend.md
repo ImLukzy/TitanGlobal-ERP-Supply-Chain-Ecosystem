@@ -15,7 +15,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 - Impuestos (módulo 75), listas de precios (06) y promociones (07).
 - El frontend (spec 26).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: flujo Emitida → Aceptada | Rechazada; una cotización emitida con la fecha de validez pasada está **vencida** (dato calculado) y no se puede aceptar; aceptar es atómico (la cotización y la orden se guardan juntas o ninguna).
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: flujo Emitida → Aceptada | Rechazada; una cotización emitida con la fecha de validez pasada está **vencida** (dato calculado) y no se puede aceptar; aceptar es atómico (la cotización y la orden se guardan juntas o ninguna).
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -94,5 +94,5 @@ Filtros como en la spec 14 (estado sin distinguir mayúsculas, búsqueda por nú
 | 2026-10-15 | A2–A3 | ✅ | `CotizacionesApiTests`: mensajes literales, transiciones prohibidas, aceptar vencida → 409, importes con descuento y redondeo, número `COT-` atómico, aceptar crea y enlaza la orden con total y líneas correctos, número de orden repetido → 409 sin cambios, vencidas, filtros y resumen |
 | 2026-10-15 | A4 | ✅ | migración `Cotizaciones` (con `Designer` y snapshot) solo crea las 2 tablas nuevas; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: emitidas, vencidas, detalle `COT-DEV-001`, resumen 4/2/1/1/1 con tasa 50, rechazar sin motivo → 400, aceptar vencida → 409, POST → `COT-000005`, aceptar → crea `OC-COT-000005` visible en la jerarquía del cliente, aceptarla otra vez → 409 |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
-| 2026-10-15 | QA E2E | ✅ | Pam en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed con tasa 50.00 % y subtotal − descuento = total en cada detalle; filtros, «Solo vencidas», rango inválido sin petición; vencida sin «Aceptar» y rechazada sin acciones; alta con 3 líneas y descuentos con importes en vivo iguales a la API; validaciones locales; edición; aceptar con aviso «Se generará la orden de compra OC-COT-000005.», orden enlazada y visible en la jerarquía del cliente; aceptar de nuevo → 409 en el diálogo; rechazar con y sin motivo; eliminar con Escape; sin regresiones; 16 capturas sin recortes |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción: resumen del seed con tasa 50.00 % y subtotal − descuento = total en cada detalle; filtros, «Solo vencidas», rango inválido sin petición; vencida sin «Aceptar» y rechazada sin acciones; alta con 3 líneas y descuentos con importes en vivo iguales a la API; validaciones locales; edición; aceptar con aviso «Se generará la orden de compra OC-COT-000005.», orden enlazada y visible en la jerarquía del cliente; aceptar de nuevo → 409 en el diálogo; rechazar con y sin motivo; eliminar con Escape; sin regresiones; 16 capturas sin recortes |

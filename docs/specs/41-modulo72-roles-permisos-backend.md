@@ -14,7 +14,7 @@ Decisión de Lukas (2026-10-15): roles y permisos se gestionan **como datos**; e
 - Usuarios y asignación de roles a usuarios (módulo 71, spec 43).
 - El frontend (spec 42).
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por el integrador: un permiso de escritura implica el de lectura; los roles de sistema (`ADMIN`) no se pueden borrar ni perder permisos; un módulo sin fila de permiso equivale a «sin acceso».
+**Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna. Reglas tomadas por la integración: un permiso de escritura implica el de lectura; los roles de sistema (`ADMIN`) no se pueden borrar ni perder permisos; un módulo sin fila de permiso equivale a «sin acceso».
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -87,4 +87,4 @@ Decisión de Lukas (2026-10-15): roles y permisos se gestionan **como datos**; e
 | 2026-10-15 | A4 | ✅ | el commit no toca `Middlewares/` ni `Services/` (0 archivos); el smoke sigue devolviendo 403 literal con `X-User-Role: Bloqueado` |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado (ADMIN 80/80), detalle de VENTAS, permisos de VENTAS (80 filas), matriz, POST → `{id:6}`, borrar ADMIN → 409 literal, DELETE del creado → 204 |
 | 2026-10-15 | A6 | ✅ | el smoke valida las operaciones de `/openapi/v1.json` |
-| 2026-10-15 | Auditoría | ✅ | Kelly, ciclo 1: APROBADO sin hallazgos |
+| 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

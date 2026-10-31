@@ -3,8 +3,8 @@
 Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 
 - **Tests con puertos fijos:** no se ejecutan dos a la vez, porque se cruzan y dan falsos fallos. Antes de lanzarlos hay que comprobar que los puertos están libres.
-- **Un fallo reportado por un agente puede venir de su entorno.** Antes de corregir código, se reproduce con las dependencias del repo restauradas.
-- **Una spec no puede citar documentos que el equipo no tiene.** La spec 01 decía «del documento original» y Michael inventó campos y contratos. Toda referencia externa se copia al repo (`docs/enunciado.md`) antes de despachar.
+- **Un fallo reportado por un compañero puede venir de su entorno.** Antes de corregir código, se reproduce con las dependencias del repo restauradas.
+- **Una spec no puede citar documentos que el equipo no tiene.** La spec 01 decía «del documento original» y la implementación inventó campos y contratos. Toda referencia externa se copia al repo (`docs/enunciado.md`) antes de despachar.
 - **Migraciones EF escritas a mano:** sin `Designer` ni `ModelSnapshot`, la siguiente migración vuelve a crear todo. Siempre `dotnet ef migrations add`.
 - **Gate de reglas con huecos:** `check-rules.sh` dejaba pasar `public int X => 1;`, `get => …` y `foreach (var …)`. Cada regla necesita fixtures buenos y malos que cubran sus variantes.
 - **Entorno de la máquina:** hacían falta `aspnet-runtime-10.0` (tests y API) y `docker-compose` (BD). Instalados el 2026-10-14.
@@ -13,9 +13,9 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Migraciones en producción:** copia de seguridad, ensayo en una copia y OK humano. Después hay que comprobar que se aplicaron de verdad, porque algunos hostings no ejecutan el paso previo al despliegue.
 
 ## Avisos de fin de tarea que no llegan (2026-10-14)
-- **Qué pasó:** tras reiniciarse Orca, Antigravity no pasaba la comprobación de «listo» y los encargos se enviaron escribiendo en su terminal. Sus `worker_done` se rechazaron (sin tarea activa) y Claude, que solo miraba `orchestration check`, no vio los avisos.
-- **Causa principal:** el run seguía teniendo como coordinador la terminal anterior de Claude (`term_ff3b0c37`, ya cerrada), así que `check` no entregaba los avisos a la terminal nueva.
-- **Regla:** si Claude cambia de terminal o de sesión, lo primero es `orca orchestration run-use --id <run>` y confirmarlo con `run-current`. Después de despachar, la espera va EN SEGUNDO PLANO (Monitor o Bash con `run_in_background`: bucle con `orca orchestration check --run <run> --wait --types worker_done,escalation,question --timeout-ms 600000 --json` que termina al recibir mensajes) y Claude TERMINA el turno con un resumen breve para el humano. Al despertar por el aviso: procesar, `--ack <deliveryId>`, despachar lo siguiente y volver a esperar en segundo plano. Nunca un `check --wait` en primer plano: bloquea al humano durante decenas de minutos. Sin tarea activa, el agente avisa con `--type status` a `run:<run>` (ver `equipo.md`, «Cómo avisar al terminar»).
+- **Qué pasó:** tras reiniciar una sesión de trabajo, los avisos de fin de tarea de un colaborador se rechazaron (sin tarea activa) y la integración, que solo miraba la cola de avisos, no los vio.
+- **Causa principal:** la sesión de integración seguía apuntando a la anterior (ya cerrada), así que los avisos no le llegaban a la nueva.
+- **Regla:** si cambia la sesión de integración, lo primero es confirmar que las tareas y los avisos apuntan a la sesión nueva. Después de despachar, la espera va en segundo plano y la integración termina su turno con un resumen breve para el humano. Al recibir el aviso: procesarlo, confirmarlo, despachar lo siguiente y volver a esperar. Nunca una espera en primer plano: bloquea al humano durante decenas de minutos. Sin tarea activa, el aviso se hace como mensaje de estado en la pull request (ver `equipo.md`, «Cómo avisar al terminar»).
 
 ## Un test de regresión sustituido en un cambio de pulido (2026-10-14)
 - **Qué pasó:** en la spec 11, el test de `formatearFecha` (protege el bug de fechas UTC de la spec 04) se reemplazó por el del helper nuevo en vez de añadirse. La auditoría lo marcó como menor.
