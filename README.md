@@ -12,7 +12,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 3. Lee [cómo contribuir](CONTRIBUTING.md): reglas de código y flujo de un módulo.
 4. Lee la [cadencia](docs/equipo/cadencia.md): meta de **3 módulos por semana** y cómo se organiza la semana.
 5. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) tu bloque de módulos (7 personas, reparto por dominio) y el orden sugerido.
-6. Lee el [relevo](docs/equipo/relevo.md): dónde se quedó el trabajo de Lukas y qué pantallas quedan en ramas `pendiente/…`.
+6. Lee el [relevo](docs/equipo/relevo.md): dónde se quedó el trabajo de Lukas, qué se integró y qué pantallas quedan.
 
 ## Estado
 
@@ -31,13 +31,15 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 05 ContratosComerciales | ✅ | ✅ | ✅ |
 | 06 ListasPrecios | ✅ | ✅ | ✅ |
 | 07 PromocionesDescuentos | ✅ | ✅ | ✅ |
-| 09 ReclamosPostventa | ✅ | en rama, falta QA | — |
-| 10 DevolucionesComerciales | ✅ | en rama, falta QA | — |
-| 78 NotificacionesAlertas | ✅ | en rama, falta QA | — |
-| 08 ComisionesVendedores | ✅ | en rama, falta QA | — |
+| 09 ReclamosPostventa | ✅ | ✅ | pendiente |
+| 10 DevolucionesComerciales | ✅ | ✅ | pendiente |
+| 78 NotificacionesAlertas | ✅ | ✅ | pendiente |
+| 08 ComisionesVendedores | ✅ | ✅ | pendiente |
 | 72 RolesPermisos | ✅ | pendiente | — |
 | 71 Usuarios | ✅ | pendiente | — |
-| 77 AuditoriaTransaccional | ✅ | en rama, falta QA | — |
+| 77 AuditoriaTransaccional | ✅ | ✅ | pendiente |
+
+Las pantallas 08, 09, 10, 77 y 78 se integraron en `main` el 2026-10-31; su QA visual de extremo a extremo queda como tarea de la semana 0 del plan ([`docs/equipo/cadencia.md`](docs/equipo/cadencia.md)).
 
 El resto de módulos muestra «Pantalla pendiente». La lista completa está en [`docs/arquitectura.md`](docs/arquitectura.md).
 

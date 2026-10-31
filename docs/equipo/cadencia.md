@@ -78,11 +78,11 @@ Antes de mover un issue a `Hecho`:
 
 ## 7. Primeras semanas
 
-La semana 0 es de arranque: onboarding y cierre de las pantallas que ya están construidas. No cuenta para la meta.
+La semana 0 es de arranque: onboarding, QA de las pantallas ya integradas y arranque de las dos que faltan. No cuenta para la meta.
 
 | Semana | Módulos comprometidos | Owners | Revisores |
 |---|---|---|---|
-| 0 | Pantallas pendientes 08, 09, 10, 77, 78, 71 y 72 | Maxi, Alexander, Sergio | Lukas y un compañero |
+| 0 | QA de las pantallas 08, 09, 10, 77 y 78 (ya integradas) · 72 RolesPermisos · 71 Usuarios | Maxi · Sergio · Alexander | Lukas y un compañero |
 | 1 | 75 ImpuestosTasas · 33 CentrosTrabajo · 41 VehiculosFlota | Leonel · Antony · Kelvin | Antony · Kelvin · Leonel |
 | 2 | 22 CategoriasProducto · 12 EvaluacionProveedores · 61 Empleados | Maxi · Sergio · Alexander | Sergio · Alexander · Maxi |
 | 3 | 51 FacturacionElectronica · 31 ListasMateriales · 42 Conductores | Leonel · Antony · Kelvin | Kelvin · Maxi · Sergio |

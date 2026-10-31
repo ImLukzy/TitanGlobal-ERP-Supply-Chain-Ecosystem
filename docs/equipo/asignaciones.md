@@ -21,7 +21,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 - **Kelvin:** 41 → 42 → 48 → 43 → 44 → 45 → 46 → 47 → 49 → 50; 73 Sucursales al final.
 - **Alexander:** 61 → 62 → 64 → 63 → 65 → 66 → 67 → 68 → 69 → 70; 71 Usuarios después de 72 (usa los roles de Sergio).
 - **Sergio:** 12 → 14 → 20 → 16 → 17 → 18 → 19; después 72 → 74 → 76 → 80 (80 CierresPeriodo depende de Finanzas).
-- **Maxi:** primero las pantallas pendientes de 09, 10, 08, 77 y 78 (ramas `pendiente/…`, ver [`relevo.md`](relevo.md)); después 22 → 25 → 26 → 27 → 28 → 29 → 30.
+- **Maxi:** las pantallas 08, 09, 10, 77 y 78 ya están integradas en `main`; queda su QA visual (ver [`relevo.md`](relevo.md)). Después 22 → 25 → 26 → 27 → 28 → 29 → 30.
 - **Lukas:** sus 13 módulos están terminados; ahora hace la integración.
 
 ## Todos los módulos
@@ -34,9 +34,9 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 05 ContratosComerciales | Comercial, Ventas y CRM | Lukas Melgar | terminado | 27, 28 |
 | 06 ListasPrecios | Comercial, Ventas y CRM | Lukas Melgar | terminado | 29, 30 |
 | 07 PromocionesDescuentos | Comercial, Ventas y CRM | Lukas Melgar | terminado | 31, 32 |
-| 08 ComisionesVendedores | Comercial, Ventas y CRM | Maxi | backend terminado; pantalla en rama `pendiente/08-comisiones-vendedores` (falta QA) | 39, 40 |
-| 09 ReclamosPostventa | Comercial, Ventas y CRM | Maxi | backend terminado; pantalla en rama `pendiente/09-reclamos-postventa` (falta QA) | 33, 34 |
-| 10 DevolucionesComerciales | Comercial, Ventas y CRM | Maxi | backend terminado; pantalla en rama `pendiente/10-devoluciones-comerciales` (falta QA) | 35, 36 |
+| 08 ComisionesVendedores | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 39, 40 |
+| 09 ReclamosPostventa | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 33, 34 |
+| 10 DevolucionesComerciales | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 35, 36 |
 | 11 Proveedores | Compras y Abastecimiento Global | Lukas Melgar | terminado | 12, 13 |
 | 12 EvaluacionProveedores | Compras y Abastecimiento Global | Sergio | pendiente | — |
 | 13 SolicitudesCompra | Compras y Abastecimiento Global | Lukas Melgar | terminado | 14, 15 |
@@ -103,7 +103,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
 | 76 SeriesNumeracion | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
-| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Maxi | backend terminado; pantalla en rama `pendiente/77-auditoria-transaccional` (falta QA) | 45, 46 |
-| 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Maxi | backend terminado; pantalla en rama `pendiente/78-notificaciones-alertas` (falta QA) | 37, 38 |
+| 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Maxi | pantalla integrada; falta QA visual | 45, 46 |
+| 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Maxi | pantalla integrada; falta QA visual | 37, 38 |
 | 79 ParametrosSistema | Gobierno Corporativo, Seguridad y Auditoría | Antony Huayhua | pendiente | — |
 | 80 CierresPeriodo | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
