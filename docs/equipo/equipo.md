@@ -2,7 +2,7 @@
 
 El equipo lo forman 7 personas. Cada módulo lo lleva una sola persona de principio a fin (backend y pantalla); el reparto está en [`asignaciones.md`](asignaciones.md).
 
-Lukas Melgar hace además la integración: revisa cada pull request, integra en la rama `ImLukzy/Claudio`, despliega la demo y pide su permiso antes de publicar en `main`.
+Lukas Melgar hace además la integración: revisa cada pull request, integra en `main` y despliega la demo.
 
 ## Personas
 
@@ -19,13 +19,13 @@ Lukas Melgar hace además la integración: revisa cada pull request, integra en 
 ## Flujo por módulo
 
 1. **Spec** en `docs/specs/NN-*.md` (plantilla `_TEMPLATE.md`). Lukas la revisa antes de programar.
-2. **Rama propia** desde la de integración: `git switch -c tu-nombre/moduloXX-nombre ImLukzy/Claudio`.
+2. **Rama propia** desde la de integración: `git switch -c tu-nombre/moduloXX-nombre main`.
 3. **Gate:** `./scripts/verify.sh` en verde antes de pedir revisión.
 4. **Auditoría:** revisión por otro compañero, que lee solo la spec y el diff. Máximo 3 ciclos de corrección. Un cambio pequeño sin lógica puede saltarse este paso.
 5. **QA** a 375 px y 1280 px, en claro y en oscuro, con la lista de comprobación de [`lecciones.md`](lecciones.md).
-6. **Pull request** contra `ImLukzy/Claudio` (nunca contra `main`), con la salida del gate, la evidencia en la spec y capturas.
-7. **Integración:** Lukas revisa, integra en `ImLukzy/Claudio` con el gate en verde, actualiza la evidencia, [`contexto-proyecto.md`](../contexto-proyecto.md), el README y las asignaciones, y despliega.
-8. **Publicar en `main`** solo con el OK explícito de Lukas para ese cambio.
+6. **Pull request** contra `main`, con la salida del gate, la evidencia en la spec y capturas.
+7. **Integración:** Lukas revisa, integra en `main` con el gate en verde, actualiza la evidencia, [`contexto-proyecto.md`](../contexto-proyecto.md), el README y las asignaciones, y despliega.
+8. **Publicar en producción** solo con el OK explícito de Lukas para ese cambio.
 
 ## Reglas
 

@@ -74,7 +74,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `0007684` + `e67109c` integrados como `997c146` y `39e200e` en `ImLukzy/Claudio` por cherry-pick, con líneas idénticas a las auditadas |
+| 2026-10-15 | Integración | ✅ | `0007684` + `e67109c` integrados como `997c146` y `39e200e` en la rama de integración por cherry-pick, con líneas idénticas a las auditadas |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 585 tests del backend y 242 del frontend (39 archivos). Un primer intento dio 13 tests del frontend con «Test timed out in 5000ms» con la máquina a load average 25 (tres suites en paralelo); repetido con la misma rama → 242/242, sin cambios de código |
 | 2026-10-15 | A2 | ✅ | tests de captura: alta, modificación (solo campos cambiados) y baja con valores exactos; modificación sin cambios sin registro; `X-Usuario` recortado a 30 y «sistema» por defecto; `Ruta`; un registro por entidad en operaciones con líneas; regla 409 y fallo real de persistencia (interceptor) sin auditoría ni filas de negocio; `SaveChanges(false)` y `SaveChangesAsync(false)` guardan una sola vez |
 | 2026-10-15 | A3 | ✅ | tests de filtros, orden, paginación (`pagina=0` y `tamanoPagina=101` → 400 literal sin `Detail`), acción y rango de fechas inválidos, detalle, 404, entidades y resumen con los 7 días incluidos los vacíos |

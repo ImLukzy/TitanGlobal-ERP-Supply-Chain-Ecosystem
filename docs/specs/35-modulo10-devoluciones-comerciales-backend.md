@@ -92,7 +92,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`efcd203`, mismas líneas que el auditado `a2d2575`): backend 486/486, frontend 222/222 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`efcd203`, mismas líneas que el auditado `a2d2575`): backend 486/486, frontend 222/222 |
 | 2026-10-15 | A2–A3 | ✅ | `DevolucionesComercialesApiTests` (64 tests): cada mensaje literal, todas las transiciones, exactamente lo disponible y una unidad más, rechazo que libera unidades, edición sin contar la propia, precio medio, resumen |
 | 2026-10-15 | A4 | ✅ | migración `DevolucionesComerciales` (con `Designer` y snapshot) solo crea las 2 tablas; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado, detalle `DEV-DEV-001`, disponible de la orden 8, resumen (reembolsado 2500.00), superar lo disponible → 409, rechazar sin motivo → 400, POST → `DEV-000005` → aprobar → recibir (200), recibir otra vez → 409 |

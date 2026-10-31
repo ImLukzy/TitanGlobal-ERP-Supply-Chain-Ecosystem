@@ -62,7 +62,7 @@
 |---|---|---|---|
 | 2026-10-14 | Corrección 1 | ✅ | La integración devolvió la primera entrega: mensajes distintos de la API, sin «Sin ventas registradas», nombre `listarCategorias`, tests de A2–A4 insuficientes, capturas perdidas. Corregido en la corrección 1 |
 | 2026-10-14 | Ajuste visual | ✅ | La integración vio en la captura de 1280 px la columna «Descripción» cortada; la implementación lo ajustó solo en Productos (tabla 469/469 px sin recorte) |
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`99a73fd`, idéntico al auditado `ed0a9d9` según `git patch-id`): backend 81/81, frontend 73/73 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`99a73fd`, idéntico al auditado `ed0a9d9` según `git patch-id`): backend 81/81, frontend 73/73 |
 | 2026-10-14 | A2–A4 | ✅ | `api.test.ts` (7 funciones, filtros vacíos fuera de la query) y `ProductosPage.test.tsx` (búsqueda con 300 ms, filtros y vuelta a la página 1, validación de precios sin petición, vacío y error, «Sin ventas registradas», errores literales por campo, 400 conservando lo escrito, 409 en el diálogo, Escape con foco devuelto) |
 | 2026-10-14 | A5 | ✅ | `vite.config.ts`: `resolveApiTarget()` usa `TITAN_API_URL` o `http://localhost:5080`; test con 5099 y con el valor por defecto; documentado en `frontend/README.md` |
 | 2026-10-14 | A6 | ✅ | tests de Clientes y OrdenesCompra en verde tras extraer `TablaPaginada`, `PanelDetalle`, `DialogoBaja` y `CampoConError` |

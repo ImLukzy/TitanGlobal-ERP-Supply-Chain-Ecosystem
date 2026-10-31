@@ -92,7 +92,7 @@ Decisión del humano (2026-10-14): continuar con el módulo recomendado.
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`dae900d`, mismas líneas que el auditado `0139c8e`): backend 172/172, frontend 120/120 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`dae900d`, mismas líneas que el auditado `0139c8e`): backend 172/172, frontend 120/120 |
 | 2026-10-14 | A2–A3 | ✅ | `OrdenesAbastecimientoApiTests` (21 casos nuevos): mensajes literales, transiciones prohibidas → 409, segunda orden desde la misma solicitud → 409, alta manual y desde solicitud, número `OA-` atómico, `atrasada`, filtros, orden, detalle y resumen |
 | 2026-10-14 | A4 | ✅ | `20261015035644_OrdenesAbastecimiento` (con `Designer` y snapshot) crea solo las 2 tablas nuevas; aplicada en el smoke y en Neon |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: emitidas, detalle `OA-DEV-001`, resumen 4/2/1/1 con 1 atrasada, generar desde solicitud, repetir → 409, recibir `OA-000005` → 200 y otra vez → 409, errores esperados |

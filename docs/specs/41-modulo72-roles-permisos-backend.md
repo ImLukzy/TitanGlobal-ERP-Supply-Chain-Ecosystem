@@ -82,7 +82,7 @@ Decisión de Lukas (2026-10-15): roles y permisos se gestionan **como datos**; e
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`d8510ff`, mismas líneas que el auditado `d58712b`): backend 543/543, frontend 232/232 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`d8510ff`, mismas líneas que el auditado `d58712b`): backend 543/543, frontend 232/232 |
 | 2026-10-15 | A2–A3 | ✅ | `RolesPermisosApiTests` (20 tests): cada mensaje literal, rol de sistema protegido, escritura sin lectura, PUT que reemplaza, 80 módulos en permisos, matriz y catálogo igual a `docs/arquitectura.md` |
 | 2026-10-15 | A4 | ✅ | el commit no toca `Middlewares/` ni `Services/` (0 archivos); el smoke sigue devolviendo 403 literal con `X-User-Role: Bloqueado` |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: listado (ADMIN 80/80), detalle de VENTAS, permisos de VENTAS (80 filas), matriz, POST → `{id:6}`, borrar ADMIN → 409 literal, DELETE del creado → 204 |

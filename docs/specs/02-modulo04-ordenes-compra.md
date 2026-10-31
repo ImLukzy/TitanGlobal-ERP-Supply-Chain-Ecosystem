@@ -56,8 +56,8 @@ Namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.{Dtos,UseCa
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (la integración en `ImLukzy/Claudio`, commit `94c321a`) |
-| 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio`: backend 23/23, frontend 13/13 y build |
+| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (la integración, commit `94c321a`) |
+| 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración: backend 23/23, frontend 13/13 y build |
 | 2026-10-14 | A3 | ✅ | `OrdenesCompraApiTests`: 13 tests nuevos con valores exactos (escritura, filtros, suma, promedio, ranking, jerarquía, categorías, compradores, rol) |
 | 2026-10-14 | A4 | ✅ | tests y QA: `termino=LAPTOP` → Laptop Pro y Laptop Air; cliente 5 sin órdenes → `promedioCompra: 0`; POST vacío → 400; `Bloqueado` → 403 |
 | 2026-10-14 | A5 | ✅ | `AnaliticaOrdenesCompraUseCase`: patrones 1–12 numerados; la auditoría comprobó que cada consulta implementa su patrón |

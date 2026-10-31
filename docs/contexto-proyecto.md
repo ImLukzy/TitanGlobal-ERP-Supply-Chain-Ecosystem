@@ -1,12 +1,12 @@
 # Contexto del proyecto TitanGlobal
 
-Documento único con todo lo que hay que saber del proyecto: qué es, qué pide el examen, cómo está construido, qué está implementado, qué decisiones se tomaron y qué falta. **Se actualiza en cada integración** (ver §11). Última actualización: 2026-10-15.
+Documento único con todo lo que hay que saber del proyecto: qué es, qué pide el examen, cómo está construido, qué está implementado, qué decisiones se tomaron y qué falta. **Se actualiza en cada integración** (ver §11). Última actualización: 2026-10-31.
 
 ## 1. Qué es
 ERP transaccional para una corporación manufacturera y logística ficticia, **TitanGlobal**: 80 módulos en 8 dominios (comercial y CRM, compras e importaciones, inventarios WMS, manufactura MRP, logística TMS, finanzas, capital humano HCM y gobierno y seguridad). La lista completa está en [`arquitectura.md`](arquitectura.md).
 
 - **Demo:** https://titanglobal-erp.vercel.app (la API va detrás de `/api`; tras ~15 min sin uso tarda ~1 min en despertar).
-- **Código:** GitHub `ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem` (privado). Rama de integración y despliegue: `ImLukzy/Claudio`; `main` se avanza con el OK de Lukas.
+- **Código:** GitHub `ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem` (privado). Rama de integración y despliegue: `main`.
 
 ## 2. Qué se evalúa (Lab 08 / Examen)
 El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
@@ -98,7 +98,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 - **Proceso por tarea:** spec → implementación → auditoría (otra familia de modelo, máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
 ## 8. Despliegue
-Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `ImLukzy/Claudio`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
+Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `main`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
 
 ## 9. Equipo
 - **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`guia-companeros.md`](guia-companeros.md).

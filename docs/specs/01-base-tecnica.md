@@ -87,8 +87,8 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (la integración en `ImLukzy/Claudio` tras el fast-forward a `0a739d6`) |
-| 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (restore, build, format, reglas + fixtures, tests) |
+| 2026-10-14 | A1 | ✅ | `dotnet build -warnaserror` → 0 errores, 0 warnings (la integración tras el fast-forward a `0a739d6`) |
+| 2026-10-14 | A2 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (restore, build, format, reglas + fixtures, tests) |
 | 2026-10-14 | A3 | ✅ | `ApiTests`: 500 JSON, 400 en POST/PUT vacío, cuerpo legible tras validar, 403 con `Bloqueado`/`SinPermiso`, 200 sin cabecera; 9/9 tests. QA con `curl` a la API real: mensajes literales y `application/json` |
 | 2026-10-14 | A4 | ✅ | test y QA: POST vacío con `X-User-Role: Bloqueado` → 400 (no 403); excepción en controlador → 500 JSON |
 | 2026-10-14 | A5 | ✅ | test `UseCasesAreRegisteredByReflection`: `ConsultarSaludUseCase` se resuelve sin registro manual |

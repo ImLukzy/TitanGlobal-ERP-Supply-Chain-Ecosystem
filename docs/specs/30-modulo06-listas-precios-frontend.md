@@ -46,7 +46,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `c21e6a0` + `00bf089` integrados como `3597e39` y `3415fc2` en `ImLukzy/Claudio` por cherry-pick, con líneas idénticas; junto con el ajuste del backend `c48b5ec` (spec 29, `segmentoId=0`) |
+| 2026-10-15 | Integración | ✅ | `c21e6a0` + `00bf089` integrados como `3597e39` y `3415fc2` en la rama de integración por cherry-pick, con líneas idénticas; junto con el ajuste del backend `c48b5ec` (spec 29, `segmentoId=0`) |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` → exit 0: 572 tests del backend y 242 del frontend en verde; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-10-15 | A2–A4 | ✅ | `api.test.ts` (7 funciones con URL, método, query y cuerpo), tests del simulador (sin petición hasta «Calcular», tres orígenes, error visible) y del listado, formulario y baja |
 | 2026-10-15 | A5 | ✅ | suite del frontend 10/10 seguidas con 4 procesos `yes` de carga (la implementación, corrección 2) |

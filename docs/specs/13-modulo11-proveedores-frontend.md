@@ -47,7 +47,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`f78aaf4`, idéntico al auditado `d7a0c04` según `git patch-id`): backend 111/111, frontend 96/96 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`f78aaf4`, idéntico al auditado `d7a0c04` según `git patch-id`): backend 111/111, frontend 96/96 |
 | 2026-10-14 | A2–A5 | ✅ | `api.test.ts` (8 tests: 7 funciones, `''` y `undefined` fuera de la query) y `ProveedoresPage.test.tsx` (11 tests: espera, país y estado, página 1, vacío y error, «Sin email»/«Sin teléfono», validación local con literales, 409 conservando lo escrito, edición con PUT, baja con refresco, Escape); Clientes, Productos y OrdenesCompra en verde |
 | 2026-10-14 | A6 | ✅ | `/tmp/titan-spec13/` (8 capturas) revisadas por la integración: detalle lateral a 1280, apilado a 375, diálogo de baja accesible, estado con texto; márgenes 16/16 px a 375 y sin celdas recortadas según el reporte |
 | 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO; sugerencia baja: partir `ProveedoresPage.tsx` (624 líneas) extrayendo `FormularioProveedor`, `Resumen` y `validarProveedor` |

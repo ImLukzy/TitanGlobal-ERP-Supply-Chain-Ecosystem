@@ -42,7 +42,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`0d4edf0`, mismas líneas que el auditado `edbb0b8`): backend 175/175, frontend 120/120. Un primer intento falló por el test intermitente de Productos (A3, petición duplicada del listado al cargar), ajeno a esta spec |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`0d4edf0`, mismas líneas que el auditado `edbb0b8`): backend 175/175, frontend 120/120. Un primer intento falló por el test intermitente de Productos (A3, petición duplicada del listado al cargar), ajeno a esta spec |
 | 2026-10-14 | A2 | ✅ | tests en `ApiTests.cs`: `aprobar` y `recibir` sin cuerpo → 200; POST sin cuerpo a `clientes`, `rechazar` y `anular` → 400 literal |
 | 2026-10-14 | A3 | ✅ | `git grep -n '/api/v1' -- src/TitanGlobal.Api/Middlewares` → 0 resultados |
 | 2026-10-14 | A4 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK` |

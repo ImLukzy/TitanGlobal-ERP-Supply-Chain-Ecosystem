@@ -84,7 +84,7 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`c9c23a9`, idéntico al auditado `6b0fe52` según `git patch-id`): backend 81/81, frontend 53/53 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`c9c23a9`, idéntico al auditado `6b0fe52` según `git patch-id`): backend 81/81, frontend 53/53 |
 | 2026-10-14 | A2–A3 | ✅ | `ProductosApiTests`: mensajes literales con su código y sin `Detail`, precio 0 → 400, categoría con espacios guardada sin ellos; búsqueda, categoría sin distinguir mayúsculas, rango de precio, paginación, detalle con ventas y a 0, categorías ordenadas, resumen exacto |
 | 2026-10-14 | A4 | ✅ | el commit no toca `Models/` ni `Migrations/` |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `categoria=computo`, rango 100–1000, detalle 1, categorías (5), resumen, POST → 200 `{id:11}`, DELETE producto 1 → 409 literal, DELETE recién creado → 204 |

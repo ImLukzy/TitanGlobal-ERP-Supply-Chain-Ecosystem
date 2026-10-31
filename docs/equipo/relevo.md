@@ -1,9 +1,9 @@
 # Relevo: dónde se quedó el trabajo (2026-10-15)
 
-Lukas pausó el desarrollo de su parte el 2026-10-15. Este documento dice exactamente qué está hecho, qué quedó a medias, dónde está cada cosa y cómo seguir. Para el resto del proyecto: [`contexto-proyecto.md`](../contexto-proyecto.md), [`guia-companeros.md`](../guia-companeros.md) y [`asignaciones.md`](asignaciones.md).
+Lukas pausó el desarrollo de su parte el 2026-10-15. Este documento dice exactamente qué está hecho, qué quedó a medias, dónde está cada cosa y cómo seguir (actualizado el 2026-10-31 con el reparto entre 7 personas). Para el resto del proyecto: [`contexto-proyecto.md`](../contexto-proyecto.md), [`guia-companeros.md`](../guia-companeros.md) y [`asignaciones.md`](asignaciones.md).
 
 ## 1. Estado en una línea
-`main` está al día con la rama de integración `ImLukzy/Claudio`, que es la desplegada (https://titanglobal-erp.vercel.app). Lukas tiene **sus 13 módulos terminados** y ya no tiene pendientes; los otros **7 tienen el backend terminado y en producción** y solo les falta la pantalla (08, 09, 10, 77 y 78 de Maxi; 71 de Alexander; 72 de Sergio). El resto de módulos está por empezar.
+`main` es la rama de integración y la desplegada (https://titanglobal-erp.vercel.app). Lukas tiene **sus 13 módulos terminados** y ya no tiene pendientes; los otros 7 módulos tienen el backend terminado y en producción y solo les falta la pantalla (08, 09, 10, 77 y 78 de Maxi; 71 de Alexander; 72 de Sergio). El resto de módulos está por empezar.
 
 ## 2. Pantallas pendientes y responsables
 **Terminados de Lukas (backend + pantalla + QA + producción):** 01 Clientes, 02 SegmentacionClientes, 03 Cotizaciones, 04 OrdenesCompra, 05 ContratosComerciales, 06 ListasPrecios, 07 PromocionesDescuentos, 11 Proveedores, 13 SolicitudesCompra, 15 OrdenesAbastecimiento, 21 Productos, 23 Almacenes, 24 ZonasAlmacenaje.
@@ -26,14 +26,14 @@ Cada rama `pendiente/…` sale de una versión anterior de la integración y con
 1. **Rama de trabajo desde la integración con los commits de la tabla:**
    ```sh
    git fetch origin
-   git switch -c tu-nombre/09-reclamos origin/ImLukzy/Claudio
+   git switch -c tu-nombre/09-reclamos origin/main
    git cherry-pick 968f5ff 28d3391
    ```
    Si da conflicto en `frontend/src/modules/pantallas.ts` o en `frontend/src/styles/app.css`, es porque otra pantalla se registró en el mismo sitio: **conserva las dos líneas** (las de la integración y las de la pantalla) y sigue con `git cherry-pick --continue`.
 2. **Gate:** `./scripts/verify.sh` en verde.
 3. **QA a mano** contra la API y PostgreSQL locales (guía §3): recorrer cada criterio de la spec (filtros, detalle, acciones, mensajes de error del backend en los diálogos) a 375 y 1280 px, en claro y en oscuro, con la lista de comprobación de [`lecciones.md`](lecciones.md).
 4. **Evidencia** en el §7 de la spec (fecha, criterio, resultado, comando o captura) y marca el §6.
-5. **Pull request contra `ImLukzy/Claudio`** (como dice la guía, nunca contra `main`) con la salida del gate y capturas. Lukas revisa, integra y despliega.
+5. **Pull request contra `main`** con la salida del gate y capturas. Lukas revisa, integra y despliega.
 
 ## 4. Pendientes menores (sin dueño, cualquiera puede tomarlos)
 - Texto del panel de detalle vacío («Selecciona…») más grande que el resto: corregir en el componente compartido `PanelDetalle`.

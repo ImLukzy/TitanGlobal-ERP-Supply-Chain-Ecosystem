@@ -49,7 +49,7 @@
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
 | 2026-10-15 | Corrección 1 | ✅ | La integración vio en la captura del detalle «Subtotal 2,500 − Descuento 187.50 = Total 2,812.50»: los mocks eran incoherentes (el código muestra los totales de la API). Corregido: mocks calculados como la API y test de coherencia subtotal − descuento = total; además, observaciones con el estilo común y columnas del detalle separadas |
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`736c7f7`, mismas líneas que el auditado `975c055`): backend 329/329, frontend 222/222 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`736c7f7`, mismas líneas que el auditado `975c055`): backend 329/329, frontend 222/222 |
 | 2026-10-15 | A2–A6 | ✅ | tests de `cotizaciones/` (api con aceptar sin cuerpo, filtros y «Solo vencidas», formulario con descuentos y totales en vivo, aceptar con orden generada, vencida sin «Aceptar», rechazo, 409 en el diálogo, Escape); 10/10 seguidas según la implementación |
 | 2026-10-15 | A7 | ✅ | `/tmp/titan-spec26/` (16 capturas) revisadas por la integración tras la corrección: totales coherentes, detalle sin recortes |
 | 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

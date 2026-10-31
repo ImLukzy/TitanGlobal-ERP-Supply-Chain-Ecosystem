@@ -46,7 +46,7 @@
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
 | 2026-10-15 | Corrección 1 | ✅ | La integración vio que el cambio en `App.test.tsx` dejaba sin test la «Pantalla pendiente» (usaba el módulo 02), el código «PREMIUM-OLD» partido en dos líneas y la descripción pegada al título. Corregido: test de pantalla pendiente con otro módulo, códigos sin partir, espaciado común |
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`5ab2e08`, mismas líneas que el auditado `7ca8ab0`): backend 272/272, frontend 201/201 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`5ab2e08`, mismas líneas que el auditado `7ca8ab0`): backend 272/272, frontend 201/201 |
 | 2026-10-15 | A2–A5 | ✅ | tests de `segmentacion-clientes/` (api, pestañas con teclado y `?vista=`, filtros, «Sin segmento», formulario con «al menos un criterio», 409 de código y prioridad, baja con Escape); 10/10 seguidas según la implementación y la auditoría |
 | 2026-10-15 | A6 | ✅ | `/tmp/titan-spec24/` (12 capturas) revisadas por la integración tras la corrección |
 | 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

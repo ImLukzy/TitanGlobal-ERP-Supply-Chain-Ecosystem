@@ -84,7 +84,7 @@ Sigue el patrón de `Modulo01_Clientes` (spec 07). Decisión del humano (2026-10
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`30a211f`, idéntico al auditado `4837215` según `git patch-id`): backend 111/111, frontend 77/77. Un primer intento falló por 2 tests intermitentes del frontend (Clientes y Productos) con la máquina cargada; pasan al repetir y se corrigen aparte |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`30a211f`, idéntico al auditado `4837215` según `git patch-id`): backend 111/111, frontend 77/77. Un primer intento falló por 2 tests intermitentes del frontend (Clientes y Productos) con la máquina cargada; pasan al repetir y se corrigen aparte |
 | 2026-10-14 | A2–A3 | ✅ | `ProveedoresApiTests`: mensajes literales con su código y sin `Detail`, RUC con espacios, email y teléfono en blanco → `null`, PUT con su propio RUC; búsqueda, país, `activo`, paginación, países ordenados y resumen exacto |
 | 2026-10-14 | A4 | ✅ | `20261015023548_Proveedores` (con `Designer` y snapshot) crea solo `Proveedores` e `IX_Proveedores_Ruc`; el smoke la aplica sobre la BD con el seed sin errores |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `pais=peru` → 3, `activo=false` → 1, detalle 1, países `["Chile","China","Peru"]`, resumen 6/5/1/2, POST → `{id:7}` (secuencia bien tras el seed), RUC del seed → 409 literal, DELETE del creado → 204 |

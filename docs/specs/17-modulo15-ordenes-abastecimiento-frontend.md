@@ -54,7 +54,7 @@
 | 2026-10-14 | Auditoría ciclo 1 | ⚠️ | Auditoría: CAMBIOS por esos dos puntos |
 | 2026-10-14 | Correcciones | ✅ | La implementación: `425f509` (una sola petición al cargar, con test por pantalla; 10/10 sin carga y 10/10 con carga) y `60de5db` (plurales con `formatearCantidad`) |
 | 2026-10-14 | Auditoría ciclo 2 | ✅ | Auditoría: APROBADO |
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`1e5611c`, `425f509`, `60de5db`): backend 175/175, frontend 147/147 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`1e5611c`, `425f509`, `60de5db`): backend 175/175, frontend 147/147 |
 | 2026-10-14 | A2–A6 | ✅ | tests de `ordenes-abastecimiento/` (página, formulario, acciones) y `SolicitudesGenerarOrden.test.tsx` (botón solo en aprobadas, POST `desde-solicitud`, 409, navegación) |
 | 2026-10-14 | A7 | ✅ | `/tmp/titan-spec17/` (16 capturas) revisadas por la integración: etiqueta «Atrasada» con texto, sin celdas recortadas a 1280, márgenes 16 px |
 | 2026-10-14 | QA E2E | ✅ | QA en local (Vite 5174 + API + PostgreSQL) y en producción (solo lectura): resumen del seed con plurales correctos; filtros y rango inválido sin petición; atrasada con etiqueta y anulada sin acciones; alta con 3 líneas → `OA-000NNN` y validaciones locales; edición; recibir sin cuerpo → 200; anular con y sin motivo; «Generar orden» desde SC-DEV-004 → navega, repetir → 409, sin botón en pendientes y rechazadas; aprobar sin cuerpo → 200; Productos pide el listado una sola vez; 17 capturas sin recortes ni scroll horizontal |

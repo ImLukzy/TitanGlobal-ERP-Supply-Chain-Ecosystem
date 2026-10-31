@@ -70,7 +70,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`f91a900`, idéntico al auditado `31c8ea4` según `git patch-id`): backend 56/56, frontend 53/53 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`f91a900`, idéntico al auditado `31c8ea4` según `git patch-id`): backend 56/56, frontend 53/53 |
 | 2026-10-14 | A2–A6 | ✅ | tests de `frontend/src/modules/clientes/`: 6 funciones de la API con URL, método y cuerpo exactos; búsqueda con temporizadores falsos; validación local; 409 visible conservando lo escrito; baja con Escape y foco devuelto; tests de OrdenesCompra intactos |
 | 2026-10-14 | A7 | ✅ | capturas de la implementación (corrección 1, `aa8d3d1`) revisadas por la integración: márgenes 16/16 px a 375 y detalle lateral a 1280, sin scroll horizontal. Los archivos se perdieron al vaciarse `/tmp`; el QA E2E de QA con la API real las repitió (fila QA E2E) |
 | 2026-10-14 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO; 2 observaciones menores sin cambio requerido (`maxLength` 220 intencional para mostrar el mensaje de 200; `client.ts` solo lee `Message` en PascalCase, que es el contrato) |

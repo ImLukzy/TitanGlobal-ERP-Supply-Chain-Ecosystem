@@ -81,7 +81,7 @@ Sigue el patrón del módulo de referencia (`Modulo04_OrdenesCompra`) y los erro
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`12451d6`, contenido idéntico al auditado `39e5074` según `git patch-id`): backend 56/56, frontend 36/36 |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`12451d6`, contenido idéntico al auditado `39e5074` según `git patch-id`): backend 56/56, frontend 36/36 |
 | 2026-10-14 | A2–A3 | ✅ | `ClientesApiTests` (14 tests): mensajes literales 400/404/409 sin `Detail`, RUC con espacios, PUT con su propio RUC, búsqueda, paginación, detalle y resumen exactos |
 | 2026-10-14 | A4 | ✅ | `20261014213804_ClientesRucUnico` con `Designer` y cambio en `ModelSnapshot`; el smoke la aplica sobre la BD con el seed sin errores |
 | 2026-10-14 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: `busqueda=acme` → 1 cliente; resumen 5/4/3; POST con RUC `20111111111` → 409; DELETE cliente 1 → 409; DELETE recién creado → 204 |

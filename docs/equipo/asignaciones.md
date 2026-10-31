@@ -7,7 +7,7 @@ Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4
 ## Resumen por persona
 | Persona | Rol | Módulos | Bloque |
 |---|---|---|---|
-| Lukas Melgar | integración: revisa PR, integra en `ImLukzy/Claudio` y despliega la demo | 13 | Comercial (01, 02, 03, 04, 05, 06, 07), Compras (11, 13, 15), Inventarios (21, 23, 24). Todos terminados |
+| Lukas Melgar | integración: revisa PR, integra en `main` y despliega la demo | 13 | Comercial (01, 02, 03, 04, 05, 06, 07), Compras (11, 13, 15), Inventarios (21, 23, 24). Todos terminados |
 | Leonel Portillo | desarrollo | 11 | Finanzas completo (51–60) + 75 ImpuestosTasas |
 | Antony Huayhua | desarrollo | 11 | Manufactura completo (31–40) + 79 ParametrosSistema |
 | Kelvin Pinto | desarrollo | 11 | Logística completo (41–50) + 73 Sucursales |

@@ -67,7 +67,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`d86d677`): backend 23/23, frontend 36/36, lint 0 warnings, build |
+| 2026-10-14 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`d86d677`): backend 23/23, frontend 36/36, lint 0 warnings, build |
 | 2026-10-14 | A2 | ✅ | `api.test.ts`: 10 funciones con URL, método y parámetros exactos |
 | 2026-10-14 | A3 | ✅ | `NuevaOrdenForm.test.tsx`: validación sin petición, éxito «Orden creada con Id 7» y limpieza; 400/403 y (corrección 1) 409 «Ya existe una orden…» y 400 «El cliente 9999 no existe.» visibles, sin limpiar el formulario |
 | 2026-10-14 | A4 | ✅ | `Analitica.test.tsx`: carga de los patrones 5, 8 y 9, jerarquía con subtotales, «más caro» vacío → «Sin resultados», un 500 aislado por tarjeta |

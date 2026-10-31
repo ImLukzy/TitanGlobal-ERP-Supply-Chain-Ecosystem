@@ -84,7 +84,7 @@ Decisión de Lukas (2026-10-15): usuarios y roles se gestionan **como datos**; n
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | Integración | ✅ | `50ba49a` integrado como `dfd4845` en `ImLukzy/Claudio` por cherry-pick; `diff` de las líneas cambiadas idéntico al commit auditado |
+| 2026-10-15 | Integración | ✅ | `50ba49a` integrado como `dfd4845` en la rama de integración por cherry-pick; `diff` de las líneas cambiadas idéntico al commit auditado |
 | 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` en la rama de integración → exit 0: build sin warnings, formato y reglas OK, 569 tests del backend y 232 del frontend (37 archivos) en verde |
 | 2026-10-15 | A2 | ✅ | `UsuariosApiTests` (25 casos): un caso por mensaje de §4 con código y literal sin `Detail`, minúsculas, PUT con los suyos, sin mutación en los inválidos |
 | 2026-10-15 | A3 | ✅ | tests de unión de roles, «Ninguno» sin roles o inactivo, último ADMIN (desactivar, quitar rol, borrar → 409; con otro activo → permitido), filtros, orden y resumen; `RolesPermisosApiTests.NoPermiteEliminarRolAsignadoAUsuarios` (regla 8) |

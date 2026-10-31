@@ -84,7 +84,7 @@ Parte de Lukas (`docs/equipo/asignaciones.md`).
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`359ccff`, mismas líneas que el auditado `433cc63`): backend 247/247, frontend 185/185 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`359ccff`, mismas líneas que el auditado `433cc63`): backend 247/247, frontend 185/185 |
 | 2026-10-15 | A2–A3 | ✅ | `SegmentacionClientesApiTests` (17 tests): mensajes literales, código en mayúsculas, unicidad de código y prioridad, clasificación por prioridad, límite exacto, segmento inactivo, cliente sin órdenes, filtros, paginación y resumen |
 | 2026-10-15 | A4 | ✅ | migración `SegmentosClientes` (con `Designer` y snapshot) solo crea la tabla y sus índices únicos; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: Acme → VIP, cliente sin órdenes → `null`, `sinSegmento=true`, clientes de FRECUENTE (Beta Comercio), resumen 5/4/1, POST → `{id:5}`, prioridad repetida → 409 literal, DELETE → 204 |

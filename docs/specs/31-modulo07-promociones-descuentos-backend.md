@@ -94,7 +94,7 @@ Evaluación:
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`ad27d0d`, mismas líneas que el auditado `e8492fd`): backend 365/365, frontend 222/222 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`ad27d0d`, mismas líneas que el auditado `e8492fd`): backend 365/365, frontend 222/222 |
 | 2026-10-15 | A2–A3 | ✅ | `PromocionesDescuentosApiTests` (36 tests): cada mensaje literal, combinaciones tipo/producto/monto, evaluación con desempate por Id, monto mínimo tras descuentos (justo en el mínimo y un céntimo menos), segmento ajeno, inactiva y fechas límite, ejemplos Acme 4037.50 y Beta 4275.00 |
 | 2026-10-15 | A4 | ✅ | migración `Promociones` (con `Designer` y snapshot) solo crea la tabla; aplicada en Neon |
 | 2026-10-15 | Producción | ✅ | `POST https://titanglobal-erp.vercel.app/api/v1/promociones/evaluar` con 2 Laptop Pro a 2500 para Acme → 200, total 4037.50 |

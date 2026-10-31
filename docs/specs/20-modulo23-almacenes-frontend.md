@@ -48,7 +48,7 @@
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
 | 2026-10-15 | Corrección 1 | ✅ | La integración vio en las capturas la cifra de capacidad partida en dos líneas en las tarjetas, el estado del detalle como texto grande sin estilo y mocks con capacidades de miles; corregido (pastillas de estado en detalle y tabla, cifras en una línea, mocks del seed) |
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`8037855`, mismas líneas que el auditado `79e2e44`): backend 199/199, frontend 169/169 |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`8037855`, mismas líneas que el auditado `79e2e44`): backend 199/199, frontend 169/169 |
 | 2026-10-15 | A2–A5 | ✅ | tests de `almacenes/` (api, página con filtros, una sola petición al cargar, formulario, baja con Escape); la suite pasó 10/10 seguidas según la implementación y la auditoría |
 | 2026-10-15 | A6 | ✅ | `/tmp/titan-spec20/` (8 capturas) revisadas por la integración tras la corrección |
 | 2026-10-15 | Auditoría | ✅ | Auditoría, ciclo 1: APROBADO sin hallazgos |

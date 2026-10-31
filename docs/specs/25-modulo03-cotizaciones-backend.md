@@ -90,7 +90,7 @@ Filtros como en la spec 14 (estado sin distinguir mayúsculas, búsqueda por nú
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en `ImLukzy/Claudio` (`3cfef3b`, mismas líneas que el auditado `a27b367`): backend 272/272, frontend 185/185. `Cliente.cs`, `Producto.cs`, `OrdenCompra.cs` y `DetalleOrdenCompra.cs` sin cambios |
+| 2026-10-15 | A1 | ✅ | `./scripts/verify.sh` rc=0 en la rama de integración (`3cfef3b`, mismas líneas que el auditado `a27b367`): backend 272/272, frontend 185/185. `Cliente.cs`, `Producto.cs`, `OrdenCompra.cs` y `DetalleOrdenCompra.cs` sin cambios |
 | 2026-10-15 | A2–A3 | ✅ | `CotizacionesApiTests`: mensajes literales, transiciones prohibidas, aceptar vencida → 409, importes con descuento y redondeo, número `COT-` atómico, aceptar crea y enlaza la orden con total y líneas correctos, número de orden repetido → 409 sin cambios, vencidas, filtros y resumen |
 | 2026-10-15 | A4 | ✅ | migración `Cotizaciones` (con `Designer` y snapshot) solo crea las 2 tablas nuevas; aplicada en el smoke y en Neon |
 | 2026-10-15 | A5 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`: emitidas, vencidas, detalle `COT-DEV-001`, resumen 4/2/1/1/1 con tasa 50, rechazar sin motivo → 400, aceptar vencida → 409, POST → `COT-000005`, aceptar → crea `OC-COT-000005` visible en la jerarquía del cliente, aceptarla otra vez → 409 |

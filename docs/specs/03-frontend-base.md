@@ -68,7 +68,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-10-14 | A1 | ✅ | `npm --prefix frontend ci && npm --prefix frontend run verify`: lint con 0 warnings, typecheck, 13/13 tests, build (268 kB, 85 kB gzip). Desde ahora lo ejecuta `scripts/verify.sh` (rc=0 en `ImLukzy/Claudio`) |
+| 2026-10-14 | A1 | ✅ | `npm --prefix frontend ci && npm --prefix frontend run verify`: lint con 0 warnings, typecheck, 13/13 tests, build (268 kB, 85 kB gzip). Desde ahora lo ejecuta `scripts/verify.sh` (rc=0 en la rama de integración) |
 | 2026-10-14 | A2 | ✅ | `catalogo.test.ts`; además, un script de la integración comparó los 80 nombres con `docs/arquitectura.md` y no encontró diferencias |
 | 2026-10-14 | A3 | ✅ | `client.test.ts`: rol, POST, 400/403/500 con `Message`, cuerpo no JSON y fallo de red → `statusCode 0` |
 | 2026-10-14 | A4 | ✅ | `App.test.tsx` y QA: 8 dominios × 10 módulos, `/modulos/04-ordenes-compra`, slug inválido → «Módulo no encontrado», teclado y `aria-expanded` |
