@@ -336,7 +336,7 @@ public class AuditoriaTransaccionalApiTests
             "Cliente",
             "42",
             "Modificacion",
-            "michael",
+            "auditor.pruebas",
             DateTime.UtcNow,
             "PUT /api/v1/clientes/42",
             "[{\"campo\":\"Nombre\",\"antes\":\"A\",\"despues\":\"B\"}]");

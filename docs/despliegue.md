@@ -14,10 +14,10 @@ Entorno para ir viendo el avance. No es producción con datos reales: la base ti
 - La cadena de conexión de Neon solo vive en la variable de entorno `ConnectionStrings__DefaultConnection` de Render (formato Npgsql, `SSL Mode=VerifyFull`). Nunca en el repositorio, en `appsettings*.json` ni en la documentación.
 
 ## Migraciones y datos
-- Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de la integración, y comprobar después con la API desplegada.
+- Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de Lukas (integración), y comprobar después con la API desplegada.
 - Datos de demostración: `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql` (idempotente; reinicia los datos de las tablas del enunciado).
 
-## Tras cada integración (lo hace la integración)
+## Tras cada integración (lo hace Lukas)
 1. `./scripts/verify.sh` en verde en `ImLukzy/Claudio`.
 2. Si hay migraciones nuevas: aplicarlas a Neon (arriba) antes de subir el código.
 3. `git push origin ImLukzy/Claudio` → Render reconstruye la API (comprobar `render deploys list srv-db849hivcj2c73859c9g` hasta `live`).
