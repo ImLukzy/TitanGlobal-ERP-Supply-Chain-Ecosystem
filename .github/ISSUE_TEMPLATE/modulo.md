@@ -2,8 +2,6 @@
 name: Módulo
 about: Tarea de un módulo (backend + pantalla)
 title: "[Módulo NN] Nombre"
-labels: ""
-assignees: ""
 ---
 
 ## Datos
