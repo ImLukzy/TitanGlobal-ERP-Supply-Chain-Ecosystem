@@ -48,3 +48,4 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-10-31 | Integración en `main` | ✅ | PR #5 · `0941fd8`, `1bb28b9` · gate 585 backend / 293 frontend · QA visual pendiente |
