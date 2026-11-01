@@ -38,7 +38,7 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: listado con detalle y permisos efectivos (un dominio abierto), formulario y diálogo de baja; comparación con Contratos adjunta; márgenes ≥ 16 px, sin scroll horizontal ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 1: tipos y `api.ts`.
 - [ ] Tarea 2: resumen, filtros, tabla y detalle con permisos efectivos.
 - [ ] Tarea 3: formulario y baja.
 - [ ] Tarea 4: tests, capturas y A1–A6.
