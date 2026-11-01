@@ -39,7 +39,7 @@
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros, tabla y detalle con permisos efectivos.
+- [x] Tarea 2: resumen, filtros, tabla y detalle con permisos efectivos.
 - [ ] Tarea 3: formulario y baja.
 - [ ] Tarea 4: tests, capturas y A1–A6.
 
