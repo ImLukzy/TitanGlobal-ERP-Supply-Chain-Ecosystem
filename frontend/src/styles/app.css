@@ -1333,3 +1333,13 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .usuario-permiso.is-ninguno { background: var(--surface-raised); color: var(--ink-faint); }
 @media (max-width: 1023px) { .usuarios-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
 @media (max-width: 760px) { .usuarios-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .usuarios-filters { grid-template-columns: minmax(0, 1fr); } }
+.usuario-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.usuario-form .form-field { min-width: 0; gap: 6px; }
+.usuario-active-field { display: flex; align-items: center; gap: 8px; align-self: end; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.usuario-roles-field { grid-column: 1 / -1; min-width: 0; margin: 0; padding: 0; border: 0; }
+.usuario-roles-field legend { margin-bottom: 7px; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.usuario-roles-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.usuario-check { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--ink); font-size: 10px; }
+.usuarios-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.usuarios-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+@media (max-width: 760px) { .usuario-form { grid-template-columns: minmax(0, 1fr); } }
