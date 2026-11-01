@@ -1343,3 +1343,37 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .roles-form-actions { grid-column: auto; align-items: flex-end; }
   .roles-form-actions p { max-width: 58%; }
 }
+/* Módulo 71 · Usuarios: pastillas de roles, estado y permisos efectivos. */
+.usuarios-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.usuarios-summary > .usuarios-roles-panel { grid-column: 1 / -1; }
+.usuarios-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 0 15px; }
+.usuarios-list-panel, .usuarios-detail-panel, .usuarios-form-panel { min-width: 0; }
+.usuarios-filters { grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)); }
+.usuarios-table { min-width: 560px; }
+.usuario-rol-pill { display: inline-flex; margin: 0 4px 4px 0; padding: 3px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.usuario-sin-rol { color: var(--ink-faint); font-size: 10px; font-style: italic; }
+.usuario-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.usuario-estado.is-active { background: var(--good-soft); color: var(--good); }
+.usuario-estado.is-inactive { background: var(--bad-soft); color: var(--bad); }
+.usuarios-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.usuarios-detail-grid > div { min-width: 0; }
+.usuarios-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.usuarios-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.usuarios-detail-roles { grid-column: 1 / -1; }
+.usuarios-permisos { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.usuarios-permisos h3 { margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; }
+.usuarios-permisos-resumen { margin: 0 0 10px; color: var(--ink-soft); font-size: 10px; }
+.usuario-dominio { margin-bottom: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); }
+.usuario-dominio summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 700; list-style: none; }
+.usuario-dominio summary::-webkit-details-marker { display: none; }
+.usuario-dominio summary small { color: var(--ink-faint); font-size: 9px; font-weight: 600; white-space: nowrap; }
+.usuario-dominio ul { display: grid; gap: 7px; margin: 0; padding: 0 11px 10px; list-style: none; }
+.usuario-dominio li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; font-size: 10px; }
+.usuario-dominio li small { grid-column: 1 / -1; color: var(--ink-faint); font-size: 9px; }
+.usuario-modulo-nombre { min-width: 0; overflow-wrap: anywhere; color: var(--ink); }
+.usuario-permiso { display: inline-flex; padding: 3px 6px; border-radius: 999px; font-size: 8px; font-weight: 750; white-space: nowrap; }
+.usuario-permiso.is-escritura { background: var(--accent-soft); color: var(--accent-ink); }
+.usuario-permiso.is-lectura { background: var(--good-soft); color: var(--good); }
+.usuario-permiso.is-ninguno { background: var(--surface-raised); color: var(--ink-faint); }
+@media (max-width: 1023px) { .usuarios-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .usuarios-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .usuarios-filters { grid-template-columns: minmax(0, 1fr); } }
