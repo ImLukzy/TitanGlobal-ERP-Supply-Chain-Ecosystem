@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import { PanelDetalle } from '../../components/PanelDetalle';
 import { formatearCantidad, formatearFecha } from '../../lib/formato';
 import { PermisosEfectivos } from './PermisosEfectivos';
@@ -10,9 +11,21 @@ interface Props {
   cargando: boolean;
   error: string;
   errorPermisos: string;
+  editar: () => void;
+  eliminar: () => void;
+  botonEliminarRef: RefObject<HTMLButtonElement | null>;
 }
 
-export function UsuarioDetallePanel({ usuario, permisos, cargando, error, errorPermisos }: Props) {
+export function UsuarioDetallePanel({
+  usuario,
+  permisos,
+  cargando,
+  error,
+  errorPermisos,
+  editar,
+  eliminar,
+  botonEliminarRef,
+}: Props) {
   return (
     <PanelDetalle ariaLabelledBy="usuario-detail-title" className="clientes-detail-panel usuarios-detail-panel">
       {error !== '' && <p className="clientes-error" role="alert">{error}</p>}
@@ -53,6 +66,10 @@ export function UsuarioDetallePanel({ usuario, permisos, cargando, error, errorP
               <dd><RolesPastillas codigos={usuario.roles} /></dd>
             </div>
           </dl>
+          <div className="clientes-detail-actions">
+            <button className="secondary-button" onClick={editar} type="button">Editar</button>
+            <button className="danger-button" onClick={eliminar} ref={botonEliminarRef} type="button">Eliminar</button>
+          </div>
           <section aria-labelledby="usuario-permisos-title" className="usuarios-permisos">
             <h3 id="usuario-permisos-title">Permisos efectivos</h3>
             <p className="usuarios-permisos-resumen">
