@@ -46,3 +46,7 @@
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-01 | A1 | Gate frontend en verde | `npm --prefix frontend run verify`: lint sin warnings, typecheck, 55 archivos y 353 tests pasan, build correcto |
+| 2026-11-01 | A2–A4 | Tests de api, listado, detalle, formulario y baja pasan | `npm --prefix frontend run test`: 55 archivos, 353 tests |
+| — | A5 | Sin regresiones y 10 ejecuciones seguidas | pendiente |
+| — | A6 | Capturas 375 y 1280 px, claro y oscuro | pendiente |
