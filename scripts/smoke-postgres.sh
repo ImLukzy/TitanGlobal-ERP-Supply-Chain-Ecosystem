@@ -31,6 +31,7 @@ CENTRO_TRABAJO_SEED_ID=""
 CENTRO_TRABAJO_CREADO_ID=""
 VEHICULO_CREADO_ID=""
 CONDUCTOR_CREADO_ID=""
+CONDUCTOR_SIN_ZONA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -360,9 +361,18 @@ checks = {
     "vehiculos-inactivo": lambda data: data["total"] == 1 and data["items"][0]["placa"] == "JKL-012" and data["items"][0]["activo"] is False,
     "vehiculo-detail": lambda data: data["id"] == 1 and data["placa"] == "ABC-123" and data["marca"] == "Volvo" and data["tipo"] == "Camion" and data["capacidadKg"] == 20000.0,
     "vehiculos-tipos": lambda data: data == ["Camion", "Furgon", "Moto", "Otro"],
-    "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Otro", 1, 1), ("Moto", 1, 1)],
+    "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Moto", 1, 1), ("Otro", 1, 1)],
     "vehiculo-created": lambda data: data["id"] > 0,
     "vehiculo-placa-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa ABC-123.",
+    "vehiculo-capacidad-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad no puede superar 9999999999999999.99." and "Detail" not in data,
+    "vehiculo-observaciones-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las observaciones no pueden superar 500 caracteres." and "Detail" not in data,
+    "conductor-sin-zona-created": lambda data: data["id"] > 0,
+    "conductor-sin-zona-detail": lambda data: data["nombre"] == "Conductor Sin Zona" and data["vencimientoLicencia"] == "2027-12-31T00:00:00Z",
+    "conductor-updated": lambda data: data["id"] == 2,
+    "conductor-2-inactivo": lambda data: data["id"] == 2 and data["activo"] is False and data["vencimientoLicencia"] == "2026-06-30T00:00:00Z",
+    "conductor-2-activo": lambda data: data["id"] == 2 and data["activo"] is True and data["vencimientoLicencia"] == "2026-06-30T00:00:00Z",
+    "conductor-vencimiento-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha de vencimiento de la licencia no es válida." and "Detail" not in data,
+    "conductor-observaciones-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las observaciones no pueden superar 500 caracteres." and "Detail" not in data,
     "conductores-list": lambda data: data["total"] == 3 and len(data["items"]) == 3,
     "conductor-detail": lambda data: data["id"] == 1 and data["nombre"] == "Carlos Ruiz" and data["documentoLicencia"] == "PLT-0001" and data["habilitado"] is True,
     "conductor-created": lambda data: data["id"] > 0,
@@ -524,6 +534,10 @@ request_check() {
     fi
     if [[ "$validation" == "vehiculo-created" ]]; then
         VEHICULO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "conductor-sin-zona-created" ]]; then
+        CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
     if [[ "$validation" == "conductor-created" ]]; then
@@ -767,10 +781,30 @@ request_check 'POST centro de trabajo con costo fuera de rango' POST '/api/v1/ce
 request_check 'POST centro de trabajo con capacidad de tres decimales' POST '/api/v1/centros-trabajo' 400 centro-capacity-decimals '{"codigo":"CT-SMK-03","nombre":"Capacidad con decimales","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":0.001,"costoHora":10}'
 request_check 'DELETE centro de trabajo recién creado' DELETE "/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" 204 ''
 CENTRO_TRABAJO_CREADO_ID=""
+OBSERVACIONES_LARGAS="$(printf 'x%.0s' $(seq 1 501))"
+request_check 'Vehículos de tipo Camion' GET '/api/v1/vehiculos-flota?tipo=Camion' 200 vehiculos-camion
+request_check 'Vehículos inactivos' GET '/api/v1/vehiculos-flota?activo=false' 200 vehiculos-inactivo
+request_check 'Detalle del vehículo 1' GET '/api/v1/vehiculos-flota/1' 200 vehiculo-detail
+request_check 'Tipos de vehículo' GET '/api/v1/vehiculos-flota/tipos' 200 vehiculos-tipos
+request_check 'Resumen de vehículos' GET '/api/v1/vehiculos-flota/resumen' 200 vehiculos-resumen
+request_check 'POST vehículo válido' POST '/api/v1/vehiculos-flota' 200 vehiculo-created '{"placa":"SMK-001","marca":"Marca Smoke","modelo":"Modelo Smoke","anio":2024,"tipo":"Camion","capacidadKg":1234.5,"activo":true,"observaciones":"Alta de smoke"}'
+request_check 'POST vehículo con placa del seed' POST '/api/v1/vehiculos-flota' 409 vehiculo-placa-duplicate '{"placa":"ABC-123","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'POST vehículo con capacidad fuera de decimal(18,2)' POST '/api/v1/vehiculos-flota' 400 vehiculo-capacidad-invalid '{"placa":"SMK-002","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":100000000000000000,"activo":true}'
+request_check 'POST vehículo con observaciones de 501 caracteres' POST '/api/v1/vehiculos-flota' 400 vehiculo-observaciones-invalid "{\"placa\":\"SMK-003\",\"marca\":\"Marca\",\"modelo\":\"Modelo\",\"anio\":2024,\"tipo\":\"Camion\",\"capacidadKg\":1000,\"activo\":true,\"observaciones\":\"${OBSERVACIONES_LARGAS}\"}"
+request_check 'DELETE vehículo recién creado' DELETE "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 204 ''
 request_check 'Conductores del seed' GET '/api/v1/conductores' 200 conductores-list
 request_check 'Detalle del conductor 1' GET '/api/v1/conductores/1' 200 conductor-detail
 request_check 'Crear conductor smoke' POST '/api/v1/conductores' 200 conductor-created '{"nombre":"Conductor Smoke","documentoLicencia":"PLT-SMK-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true,"observaciones":"Alta de smoke"}'
 request_check 'Conductor con documento duplicado' POST '/api/v1/conductores' 409 conductor-duplicate '{"nombre":"Conductor Duplicado","documentoLicencia":"PLT-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'Crear conductor con fecha sin Z' POST '/api/v1/conductores' 200 conductor-sin-zona-created '{"nombre":"Conductor Sin Zona","documentoLicencia":"PLT-SMK-2","vencimientoLicencia":"2027-12-31","habilitado":true,"activo":true}'
+request_check 'Detalle del conductor con fecha sin Z' GET "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 200 conductor-sin-zona-detail
+request_check 'Eliminar conductor con fecha sin Z' DELETE "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 204 ''
+request_check 'Desactivar conductor con licencia vencida' PUT '/api/v1/conductores/2' 200 conductor-updated '{"nombre":"Maria Quispe","documentoLicencia":"PLT-0002","vencimientoLicencia":"2026-06-30T00:00:00Z","habilitado":true,"activo":false}'
+request_check 'Detalle del conductor vencido desactivado' GET '/api/v1/conductores/2' 200 conductor-2-inactivo
+request_check 'Mover licencia vencida a otra fecha pasada' PUT '/api/v1/conductores/2' 400 conductor-vencimiento-invalid '{"nombre":"Maria Quispe","documentoLicencia":"PLT-0002","vencimientoLicencia":"2020-01-01T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'Reactivar conductor vencido para dejar el seed intacto' PUT '/api/v1/conductores/2' 200 conductor-updated '{"nombre":"Maria Quispe","documentoLicencia":"PLT-0002","vencimientoLicencia":"2026-06-30T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'Detalle del conductor vencido reactivado' GET '/api/v1/conductores/2' 200 conductor-2-activo
+request_check 'Conductor con observaciones de 501 caracteres' POST '/api/v1/conductores' 400 conductor-observaciones-invalid "{\"nombre\":\"Conductor Largo\",\"documentoLicencia\":\"PLT-SMK-3\",\"vencimientoLicencia\":\"2027-12-31\",\"habilitado\":true,\"activo\":true,\"observaciones\":\"${OBSERVACIONES_LARGAS}\"}"
 request_check 'Detalle de conductor inexistente' GET '/api/v1/conductores/9999' 404 conductor-missing
 request_check 'Eliminar conductor smoke' DELETE "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 204 ''
 printf 'SMOKE OK\n'
