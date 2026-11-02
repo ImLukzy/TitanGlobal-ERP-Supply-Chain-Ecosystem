@@ -18,6 +18,7 @@ import { DevolucionesComercialesPage } from './devoluciones-comerciales/Devoluci
 import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 import { NotificacionesAlertasPage } from './notificaciones-alertas/NotificacionesAlertasPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
+import { EmpleadosPage } from './empleados/EmpleadosPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -39,4 +40,5 @@ export const pantallas: Record<string, ComponentType> = {
   '09-reclamos-postventa': ReclamosPostventaPage,
   '78-notificaciones-alertas': NotificacionesAlertasPage,
   '71-usuarios': UsuariosPage,
+  '61-empleados': EmpleadosPage,
 };
