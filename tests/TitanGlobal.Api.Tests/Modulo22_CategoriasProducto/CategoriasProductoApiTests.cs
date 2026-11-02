@@ -142,6 +142,68 @@ public class CategoriasProductoApiTests
             "La descripción de la categoría no puede superar 250 caracteres.");
     }
 
+    [Fact]
+    public async Task CrearConNombreDeMasDeCienCaracteresDevuelveBadRequest()
+    {
+        CrearCategoriaProductoDto solicitud = new CrearCategoriaProductoDto { Nombre = new string('n', 101) };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync(Ruta, solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.BadRequest,
+            400,
+            "El nombre de la categoría no puede superar 100 caracteres.");
+        Assert.Equal(3, await ContarCategoriasAsync());
+    }
+
+    [Fact]
+    public async Task CrearConNombreDeExactamenteCienCaracteresEsValido()
+    {
+        CrearCategoriaProductoDto solicitud = new CrearCategoriaProductoDto { Nombre = new string('n', 100) };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync(Ruta, solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(4, await ContarCategoriasAsync());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CrearConDescripcionVaciaLaGuardaComoNull(string descripcion)
+    {
+        CrearCategoriaProductoDto solicitud = new CrearCategoriaProductoDto
+        {
+            Nombre = "Sin descripcion",
+            Descripcion = descripcion
+        };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync(Ruta, solicitud);
+        JsonElement cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonElement>();
+        int id = cuerpo.GetProperty("id").GetInt32();
+        CategoriaProductoDto? creada = await _clienteHttp.GetFromJsonAsync<CategoriaProductoDto>(Ruta + "/" + id);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.NotNull(creada);
+        Assert.Null(creada.Descripcion);
+    }
+
+    [Fact]
+    public async Task CrearConNombreDeCategoriaInactivaDevuelveConflicto()
+    {
+        CrearCategoriaProductoDto solicitud = new CrearCategoriaProductoDto { Nombre = "FERRETERIA" };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync(Ruta, solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.Conflict,
+            409,
+            "Ya existe una categoría con el nombre FERRETERIA.");
+        Assert.Equal(3, await ContarCategoriasAsync());
+    }
+
     [Theory]
     [InlineData("Electronica")]
     [InlineData("ELECTRONICA")]
@@ -208,6 +270,83 @@ public class CategoriasProductoApiTests
     }
 
     [Fact]
+    public async Task ActualizarConNombreVacioDevuelveBadRequest()
+    {
+        ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto { Nombre = "   " };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync(Ruta + "/2", solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.BadRequest,
+            400,
+            "El nombre de la categoría es obligatorio.");
+    }
+
+    [Fact]
+    public async Task ActualizarConNombreDeMasDeCienCaracteresDevuelveBadRequest()
+    {
+        ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto { Nombre = new string('n', 101) };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync(Ruta + "/2", solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.BadRequest,
+            400,
+            "El nombre de la categoría no puede superar 100 caracteres.");
+    }
+
+    [Fact]
+    public async Task ActualizarConDescripcionMuyLargaDevuelveBadRequest()
+    {
+        ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto
+        {
+            Nombre = "Hogar",
+            Descripcion = new string('x', 251)
+        };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync(Ruta + "/2", solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.BadRequest,
+            400,
+            "La descripción de la categoría no puede superar 250 caracteres.");
+    }
+
+    [Fact]
+    public async Task ActualizarConDescripcionVaciaLaGuardaComoNull()
+    {
+        ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto
+        {
+            Nombre = "Hogar",
+            Descripcion = "   "
+        };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync(Ruta + "/2", solicitud);
+        CategoriaProductoDto? actualizada = await _clienteHttp.GetFromJsonAsync<CategoriaProductoDto>(Ruta + "/2");
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.NotNull(actualizada);
+        Assert.Null(actualizada.Descripcion);
+    }
+
+    [Fact]
+    public async Task ActualizarConNombreDeCategoriaInactivaDevuelveConflicto()
+    {
+        ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto { Nombre = "ferreteria" };
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync(Ruta + "/2", solicitud);
+
+        await AfirmarErrorNegocioAsync(
+            respuesta,
+            HttpStatusCode.Conflict,
+            409,
+            "Ya existe una categoría con el nombre ferreteria.");
+    }
+
+    [Fact]
     public async Task ActualizarCategoriaInexistenteDevuelveNotFound()
     {
         ActualizarCategoriaProductoDto solicitud = new ActualizarCategoriaProductoDto { Nombre = "Cualquiera" };
@@ -233,6 +372,20 @@ public class CategoriasProductoApiTests
         Assert.DoesNotContain(activas, categoria => categoria.Id == 1);
         Assert.NotNull(todas);
         Assert.Contains(todas, categoria => categoria.Id == 1);
+        Assert.Equal(3, await ContarCategoriasAsync());
+    }
+
+    [Fact]
+    public async Task DesactivarDosVecesDevuelveNoContentYDejaLaCategoriaInactiva()
+    {
+        HttpResponseMessage primera = await _clienteHttp.DeleteAsync(Ruta + "/1");
+        HttpResponseMessage segunda = await _clienteHttp.DeleteAsync(Ruta + "/1");
+        CategoriaProductoDto? categoria = await _clienteHttp.GetFromJsonAsync<CategoriaProductoDto>(Ruta + "/1");
+
+        Assert.Equal(HttpStatusCode.NoContent, primera.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, segunda.StatusCode);
+        Assert.NotNull(categoria);
+        Assert.False(categoria.Activa);
         Assert.Equal(3, await ContarCategoriasAsync());
     }
 
@@ -276,6 +429,22 @@ public class CategoriasProductoApiTests
         Assert.Equal(0, resumen.CategoriasInactivas);
         Assert.NotNull(categorias);
         Assert.Empty(categorias);
+    }
+
+    [Fact]
+    public async Task OpenApiContieneLasSeisOperacionesDeCategoriasProducto()
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.GetAsync("/openapi/v1.json");
+        using JsonDocument documento = JsonDocument.Parse(await respuesta.Content.ReadAsStringAsync());
+        JsonElement rutas = documento.RootElement.GetProperty("paths");
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto").TryGetProperty("get", out _));
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto").TryGetProperty("post", out _));
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto/{id}").TryGetProperty("get", out _));
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto/{id}").TryGetProperty("put", out _));
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto/{id}").TryGetProperty("delete", out _));
+        Assert.True(rutas.GetProperty("/api/v1/categorias-producto/resumen").TryGetProperty("get", out _));
     }
 
     private void RestablecerDatos()
