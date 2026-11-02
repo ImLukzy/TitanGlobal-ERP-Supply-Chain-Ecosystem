@@ -1,0 +1,24 @@
+namespace TitanGlobal.Domain.Models;
+
+public partial class Almacen
+{
+    public int Id { get; set; }
+
+    public string Codigo { get; set; } = string.Empty;
+
+    public string Nombre { get; set; } = string.Empty;
+
+    public string Tipo { get; set; } = string.Empty;
+
+    public string Direccion { get; set; } = string.Empty;
+
+    public string Ciudad { get; set; } = string.Empty;
+
+    public decimal CapacidadM3 { get; set; }
+
+    public string? Responsable { get; set; }
+
+    public bool Activo { get; set; } = true;
+
+    public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();
+}

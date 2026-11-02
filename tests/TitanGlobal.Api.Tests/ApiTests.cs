@@ -8,9 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TitanGlobal.Api.Models;
-using TitanGlobal.Api.Modules.Modulo00_Sistema.UseCases;
-using TitanGlobal.Api.Repositories.Interfaces;
+using TitanGlobal.Application.UseCases.Modulo00_Sistema;
+using TitanGlobal.Domain.Repositories;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests;
 
@@ -153,6 +154,19 @@ public class ApiTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("/api/v1/sistema/salud", document);
+    }
+
+    [Fact]
+    public async Task Swagger_is_available_in_development()
+    {
+        HttpResponseMessage response = await _client.GetAsync("/swagger/v1/swagger.json");
+        string document = await response.Content.ReadAsStringAsync();
+        HttpResponseMessage page = await _client.GetAsync("/swagger/index.html");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("/api/v1/clientes", document);
+        Assert.Contains("X-User-Role", document);
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
     }
 }
 

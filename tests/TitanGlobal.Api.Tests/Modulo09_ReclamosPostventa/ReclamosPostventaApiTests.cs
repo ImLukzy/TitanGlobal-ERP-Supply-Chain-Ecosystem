@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TitanGlobal.Api.Models;
-using TitanGlobal.Api.Modules.Modulo09_ReclamosPostventa.Dtos;
+using TitanGlobal.Application.DTOs.Modulo09_ReclamosPostventa;
 using TitanGlobal.Api.Tests.Modulo06_ListasPrecios;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests.Modulo09_ReclamosPostventa;
 
