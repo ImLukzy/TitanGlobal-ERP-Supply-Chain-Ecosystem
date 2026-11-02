@@ -66,6 +66,7 @@ Si al terminar el script muestra **conflictos** o **avisos**:
 1. **Conflictos en archivos compartidos (`CONFLICTO ...`):**
    - Abre cada archivo indicado y busca las marcas `<<<<<<< main`, `=======` y `>>>>>>> tu rama`.
    - En `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs`, `scripts/seed-dev.sql`, `scripts/smoke-postgres.sh`, `frontend/src/modules/pantallas.ts` o `frontend/src/styles/app.css`, conserva ambos bloques (primero lo que ya estaba en `main` y al final lo de tu módulo) y borra las líneas `<<<<<<<`, `=======` y `>>>>>>>`.
+   - **Cuidado con la última línea:** si los dos bloques terminan igual, git la deja fuera del conflicto y el primer bloque queda cortado. Por ejemplo, justo después de `>>>>>>>` aparece `.IsUnique();`, `fi` o `COMMIT;`. Si el primer bloque la necesita, repítela. Comprueba siempre con `dotnet build` y `./scripts/smoke-postgres.sh`.
 2. **Aviso de acceso a PostgreSQL en `Application`:**
    - Si el script imprime `Hay que revisar a mano el acceso a PostgreSQL en:`, abre esos archivos en `src/TitanGlobal.Application/UseCases/...` y asegúrate de capturar `ViolacionRestriccionException` (`excepcion.Tipo == TipoViolacionRestriccion.Unicidad` o `ReferenciaForanea`, y `excepcion.Restriccion`) en lugar de `DbUpdateException` o `PostgresException`.
 3. **Entidades con atributos de EF Core (`f: dependencia prohibida en TitanGlobal.Domain`):**

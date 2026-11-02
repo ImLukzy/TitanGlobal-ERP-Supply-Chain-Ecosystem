@@ -92,14 +92,22 @@ Las specs nuevas se nombran `moduloNN-nombre-{backend|frontend}.md`, sin número
 | A10 | Guías | las rutas y los comandos de las guías existen | sin rutas antiguas fuera de las specs históricas |
 
 ## 6. Checklist de ejecución
-- [ ] Script y movimiento mecánico.
-- [ ] Puertos, excepciones y composición.
-- [ ] Swagger.
-- [ ] Reglas del gate y pruebas de arquitectura.
-- [ ] Prueba del script sobre las 6 ramas.
-- [ ] Guías del equipo.
-- [ ] Auditoría y registro de A1–A10.
+- [x] Script y movimiento mecánico.
+- [x] Puertos, excepciones y composición.
+- [x] Swagger.
+- [x] Reglas del gate y pruebas de arquitectura.
+- [x] Prueba del script sobre las 6 ramas.
+- [x] Guías del equipo.
+- [x] Auditoría y registro de A1–A10.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-02 | A1 y A2 | ✅ | `./scripts/verify.sh`, salida 0 |
+| 2026-11-02 | A3 y A4 | ✅ | 594 tests: los 585 anteriores más 9 nuevos (`ArquitecturaTests`, `UnitOfWorkTests`, Swagger) |
+| 2026-11-02 | A5 | ✅ | `/openapi/v1.json` idéntico al de `main`: 101 rutas y 49 esquemas |
+| 2026-11-02 | A6 | ✅ | `has-pending-model-changes`: sin cambios; ahora forma parte del gate |
+| 2026-11-02 | A7 | ✅ | `./scripts/smoke-postgres.sh` → `SMOKE OK`. Requirió corregir dos fechas caducadas del seed que ya hacían fallar a `main` |
+| 2026-11-02 | A8 | ✅ | `docker build .` construye la imagen |
+| 2026-11-02 | A9 | ✅ con una excepción | Cinco ramas: gate y `SMOKE OK`. El módulo 75 requiere mover `[Index]` y `[Precision]` a `OnModelCreating`; con ese cambio, gate y `SMOKE OK` |
+| 2026-11-02 | A10 | ✅ | Rutas y enlaces de las guías comprobados; solo citan rutas antiguas en la tabla de equivalencias y en notas históricas |
