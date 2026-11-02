@@ -1387,3 +1387,22 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .usuarios-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
 .usuarios-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
 @media (max-width: 760px) { .usuario-form { grid-template-columns: minmax(0, 1fr); } }
+
+/* Módulo 61 - Empleados: resumen, listado con ficha lateral. */
+.empleados-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.empleados-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 0 15px; }
+.empleados-list-panel, .empleados-detail-panel { min-width: 0; }
+.empleados-filters { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.empleados-table { min-width: 720px; }
+.empleado-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.empleado-estado.is-activo { background: var(--good-soft); color: var(--good); }
+.empleado-estado.is-cesado { background: var(--surface-raised); color: var(--ink-soft); }
+.empleados-detail-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.empleados-detail-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.empleados-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.empleados-detail-grid > div { min-width: 0; }
+.empleados-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.empleados-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+@media (max-width: 1023px) { .empleados-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .empleados-filters { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .empleados-summary { grid-template-columns: minmax(0, 1fr); } }

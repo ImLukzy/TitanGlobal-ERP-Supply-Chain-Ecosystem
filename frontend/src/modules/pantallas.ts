@@ -19,6 +19,7 @@ import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 import { NotificacionesAlertasPage } from './notificaciones-alertas/NotificacionesAlertasPage';
 import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
+import { EmpleadosPage } from './empleados/EmpleadosPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -41,4 +42,5 @@ export const pantallas: Record<string, ComponentType> = {
   '78-notificaciones-alertas': NotificacionesAlertasPage,
   '72-roles-permisos': RolesPermisosPage,
   '71-usuarios': UsuariosPage,
+  '61-empleados': EmpleadosPage,
 };
