@@ -323,32 +323,46 @@ def modo_rama(rama, sin_dotnet):
             print(f"  {ruta}")
 
     nombre = nombre_migracion(migraciones)
-    if not sin_dotnet and not conflictos:
+    reglas_correctas = True
+    if not conflictos:
+        reglas = subprocess.run(["bash", "scripts/check-rules.sh"], capture_output=True, text=True)
+        reglas_correctas = reglas.returncode == 0
+        if not reglas_correctas:
+            print("\nEl código de la rama incumple las reglas de capas:")
+            print(reglas.stdout)
+            print("Una entidad de Domain no puede usar EF Core: pasa sus [Index] y [Precision] a OnModelCreating.")
+            print("Consulta docs/equipo/adaptar-rama-a-capas.md.")
+
+    compilado = False
+    migracion_generada = False
+    if not sin_dotnet and not conflictos and reglas_correctas:
         proyectos = ["-p", INFRASTRUCTURE, "-s", API]
-        correcto = ejecutar(["dotnet", "build", "--nologo", "-v", "q"])
-        if correcto and nombre:
-            correcto = ejecutar(["dotnet", "tool", "restore"]) and ejecutar(["dotnet", "ef", "migrations", "add", nombre, *proyectos])
-        if correcto:
+        compilado = ejecutar(["dotnet", "build", "--nologo", "-v", "q"])
+        if compilado and nombre:
+            migracion_generada = ejecutar(["dotnet", "tool", "restore"]) and ejecutar(["dotnet", "ef", "migrations", "add", nombre, *proyectos])
+        if compilado and (migracion_generada or not nombre):
             ejecutar(["dotnet", "format"])
-        if not correcto:
+        else:
             print("\nLa compilación o la migración fallaron: corrige el error y sigue los pasos de abajo.")
 
     print("\nSiguientes pasos:")
-    paso = 1
+    pasos = []
     if conflictos:
-        print(f"  {paso}. Resuelve los conflictos de arriba.")
-        paso += 1
-    if nombre and (conflictos or sin_dotnet):
-        print(f"  {paso}. dotnet ef migrations add {nombre} -p {INFRASTRUCTURE} -s {API}")
-        paso += 1
-    print(f"  {paso}. dotnet format && ./scripts/verify.sh")
-    paso += 1
+        pasos.append("Resuelve los conflictos de arriba.")
+    if not reglas_correctas:
+        pasos.append("Corrige las reglas de capas de arriba.")
+    if nombre and not migracion_generada:
+        pasos.append(f"dotnet ef migrations add {nombre} -p {INFRASTRUCTURE} -s {API}")
+    pasos.append("dotnet format && ./scripts/verify.sh")
     if nombre:
-        print(f"  {paso}. ./scripts/smoke-postgres.sh")
-        paso += 1
-    print(f"  {paso}. git add -A && git commit y abre el pull request contra main.")
+        pasos.append("./scripts/smoke-postgres.sh")
+    pasos.append("git add -A && git commit y abre el pull request contra main.")
+    for numero, paso in enumerate(pasos, 1):
+        print(f"  {numero}. {paso}")
     print(f"\nTu rama original ({rama}) no se ha modificado.")
-    return 1 if conflictos else 0
+    if sin_dotnet:
+        return 1 if conflictos or not reglas_correctas else 0
+    return 0 if compilado and (migracion_generada or not nombre) else 1
 
 
 def main():
