@@ -362,10 +362,15 @@ request_check() {
     fi
 
     if [[ -n "$payload" ]]; then
-        if ! response="$(curl -sS --max-time 10 -X "$method" -H 'Content-Type: application/json' -H "X-User-Role: $role" "${cabecera_usuario[@]}" -d "$payload" -w $'\n%{http_code}' "$BASE_URL$path")"; then
+        local payload_file
+        payload_file="$(mktemp)"
+        printf '%s' "$payload" > "$payload_file"
+        if ! response="$(curl -sS --max-time 10 -X "$method" -H 'Content-Type: application/json' -H "X-User-Role: $role" "${cabecera_usuario[@]}" --data-binary "@$payload_file" -w $'\n%{http_code}' "$BASE_URL$path")"; then
+            rm -f "$payload_file"
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
             return 1
         fi
+        rm -f "$payload_file"
     elif [[ "$method" == "POST" ]]; then
         if ! response="$(curl -sS --max-time 10 -X POST -H 'Content-Type: application/json' "${cabecera_usuario[@]}" -d '' -w $'\n%{http_code}' "$BASE_URL$path")"; then
             printf 'ERROR: %s no pudo conectar con la API\n' "$label" >&2
