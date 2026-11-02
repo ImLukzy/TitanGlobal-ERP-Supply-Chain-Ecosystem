@@ -8,6 +8,7 @@ CLIENTE_CREADO_ID=""
 PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
 IMPUESTO_CREADO_ID=""
+CATEGORIA_PRODUCTO_CREADA_ID=""
 SOLICITUD_CREADA_ID=""
 ORDEN_ABASTECIMIENTO_CREADA_ID=""
 ALMACEN_CREADO_ID=""
@@ -215,6 +216,12 @@ checks = {
     "zone-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la zona REC-01 en el almacén ALM-LIM-01.",
     "warehouse-delete-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el almacén 1 porque tiene zonas.",
     "provider-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un proveedor con el RUC 20600000001.",
+    "categorias-producto-list": lambda data: [item["nombre"] for item in data] == ["Computo", "Pantallas", "Perifericos"] and all(item["activa"] is True for item in data),
+    "categoria-producto-detail": lambda data: data["id"] == 1 and data["nombre"] == "Computo" and data["descripcion"] == "Laptops y equipos de cómputo" and data["activa"] is True,
+    "categorias-producto-summary": lambda data: data["totalCategorias"] == 4 and data["categoriasActivas"] == 3 and data["categoriasInactivas"] == 1,
+    "categoria-producto-created": lambda data: data["id"] > 0,
+    "categoria-producto-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una categoría con el nombre computo.",
+    "categoria-producto-deactivated": lambda data: data["nombre"] == "Categoría Smoke" and data["descripcion"] == "Alta de smoke" and data["activa"] is False,
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
     "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
@@ -422,6 +429,10 @@ request_check() {
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "categoria-producto-created" ]]; then
+        CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "solicitud-created" ]]; then
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -518,6 +529,13 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
+request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
+request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary
+request_check 'POST categoría de producto válida' POST '/api/v1/categorias-producto' 200 categoria-producto-created '{"nombre":"Categoría Smoke","descripcion":"Alta de smoke"}'
+request_check 'POST categoría de producto duplicada sin importar mayúsculas' POST '/api/v1/categorias-producto' 409 categoria-producto-duplicate '{"nombre":"computo"}'
+request_check 'DELETE categoría de producto recién creada (baja lógica)' DELETE "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 204 ''
+request_check 'Categoría de producto recién creada queda inactiva' GET "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 200 categoria-producto-deactivated
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive
