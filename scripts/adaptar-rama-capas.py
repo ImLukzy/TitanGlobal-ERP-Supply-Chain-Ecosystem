@@ -306,21 +306,15 @@ def modo_rama(rama, sin_dotnet):
             conflictos.append(destino)
 
     restantes = subprocess.run(
-        ["git", "grep", "-lE", r"\bPostgresException\b|\bNpgsql\b|\bDbUpdateException\b", "--", f"{APPLICATION}/*"],
+        ["git", "grep", "--untracked", "-lE", r"\bPostgresException\b|\bNpgsql\b|\bDbUpdateException\b", "--", f"{APPLICATION}/*"],
         capture_output=True,
     ).stdout.decode("utf-8").split()
-    git("add", "-A", "--", ".")
-    restantes += subprocess.run(
-        ["git", "grep", "--cached", "-lE", r"\bPostgresException\b|\bNpgsql\b|\bDbUpdateException\b", "--", f"{APPLICATION}/*"],
-        capture_output=True,
-    ).stdout.decode("utf-8").split()
-    git("reset", "-q")
 
     for aviso in avisos:
         print(f"Aviso: {aviso}")
-    if sorted(set(restantes)):
+    if restantes:
         print("\nHay que revisar a mano el acceso a PostgreSQL en:")
-        for ruta in sorted(set(restantes)):
+        for ruta in restantes:
             print(f"  {ruta}")
 
     if conflictos:
