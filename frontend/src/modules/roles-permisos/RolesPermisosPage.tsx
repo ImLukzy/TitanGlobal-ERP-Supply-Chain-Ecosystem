@@ -16,7 +16,17 @@ export function RolesPermisosPage() {
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState('');
   const [eliminando, setEliminando] = useState(false);
+  const [seleccionPrevia, setSeleccionPrevia] = useState<number | null>(datos.seleccionado);
   const botonEliminarRef = useRef<HTMLButtonElement>(null);
+
+  if (seleccionPrevia !== datos.seleccionado) {
+    setSeleccionPrevia(datos.seleccionado);
+    // La primera selección automática (de nada a un rol) no cierra un «Nuevo rol» recién abierto.
+    if (seleccionPrevia !== null) {
+      setMostrarFormulario(false);
+      setRolEdicion(null);
+    }
+  }
 
   const cerrarDialogo = useCallback(() => {
     setDialogoAbierto(false);
@@ -81,6 +91,7 @@ export function RolesPermisosPage() {
         />
         <RolDetallePanel
           botonEliminarRef={botonEliminarRef}
+          cargando={datos.cargandoDetalle}
           detalle={datos.detalle}
           editar={abrirEdicion}
           eliminar={() => {

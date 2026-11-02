@@ -5,17 +5,21 @@ import type { RolDetalle } from './tipos';
 
 interface RolDetallePanelProps {
   detalle: RolDetalle | null;
+  cargando: boolean;
   error: string;
   editar: () => void;
   eliminar: () => void;
   botonEliminarRef: RefObject<HTMLButtonElement | null>;
 }
 
-export function RolDetallePanel({ detalle, error, editar, eliminar, botonEliminarRef }: RolDetallePanelProps) {
+export function RolDetallePanel({ detalle, cargando, error, editar, eliminar, botonEliminarRef }: RolDetallePanelProps) {
   return (
     <PanelDetalle ariaLabelledBy="rol-detail-title" className="clientes-detail-panel roles-detail-panel">
       {error !== '' && <p className="clientes-error" role="alert">{error}</p>}
-      {detalle === null && error === '' && (
+      {cargando && error === '' && (
+        <p aria-live="polite" className="clientes-status" role="status">Cargando detalle del rol…</p>
+      )}
+      {detalle === null && !cargando && error === '' && (
         <p aria-live="polite" className="clientes-status" role="status">Selecciona un rol para ver su detalle.</p>
       )}
       {detalle !== null && (

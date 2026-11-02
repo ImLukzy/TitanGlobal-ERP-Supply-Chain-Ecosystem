@@ -15,6 +15,7 @@ export interface RolesData {
   seleccionado: number | null;
   seleccionar: (id: number) => void;
   detalle: RolDetalle | null;
+  cargandoDetalle: boolean;
   errorDetalle: string;
   refrescar: () => void;
   limpiarSeleccion: () => void;
@@ -28,7 +29,7 @@ export function useRolesData(): RolesData {
   const [errorLista, setErrorLista] = useState('');
   const [seleccionado, setSeleccionado] = useState<number | null>(null);
   const [detalle, setDetalle] = useState<RolDetalle | null>(null);
-  const [errorDetalle, setErrorDetalle] = useState('');
+  const [errorDetalleActual, setErrorDetalleActual] = useState<{ id: number; mensaje: string } | null>(null);
   const [actualizacion, setActualizacion] = useState(0);
 
   useEffect(() => {
@@ -79,12 +80,12 @@ export function useRolesData(): RolesData {
     let activo = true;
     void obtenerRol(seleccionado).then((datos) => {
       if (activo) {
-        setErrorDetalle('');
+        setErrorDetalleActual(null);
         setDetalle(datos);
       }
     }).catch((error: unknown) => {
       if (activo) {
-        setErrorDetalle(mensajeError(error, 'No se pudo cargar el detalle del rol.'));
+        setErrorDetalleActual({ id: seleccionado, mensaje: mensajeError(error, 'No se pudo cargar el detalle del rol.') });
         setDetalle(null);
       }
     });
@@ -107,6 +108,9 @@ export function useRolesData(): RolesData {
     setDetalle(null);
   }
 
+  const detalleVisible = detalle !== null && detalle.id === seleccionado ? detalle : null;
+  const errorDetalle = errorDetalleActual !== null && errorDetalleActual.id === seleccionado ? errorDetalleActual.mensaje : '';
+
   return {
     busqueda,
     cambiarBusqueda,
@@ -116,8 +120,9 @@ export function useRolesData(): RolesData {
     errorLista,
     seleccionado,
     seleccionar: setSeleccionado,
-    detalle: seleccionado === null ? null : detalle,
-    errorDetalle: seleccionado === null ? '' : errorDetalle,
+    detalle: detalleVisible,
+    cargandoDetalle: seleccionado !== null && detalleVisible === null && errorDetalle === '',
+    errorDetalle,
     refrescar,
     limpiarSeleccion,
   };
