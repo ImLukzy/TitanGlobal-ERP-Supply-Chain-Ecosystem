@@ -5,6 +5,8 @@ namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo;
 
 internal static class ValidacionCentroTrabajo
 {
+    private const decimal CostoHoraMaximo = 9999999999999999.99m;
+
     private static readonly Regex FormatoCodigo = new Regex(
         @"^[A-Z0-9-]{2,20}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -92,6 +94,13 @@ internal static class ValidacionCentroTrabajo
                 "La capacidad debe ser mayor que 0 y como máximo 24 horas por día.");
         }
 
+        if (TieneMasDeDosDecimales(capacidadHorasDia))
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La capacidad admite como máximo 2 decimales.");
+        }
+
         return capacidadHorasDia;
     }
 
@@ -102,6 +111,20 @@ internal static class ValidacionCentroTrabajo
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,
                 "El costo por hora no puede ser negativo.");
+        }
+
+        if (TieneMasDeDosDecimales(costoHora))
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "El costo por hora admite como máximo 2 decimales.");
+        }
+
+        if (costoHora > CostoHoraMaximo)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "El costo por hora no puede superar 9999999999999999.99.");
         }
 
         return costoHora;
@@ -123,5 +146,10 @@ internal static class ValidacionCentroTrabajo
         }
 
         return valor;
+    }
+
+    private static bool TieneMasDeDosDecimales(decimal valor)
+    {
+        return decimal.Round(valor, 2) != valor;
     }
 }

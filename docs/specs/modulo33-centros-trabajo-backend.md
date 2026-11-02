@@ -52,8 +52,8 @@ Owner: Antony Huayhua. Semana 1 según `docs/equipo/cadencia.md` §7.
 2. `nombre` tras `Trim()`: vacío → 400 «El nombre del centro de trabajo es obligatorio.»; más de 200 → 400 «El nombre del centro de trabajo no puede superar 200 caracteres.»
 3. `tipo`: `Linea` o `Celda`, sin distinguir mayúsculas y guardado con su forma canónica → si no, 400 «El tipo de centro de trabajo no es válido.»
 4. `planta` tras `Trim()`: vacía → 400 «La planta es obligatoria.»; más de 100 → 400 «La planta no puede superar 100 caracteres.»
-5. `capacidadHorasDia <= 0` o `> 24` → 400 «La capacidad debe ser mayor que 0 y como máximo 24 horas por día.»
-6. `costoHora < 0` → 400 «El costo por hora no puede ser negativo.»
+5. `capacidadHorasDia <= 0` o `> 24` → 400 «La capacidad debe ser mayor que 0 y como máximo 24 horas por día.»; con más de 2 decimales → 400 «La capacidad admite como máximo 2 decimales.» (el límite de `decimal(5,2)` queda cubierto por el máximo de 24).
+6. `costoHora < 0` → 400 «El costo por hora no puede ser negativo.»; con más de 2 decimales → 400 «El costo por hora admite como máximo 2 decimales.»; mayor que 9999999999999999.99 (límite de `decimal(18,2)`) → 400 «El costo por hora no puede superar 9999999999999999.99.»
 7. `responsable` tras `Trim()`, en blanco → `null`; más de 100 → 400 «El responsable no puede superar 100 caracteres.»
 8. Código usado por otro centro → 409 «Ya existe un centro de trabajo con el código {codigo}.» También en la carrera (`23505`). Un PUT que mantiene su propio código es válido.
 9. Id inexistente en GET, PUT o DELETE → 404 «El centro de trabajo {id} no existe.»
