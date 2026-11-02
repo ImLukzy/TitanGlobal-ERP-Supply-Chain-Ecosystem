@@ -25,6 +25,10 @@ DOMAIN = "src/TitanGlobal.Domain"
 APPLICATION = "src/TitanGlobal.Application"
 INFRASTRUCTURE = "src/TitanGlobal.Infrastructure"
 
+# Punta de main antes de corregir sus dos últimos commits el 2026-11-02. El contenido es el mismo,
+# así que las ramas que salieron de ahí no deben tratar esos commits como cambios propios.
+MAIN_ANTERIOR = "ca958e26bb6f757676eb272651d4bcf6218e8b9d"
+
 TIPOS_SOLO_API = (
     "ErrorHandlingMiddleware",
     "ParameterValidationMiddleware",
@@ -265,6 +269,8 @@ def modo_rama(rama, sin_dotnet):
         sys.exit("Tienes cambios sin confirmar. Confírmalos o guárdalos antes de empezar.")
 
     base = git("merge-base", rama, "HEAD").decode("utf-8").strip()
+    if subprocess.run(["git", "merge-base", "--is-ancestor", MAIN_ANTERIOR, rama], capture_output=True).returncode == 0:
+        base = MAIN_ANTERIOR
     print(f"Rama: {rama}\nBase común: {base[:7]}\n")
 
     conflictos = []

@@ -4,6 +4,14 @@ Este documento dice qué está hecho, qué quedó a medias, dónde está cada co
 
 ## 1. Ramas en curso: hay que adaptarlas a las cuatro capas
 
+**Actualiza tu `main` local.** El 2026-11-02 se corrigieron los dos últimos commits de `main` (autoría y mensajes; el contenido es idéntico), así que `git pull` ya no basta. Si tienes `main` en local y sin trabajo propio en ella:
+```sh
+git fetch origin
+git switch main
+git reset --hard origin/main
+```
+No subas tu `main` antiguo. Tus ramas no hace falta tocarlas: el script de adaptación tiene esto en cuenta.
+
 El 2026-11-02 el backend pasó a cuatro capas ([spec 50](../specs/50-arquitectura-cuatro-capas.md)). Las ramas empezadas antes **no se fusionan ni se rebasan**: se adaptan con un comando, siguiendo [`adaptar-rama-a-capas.md`](adaptar-rama-a-capas.md). La rama original no se toca. Cada una se probó ya en una copia con este resultado:
 
 | Persona | Rama | Módulos | Resultado al adaptarla | Lo que falta |
