@@ -1298,3 +1298,48 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .auditoria-list-panel, .auditoria-detail { padding: 13px; }
   .auditoria-detail-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.roles-page { padding-bottom: 42px; }
+.roles-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0 15px; }
+.roles-list-panel, .roles-detail-panel { min-width: 0; }
+.roles-filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px 10px; margin-bottom: 14px; }
+.roles-filters > div { display: grid; min-width: 0; gap: 6px; }
+.roles-filters label { color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.roles-filters input { width: 100%; min-width: 0; height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.roles-table { width: 100%; min-width: 520px; border-collapse: collapse; text-align: left; font-size: 10px; }
+.roles-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.roles-table th { padding: 9px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.roles-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.roles-table td:nth-child(n+4) { white-space: nowrap; }
+.roles-table tbody tr.is-selected { background: var(--accent-soft); }
+.rol-tipo { display: inline-flex; padding: 4px 7px; border-radius: 20px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.rol-tipo.is-sistema { background: var(--accent-soft); color: var(--accent-ink); }
+.roles-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.roles-detail-grid > div { min-width: 0; }
+.roles-detail-grid .roles-detail-ancho { grid-column: 1 / -1; }
+.roles-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.roles-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.roles-form-panel { margin-top: 15px; }
+.rol-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rol-form .form-field { min-width: 0; gap: 6px; }
+.rol-form .form-field > input, .rol-form .form-field > textarea { width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.rol-form .form-field > input { min-height: 36px; }
+.rol-form .form-field > textarea { resize: vertical; }
+.rol-form .form-field > input:disabled { opacity: .65; cursor: not-allowed; }
+.rol-campo-ancho { grid-column: 1 / -1; min-width: 0; }
+.rol-form-nota { grid-column: 1 / -1; margin: 0; color: var(--ink-faint); font-size: 10px; }
+.roles-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.roles-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+
+@media (min-width: 1024px) {
+  .roles-work-area { grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); }
+  .roles-table { min-width: 0; }
+}
+
+@media (max-width: 720px) {
+  .roles-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .roles-detail-grid { gap: 12px; }
+  .rol-form { grid-template-columns: minmax(0, 1fr); }
+  .roles-form-actions { grid-column: auto; align-items: flex-end; }
+  .roles-form-actions p { max-width: 58%; }
+}
