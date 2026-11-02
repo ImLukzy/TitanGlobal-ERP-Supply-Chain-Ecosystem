@@ -351,6 +351,8 @@ checks = {
     "centro-plantas": lambda data: data == ["Planta Arequipa", "Planta Lima"],
     "centros-summary": lambda data: data["totalCentros"] == 5 and data["activos"] == 4 and data["inactivos"] == 1 and data["capacidadTotalHorasDia"] == 68.0 and data["capacidadActivaHorasDia"] == 44.0 and [(item["tipo"], item["totalCentros"], item["capacidadHorasDia"]) for item in data["porTipo"]] == [("Linea", 3, 48.0), ("Celda", 2, 20.0)] and [(item["planta"], item["totalCentros"], item["activos"]) for item in data["porPlanta"]] == [("Planta Lima", 3, 3), ("Planta Arequipa", 2, 1)],
     "centro-created": lambda data: data["id"] > 0,
+    "centro-cost-overflow": lambda data: data["StatusCode"] == 400 and data["Message"] == "El costo por hora no puede superar 9999999999999999.99." and "Detail" not in data,
+    "centro-capacity-decimals": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad admite como máximo 2 decimales." and "Detail" not in data,
     "centro-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un centro de trabajo con el código CT-LIM-L01." and "Detail" not in data,
 }
 
@@ -740,6 +742,8 @@ request_check 'Plantas de centros de trabajo' GET '/api/v1/centros-trabajo/plant
 request_check 'Resumen de centros de trabajo' GET '/api/v1/centros-trabajo/resumen' 200 centros-summary
 request_check 'POST centro de trabajo válido' POST '/api/v1/centros-trabajo' 200 centro-created '{"codigo":"CT-SMK-01","nombre":"Centro Smoke","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":8,"costoHora":10.5,"responsable":"QA","activo":true}'
 request_check 'POST centro de trabajo con código del seed' POST '/api/v1/centros-trabajo' 409 centro-duplicate '{"codigo":"CT-LIM-L01","nombre":"Duplicado","tipo":"Linea","planta":"Planta Lima","capacidadHorasDia":8,"costoHora":10}'
+request_check 'POST centro de trabajo con costo fuera de rango' POST '/api/v1/centros-trabajo' 400 centro-cost-overflow '{"codigo":"CT-SMK-02","nombre":"Costo excedido","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":8,"costoHora":100000000000000000}'
+request_check 'POST centro de trabajo con capacidad de tres decimales' POST '/api/v1/centros-trabajo' 400 centro-capacity-decimals '{"codigo":"CT-SMK-03","nombre":"Capacidad con decimales","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":0.001,"costoHora":10}'
 request_check 'DELETE centro de trabajo recién creado' DELETE "/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" 204 ''
 CENTRO_TRABAJO_CREADO_ID=""
 printf 'SMOKE OK\n'

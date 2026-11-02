@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -365,6 +366,134 @@ public class CentrosTrabajoApiTests
     }
 
     [Theory]
+    [InlineData("100000000000000000", "El costo por hora no puede superar 9999999999999999.99.")]
+    [InlineData("10000000000000000", "El costo por hora no puede superar 9999999999999999.99.")]
+    [InlineData("10.001", "El costo por hora admite como máximo 2 decimales.")]
+    [InlineData("9999999999999999.991", "El costo por hora admite como máximo 2 decimales.")]
+    public async Task CostOutOfRangeReturnsBadRequestOnCreateAndUpdateWithoutChangingRows(string costoHora, string mensaje)
+    {
+        string json = CrearJson("CT-NEW-01", "8", costoHora);
+
+        HttpResponseMessage crear = await _clienteHttp.PostAsync(Ruta, CrearContenido(json));
+        await AssertBusinessErrorAsync(crear, HttpStatusCode.BadRequest, 400, mensaje);
+        Assert.Equal(5, await ContarCentrosAsync());
+
+        HttpResponseMessage actualizar = await _clienteHttp.PutAsync(
+            $"{Ruta}/1",
+            CrearContenido(CrearJson("CT-LIM-L01", "8", costoHora)));
+        await AssertBusinessErrorAsync(actualizar, HttpStatusCode.BadRequest, 400, mensaje);
+        await AssertCentroUnoSinCambiosAsync();
+    }
+
+    [Theory]
+    [InlineData("0.001")]
+    [InlineData("8.005")]
+    [InlineData("23.999")]
+    public async Task CapacityWithMoreThanTwoDecimalsReturnsBadRequestOnCreateAndUpdate(string capacidad)
+    {
+        const string mensaje = "La capacidad admite como máximo 2 decimales.";
+
+        HttpResponseMessage crear = await _clienteHttp.PostAsync(
+            Ruta,
+            CrearContenido(CrearJson("CT-NEW-01", capacidad, "10")));
+        await AssertBusinessErrorAsync(crear, HttpStatusCode.BadRequest, 400, mensaje);
+        Assert.Equal(5, await ContarCentrosAsync());
+
+        HttpResponseMessage actualizar = await _clienteHttp.PutAsync(
+            $"{Ruta}/1",
+            CrearContenido(CrearJson("CT-LIM-L01", capacidad, "10")));
+        await AssertBusinessErrorAsync(actualizar, HttpStatusCode.BadRequest, 400, mensaje);
+        await AssertCentroUnoSinCambiosAsync();
+    }
+
+    [Fact]
+    public async Task CapacityAndCostAtTheirLimitsWithTwoDecimalsAreAccepted()
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsync(
+            Ruta,
+            CrearContenido(CrearJson("CT-NEW-01", "0.01", "9999999999999999.99")));
+        Dictionary<string, int>? creado = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.NotNull(creado);
+        CentroTrabajoDetalleDto? detalle = await _clienteHttp.GetFromJsonAsync<CentroTrabajoDetalleDto>(
+            $"{Ruta}/{creado["id"]}");
+        Assert.NotNull(detalle);
+        Assert.Equal(0.01m, detalle.CapacidadHorasDia);
+        Assert.Equal(9999999999999999.99m, detalle.CostoHora);
+    }
+
+    [Fact]
+    public async Task OmittedActiveInJsonDefaultsToTrueOnCreate()
+    {
+        string json = "{\"codigo\":\"CT-NEW-01\",\"nombre\":\"Sin activo\",\"tipo\":\"Linea\","
+            + "\"planta\":\"Planta Lima\",\"capacidadHorasDia\":8,\"costoHora\":10}";
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsync(Ruta, CrearContenido(json));
+        Dictionary<string, int>? creado = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.NotNull(creado);
+        CentroTrabajoDetalleDto? detalle = await _clienteHttp.GetFromJsonAsync<CentroTrabajoDetalleDto>(
+            $"{Ruta}/{creado["id"]}");
+        Assert.NotNull(detalle);
+        Assert.True(detalle.Activo);
+    }
+
+    [Fact]
+    public async Task OmittedActiveInJsonKeepsCenterActiveOnUpdate()
+    {
+        string json = "{\"codigo\":\"CT-LIM-L01\",\"nombre\":\"Sin activo\",\"tipo\":\"Linea\","
+            + "\"planta\":\"Planta Lima\",\"capacidadHorasDia\":8,\"costoHora\":10}";
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsync($"{Ruta}/1", CrearContenido(json));
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        CentroTrabajoDetalleDto? detalle = await _clienteHttp.GetFromJsonAsync<CentroTrabajoDetalleDto>($"{Ruta}/1");
+        Assert.NotNull(detalle);
+        Assert.Equal("Sin activo", detalle.Nombre);
+        Assert.True(detalle.Activo);
+    }
+
+    [Theory]
+    [InlineData("A", "Centro", "Linea", "Planta Lima", "El código solo admite letras, números y guiones (2 a 20 caracteres).")]
+    [InlineData("  ", "Centro", "Linea", "Planta Lima", "El código es obligatorio.")]
+    [InlineData("CT-NEW-01", "  ", "Linea", "Planta Lima", "El nombre del centro de trabajo es obligatorio.")]
+    [InlineData("CT-NEW-01", "Centro", "Taller", "Planta Lima", "El tipo de centro de trabajo no es válido.")]
+    [InlineData("CT-NEW-01", "Centro", "Linea", "  ", "La planta es obligatoria.")]
+    public async Task UpdateWithInvalidTextFieldsReturnsBadRequestWithoutChangingRow(
+        string codigo,
+        string nombre,
+        string tipo,
+        string planta,
+        string mensaje)
+    {
+        GuardarCentroTrabajoRequestDto solicitud = CrearSolicitud(codigo, nombre, tipo, planta, 8, 10);
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync($"{Ruta}/1", solicitud);
+
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.BadRequest, 400, mensaje);
+        await AssertCentroUnoSinCambiosAsync();
+    }
+
+    [Fact]
+    public async Task UpdateWithOverlongTextFieldsReturnsBadRequestWithoutChangingRow()
+    {
+        GuardarCentroTrabajoRequestDto nombreLargo = CrearSolicitud("CT-LIM-L01", new string('N', 201), "Linea", "Planta Lima", 8, 10);
+        await AssertPutErrorAsync(nombreLargo, "El nombre del centro de trabajo no puede superar 200 caracteres.");
+
+        GuardarCentroTrabajoRequestDto plantaLarga = CrearSolicitud("CT-LIM-L01", "Centro", "Linea", new string('P', 101), 8, 10);
+        await AssertPutErrorAsync(plantaLarga, "La planta no puede superar 100 caracteres.");
+
+        GuardarCentroTrabajoRequestDto responsableLargo = CrearSolicitud("CT-LIM-L01", "Centro", "Linea", "Planta Lima", 8, 10);
+        responsableLargo.Responsable = new string('R', 101);
+        await AssertPutErrorAsync(responsableLargo, "El responsable no puede superar 100 caracteres.");
+
+        GuardarCentroTrabajoRequestDto codigoLargo = CrearSolicitud("CT-ABCDEFGHIJKLMNOPQR", "Centro", "Linea", "Planta Lima", 8, 10);
+        await AssertPutErrorAsync(codigoLargo, "El código solo admite letras, números y guiones (2 a 20 caracteres).");
+    }
+
+    [Theory]
     [InlineData("GET")]
     [InlineData("PUT")]
     [InlineData("DELETE")]
@@ -485,6 +614,25 @@ public class CentrosTrabajoApiTests
         HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync(Ruta, solicitud);
         await AssertBusinessErrorAsync(respuesta, HttpStatusCode.BadRequest, 400, mensaje);
         Assert.Equal(5, await ContarCentrosAsync());
+    }
+
+    private static string CrearJson(string codigo, string capacidadHorasDia, string costoHora)
+    {
+        return "{\"codigo\":\"" + codigo + "\",\"nombre\":\"Centro\",\"tipo\":\"Linea\","
+            + "\"planta\":\"Planta Lima\",\"capacidadHorasDia\":" + capacidadHorasDia
+            + ",\"costoHora\":" + costoHora + ",\"activo\":true}";
+    }
+
+    private static StringContent CrearContenido(string json)
+    {
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    private async Task AssertPutErrorAsync(GuardarCentroTrabajoRequestDto solicitud, string mensaje)
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync($"{Ruta}/1", solicitud);
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.BadRequest, 400, mensaje);
+        await AssertCentroUnoSinCambiosAsync();
     }
 
     private async Task AssertCentroUnoSinCambiosAsync()
