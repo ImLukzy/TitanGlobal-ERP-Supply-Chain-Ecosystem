@@ -8,12 +8,17 @@
 #   ./scripts/neon-rama.sh leonel franco sergio
 #
 # Variables opcionales:
-#   NEON_ROLE      rol de la base (por defecto: neondb_owner)
+#   NEON_ROLE      rol de la base (por defecto: titanglobal)
 #   NEON_DATABASE  base de datos  (por defecto: titanglobal)
 #   NEON_PARENT    nombre de la rama de origen (por defecto: la rama principal del proyecto)
 #
+# Una rama nueva hereda la contraseña de su origen, que es la de producción. Por eso el script
+# la cambia nada más crearla: la cadena que recibe el compañero solo sirve para su rama.
+#
 # Cada cadena se envía al compañero por mensaje privado. Nunca se sube al repositorio.
 # Si una rama ya existe, se reutiliza y solo se vuelve a imprimir su cadena.
+# Para refrescar una rama, bórrala y vuelve a crearla con este script: no uses «reset» desde
+# el origen, porque podría devolverle la contraseña de producción.
 set -euo pipefail
 
 if [[ $# -eq 0 ]]; then
@@ -22,7 +27,7 @@ if [[ $# -eq 0 ]]; then
 fi
 : "${NEON_API_KEY:?Falta NEON_API_KEY}"
 : "${NEON_PROJECT_ID:?Falta NEON_PROJECT_ID}"
-NEON_ROLE="${NEON_ROLE:-neondb_owner}"
+NEON_ROLE="${NEON_ROLE:-titanglobal}"
 NEON_DATABASE="${NEON_DATABASE:-titanglobal}"
 for nombre in "$@"; do
     if [[ ! "$nombre" =~ ^[a-z0-9-]+$ ]]; then
@@ -39,6 +44,17 @@ neon() {
 
 json() {
     python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"
+}
+
+esperar_rama() {
+    local intento pendientes
+    for intento in $(seq 1 60); do
+        pendientes="$(neon "${API}/operations?limit=20" | json "sum(1 for o in d['operations'] if o.get('branch_id')=='$1' and o['status'] in ('scheduling','running'))")"
+        [[ "$pendientes" == "0" ]] && return 0
+        sleep 2
+    done
+    echo "La rama $1 sigue ocupada tras 2 minutos" >&2
+    return 1
 }
 
 ramas="$(neon "${API}/branches")"
@@ -62,6 +78,10 @@ if p: b['parent_id']=p
 print(json.dumps({'branch':b,'endpoints':[{'type':'read_write'}]}))" "$rama" "$parent_id")"
         branch_id="$(neon -X POST "${API}/branches" -d "$cuerpo" | json "d['branch']['id']")"
         echo "Creada ${rama} (${branch_id})" >&2
+        esperar_rama "$branch_id"
+        neon -X POST "${API}/branches/${branch_id}/roles/${NEON_ROLE}/reset_password" > /dev/null
+        esperar_rama "$branch_id"
+        echo "Contraseña propia asignada a ${rama}" >&2
     else
         echo "Ya existía ${rama} (${branch_id})" >&2
     fi
