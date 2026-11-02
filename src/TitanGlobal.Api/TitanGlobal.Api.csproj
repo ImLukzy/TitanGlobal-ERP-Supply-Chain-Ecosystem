@@ -15,4 +15,9 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Modules\Modulo75_ImpuestosTasas\Controllers\" />
+    <Folder Include="Modules\Modulo75_ImpuestosTasas\Dtos\" />
+    <Folder Include="Modules\Modulo75_ImpuestosTasas\UseCases\" />
+  </ItemGroup>
 </Project>
