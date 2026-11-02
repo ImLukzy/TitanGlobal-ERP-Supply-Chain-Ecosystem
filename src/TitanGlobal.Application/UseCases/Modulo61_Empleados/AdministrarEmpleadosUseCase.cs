@@ -112,7 +112,6 @@ public class AdministrarEmpleadosUseCase
         Empleado empleado = await ValidacionEmpleado.ObtenerAsync(_unidad, id);
         ValidacionEmpleado.ValidarEditable(empleado);
         AplicarDatos(empleado, datos);
-        _unidad.Repository<Empleado>().Update(empleado);
         try
         {
             await _unidad.CompleteAsync();
@@ -135,7 +134,6 @@ public class AdministrarEmpleadosUseCase
         empleado.Estado = ValidacionEmpleado.EstadoCesado;
         empleado.FechaCese = fechaCese;
         empleado.MotivoCese = motivo;
-        _unidad.Repository<Empleado>().Update(empleado);
         await _unidad.CompleteAsync();
         return empleado.Id;
     }

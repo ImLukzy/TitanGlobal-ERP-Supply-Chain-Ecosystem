@@ -387,6 +387,90 @@ public class EmpleadosApiTests
     }
 
     [Fact]
+    public async Task EditarEmpleadoInexistenteDevuelveLiteralSinCambiarFilas()
+    {
+        string[] antes = await LeerEmpleadosAsync();
+        HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync("/api/v1/empleados/9999", CrearSolicitudValida());
+        await AssertErrorAsync(respuesta, 404, "El empleado 9999 no existe.");
+        Assert.Equal(antes, await LeerEmpleadosAsync());
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    public async Task GuardarNormalizaEspaciosEmailYOpcionalesVacios(string metodo)
+    {
+        GuardarEmpleadoRequestDto solicitud = CrearSolicitudValida();
+        solicitud.TipoDocumento = "  DNI ";
+        solicitud.NumeroDocumento = "  30000001  ";
+        solicitud.Nombres = "  Lucia Maria ";
+        solicitud.Apellidos = " Quispe Ramos  ";
+        solicitud.Cargo = "  Analista ";
+        solicitud.Area = " Compras  ";
+        solicitud.Email = "  Lucia.Quispe@TitanGlobal.EXAMPLE ";
+        solicitud.Telefono = "  999111222 ";
+        int id = 1;
+        if (metodo == "POST")
+        {
+            id = await CrearAltaValidaAsync(solicitud);
+        }
+        else
+        {
+            HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync("/api/v1/empleados/1", solicitud);
+            Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        }
+
+        Empleado? guardado = await ObtenerEmpleadoAsync(id);
+        Assert.NotNull(guardado);
+        Assert.Equal("DNI", guardado.TipoDocumento);
+        Assert.Equal("30000001", guardado.NumeroDocumento);
+        Assert.Equal("Lucia Maria", guardado.Nombres);
+        Assert.Equal("Quispe Ramos", guardado.Apellidos);
+        Assert.Equal("Analista", guardado.Cargo);
+        Assert.Equal("Compras", guardado.Area);
+        Assert.Equal("lucia.quispe@titanglobal.example", guardado.Email);
+        Assert.Equal("999111222", guardado.Telefono);
+
+        solicitud.Email = "   ";
+        solicitud.Telefono = "";
+        if (metodo == "POST")
+        {
+            solicitud.NumeroDocumento = "30000002";
+            id = await CrearAltaValidaAsync(solicitud);
+        }
+        else
+        {
+            HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync("/api/v1/empleados/1", solicitud);
+            Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        }
+
+        Empleado? vacio = await ObtenerEmpleadoAsync(id);
+        Assert.NotNull(vacio);
+        Assert.Null(vacio.Email);
+        Assert.Null(vacio.Telefono);
+    }
+
+    [Fact]
+    public async Task EditarRegistraEnAuditoriaSoloLosCamposModificados()
+    {
+        GuardarEmpleadoRequestDto solicitud = CrearSolicitudValida();
+        solicitud.NumeroDocumento = "10000001";
+        solicitud.Nombres = "Ana Maria";
+        HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync("/api/v1/empleados/1", solicitud);
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        List<RegistroAuditoria> auditoria = await LeerAuditoriaEmpleadoAsync(1);
+        RegistroAuditoria modificacion = Assert.Single(auditoria, registro => registro.Accion == "Modificacion");
+        using JsonDocument cambios = JsonDocument.Parse(modificacion.Cambios);
+        List<string> campos = cambios.RootElement.EnumerateArray()
+            .Select(cambio => cambio.GetProperty("campo").GetString() ?? string.Empty)
+            .ToList();
+        Assert.Contains("Nombres", campos);
+        Assert.DoesNotContain("Estado", campos);
+        Assert.DoesNotContain("FechaCese", campos);
+        Assert.DoesNotContain("Legajo", campos);
+    }
+
+    [Fact]
     public async Task DeleteNoEliminaElEmpleado()
     {
         string[] antes = await LeerEmpleadosAsync();
