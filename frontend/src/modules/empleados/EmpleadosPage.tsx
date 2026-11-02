@@ -1,19 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PaginaModulo } from '../../components/PaginaModulo';
+import { actualizarEmpleado, crearEmpleado, registrarCeseEmpleado } from './api';
+import { DialogoCese } from './DialogoCese';
 import { EmpleadoDetallePanel } from './EmpleadoDetallePanel';
+import { EmpleadoFormulario } from './EmpleadoFormulario';
 import { EmpleadosFiltros } from './EmpleadosFiltros';
 import { EmpleadosResumen } from './EmpleadosResumen';
 import { EmpleadosTabla } from './EmpleadosTabla';
 import { useEmpleadosData } from './useEmpleadosData';
-import type { EstadoEmpleado, FiltrosEmpleados } from './tipos';
+import type { CeseEmpleadoRequest, EstadoEmpleado, FiltrosEmpleados, GuardarEmpleadoRequest } from './tipos';
 
 const TAMANO_PAGINA = 10;
 const INICIALES: FiltrosEmpleados = { busqueda: '', estado: '', pagina: 1, tamanoPagina: TAMANO_PAGINA };
+
+type ModoFormulario = 'cerrado' | 'nuevo' | 'editar';
 
 export function EmpleadosPage() {
   const [busqueda, setBusqueda] = useState('');
   const [filtros, setFiltros] = useState<FiltrosEmpleados>(INICIALES);
   const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null);
+  const [modoFormulario, setModoFormulario] = useState<ModoFormulario>('cerrado');
+  const [dialogoCeseAbierto, setDialogoCeseAbierto] = useState(false);
+  const botonCeseRef = useRef<HTMLButtonElement>(null);
   const data = useEmpleadosData(filtros, seleccionadoId);
 
   // La búsqueda se aplica 300 ms después del último cambio y vuelve a la página 1 solo si el texto cambia.
@@ -44,10 +52,37 @@ export function EmpleadosPage() {
 
   function seleccionar(id: number): void {
     setSeleccionadoId(id);
+    setModoFormulario('cerrado');
+  }
+
+  async function guardarEmpleado(request: GuardarEmpleadoRequest): Promise<void> {
+    const resultado = modoFormulario === 'editar' && data.empleado !== null
+      ? await actualizarEmpleado(data.empleado.id, request)
+      : await crearEmpleado(request);
+    setSeleccionadoId(resultado.id);
+    setModoFormulario('cerrado');
+    data.recargar();
+  }
+
+  async function registrarCese(request: CeseEmpleadoRequest): Promise<void> {
+    if (data.empleado === null) {
+      return;
+    }
+    const resultado = await registrarCeseEmpleado(data.empleado.id, request);
+    setSeleccionadoId(resultado.id);
+    setDialogoCeseAbierto(false);
+    data.recargar();
+  }
+
+  // Al cancelar o con Escape el foco vuelve al botón que abrió el diálogo.
+  function cerrarCese(): void {
+    setDialogoCeseAbierto(false);
+    botonCeseRef.current?.focus();
   }
 
   const paginas = Math.max(1, Math.ceil((data.lista?.total ?? 0) / TAMANO_PAGINA));
   const cargandoDetalle = seleccionadoId !== null && data.empleado === null && data.errorDetalle === '';
+  const nombreEmpleado = data.empleado === null ? '' : `${data.empleado.nombres} ${data.empleado.apellidos}`;
 
   return (
     <PaginaModulo className="empleados-page" modulo="61-empleados">
@@ -60,6 +95,13 @@ export function EmpleadosPage() {
               <div className="page-eyebrow">LEGAJOS</div>
               <h2 id="empleados-list-title">Todos los empleados</h2>
             </div>
+            <button
+              className="primary-button"
+              onClick={() => setModoFormulario('nuevo')}
+              type="button"
+            >
+              Nuevo empleado
+            </button>
           </div>
           <EmpleadosFiltros
             busqueda={busqueda}
@@ -79,11 +121,30 @@ export function EmpleadosPage() {
           />
         </section>
         <EmpleadoDetallePanel
+          botonCeseRef={botonCeseRef}
           cargando={cargandoDetalle}
+          cesar={() => setDialogoCeseAbierto(true)}
+          editar={() => setModoFormulario('editar')}
           empleado={data.empleado}
           error={data.errorDetalle}
         />
       </div>
+      {modoFormulario !== 'cerrado' && (
+        <EmpleadoFormulario
+          cancelar={() => setModoFormulario('cerrado')}
+          empleado={modoFormulario === 'editar' ? data.empleado : null}
+          guardar={guardarEmpleado}
+          key={modoFormulario === 'editar' && data.empleado !== null ? `editar-${data.empleado.id}` : 'nuevo'}
+        />
+      )}
+      {dialogoCeseAbierto && data.empleado !== null && (
+        <DialogoCese
+          cerrar={cerrarCese}
+          fechaIngreso={data.empleado.fechaIngreso}
+          nombre={nombreEmpleado}
+          registrar={registrarCese}
+        />
+      )}
     </PaginaModulo>
   );
 }
