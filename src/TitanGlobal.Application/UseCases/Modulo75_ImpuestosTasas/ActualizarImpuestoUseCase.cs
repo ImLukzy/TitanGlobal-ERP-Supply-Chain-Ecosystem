@@ -40,11 +40,26 @@ public class ActualizarImpuestoUseCase
             .AnyAsync(x => x.Codigo == impuesto.Codigo && x.Id != id);
 
         if (codigoExiste)
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "El código ya pertenece a otro impuesto.");
+            throw CrearConflictoCodigoException(impuesto.Codigo);
 
         _unitOfWork.Repository<Impuesto>().Update(impuesto);
-        await _unitOfWork.CompleteAsync();
+
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException excepcion)
+            when (excepcion.Tipo == TipoViolacionRestriccion.Unicidad)
+        {
+            throw CrearConflictoCodigoException(impuesto.Codigo);
+        }
+    }
+
+    private static ReglaNegocioException CrearConflictoCodigoException(
+        string codigo)
+    {
+        return new ReglaNegocioException(
+            CodigosEstado.Status409Conflict,
+            $"Ya existe un impuesto con el código {codigo}.");
     }
 }

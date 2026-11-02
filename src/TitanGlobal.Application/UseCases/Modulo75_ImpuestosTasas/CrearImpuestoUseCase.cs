@@ -19,7 +19,6 @@ public class CrearImpuestoUseCase
     public async Task<int> Ejecutar(GuardarImpuestoRequestDto dto)
     {
         Impuesto impuesto = new Impuesto
-
         {
             Codigo = dto.Codigo,
             Nombre = dto.Nombre,
@@ -36,13 +35,28 @@ public class CrearImpuestoUseCase
             .AnyAsync(x => x.Codigo == impuesto.Codigo);
 
         if (existe)
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "Ya existe un impuesto registrado con ese código.");
+            throw CrearConflictoCodigoException(impuesto.Codigo);
 
         await _unitOfWork.Repository<Impuesto>().AddAsync(impuesto);
-        await _unitOfWork.CompleteAsync();
+
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException excepcion)
+            when (excepcion.Tipo == TipoViolacionRestriccion.Unicidad)
+        {
+            throw CrearConflictoCodigoException(impuesto.Codigo);
+        }
 
         return impuesto.Id;
+    }
+
+    private static ReglaNegocioException CrearConflictoCodigoException(
+        string codigo)
+    {
+        return new ReglaNegocioException(
+            CodigosEstado.Status409Conflict,
+            $"Ya existe un impuesto con el código {codigo}.");
     }
 }

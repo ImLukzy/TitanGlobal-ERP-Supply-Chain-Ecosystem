@@ -32,9 +32,15 @@ public class RegistrarTasaImpuestoUseCase
         ValidacionImpuesto.ValidarTasa(
             dto.Porcentaje,
             dto.FechaInicio,
-            dto.FechaFin);
+            dto.FechaFin,
+            dto.Observacion);
 
-        DateTime fechaFin = dto.FechaFin ?? new DateTime(9999, 12, 31);
+        DateTime fechaInicio = ValidacionImpuesto.NormalizarDia(dto.FechaInicio);
+        DateTime? fechaFinGuardada = dto.FechaFin.HasValue
+            ? ValidacionImpuesto.NormalizarDia(dto.FechaFin.Value)
+            : null;
+        DateTime fechaFin = fechaFinGuardada
+            ?? ValidacionImpuesto.NormalizarDia(DateTime.MaxValue);
 
         bool existeCruce = await _unitOfWork.Repository<TasaImpuesto>()
             .AsQueryable()
@@ -42,7 +48,7 @@ public class RegistrarTasaImpuestoUseCase
                 t.ImpuestoId == impuestoId &&
                 t.Activo &&
                 t.FechaInicio <= fechaFin &&
-                (!t.FechaFin.HasValue || t.FechaFin.Value >= dto.FechaInicio));
+                (!t.FechaFin.HasValue || t.FechaFin.Value >= fechaInicio));
 
         if (existeCruce)
             throw new ReglaNegocioException(
@@ -53,8 +59,8 @@ public class RegistrarTasaImpuestoUseCase
         {
             ImpuestoId = impuestoId,
             Porcentaje = dto.Porcentaje,
-            FechaInicio = dto.FechaInicio.Date,
-            FechaFin = dto.FechaFin?.Date,
+            FechaInicio = fechaInicio,
+            FechaFin = fechaFinGuardada,
             Activo = true,
             Observacion = dto.Observacion
         };

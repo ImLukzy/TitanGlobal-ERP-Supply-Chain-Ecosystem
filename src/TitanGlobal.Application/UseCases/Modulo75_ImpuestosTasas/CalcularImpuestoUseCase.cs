@@ -19,10 +19,22 @@ public class CalcularImpuestoUseCase
     public async Task<CalcularImpuestoResponseDto> Ejecutar(
         CalcularImpuestoRequestDto dto)
     {
-        if (dto.BaseImponible <= 0)
+        decimal baseImponible = Math.Round(
+            dto.BaseImponible,
+            2,
+            MidpointRounding.AwayFromZero);
+
+        if (baseImponible <= 0)
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,
                 "La base imponible debe ser mayor que cero.");
+
+        if (dto.FechaOperacion == default)
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La fecha de operación es obligatoria.");
+
+        DateTime fecha = ValidacionImpuesto.NormalizarDia(dto.FechaOperacion);
 
         Impuesto? impuesto = await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
@@ -32,8 +44,6 @@ public class CalcularImpuestoUseCase
             throw new ReglaNegocioException(
                 CodigosEstado.Status404NotFound,
                 "El impuesto no existe o está inactivo.");
-
-        DateTime fecha = dto.FechaOperacion.Date;
 
         TasaImpuesto? tasa = await _unitOfWork.Repository<TasaImpuesto>()
             .AsQueryable()
@@ -50,20 +60,33 @@ public class CalcularImpuestoUseCase
                 CodigosEstado.Status400BadRequest,
                 "No existe una tasa vigente para la fecha indicada.");
 
-        decimal importe = Math.Round(
-            dto.BaseImponible * tasa.Porcentaje / 100m,
-            2,
-            MidpointRounding.AwayFromZero);
+        decimal importe;
+        decimal total;
+
+        try
+        {
+            importe = Math.Round(
+                baseImponible * tasa.Porcentaje / 100m,
+                2,
+                MidpointRounding.AwayFromZero);
+            total = baseImponible + importe;
+        }
+        catch (OverflowException)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La base imponible es demasiado grande.");
+        }
 
         return new CalcularImpuestoResponseDto
         {
             ImpuestoId = impuesto.Id,
             Codigo = impuesto.Codigo,
             Nombre = impuesto.Nombre,
-            BaseImponible = dto.BaseImponible,
+            BaseImponible = baseImponible,
             PorcentajeAplicado = tasa.Porcentaje,
             ImporteImpuesto = importe,
-            Total = dto.BaseImponible + importe,
+            Total = total,
             FechaOperacion = fecha
         };
     }
