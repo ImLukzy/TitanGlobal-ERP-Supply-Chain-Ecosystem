@@ -29,6 +29,7 @@ AUDITORIA_MODIFICACION_ID=""
 AUDITORIA_BAJA_ID=""
 CENTRO_TRABAJO_SEED_ID=""
 CENTRO_TRABAJO_CREADO_ID=""
+VEHICULO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -354,6 +355,13 @@ checks = {
     "centro-cost-overflow": lambda data: data["StatusCode"] == 400 and data["Message"] == "El costo por hora no puede superar 9999999999999999.99." and "Detail" not in data,
     "centro-capacity-decimals": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad admite como máximo 2 decimales." and "Detail" not in data,
     "centro-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un centro de trabajo con el código CT-LIM-L01." and "Detail" not in data,
+    "vehiculos-camion": lambda data: data["total"] == 2 and all(item["tipo"] == "Camion" for item in data["items"]),
+    "vehiculos-inactivo": lambda data: data["total"] == 1 and data["items"][0]["placa"] == "JKL-012" and data["items"][0]["activo"] is False,
+    "vehiculo-detail": lambda data: data["id"] == 1 and data["placa"] == "ABC-123" and data["marca"] == "Volvo" and data["tipo"] == "Camion" and data["capacidadKg"] == 20000.0,
+    "vehiculos-tipos": lambda data: data == ["Camion", "Furgon", "Moto", "Otro"],
+    "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Otro", 1, 1), ("Moto", 1, 1)],
+    "vehiculo-created": lambda data: data["id"] > 0,
+    "vehiculo-placa-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa ABC-123.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -507,6 +515,9 @@ request_check() {
 
     if [[ "$validation" == "centro-created" ]]; then
         CENTRO_TRABAJO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "vehiculo-created" ]]; then
+        VEHICULO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
