@@ -11,7 +11,7 @@ failed = False
 
 var_declaration = re.compile(r"\bvar\s+(?:[A-Za-z_]\w*|\([^)]*\))\s*(?:=|\bin\b)")
 interface_use_case = re.compile(r"\binterface\s+I\w*UseCase\b")
-class_use_case = re.compile(r"\bclass\s+\w*UseCase\b")
+class_use_case = re.compile(r"\b(?:class|record)\s+\w*UseCase\b")
 controller_dependency = re.compile(r"\b(?:IUnitOfWork|DbContext|IGenericRepository|GenericRepository)\b")
 member_expression = re.compile(
     r"^\s*(?:(?:public|private|protected|internal|static|async|virtual|override|sealed|new|partial|extern|unsafe|readonly)\s+)*"
@@ -31,11 +31,16 @@ for path in sorted(root.rglob("*.cs")):
         ("c: interfaz UseCase", interface_use_case, True),
         ("d: UseCase en Services", class_use_case, "Services" in path.parts),
         ("e: controlador con dependencia de persistencia", controller_dependency, "Controllers" in path.parts),
-        ("g: UseCase fuera de Application", class_use_case, "TitanGlobal.Api" in path.parts or "TitanGlobal.Infrastructure" in path.parts),
+        ("g: UseCase fuera de Application", class_use_case, any(layer in path.parts for layer in ("TitanGlobal.Api", "TitanGlobal.Infrastructure", "TitanGlobal.Domain"))),
     ]
 
+    code = re.sub(r"//.*", "", text)
     for layer, pattern in layer_dependencies.items():
-        checks.append((f"f: dependencia prohibida en {layer}", pattern, layer in path.parts))
+        match = pattern.search(code)
+        if layer in path.parts and match:
+            line = code.count("\n", 0, match.start()) + 1
+            print(f"{path}:{line}: f: dependencia prohibida en {layer}")
+            failed = True
 
     for label, pattern, enabled in checks:
         match = pattern.search(text)

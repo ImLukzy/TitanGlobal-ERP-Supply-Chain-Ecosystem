@@ -98,6 +98,20 @@ def reescribir_postgres(texto):
     return quitar_using(texto, "Npgsql")
 
 
+def riesgos_postgres(texto):
+    """Casos que compilan tras reescribir pero podrían cambiar de sentido."""
+    riesgos = []
+    if re.search(r"catch\s*\(\s*DbUpdateException(?:\s+\w+)?\s*\)(?!\s*when)", texto):
+        riesgos.append("catch de DbUpdateException sin filtro: ahora solo captura unicidad y clave foránea")
+    if re.search(r"InnerException\??\.Message", texto):
+        riesgos.append("lee InnerException.Message: ya no es el texto de PostgreSQL")
+    alias = re.findall(r"PostgresException\??\s+(\w+)", texto)
+    for nombre in set(alias):
+        if re.search(rf"\b{nombre}\??\.(?:Message|MessageText|Detail|Hint)\b", texto):
+            riesgos.append(f"lee el texto del error de PostgreSQL desde {nombre}: usa excepcion.Tipo o excepcion.Restriccion")
+    return riesgos
+
+
 def reescribir_namespaces_modulos(texto):
     texto = re.sub(r"TitanGlobal\.Api\.Modules\.(Modulo\d+_\w+)\.Controllers", r"TitanGlobal.Api.Controllers.\1", texto)
     texto = re.sub(r"TitanGlobal\.Api\.Modules\.(Modulo\d+_\w+)\.Dtos", r"TitanGlobal.Application.DTOs.\1", texto)
@@ -157,15 +171,17 @@ def reescribir_cs(texto, destino):
     return texto
 
 
-def reescribir_markdown(texto):
-    """Actualiza las rutas que cita una spec nueva de la rama."""
+def reescribir_markdown(texto, specs_renombradas):
+    """Actualiza las rutas que cita un documento de la rama."""
     texto = re.sub(r"src/TitanGlobal\.Api/Modules/(Modulo\d+_\w+)/Controllers", rf"{API}/Controllers/\1", texto)
     texto = re.sub(r"src/TitanGlobal\.Api/Modules/(Modulo\d+_\w+)/Dtos", rf"{APPLICATION}/DTOs/\1", texto)
     texto = re.sub(r"src/TitanGlobal\.Api/Modules/(Modulo\d+_\w+)/UseCases", rf"{APPLICATION}/UseCases/\1", texto)
     texto = re.sub(r"src/TitanGlobal\.Api/Models/TitanGlobalDbContext", f"{INFRASTRUCTURE}/Persistence/TitanGlobalDbContext", texto)
     texto = re.sub(r"src/TitanGlobal\.Api/Models/", f"{DOMAIN}/Models/", texto)
     texto = re.sub(r"src/TitanGlobal\.Api/Migrations", f"{INFRASTRUCTURE}/Migrations", texto)
-    return re.sub(r"(docs/specs/|specs/|\()\d+-(modulo\d+-)", r"\1\2", texto)
+    for antiguo, nuevo in specs_renombradas.items():
+        texto = re.sub(rf"(?<![\w-]){re.escape(antiguo)}", nuevo, texto)
+    return texto
 
 
 def ruta_spec(ruta):
@@ -173,11 +189,11 @@ def ruta_spec(ruta):
     return re.sub(r"^docs/specs/\d+-(modulo\d+-.+\.md)$", r"docs/specs/\1", ruta)
 
 
-def reescribir(contenido, destino):
+def reescribir(contenido, destino, specs_renombradas):
     if destino.endswith(".cs"):
         return reescribir_cs(contenido, destino)
     if destino.endswith(".md"):
-        return reescribir_markdown(contenido)
+        return reescribir_markdown(contenido, specs_renombradas)
     return contenido
 
 
@@ -221,12 +237,15 @@ def fusionar(actual, base, suyo):
         rutas = {}
         for nombre, contenido in (("main", actual), ("base", base), ("rama", suyo)):
             rutas[nombre] = Path(carpeta) / nombre
-            rutas[nombre].write_bytes(contenido)
+            rutas[nombre].write_bytes(contenido.replace(b"\r\n", b"\n"))
         resultado = subprocess.run(
             ["git", "merge-file", "-p", "-L", "main", "-L", "base", "-L", "tu rama",
              str(rutas["main"]), str(rutas["base"]), str(rutas["rama"])],
             capture_output=True,
         )
+        if resultado.returncode > 127 or resultado.returncode < 0:
+            print(f"  No se pudo fusionar: {resultado.stderr.decode('utf-8', 'replace').strip()}")
+            return actual, True
         return resultado.stdout, resultado.returncode != 0
 
 
@@ -251,21 +270,39 @@ def modo_rama(rama, sin_dotnet):
     conflictos = []
     migraciones = []
     avisos = []
-    lineas = git("diff", "--name-status", "--no-renames", base, rama).decode("utf-8").splitlines()
-    for linea in lineas:
-        estado, ruta = linea.split("\t", 1)
+    campos = git("diff", "--name-status", "--no-renames", "-z", base, rama).decode("utf-8").split("\0")[:-1]
+    cambios = list(zip(campos[0::2], campos[1::2]))
+    specs_renombradas = {}
+    for estado, ruta in cambios:
+        if estado == "A" and ruta_spec(ruta) != ruta:
+            specs_renombradas[Path(ruta).name] = Path(ruta_spec(ruta)).name
+
+    for estado, ruta in cambios:
         if ruta.startswith(f"{API}/Migrations/"):
             nombre = re.match(r"^\d+_(.+)\.cs$", Path(ruta).name)
             if estado == "A" and nombre and not ruta.endswith(".Designer.cs"):
                 migraciones.append(nombre.group(1))
+                texto_migracion = a_texto(leer_de_git(rama, ruta)) or ""
+                avisos.append(f"la migración {nombre.group(1)} se descarta y se regenera desde el modelo")
+                if re.search(r"migrationBuilder\.(Sql|InsertData|UpdateData|DeleteData)\b", texto_migracion):
+                    avisos.append(f"la migración {nombre.group(1)} tiene datos o SQL escritos a mano: repítelos en la nueva")
+            elif estado != "A" and not ruta.endswith("ModelSnapshot.cs"):
+                avisos.append(f"tu rama cambió una migración antigua y no se ha aplicado: {ruta}")
+            continue
+        if Path(ruta).name == "DependencyInjectionExtensions.cs":
+            avisos.append("tu rama cambió DependencyInjectionExtensions.cs, que ya no existe: lleva tu registro a AddApplicationServices o AddInfrastructureServices")
             continue
         destino = ruta_spec(mapear_ruta(ruta)) if estado == "A" else mapear_ruta(ruta)
         archivo = Path(destino)
 
         if estado == "D":
             if archivo.exists():
-                archivo.unlink()
-                avisos.append(f"borrado (como en tu rama): {destino}")
+                texto_base = a_texto(leer_de_git(base, ruta) or b"")
+                if texto_base is None or reescribir(texto_base, destino, specs_renombradas).encode("utf-8") != archivo.read_bytes():
+                    avisos.append(f"tu rama lo borró, pero main lo cambió; no se borra, decide tú: {destino}")
+                else:
+                    archivo.unlink()
+                    avisos.append(f"borrado (como en tu rama): {destino}")
             continue
 
         suyo = leer_de_git(rama, ruta)
@@ -273,9 +310,12 @@ def modo_rama(rama, sin_dotnet):
             avisos.append(f"sin aplicar, revísalo a mano: {ruta}")
             continue
         texto_suyo = a_texto(suyo)
+        if texto_suyo is not None and destino.startswith(APPLICATION):
+            for riesgo in riesgos_postgres(texto_suyo):
+                avisos.append(f"revisa {destino}: {riesgo}")
 
         if estado == "A":
-            contenido = suyo if texto_suyo is None else reescribir(texto_suyo, destino).encode("utf-8")
+            contenido = suyo if texto_suyo is None else reescribir(texto_suyo, destino, specs_renombradas).encode("utf-8")
             if archivo.exists() and archivo.read_bytes() != contenido:
                 conflictos.append(destino)
                 contenido, _ = fusionar(archivo.read_bytes(), b"", contenido)
@@ -287,18 +327,22 @@ def modo_rama(rama, sin_dotnet):
         base_contenido = leer_de_git(base, ruta) or b""
         texto_base = a_texto(base_contenido)
         if texto_suyo is None or texto_base is None:
-            avisos.append(f"binario, copiado de tu rama: {destino}")
-            archivo.write_bytes(suyo)
+            if archivo.exists() and archivo.read_bytes() != base_contenido:
+                conflictos.append(destino)
+                avisos.append(f"no es UTF-8 y main también lo cambió; no se toca, cópialo a mano: {destino}")
+            else:
+                avisos.append(f"no es UTF-8, copiado de tu rama: {destino}")
+                archivo.write_bytes(suyo)
             continue
         if not archivo.exists():
             avisos.append(f"ya no existe en main, copiado de tu rama: {destino}")
             archivo.parent.mkdir(parents=True, exist_ok=True)
-            archivo.write_bytes(reescribir(texto_suyo, destino).encode("utf-8"))
+            archivo.write_bytes(reescribir(texto_suyo, destino, specs_renombradas).encode("utf-8"))
             continue
         contenido, hay_conflicto = fusionar(
             archivo.read_bytes(),
-            reescribir(texto_base, destino).encode("utf-8"),
-            reescribir(texto_suyo, destino).encode("utf-8"),
+            reescribir(texto_base, destino, specs_renombradas).encode("utf-8"),
+            reescribir(texto_suyo, destino, specs_renombradas).encode("utf-8"),
         )
         archivo.write_bytes(contenido)
         print(f"  {'CONFLICTO ' if hay_conflicto else 'fusionado '} {destino}")
@@ -329,7 +373,7 @@ def modo_rama(rama, sin_dotnet):
         reglas_correctas = reglas.returncode == 0
         if not reglas_correctas:
             print("\nEl código de la rama incumple las reglas de capas:")
-            print(reglas.stdout)
+            print(reglas.stdout + reglas.stderr)
             print("Una entidad de Domain no puede usar EF Core: pasa sus [Index] y [Precision] a OnModelCreating.")
             print("Consulta docs/equipo/adaptar-rama-a-capas.md.")
 

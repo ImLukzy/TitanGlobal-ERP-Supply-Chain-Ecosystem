@@ -12,5 +12,7 @@ for rule in a b c d e f g; do
     fi
 done
 dotnet test --no-build
+dotnet tool restore
+dotnet ef migrations has-pending-model-changes -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api --no-build
 npm --prefix frontend ci --no-audit --no-fund
 npm --prefix frontend run verify
