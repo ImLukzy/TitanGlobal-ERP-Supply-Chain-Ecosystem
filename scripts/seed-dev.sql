@@ -519,4 +519,22 @@ INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribi
 SELECT setval(pg_get_serial_sequence('"Roles"', 'Id'), (SELECT MAX("Id") FROM "Roles"));
 SELECT setval(pg_get_serial_sequence('"PermisosRoles"', 'Id'), (SELECT MAX("Id") FROM "PermisosRoles"));
 
+INSERT INTO "CentrosTrabajo" (
+    "Codigo", "Nombre", "Tipo", "Planta", "CapacidadHorasDia", "CostoHora", "Responsable", "Activo") VALUES
+    ('CT-LIM-L01', 'Línea de envasado 1', 'Linea', 'Planta Lima', 16.00, 120.00, 'Carlos Ramos', TRUE),
+    ('CT-LIM-L02', 'Línea de envasado 2', 'Linea', 'Planta Lima', 8.00, 110.00, 'Carlos Ramos', TRUE),
+    ('CT-LIM-C01', 'Celda de ensamblaje', 'Celda', 'Planta Lima', 8.00, 85.50, 'Rosa Quispe', TRUE),
+    ('CT-ARE-L01', 'Línea de mezclado', 'Linea', 'Planta Arequipa', 24.00, 150.00, 'Jorge Mamani', FALSE),
+    ('CT-ARE-C01', 'Celda de etiquetado', 'Celda', 'Planta Arequipa', 12.00, 60.00, NULL, TRUE)
+ON CONFLICT ("Codigo") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "Tipo" = EXCLUDED."Tipo",
+    "Planta" = EXCLUDED."Planta",
+    "CapacidadHorasDia" = EXCLUDED."CapacidadHorasDia",
+    "CostoHora" = EXCLUDED."CostoHora",
+    "Responsable" = EXCLUDED."Responsable",
+    "Activo" = EXCLUDED."Activo";
+
+SELECT setval(pg_get_serial_sequence('"CentrosTrabajo"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "CentrosTrabajo"));
+
 COMMIT;

@@ -74,6 +74,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
+    public DbSet<CentroTrabajo> CentrosTrabajo { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurarAuditoria(modelBuilder);
@@ -778,6 +780,42 @@ public partial class TitanGlobalDbContext : DbContext
             .WithOne()
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.Codigo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.Nombre)
+            .HasMaxLength(200)
+            .IsRequired();
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.Tipo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.Planta)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.CapacidadHorasDia)
+            .HasColumnType("decimal(5,2)");
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.CostoHora)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .Property(centro => centro.Responsable)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<CentroTrabajo>()
+            .HasIndex(centro => centro.Codigo)
+            .IsUnique();
 
     }
 }
