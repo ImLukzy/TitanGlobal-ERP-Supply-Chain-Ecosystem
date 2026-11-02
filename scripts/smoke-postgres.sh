@@ -26,6 +26,7 @@ AUDITORIA_ALTA_ID=""
 AUDITORIA_MODIFICACION_ID=""
 AUDITORIA_BAJA_ID=""
 VEHICULO_CREADO_ID=""
+CONDUCTOR_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -327,6 +328,11 @@ checks = {
     "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Otro", 1, 1), ("Moto", 1, 1)],
     "vehiculo-created": lambda data: data["id"] > 0,
     "vehiculo-placa-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa ABC-123.",
+    "conductores-list": lambda data: data["total"] == 3 and len(data["items"]) == 3,
+    "conductor-detail": lambda data: data["id"] == 1 and data["nombre"] == "Carlos Ruiz" and data["documentoLicencia"] == "PLT-0001" and data["habilitado"] is True,
+    "conductor-created": lambda data: data["id"] > 0,
+    "conductor-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un conductor con el documento de licencia PLT-0001." and "Detail" not in data,
+    "conductor-missing": lambda data: data["StatusCode"] == 404 and data["Message"] == "El conductor 9999 no existe." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -468,6 +474,10 @@ request_check() {
 
     if [[ "$validation" == "vehiculo-created" ]]; then
         VEHICULO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "conductor-created" ]]; then
+        CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -674,4 +684,10 @@ request_check 'Proteger último ADMIN activo' PUT '/api/v1/usuarios/1' 409 usuar
 request_check 'Proteger rol VENTAS asignado' DELETE '/api/v1/roles/2' 409 usuario-role-protected
 request_check 'Eliminar usuario smoke' DELETE "/api/v1/usuarios/${USUARIO_CREADO_ID}" 204 ''
 request_check 'OpenAPI de auditoría transaccional' GET '/openapi/v1.json' 200 openapi-auditoria
+request_check 'Conductores del seed' GET '/api/v1/conductores' 200 conductores-list
+request_check 'Detalle del conductor 1' GET '/api/v1/conductores/1' 200 conductor-detail
+request_check 'Crear conductor smoke' POST '/api/v1/conductores' 200 conductor-created '{"nombre":"Conductor Smoke","documentoLicencia":"PLT-SMK-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true,"observaciones":"Alta de smoke"}'
+request_check 'Conductor con documento duplicado' POST '/api/v1/conductores' 409 conductor-duplicate '{"nombre":"Conductor Duplicado","documentoLicencia":"PLT-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'Detalle de conductor inexistente' GET '/api/v1/conductores/9999' 404 conductor-missing
+request_check 'Eliminar conductor smoke' DELETE "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 204 ''
 printf 'SMOKE OK\n'

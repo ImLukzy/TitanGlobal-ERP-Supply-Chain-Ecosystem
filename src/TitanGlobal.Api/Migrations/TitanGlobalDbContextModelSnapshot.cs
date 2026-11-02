@@ -151,6 +151,45 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.Conductor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("DocumentoLicencia")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("Habilitado")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("VencimientoLicencia")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentoLicencia")
+                        .IsUnique();
+
+                    b.ToTable("Conductores");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.ContratoComercial", b =>
                 {
                     b.Property<int>("Id")
