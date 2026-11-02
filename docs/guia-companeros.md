@@ -77,6 +77,7 @@ Si subes uno por error, avisa enseguida: hay que rotarlo, no basta con borrarlo.
 - Qué pide el examen: [`enunciado.md`](enunciado.md)
 - Los 80 módulos y decisiones de arquitectura: [`arquitectura.md`](arquitectura.md)
 - Crear un módulo en cuatro capas: [`equipo/crear-modulo.md`](equipo/crear-modulo.md)
+- Crear la pantalla de un módulo: [`equipo/crear-pantalla.md`](equipo/crear-pantalla.md)
 - Adaptar una rama anterior a cuatro capas: [`equipo/adaptar-rama-a-capas.md`](equipo/adaptar-rama-a-capas.md)
 - Todas las specs con su evidencia: [`specs/`](specs/)
 - Errores que no hay que repetir: [`equipo/lecciones.md`](equipo/lecciones.md)

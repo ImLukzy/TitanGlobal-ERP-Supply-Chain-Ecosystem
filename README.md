@@ -9,7 +9,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 0. Lee el [contexto del proyecto](docs/contexto-proyecto.md): qué es, qué pide el examen, cómo está construido, qué está implementado, decisiones y pendientes.
 1. Sigue el [primer día](docs/equipo/primer-dia.md): instalación, comprobaciones y primer encargo.
 2. Lee la [guía para compañeros](docs/guia-companeros.md): cómo levantar el proyecto y entregar trabajo sin pisar el de otros.
-3. Lee [cómo contribuir](CONTRIBUTING.md): reglas de código y flujo de un módulo, y la guía paso a paso para [crear un módulo en cuatro capas](docs/equipo/crear-modulo.md). Si tenías una rama empezada antes del paso a cuatro capas, sigue [cómo adaptar una rama a capas](docs/equipo/adaptar-rama-a-capas.md).
+3. Lee [cómo contribuir](CONTRIBUTING.md): reglas de código y flujo de un módulo, y las guías paso a paso para [crear un módulo en cuatro capas](docs/equipo/crear-modulo.md) y [crear su pantalla](docs/equipo/crear-pantalla.md). Si tenías una rama empezada antes del paso a cuatro capas, sigue [cómo adaptar una rama a capas](docs/equipo/adaptar-rama-a-capas.md).
 4. Lee la [cadencia](docs/equipo/cadencia.md): meta de **3 módulos por semana** y cómo se organiza la semana.
 5. Mira en [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md) tu bloque de módulos (7 personas, reparto por dominio) y el orden sugerido.
 6. Lee el [relevo](docs/equipo/relevo.md): dónde se quedó el trabajo de Lukas, qué se integró y qué pantallas quedan.

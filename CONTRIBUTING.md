@@ -96,6 +96,7 @@ npm --prefix frontend run dev
 - Estado, decisiones y pendientes: [`docs/contexto-proyecto.md`](docs/contexto-proyecto.md)
 - Instalación y primer día: [`docs/equipo/primer-dia.md`](docs/equipo/primer-dia.md)
 - Crear un módulo en cuatro capas: [`docs/equipo/crear-modulo.md`](docs/equipo/crear-modulo.md)
+- Crear la pantalla de un módulo: [`docs/equipo/crear-pantalla.md`](docs/equipo/crear-pantalla.md)
 - Adaptar una rama anterior a las cuatro capas: [`docs/equipo/adaptar-rama-a-capas.md`](docs/equipo/adaptar-rama-a-capas.md)
 - Cadencia y meta semanal: [`docs/equipo/cadencia.md`](docs/equipo/cadencia.md)
 - Reparto de módulos: [`docs/equipo/asignaciones.md`](docs/equipo/asignaciones.md)

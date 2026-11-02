@@ -389,6 +389,8 @@ Verifica compilación sin warnings (`-warnaserror`), formato (`dotnet format`), 
 
 ### 11. Pull request
 
+Si el módulo lleva pantalla, sigue después [`crear-pantalla.md`](crear-pantalla.md).
+
 Confirma los cambios con tu identidad de git, sube tu rama y abre el pull request contra `main` completando `.github/pull_request_template.md` con la salida de `./scripts/verify.sh` y de `./scripts/smoke-postgres.sh`.
 
 ---

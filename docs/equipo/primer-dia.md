@@ -59,6 +59,7 @@ Puertos: API `5080`, frontend `5173`, PostgreSQL `5433`.
 
 - [ ] [`CONTRIBUTING.md`](../../CONTRIBUTING.md): reglas de código y flujo de un módulo.
 - [ ] [`docs/equipo/crear-modulo.md`](crear-modulo.md): paso a paso para crear un módulo backend en las cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`).
+- [ ] [`docs/equipo/crear-pantalla.md`](crear-pantalla.md): paso a paso para crear la pantalla React de un módulo.
 - [ ] [`docs/equipo/adaptar-rama-a-capas.md`](adaptar-rama-a-capas.md): solo si ya tenías una rama empezada antes de la migración a cuatro capas.
 - [ ] [`docs/equipo/cadencia.md`](cadencia.md): cómo se trabaja cada semana y la meta de 3 módulos.
 - [ ] [`docs/contexto-proyecto.md`](../contexto-proyecto.md): qué está hecho y qué falta.
