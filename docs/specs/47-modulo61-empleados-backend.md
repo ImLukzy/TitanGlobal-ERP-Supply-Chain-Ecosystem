@@ -24,7 +24,7 @@ Reglas aplicadas: E1, E2, E3, T1, T5 y T6 de `docs/hcm-reglas-negocio.md` (§1 y
 2. **Usuario asociado (U2).** Al cesar, ¿se desactiva el usuario de 71 vinculado? `Models/Usuario.cs` no tiene ningún vínculo con empleado; hacerlo exige un campo nuevo en 61 o en 71.
 3. **Maestro del 08.** ¿61 debe ser el maestro de `ComisionesVendedores`? Hoy 08 tiene su propio maestro (`Models/Vendedor.cs`). **No bloquea 61.**
 4. **Aprobadores de horas extra y ausencias.** ¿Las aprueba el rol `Supervisor` o el jefe de área, que no existe en el modelo? (`docs/hcm-reglas-negocio.md` §3, pregunta 4). **No bloquea 61.**
-5. **Fecha de cese (E2): discrepancia entre fuentes.** El encargo aprobado dice «fecha de cese ≥ fecha de ingreso». `docs/hcm-reglas-negocio.md` §2 dice «fecha de cese = fecha de ingreso». Esta spec implementa `≥`. Confirmar antes de programar la regla de cese; no afecta a los demás campos.
+5. **Fecha de cese (E2).** La regla aprobada es «fecha de cese ≥ fecha de ingreso» (`docs/hcm-reglas-negocio.md` §2, E2). Esta spec la implementa tal cual: igual a la fecha de ingreso es válido. No hay discrepancia entre fuentes.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
