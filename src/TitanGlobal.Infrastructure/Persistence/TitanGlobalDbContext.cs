@@ -82,6 +82,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public DbSet<VehiculoFlota> VehiculosFlota { get; set; } = null!;
 
+    public DbSet<Conductor> Conductores { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurarAuditoria(modelBuilder);
@@ -887,6 +889,29 @@ public partial class TitanGlobalDbContext : DbContext
 
         modelBuilder.Entity<VehiculoFlota>()
             .HasIndex(vehiculo => vehiculo.Placa)
+            .IsUnique();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.DocumentoLicencia)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.VencimientoLicencia)
+            .HasColumnType("timestamp with time zone")
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Conductor>()
+            .HasIndex(conductor => conductor.DocumentoLicencia)
             .IsUnique();
 
     }

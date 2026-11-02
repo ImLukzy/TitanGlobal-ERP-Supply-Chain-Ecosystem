@@ -579,4 +579,17 @@ ON CONFLICT ("Placa") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"VehiculosFlota"', 'Id'), (SELECT MAX("Id") FROM "VehiculosFlota"));
 
+INSERT INTO "Conductores" ("Id", "Nombre", "DocumentoLicencia", "VencimientoLicencia", "Habilitado", "Activo", "Observaciones") VALUES
+    (1, 'Carlos Ruiz', 'PLT-0001', TIMESTAMPTZ '2027-12-31 00:00:00+00', TRUE, TRUE, NULL),
+    (2, 'Maria Quispe', 'PLT-0002', TIMESTAMPTZ '2026-06-30 00:00:00+00', TRUE, TRUE, NULL),
+    (3, 'Jose Flores', 'PLT-0003', TIMESTAMPTZ '2028-01-15 00:00:00+00', FALSE, TRUE, 'Sin habilitacion')
+ON CONFLICT ("DocumentoLicencia") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "VencimientoLicencia" = EXCLUDED."VencimientoLicencia",
+    "Habilitado" = EXCLUDED."Habilitado",
+    "Activo" = EXCLUDED."Activo",
+    "Observaciones" = EXCLUDED."Observaciones";
+
+SELECT setval(pg_get_serial_sequence('"Conductores"', 'Id'), (SELECT MAX("Id") FROM "Conductores"));
+
 COMMIT;
