@@ -35,6 +35,8 @@ npm --prefix frontend ci && npm --prefix frontend run dev               # http:/
 ```
 Puertos: API 5080, frontend 5173, PostgreSQL 5433. La contraseña de `docker-compose.yml` es solo para tu máquina.
 
+Detalle de la base local (Windows/PowerShell, sin Docker, reiniciar datos, errores frecuentes): [`equipo/base-de-datos-local.md`](equipo/base-de-datos-local.md).
+
 Comprobación rápida: http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}` y http://localhost:5173/modulos/01-clientes muestra clientes.
 
 ### Probar contra una base en la nube (opcional)

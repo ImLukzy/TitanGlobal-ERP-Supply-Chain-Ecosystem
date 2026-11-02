@@ -42,6 +42,8 @@ npm --prefix frontend run dev
 
 Puertos: API `5080`, frontend `5173`, PostgreSQL `5433`.
 
+¿Windows con PowerShell, sin Docker o algún error con la base? Sigue [`base-de-datos-local.md`](base-de-datos-local.md).
+
 ## 4. Comprobar
 
 - [ ] `http://localhost:5080/api/v1/sistema/salud` → `{"estado":"OK"}`.
