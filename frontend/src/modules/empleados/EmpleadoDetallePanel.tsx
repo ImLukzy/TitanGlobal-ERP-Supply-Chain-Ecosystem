@@ -11,6 +11,7 @@ interface Props {
   editar: () => void;
   cesar: () => void;
   botonCeseRef: RefObject<HTMLButtonElement | null>;
+  tituloRef: RefObject<HTMLHeadingElement | null>;
 }
 
 const TEXTO_SIN_DATO = 'Sin dato';
@@ -22,7 +23,7 @@ function textoOpcional(valor: string | null): string {
   return valor;
 }
 
-export function EmpleadoDetallePanel({ empleado, cargando, error, editar, cesar, botonCeseRef }: Props) {
+export function EmpleadoDetallePanel({ empleado, cargando, error, editar, cesar, botonCeseRef, tituloRef }: Props) {
   const cesado = empleado?.estado === 'Cesado';
   return (
     <PanelDetalle ariaLabelledBy="empleado-detail-title" className="clientes-detail-panel empleados-detail-panel">
@@ -36,7 +37,7 @@ export function EmpleadoDetallePanel({ empleado, cargando, error, editar, cesar,
           <div className="clientes-panel-heading">
             <div>
               <div className="page-eyebrow">{empleado.legajo}</div>
-              <h2 id="empleado-detail-title">{`${empleado.nombres} ${empleado.apellidos}`}</h2>
+              <h2 id="empleado-detail-title" ref={tituloRef} tabIndex={-1}>{`${empleado.nombres} ${empleado.apellidos}`}</h2>
             </div>
             <span aria-hidden="true" className="cliente-initials">
               {empleado.nombres.slice(0, 1).toLocaleUpperCase('es-PE')}

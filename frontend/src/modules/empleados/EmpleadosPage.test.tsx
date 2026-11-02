@@ -349,6 +349,73 @@ describe('pantalla de Empleados: diálogo de cese', () => {
   });
 });
 
+describe('pantalla de Empleados: cese rechazado, foco y páginas vacías', () => {
+  async function ceseConfirmado(): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar cese' }));
+    fireEvent.change(screen.getByLabelText('Fecha de cese'), { target: { value: '2026-10-31' } });
+    fireEvent.change(screen.getByLabelText('Motivo de cese'), { target: { value: 'Renuncia' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar cese' }));
+  }
+
+  it('tras el 409 de «ya cesado» recarga detalle y lista y el panel pasa a Cesado', async () => {
+    const { fetchMock, llamadas } = prepararApiEmpleados({ errorCese: 'yaCesado' });
+    await montarEmpleadosCargados(fetchMock);
+    await seleccionarEmpleado('EMP-000001', 'Ana Torres Vega');
+    const listadosAntes = urlsDeListado(fetchMock).length;
+    const detallesAntes = llamadas.filter((llamada) => llamada.url === '/api/v1/empleados/1').length;
+    await ceseConfirmado();
+    expect(await screen.findByText('El empleado 1 ya está cesado.')).toHaveAttribute('role', 'alert');
+    await waitFor(() => {
+      expect(urlsDeListado(fetchMock)).toHaveLength(listadosAntes + 1);
+      expect(llamadas.filter((llamada) => llamada.url === '/api/v1/empleados/1')).toHaveLength(detallesAntes + 1);
+      expect(screen.getByText('Empleado cesado: no admite cambios.')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Registrar cese' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog', { name: 'Registrar cese' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Ana Torres Vega' })).toHaveFocus();
+  });
+
+  it('lleva el foco al título de la ficha tras un cese correcto, porque el botón queda deshabilitado', async () => {
+    const { fetchMock } = prepararApiEmpleados();
+    await montarEmpleadosCargados(fetchMock);
+    await seleccionarEmpleado('EMP-000001', 'Ana Torres Vega');
+    await ceseConfirmado();
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Registrar cese' })).not.toBeInTheDocument());
+    expect(screen.getByRole('heading', { name: 'Ana Torres Vega' })).toHaveFocus();
+  });
+
+  it('vuelve a la última página válida cuando el cese deja vacía la página actual', async () => {
+    const { fetchMock } = prepararApiEmpleados({ totalListado: 11, totalTrasCese: 10 });
+    await montarEmpleadosCargados(fetchMock);
+    await seleccionarEmpleado('EMP-000001', 'Ana Torres Vega');
+    await irAPagina2(fetchMock);
+    await ceseConfirmado();
+    await waitFor(() => expect(urlsDeListado(fetchMock).at(-1)).toContain('pagina=1'));
+    expect(await screen.findByText('Página 1 de 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'EMP-000001' })).toBeInTheDocument();
+  });
+});
+
+describe('pantalla de Empleados: envío del cese en curso', () => {
+  it('ignora Escape mientras se envía y cierra el diálogo al terminar', async () => {
+    const { fetchMock, llamadas, resolverCese } = prepararApiEmpleados({ retenerCese: true });
+    await montarEmpleadosCargados(fetchMock);
+    await seleccionarEmpleado('EMP-000001', 'Ana Torres Vega');
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar cese' }));
+    fireEvent.change(screen.getByLabelText('Fecha de cese'), { target: { value: '2026-10-31' } });
+    fireEvent.change(screen.getByLabelText('Motivo de cese'), { target: { value: 'Renuncia' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar cese' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Confirmando…' })).toBeDisabled());
+    await waitFor(() => expect(llamadas.some((llamada) => llamada.url.endsWith('/cese'))).toBe(true));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: 'Registrar cese' })).toBeInTheDocument();
+    resolverCese();
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Registrar cese' })).not.toBeInTheDocument());
+  });
+});
+
 describe('pantalla de Empleados: carga inicial', () => {
   it('espera la carga inicial del listado y del resumen', async () => {
     const { fetchMock } = prepararApiEmpleados();

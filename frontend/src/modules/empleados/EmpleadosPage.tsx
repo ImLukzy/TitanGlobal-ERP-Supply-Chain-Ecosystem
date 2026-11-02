@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { PaginaModulo } from '../../components/PaginaModulo';
+import { ApiError } from '../../api/client';
 import { actualizarEmpleado, crearEmpleado, registrarCeseEmpleado } from './api';
 import { DialogoCese } from './DialogoCese';
 import { EmpleadoDetallePanel } from './EmpleadoDetallePanel';
@@ -22,6 +23,7 @@ export function EmpleadosPage() {
   const [modoFormulario, setModoFormulario] = useState<ModoFormulario>('cerrado');
   const [dialogoCeseAbierto, setDialogoCeseAbierto] = useState(false);
   const botonCeseRef = useRef<HTMLButtonElement>(null);
+  const tituloDetalleRef = useRef<HTMLHeadingElement>(null);
   const data = useEmpleadosData(filtros, seleccionadoId);
 
   // La búsqueda se aplica 300 ms después del último cambio y vuelve a la página 1 solo si el texto cambia.
@@ -68,19 +70,38 @@ export function EmpleadosPage() {
     if (data.empleado === null) {
       return;
     }
-    const resultado = await registrarCeseEmpleado(data.empleado.id, request);
-    setSeleccionadoId(resultado.id);
-    setDialogoCeseAbierto(false);
-    data.recargar();
+    try {
+      const resultado = await registrarCeseEmpleado(data.empleado.id, request);
+      setSeleccionadoId(resultado.id);
+      setDialogoCeseAbierto(false);
+      // El botón de cese queda deshabilitado: el foco pasa al título de la ficha.
+      tituloDetalleRef.current?.focus();
+      data.recargar();
+    } catch (error: unknown) {
+      // Si ya estaba cesado, el panel y la lista se ponen al día; el diálogo muestra el mensaje.
+      if (error instanceof ApiError && error.statusCode === 409) {
+        data.recargar();
+      }
+      throw error;
+    }
   }
 
-  // Al cancelar o con Escape el foco vuelve al botón que abrió el diálogo.
+  // Al cancelar o con Escape el foco vuelve al botón que abrió el diálogo, o a la ficha si ya no admite cese.
   function cerrarCese(): void {
     setDialogoCeseAbierto(false);
-    botonCeseRef.current?.focus();
+    const boton = botonCeseRef.current;
+    if (boton !== null && !boton.disabled) {
+      boton.focus();
+    } else {
+      tituloDetalleRef.current?.focus();
+    }
   }
 
   const paginas = Math.max(1, Math.ceil((data.lista?.total ?? 0) / TAMANO_PAGINA));
+  // Si tras cesar o recargar la página actual queda fuera de rango, se vuelve a la última válida.
+  if (data.lista !== null && data.lista.pagina === filtros.pagina && filtros.pagina > paginas) {
+    setFiltros({ ...filtros, pagina: paginas });
+  }
   const cargandoDetalle = seleccionadoId !== null && data.empleado === null && data.errorDetalle === '';
   const nombreEmpleado = data.empleado === null ? '' : `${data.empleado.nombres} ${data.empleado.apellidos}`;
 
@@ -122,6 +143,7 @@ export function EmpleadosPage() {
         </section>
         <EmpleadoDetallePanel
           botonCeseRef={botonCeseRef}
+          tituloRef={tituloDetalleRef}
           cargando={cargandoDetalle}
           cesar={() => setDialogoCeseAbierto(true)}
           editar={() => setModoFormulario('editar')}

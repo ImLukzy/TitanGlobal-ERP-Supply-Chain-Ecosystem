@@ -29,7 +29,9 @@ export function DialogoCese({ nombre, fechaIngreso, cerrar, registrar }: Props) 
     function manejarTeclado(event: globalThis.KeyboardEvent): void {
       if (event.key === 'Escape') {
         event.preventDefault();
-        cerrar();
+        if (!enviando) {
+          cerrar();
+        }
       }
       if (event.key === 'Tab' && dialogoRef.current !== null) {
         const elementos = Array.from(
@@ -50,7 +52,7 @@ export function DialogoCese({ nombre, fechaIngreso, cerrar, registrar }: Props) 
     }
     document.addEventListener('keydown', manejarTeclado);
     return () => document.removeEventListener('keydown', manejarTeclado);
-  }, [cerrar]);
+  }, [cerrar, enviando]);
 
   async function enviar(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();

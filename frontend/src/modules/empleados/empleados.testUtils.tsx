@@ -18,7 +18,10 @@ export interface OpcionesApiEmpleados {
   errorGuardar?: 'duplicado' | 'invalido';
   errorCese?: 'yaCesado' | 'fecha';
   totalListado?: number;
+  totalTrasCese?: number;
+  retenerCese?: boolean;
   idCreado?: number;
+  idCesadoPorFuera?: number;
 }
 
 // Los empleados replican el seed de la spec 47 §4 (tres Activo y un Cesado).
@@ -171,6 +174,9 @@ function respuestaDetalle(id: number, opciones: OpcionesApiEmpleados): Response 
   if (empleado === undefined) {
     return Response.json({ StatusCode: 404, Message: `El empleado ${id} no existe.` }, { status: 404 });
   }
+  if (opciones.idCesadoPorFuera === id) {
+    return Response.json({ ...empleado, estado: 'Cesado', fechaCese: '2026-10-30', motivoCese: 'Cese registrado por otro usuario' });
+  }
   return Response.json(empleado);
 }
 
@@ -201,16 +207,32 @@ function respuestaMock(parsed: URL, metodo: string, opciones: OpcionesApiEmplead
 
 export function prepararApiEmpleados(opciones: OpcionesApiEmpleados = {}) {
   const llamadas: LlamadaEmpleados[] = [];
+  // Copia mutable: el servidor simulado cambia de estado tras un cese (correcto o rechazado por «ya cesado»).
+  const vigentes: OpcionesApiEmpleados = { ...opciones };
+  let liberarCese: () => void = () => undefined;
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const url = String(input);
     const parsed = new URL(url, 'http://localhost');
     const metodo = init.method ?? 'GET';
     const cuerpo = typeof init.body === 'string' ? JSON.parse(init.body) as unknown : undefined;
     llamadas.push({ url, metodo, cuerpo });
-    return respuestaMock(parsed, metodo, opciones);
+    const cese = /\/empleados\/(\d+)\/cese$/.exec(parsed.pathname);
+    if (cese && opciones.retenerCese) {
+      await new Promise<void>((resolver) => {
+        liberarCese = resolver;
+      });
+    }
+    const respuesta = respuestaMock(parsed, metodo, vigentes);
+    if (cese && opciones.errorCese === 'yaCesado') {
+      vigentes.idCesadoPorFuera = Number(cese[1]);
+    }
+    if (cese && respuesta.ok && opciones.totalTrasCese !== undefined) {
+      vigentes.totalListado = opciones.totalTrasCese;
+    }
+    return respuesta;
   });
   vi.stubGlobal('fetch', fetchMock);
-  return { fetchMock, llamadas };
+  return { fetchMock, llamadas, resolverCese: () => liberarCese() };
 }
 
 export function renderEmpleados(path = '/modulos/61-empleados') {
