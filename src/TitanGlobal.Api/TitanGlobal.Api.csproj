@@ -15,4 +15,8 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TitanGlobal.Application\TitanGlobal.Application.csproj" />
+    <ProjectReference Include="..\TitanGlobal.Infrastructure\TitanGlobal.Infrastructure.csproj" />
+  </ItemGroup>
 </Project>
