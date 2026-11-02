@@ -18,6 +18,11 @@ member_expression = re.compile(
     r"(?:[\w.<>?,\[\]]+\s+)?\w+\s*(?:\([^;{}]*\))?\s*=>"
 )
 accessor_expression = re.compile(r"^\s*(?:get|set|init)\s*=>")
+layer_dependencies = {
+    "TitanGlobal.Domain": re.compile(r"\b(?:Microsoft\.EntityFrameworkCore|Npgsql|Microsoft\.AspNetCore|TitanGlobal\.(?:Application|Infrastructure|Api))\b"),
+    "TitanGlobal.Application": re.compile(r"\b(?:Npgsql|Microsoft\.AspNetCore|TitanGlobal\.(?:Infrastructure|Api))\b"),
+    "TitanGlobal.Infrastructure": re.compile(r"\b(?:Microsoft\.AspNetCore|TitanGlobal\.Api)\b"),
+}
 
 for path in sorted(root.rglob("*.cs")):
     text = path.read_text(encoding="utf-8-sig")
@@ -26,7 +31,11 @@ for path in sorted(root.rglob("*.cs")):
         ("c: interfaz UseCase", interface_use_case, True),
         ("d: UseCase en Services", class_use_case, "Services" in path.parts),
         ("e: controlador con dependencia de persistencia", controller_dependency, "Controllers" in path.parts),
+        ("g: UseCase fuera de Application", class_use_case, "TitanGlobal.Api" in path.parts or "TitanGlobal.Infrastructure" in path.parts),
     ]
+
+    for layer, pattern in layer_dependencies.items():
+        checks.append((f"f: dependencia prohibida en {layer}", pattern, layer in path.parts))
 
     for label, pattern, enabled in checks:
         match = pattern.search(text)
