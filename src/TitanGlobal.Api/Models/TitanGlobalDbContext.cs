@@ -73,6 +73,9 @@ public partial class TitanGlobalDbContext : DbContext
     public DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
 
     public DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
+    
+    
+    public DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -778,6 +781,29 @@ public partial class TitanGlobalDbContext : DbContext
             .WithOne()
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<CategoriaProducto>()
+            .ToTable("CategoriasProducto");
+
+        modelBuilder.Entity<CategoriaProducto>()
+            .HasKey(categoria => categoria.Id);
+
+        modelBuilder.Entity<CategoriaProducto>()
+            .Property(categoria => categoria.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<CategoriaProducto>()
+            .Property(categoria => categoria.Descripcion)
+            .HasMaxLength(250);
+
+        modelBuilder.Entity<CategoriaProducto>()
+            .Property(categoria => categoria.Activa)
+            .HasDefaultValue(true);
+
+        modelBuilder.Entity<CategoriaProducto>()
+            .HasIndex(categoria => categoria.Nombre)
+            .IsUnique();
 
     }
 }
