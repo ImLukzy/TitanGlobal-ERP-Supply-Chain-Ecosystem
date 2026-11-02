@@ -480,6 +480,52 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("DevolucionesComerciales");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.Impuesto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Pais")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Impuestos");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.ItemListaPrecios", b =>
                 {
                     b.Property<int>("Id")
@@ -1096,6 +1142,41 @@ namespace TitanGlobal.Api.Migrations
                     b.ToTable("SolicitudesCompra");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.TasaImpuesto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ImpuestoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<decimal>("Porcentaje")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImpuestoId", "FechaInicio");
+
+                    b.ToTable("TasasImpuestos");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -1519,6 +1600,17 @@ namespace TitanGlobal.Api.Migrations
                     b.Navigation("Proveedor");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Api.Models.TasaImpuesto", b =>
+                {
+                    b.HasOne("TitanGlobal.Api.Models.Impuesto", "Impuesto")
+                        .WithMany("Tasas")
+                        .HasForeignKey("ImpuestoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Impuesto");
+                });
+
             modelBuilder.Entity("TitanGlobal.Api.Models.UsuarioRol", b =>
                 {
                     b.HasOne("TitanGlobal.Api.Models.Rol", null)
@@ -1563,6 +1655,11 @@ namespace TitanGlobal.Api.Migrations
             modelBuilder.Entity("TitanGlobal.Api.Models.DevolucionComercial", b =>
                 {
                     b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("TitanGlobal.Api.Models.Impuesto", b =>
+                {
+                    b.Navigation("Tasas");
                 });
 
             modelBuilder.Entity("TitanGlobal.Api.Models.ListaPrecios", b =>
