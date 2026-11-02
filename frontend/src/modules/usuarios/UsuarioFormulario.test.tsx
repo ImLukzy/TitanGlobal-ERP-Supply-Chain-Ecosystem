@@ -143,7 +143,8 @@ describe('baja de usuarios', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     const [borrado] = llamadasCon(llamadas, 'DELETE');
     expect(borrado?.url).toBe('/api/v1/usuarios/2');
-    expect(fetchMock.mock.calls.filter((llamada) => String(llamada[0]).includes('/usuarios?')).length).toBeGreaterThan(1);
+    // El diálogo se cierra al confirmar el render; la nueva lectura sale después, en el efecto.
+    await waitFor(() => expect(fetchMock.mock.calls.filter((llamada) => String(llamada[0]).includes('/usuarios?')).length).toBeGreaterThan(1));
   });
 
   it('A4 muestra el 409 de último ADMIN dentro del diálogo y no lo cierra', async () => {
