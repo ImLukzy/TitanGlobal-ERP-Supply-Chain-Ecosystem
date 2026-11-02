@@ -72,11 +72,22 @@ Verificado en el repositorio: `pantallas.ts` y `app.css` existen; los componente
 
 ## 6. Checklist de ejecución
 - [ ] Spec 47 aprobada y la spec 48 revisada por Lukas.
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros, tabla y detalle.
-- [ ] Tarea 3: formulario y diálogo de cese.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros, tabla y detalle.
+- [x] Tarea 3: formulario y diálogo de cese.
 - [ ] Tarea 4: tests, capturas y A1 a A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-02 | A1 | pasa | `npm run verify` en `frontend/`: lint sin warnings, typecheck, 429 tests en 58 archivos y build, exit 0 |
+| 2026-11-02 | A2 | pasa | `api.test.ts`: las 5 funciones con URL, método, query y cuerpo exactos; `estado` omitido en `Todos` |
+| 2026-11-02 | A3 | pasa | `EmpleadosPage.test.tsx`: búsqueda a los 300 ms con una sola consulta, página 1 al filtrar desde la página 2, 1 listado y 2 conteos, pastillas con texto, cese solo si `Cesado` |
+| 2026-11-02 | A4 | pasa, con una desviación | `EmpleadoFormulario.test.tsx` y `EmpleadosPage.test.tsx`. Desviación de §4: los errores de campo salen de `components/CampoConError.tsx` (compartido), que no tiene `role="alert"`; no se cambió |
+| 2026-11-02 | A5 | pasa | 10 ejecuciones seguidas de `vitest run` con 429/429. Antes fallaba de forma intermitente la prueba «A4 confirma la baja con DELETE…» de `usuarios/UsuarioFormulario.test.tsx` (comprobaba la recarga sin esperar al efecto); corregida en a51f200 |
+| 2026-11-02 | A6 | parcial | 16 capturas sin versionar (se adjuntan al PR). Márgenes: 34 px en panel y 18 px en diálogo a 375; sin scroll horizontal de página a 375 ni 1280. Pendiente: (1) el email se parte en el panel (`ana.torres@titanglobal.exa` / `mple`) a 375 y 1280, lo que incumple «sin palabras partidas»; (2) repetir 3 capturas de 1280 oscuro (diálogo, `Cesado` y formulario), que salieron recortadas; (3) adjuntar la comparación visual con Usuarios: solo se compararon rejilla y medidas |
+| 2026-11-02 | QA en local | pasa | PostgreSQL local con el seed: 409 de documento repetido conservando lo escrito; alta de `EMP-000005` (resumen 4/1/5); cese (resumen 3/2/5), con edición bloqueada después. Seed restaurado al terminar |
+
+**Observaciones para la revisión (no incumplen un criterio):**
+- A 1280 px la tabla mide 720 px en un contenedor de 458 px: Área, Ingreso y Estado solo se ven con el scroll interno de la tabla. Usuarios tiene el mismo patrón con menos ancho (560 px en 458 px).
+- «Nuevo empleado» abre el formulario debajo de la tabla, fuera de la vista a 1280 x 800, sin mover el scroll ni el foco. Usuarios se comporta igual.
