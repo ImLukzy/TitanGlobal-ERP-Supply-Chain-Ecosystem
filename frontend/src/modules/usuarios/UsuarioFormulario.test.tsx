@@ -159,6 +159,21 @@ describe('baja de usuarios', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
+  it('A4 vuelve a la última página válida cuando la baja deja vacía la página actual', async () => {
+    const { fetchMock } = prepararApiUsuarios({ paginado: true, totalTrasBaja: 10 });
+    await montarUsuariosCargados(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'ana.ventas' }));
+    await screen.findByRole('region', { name: 'Ana Quispe Ventas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await screen.findByText('Página 2 de 2');
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(await screen.findByText('Página 1 de 1')).toBeInTheDocument();
+    const listados = fetchMock.mock.calls.map((llamada) => String(llamada[0])).filter((url) => url.includes('/usuarios?'));
+    expect(listados.at(-1)).toContain('pagina=1');
+  });
+
   it('A4 Escape cancela la baja sin petición y devuelve el foco al botón Eliminar', async () => {
     const { fetchMock } = prepararApiUsuarios();
     await montarUsuariosCargados(fetchMock);

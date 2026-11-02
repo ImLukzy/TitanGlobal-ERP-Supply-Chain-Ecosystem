@@ -81,6 +81,29 @@ describe('pantalla de Usuarios: listado y resumen', () => {
     expect(urlsDeListado(fetchMock)[0]).toContain('pagina=1');
   });
 
+  it('A3 al cambiar el texto estando en la página 2 hace una sola petición, con la búsqueda nueva y la página 1', async () => {
+    const { fetchMock } = prepararApiUsuarios({ paginado: true });
+    await montarUsuariosCargados(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await screen.findByText('Página 2 de 2');
+    await waitFor(() => expect(urlsDeListado(fetchMock).at(-1)).toContain('pagina=2'));
+    fetchMock.mockClear();
+    vi.useFakeTimers();
+    const busqueda = screen.getByRole('searchbox', { name: 'Buscar por usuario, nombre o email' });
+    fireEvent.change(busqueda, { target: { value: 'a' } });
+    fireEvent.change(busqueda, { target: { value: 'ana' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(299);
+    });
+    expect(urlsDeListado(fetchMock)).toHaveLength(0);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    vi.useRealTimers();
+    await waitFor(() => expect(urlsDeListado(fetchMock)).toHaveLength(1));
+    expect(urlsDeListado(fetchMock)[0]).toBe('/api/v1/usuarios?pagina=1&tamanoPagina=10&busqueda=ana');
+  });
+
   it('A3 presenta el estado vacío de la tabla', async () => {
     prepararApiUsuarios({ listaVacia: true });
     await montarSinEsperar();

@@ -29,6 +29,8 @@ export interface OpcionesApiUsuarios {
   paginado?: boolean;
   errorGuardar?: 'duplicado' | 'ultimoAdmin' | 'rolInexistente';
   errorEliminar?: boolean;
+  totalTrasBaja?: number;
+  totalListado?: number;
 }
 
 export const rolesMock = [
@@ -136,7 +138,7 @@ function respuestaLista(parsed: URL, opciones: OpcionesApiUsuarios): Response {
     const coincideActivo = activo === null || usuario.activo === (activo === 'true');
     return coincide && coincideRol && coincideActivo;
   });
-  const total = opciones.paginado ? 12 : filtrados.length;
+  const total = opciones.totalListado ?? (opciones.paginado ? 12 : filtrados.length);
   return Response.json({
     items: filtrados.map(listado),
     total,
@@ -212,12 +214,18 @@ function respuestaMock(parsed: URL, metodo: string, opciones: OpcionesApiUsuario
 
 export function prepararApiUsuarios(opciones: OpcionesApiUsuarios = {}) {
   const llamadas: LlamadaUsuarios[] = [];
+  // Copia mutable: tras una baja correcta el total del listado pasa a totalTrasBaja.
+  const vigentes: OpcionesApiUsuarios = { ...opciones };
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const url = String(input);
     const parsed = new URL(url, 'http://localhost');
     const metodo = init.method ?? 'GET';
     llamadas.push({ url, init });
-    return respuestaMock(parsed, metodo, opciones);
+    const respuesta = respuestaMock(parsed, metodo, vigentes);
+    if (metodo === 'DELETE' && respuesta.ok && opciones.totalTrasBaja !== undefined) {
+      vigentes.totalListado = opciones.totalTrasBaja;
+    }
+    return respuesta;
   });
   vi.stubGlobal('fetch', fetchMock);
   return { fetchMock, llamadas };

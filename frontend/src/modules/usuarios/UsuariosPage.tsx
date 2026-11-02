@@ -26,19 +26,27 @@ export function UsuariosPage() {
   const [errorBaja, setErrorBaja] = useState('');
   const [eliminando, setEliminando] = useState(false);
   const botonEliminarRef = useRef<HTMLButtonElement>(null);
+  const busquedaAplicadaRef = useRef('');
   const filtrosConsulta = useMemo<FiltrosUsuarios>(() => {
     return { ...filtros, busqueda: busquedaAplicada };
   }, [filtros, busquedaAplicada]);
   const data = useUsuariosData(filtrosConsulta, seleccionadoId);
 
+  // La búsqueda y el regreso a la página 1 se aplican juntos 300 ms después del último cambio,
+  // para que haya una sola petición y con la búsqueda nueva.
   useEffect(() => {
-    const temporizador = window.setTimeout(() => setBusquedaAplicada(busqueda), 300);
+    const temporizador = window.setTimeout(() => {
+      setBusquedaAplicada(busqueda);
+      if (busquedaAplicadaRef.current !== busqueda) {
+        busquedaAplicadaRef.current = busqueda;
+        setFiltros((actual) => (actual.pagina === 1 ? actual : { ...actual, pagina: 1 }));
+      }
+    }, 300);
     return () => window.clearTimeout(temporizador);
   }, [busqueda]);
 
   function cambiarBusqueda(valor: string): void {
     setBusqueda(valor);
-    setFiltros((actual) => (actual.pagina === 1 ? actual : { ...actual, pagina: 1 }));
   }
 
   function cambiarFiltro(cambios: Partial<FiltrosUsuarios>): void {
@@ -88,6 +96,11 @@ export function UsuariosPage() {
   }
 
   const paginas = Math.max(1, Math.ceil((data.lista?.total ?? 0) / TAMANO_PAGINA));
+  const paginaActual = filtros.pagina ?? 1;
+  // Si tras dar de baja o recargar la página actual queda fuera de rango, se vuelve a la última válida.
+  if (data.lista !== null && data.lista.pagina === paginaActual && paginaActual > paginas) {
+    setFiltros({ ...filtros, pagina: paginas });
+  }
   const cargandoDetalle = seleccionadoId !== null && data.usuario === null && data.errorDetalle === '';
 
   return (
@@ -122,7 +135,7 @@ export function UsuariosPage() {
             cargando={data.lista === null}
             error={data.errorLista}
             items={data.lista?.items ?? []}
-            pagina={filtros.pagina ?? 1}
+            pagina={paginaActual}
             seleccionadoId={seleccionadoId}
             seleccionar={seleccionar}
             totalPaginas={paginas}
