@@ -58,7 +58,20 @@ describe('pantalla de Roles (módulo 72)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await waitFor(() => expect(screen.getByText('Página 2 de 2')).toBeInTheDocument());
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('pagina=2'))).toBe(true);
+    vi.useFakeTimers();
+    fetchMock.mockClear();
     fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar por código o nombre' }), { target: { value: 'A' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(299);
+    });
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/roles?'))).toHaveLength(0);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    const consultas = fetchMock.mock.calls.filter((call) => String(call[0]).includes('/roles?'));
+    expect(consultas).toHaveLength(1);
+    expect(String(consultas[0]?.[0])).toBe('/api/v1/roles?busqueda=A&pagina=1&tamanoPagina=10');
+    vi.useRealTimers();
     await waitFor(() => expect(screen.getByText('Página 1 de 2')).toBeInTheDocument());
   });
 
@@ -181,6 +194,83 @@ describe('pantalla de Roles (módulo 72)', () => {
     const dialogo = screen.getByRole('dialog');
     expect(await within(dialogo).findByText('El rol ADMIN es de sistema y no se puede modificar de esa forma.')).toHaveAttribute('role', 'alert');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('A3 muestra «Cargando detalle del rol…» mientras llega el detalle del rol seleccionado', async () => {
+    const { fetchMock, liberarDetalle } = prepararApi({ retrasarDetalleId: 2 });
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    expect(await screen.findByText('Cargando detalle del rol…')).toHaveAttribute('role', 'status');
+    expect(screen.queryByText('Selecciona un rol para ver su detalle.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Administrador' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+    liberarDetalle();
+    expect(await screen.findByRole('heading', { name: 'Ventas' })).toBeInTheDocument();
+    expect(screen.queryByText('Cargando detalle del rol…')).not.toBeInTheDocument();
+  });
+
+  it('A3 muestra el error al cargar el detalle y no el aviso de carga ni el de selección', async () => {
+    const { fetchMock } = prepararApi({ errorDetalleId: 2 });
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    expect(await screen.findByText('No se pudo cargar el detalle del rol.')).toHaveAttribute('role', 'alert');
+    expect(screen.queryByText('Cargando detalle del rol…')).not.toBeInTheDocument();
+    expect(screen.queryByText('Selecciona un rol para ver su detalle.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'COMPRAS' }));
+    expect(await screen.findByRole('heading', { name: 'Compras' })).toBeInTheDocument();
+    expect(screen.queryByText('No se pudo cargar el detalle del rol.')).not.toBeInTheDocument();
+  });
+
+  it('A3 cierra el formulario de edición al seleccionar otro rol', async () => {
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    expect(screen.getByLabelText('Código')).toHaveValue('ADMIN');
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    expect(screen.queryByRole('heading', { name: 'Editar rol' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Código')).not.toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Ventas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    expect(screen.getByLabelText('Código')).toHaveValue('VENTAS');
+    expect(screen.getByLabelText('Nombre')).toHaveValue('Ventas');
+  });
+
+  it('A3 cierra el formulario de nuevo rol al seleccionar otro rol', async () => {
+    const { fetchMock } = prepararApi();
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo rol' }));
+    expect(screen.getByRole('heading', { name: 'Nuevo rol', level: 2 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    expect(screen.queryByLabelText('Código')).not.toBeInTheDocument();
+  });
+
+  it('A3 muestra el 409 al editar sin cerrar el formulario ni perder lo escrito', async () => {
+    const { fetchMock } = prepararApi({ errorEditar: true });
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    await screen.findByRole('heading', { name: 'Ventas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ventas regional' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar rol' }));
+    expect(await screen.findByText('Ya existe un rol con el código VENTAS.')).toHaveAttribute('role', 'alert');
+    expect(screen.getByRole('heading', { name: 'Editar rol' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Nombre')).toHaveValue('Ventas regional');
+    expect(fetchMock.mock.calls.some((call) => (call[1] as RequestInit | undefined)?.method === 'PUT')).toBe(true);
+  });
+
+  it('A3 muestra el 409 de baja de un rol con usuarios dentro del diálogo', async () => {
+    const { fetchMock, llamadas } = prepararApi({ errorBajaConUsuarios: true });
+    await esperarCargaInicialRoles(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'VENTAS' }));
+    await screen.findByRole('heading', { name: 'Ventas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar rol' }));
+    const dialogo = screen.getByRole('dialog');
+    expect(await within(dialogo).findByText('No se puede eliminar el rol VENTAS porque tiene usuarios.')).toHaveAttribute('role', 'alert');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(llamadas.some((llamada) => llamada.init.method === 'DELETE' && llamada.url === '/api/v1/roles/2')).toBe(true);
+    expect(screen.getByRole('heading', { name: 'Ventas' })).toBeInTheDocument();
   });
 
   it('A3 Escape cancela la baja sin petición y devuelve el foco', async () => {

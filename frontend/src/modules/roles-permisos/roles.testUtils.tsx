@@ -9,6 +9,14 @@ export interface OpcionesApiRoles {
   errorLista?: boolean;
   errorGuardar?: boolean;
   paginado?: boolean;
+  /** El PUT responde 409 de código repetido. */
+  errorEditar?: boolean;
+  /** El DELETE de un rol personalizado responde 409 porque tiene usuarios. */
+  errorBajaConUsuarios?: boolean;
+  /** El GET del detalle de este rol responde 500. */
+  errorDetalleId?: number;
+  /** El GET del detalle de este rol queda en espera hasta llamar a `liberarDetalle`. */
+  retrasarDetalleId?: number;
 }
 
 interface RolPrueba {
@@ -47,6 +55,10 @@ function listadoRol(rol: RolPrueba) {
 
 export function prepararApi(opciones: OpcionesApiRoles = {}) {
   const roles = [...rolesIniciales];
+  let liberarDetalle: () => void = () => undefined;
+  const compuertaDetalle = new Promise<void>((resolver) => {
+    liberarDetalle = resolver;
+  });
   const llamadas: Array<{ url: string; init: RequestInit }> = [];
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const url = String(input);
@@ -73,6 +85,12 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
     }
     const id = Number(url.slice(url.lastIndexOf('/') + 1));
     if (metodo === 'GET' && Number.isInteger(id)) {
+      if (id === opciones.retrasarDetalleId) {
+        await compuertaDetalle;
+      }
+      if (id === opciones.errorDetalleId) {
+        return Response.json({ StatusCode: 500, Message: 'No se pudo cargar el detalle del rol.' }, { status: 500 });
+      }
       const rol = roles.find((item) => item.id === id);
       if (rol === undefined) {
         return Response.json({ StatusCode: 404, Message: `El rol ${id} no existe.` }, { status: 404 });
@@ -80,6 +98,9 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
       return Response.json({ ...listadoRol(rol), descripcion: rol.descripcion });
     }
     if (metodo === 'PUT') {
+      if (opciones.errorEditar) {
+        return Response.json({ StatusCode: 409, Message: 'Ya existe un rol con el código VENTAS.' }, { status: 409 });
+      }
       return Response.json({ id });
     }
     if (metodo === 'DELETE') {
@@ -87,6 +108,12 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
       if (rol?.esSistema === true) {
         return Response.json(
           { StatusCode: 409, Message: `El rol ${rol.codigo} es de sistema y no se puede modificar de esa forma.` },
+          { status: 409 },
+        );
+      }
+      if (opciones.errorBajaConUsuarios && rol !== undefined) {
+        return Response.json(
+          { StatusCode: 409, Message: `No se puede eliminar el rol ${rol.codigo} porque tiene usuarios.` },
           { status: 409 },
         );
       }
@@ -99,7 +126,7 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
     return Response.json({});
   });
   vi.stubGlobal('fetch', fetchMock);
-  return { fetchMock, llamadas };
+  return { fetchMock, llamadas, liberarDetalle };
 }
 
 export async function esperarCargaInicialRoles(fetchMock: ReturnType<typeof vi.fn>) {
