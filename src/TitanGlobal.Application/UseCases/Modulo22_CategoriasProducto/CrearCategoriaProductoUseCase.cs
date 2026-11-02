@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
+using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
@@ -35,8 +36,20 @@ public class CrearCategoriaProductoUseCase
             Activa = true
         };
         await _unitOfWork.Repository<CategoriaProducto>().AddAsync(categoriaNueva);
-        await _unitOfWork.CompleteAsync();
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException excepcion) when (EsViolacionUnica(excepcion))
+        {
+            throw ValidacionCategoriaProducto.CrearConflictoNombre(nombre);
+        }
 
         return categoriaNueva.Id;
+    }
+
+    private static bool EsViolacionUnica(ViolacionRestriccionException excepcion)
+    {
+        return excepcion.Tipo == TipoViolacionRestriccion.Unicidad;
     }
 }

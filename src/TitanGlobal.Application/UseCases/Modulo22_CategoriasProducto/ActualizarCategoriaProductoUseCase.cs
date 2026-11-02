@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
+using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
@@ -38,8 +39,20 @@ public class ActualizarCategoriaProductoUseCase
 
         categoria.Nombre = nombre;
         categoria.Descripcion = descripcion;
-        await _unitOfWork.CompleteAsync();
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException excepcion) when (EsViolacionUnica(excepcion))
+        {
+            throw ValidacionCategoriaProducto.CrearConflictoNombre(nombre);
+        }
 
         return categoria.Id;
+    }
+
+    private static bool EsViolacionUnica(ViolacionRestriccionException excepcion)
+    {
+        return excepcion.Tipo == TipoViolacionRestriccion.Unicidad;
     }
 }
