@@ -16,29 +16,26 @@ public class ResumenVehiculosFlotaUseCase
 
     public async Task<ResumenVehiculosFlotaDto> ExecuteAsync()
     {
-        List<VehiculoFlota> todos = await _unitOfWork.Repository<VehiculoFlota>()
-            .AsQueryable()
-            .ToListAsync();
-
-        int totalVehiculos = todos.Count;
-        int activos = todos.Count(v => v.Activo);
+        IQueryable<VehiculoFlota> vehiculos = _unitOfWork.Repository<VehiculoFlota>().AsQueryable();
+        int totalVehiculos = await vehiculos.CountAsync();
+        int activos = await vehiculos.CountAsync(vehiculo => vehiculo.Activo);
         int inactivos = totalVehiculos - activos;
 
         // PATRÓN LINQ 4: suma
-        decimal capacidadTotalKg = todos.Sum(v => v.CapacidadKg);
+        decimal capacidadTotalKg = await vehiculos.SumAsync(vehiculo => vehiculo.CapacidadKg);
 
         // PATRÓN LINQ 9: agrupación y orden por conteo
-        List<TipoVehiculoDto> porTipo = todos
-            .GroupBy(v => v.Tipo)
+        List<TipoVehiculoDto> porTipo = await vehiculos
+            .GroupBy(vehiculo => vehiculo.Tipo)
             .Select(grupo => new TipoVehiculoDto
             {
                 Tipo = grupo.Key,
                 TotalVehiculos = grupo.Count(),
-                Activos = grupo.Count(v => v.Activo)
+                Activos = grupo.Count(vehiculo => vehiculo.Activo)
             })
             .OrderByDescending(dto => dto.TotalVehiculos)
             .ThenBy(dto => dto.Tipo)
-            .ToList();
+            .ToListAsync();
 
         return new ResumenVehiculosFlotaDto
         {

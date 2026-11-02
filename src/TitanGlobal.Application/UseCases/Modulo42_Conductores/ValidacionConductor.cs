@@ -1,5 +1,5 @@
 using TitanGlobal.Application.Exceptions;
-
+using TitanGlobal.Domain.Common;
 
 namespace TitanGlobal.Application.UseCases.Modulo42_Conductores;
 
@@ -37,13 +37,34 @@ internal static class ValidacionConductor
         return valor;
     }
 
-    public static DateTime ValidarVencimientoLicencia(DateTime vencimientoLicencia)
+    public static DateTime NormalizarVencimientoLicencia(DateTime vencimientoLicencia)
     {
-        if (vencimientoLicencia < DateTime.UtcNow.Date)
+        return FechasUtc.Normalizar(vencimientoLicencia);
+    }
+
+    public static void ValidarVencimientoLicenciaFutura(DateTime vencimientoLicenciaUtc)
+    {
+        if (vencimientoLicenciaUtc < DateTime.UtcNow.Date)
         {
             throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "La fecha de vencimiento de la licencia no es válida.");
         }
+    }
 
-        return vencimientoLicencia;
+    public static string? NormalizarObservaciones(string? observaciones)
+    {
+        string valor = observaciones?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(valor))
+        {
+            return null;
+        }
+
+        if (valor.Length > 500)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "Las observaciones no pueden superar 500 caracteres.");
+        }
+
+        return valor;
     }
 }

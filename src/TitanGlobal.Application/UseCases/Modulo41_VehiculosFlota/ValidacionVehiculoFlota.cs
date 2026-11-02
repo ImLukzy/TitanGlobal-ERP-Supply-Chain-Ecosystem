@@ -5,6 +5,8 @@ namespace TitanGlobal.Application.UseCases.Modulo41_VehiculosFlota;
 
 internal static class ValidacionVehiculoFlota
 {
+    private const decimal CapacidadMaximaKg = 9999999999999999.99m;
+
     private static readonly HashSet<string> TiposValidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "Camion",
@@ -95,6 +97,20 @@ internal static class ValidacionVehiculoFlota
             throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "La capacidad debe ser mayor que cero.");
         }
 
+        if (capacidadKg > CapacidadMaximaKg)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La capacidad no puede superar 9999999999999999.99.");
+        }
+
+        if (decimal.Round(capacidadKg, 2) != capacidadKg)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La capacidad no puede tener más de 2 decimales.");
+        }
+
         return capacidadKg;
     }
 
@@ -104,6 +120,13 @@ internal static class ValidacionVehiculoFlota
         if (string.IsNullOrEmpty(valor))
         {
             return null;
+        }
+
+        if (valor.Length > 500)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "Las observaciones no pueden superar 500 caracteres.");
         }
 
         return valor;

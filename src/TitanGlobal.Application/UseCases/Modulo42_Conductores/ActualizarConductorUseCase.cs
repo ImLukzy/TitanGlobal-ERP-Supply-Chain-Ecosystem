@@ -19,7 +19,6 @@ public class ActualizarConductorUseCase
     {
         string nombre = ValidacionConductor.NormalizarNombre(solicitud.Nombre);
         string documentoLicencia = ValidacionConductor.NormalizarDocumentoLicencia(solicitud.DocumentoLicencia);
-        DateTime vencimientoLicencia = ValidacionConductor.ValidarVencimientoLicencia(solicitud.VencimientoLicencia);
 
         Conductor? conductor = await _unitOfWork.Repository<Conductor>()
             .AsQueryable()
@@ -29,6 +28,16 @@ public class ActualizarConductorUseCase
         {
             throw new ReglaNegocioException(CodigosEstado.Status404NotFound, $"El conductor {id} no existe.");
         }
+
+        // Un conductor con licencia vencida se puede editar o desactivar: la regla solo aplica si la fecha cambia.
+        DateTime vencimientoLicencia = ValidacionConductor.NormalizarVencimientoLicencia(solicitud.VencimientoLicencia);
+        bool vencimientoCambia = vencimientoLicencia.Date != conductor.VencimientoLicencia.Date;
+        if (vencimientoCambia)
+        {
+            ValidacionConductor.ValidarVencimientoLicenciaFutura(vencimientoLicencia);
+        }
+
+        string? observaciones = ValidacionConductor.NormalizarObservaciones(solicitud.Observaciones);
 
         bool documentoEnUso = await _unitOfWork.Repository<Conductor>()
             .AsQueryable()
@@ -41,10 +50,14 @@ public class ActualizarConductorUseCase
 
         conductor.Nombre = nombre;
         conductor.DocumentoLicencia = documentoLicencia;
-        conductor.VencimientoLicencia = vencimientoLicencia;
+        if (vencimientoCambia)
+        {
+            conductor.VencimientoLicencia = vencimientoLicencia;
+        }
+
         conductor.Habilitado = solicitud.Habilitado;
         conductor.Activo = solicitud.Activo;
-        conductor.Observaciones = solicitud.Observaciones;
+        conductor.Observaciones = observaciones;
 
         _unitOfWork.Repository<Conductor>().Update(conductor);
 

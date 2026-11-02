@@ -19,7 +19,9 @@ public class CrearConductorUseCase
     {
         string nombre = ValidacionConductor.NormalizarNombre(solicitud.Nombre);
         string documentoLicencia = ValidacionConductor.NormalizarDocumentoLicencia(solicitud.DocumentoLicencia);
-        DateTime vencimientoLicencia = ValidacionConductor.ValidarVencimientoLicencia(solicitud.VencimientoLicencia);
+        DateTime vencimientoLicencia = ValidacionConductor.NormalizarVencimientoLicencia(solicitud.VencimientoLicencia);
+        ValidacionConductor.ValidarVencimientoLicenciaFutura(vencimientoLicencia);
+        string? observaciones = ValidacionConductor.NormalizarObservaciones(solicitud.Observaciones);
 
         bool documentoExiste = await _unitOfWork.Repository<Conductor>()
             .AsQueryable()
@@ -37,7 +39,7 @@ public class CrearConductorUseCase
             VencimientoLicencia = vencimientoLicencia,
             Habilitado = solicitud.Habilitado,
             Activo = solicitud.Activo,
-            Observaciones = solicitud.Observaciones
+            Observaciones = observaciones
         };
 
         await _unitOfWork.Repository<Conductor>().AddAsync(conductorNuevo);

@@ -57,13 +57,17 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12). Responsable: Kelvin Pinto.
 3. `modelo` tras `Trim()`: vacío → 400 «El modelo es obligatorio.»; más de 100 → 400 «El modelo no puede superar 100 caracteres.»
 4. `anio`: menor que 1900 o mayor que año actual + 1 → 400 «El año del vehículo no es válido.»
 5. `tipo` tras `Trim()`: vacío → 400 «El tipo es obligatorio.»; valor no es `Camion`, `Furgon`, `Moto` u `Otro` → 400 «El tipo debe ser Camion, Furgon, Moto u Otro.»
-6. `capacidadKg`: menor o igual a 0 → 400 «La capacidad debe ser mayor que cero.»
-7. Placa usada por otro vehículo → 409 «Ya existe un vehículo con la placa {placa}.» También en la carrera (`23505`). Un PUT que mantiene su propia placa es válido.
-8. Id inexistente en GET, PUT o DELETE → 404 «El vehículo {id} no existe.»
+6. `capacidadKg`: menor o igual a 0 → 400 «La capacidad debe ser mayor que cero.»; mayor que 9999999999999999.99 (límite de `decimal(18,2)`) → 400 «La capacidad no puede superar 9999999999999999.99.»; más de 2 decimales → 400 «La capacidad no puede tener más de 2 decimales.»
+7. `observaciones` tras `Trim()`: vacías → `null`; más de 500 → 400 «Las observaciones no pueden superar 500 caracteres.»
+8. Placa usada por otro vehículo → 409 «Ya existe un vehículo con la placa {placa}.» También en la carrera (`23505`). Un PUT que mantiene su propia placa es válido.
+9. Id inexistente en GET, PUT o DELETE → 404 «El vehículo {id} no existe.»
+
+**Paginación inválida** (`GET` de listado): `pagina < 1` → 400 «El número de página debe ser mayor que cero.»; `tamanoPagina` fuera de 1–100 → 400 «El tamaño de página debe estar entre 1 y 100.»
 
 **Consultas.** Desde `Repository<VehiculoFlota>().AsQueryable()`, asíncronas y proyectadas a DTO en la consulta.
 - `busqueda` filtra sin distinguir mayúsculas por `Placa`, `Marca` o `Modelo`; `tipo` exacto sin distinguir mayúsculas; `activo` si viene.
 - Orden por `Placa` y después `Id`.
+- El resumen agrega en la consulta (`CountAsync`, `SumAsync`, `GroupBy`), sin cargar la tabla en memoria.
 - Comentarios `// PATRÓN LINQ N` donde aplique.
 
 **Seed de desarrollo** (`seed-dev.sql`, idempotente con `ON CONFLICT` sobre `Placa`): 6 vehículos de distintos tipos, uno inactivo.
