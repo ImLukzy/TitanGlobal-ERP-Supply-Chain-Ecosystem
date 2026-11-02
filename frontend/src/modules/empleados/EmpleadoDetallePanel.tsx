@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import { PanelDetalle } from '../../components/PanelDetalle';
 import { formatearFecha } from '../../lib/formato';
 import { EmpleadoEstadoPastilla } from './EmpleadoEstadoPastilla';
@@ -7,6 +8,9 @@ interface Props {
   empleado: EmpleadoDetalle | null;
   cargando: boolean;
   error: string;
+  editar: () => void;
+  cesar: () => void;
+  botonCeseRef: RefObject<HTMLButtonElement | null>;
 }
 
 const TEXTO_SIN_DATO = 'Sin dato';
@@ -18,7 +22,8 @@ function textoOpcional(valor: string | null): string {
   return valor;
 }
 
-export function EmpleadoDetallePanel({ empleado, cargando, error }: Props) {
+export function EmpleadoDetallePanel({ empleado, cargando, error, editar, cesar, botonCeseRef }: Props) {
+  const cesado = empleado?.estado === 'Cesado';
   return (
     <PanelDetalle ariaLabelledBy="empleado-detail-title" className="clientes-detail-panel empleados-detail-panel">
       {error !== '' && <p className="clientes-error" role="alert">{error}</p>}
@@ -84,7 +89,7 @@ export function EmpleadoDetallePanel({ empleado, cargando, error }: Props) {
               </div>
             </dl>
           </section>
-          {empleado.estado === 'Cesado' && (
+          {cesado && (
             <section aria-labelledby="empleado-cese-title" className="empleados-detail-section">
               <h3 id="empleado-cese-title">Cese</h3>
               <dl className="empleados-detail-grid">
@@ -99,6 +104,28 @@ export function EmpleadoDetallePanel({ empleado, cargando, error }: Props) {
               </dl>
             </section>
           )}
+          <div className="clientes-detail-actions">
+            <button
+              aria-describedby={cesado ? 'empleado-cesado-aviso' : undefined}
+              className="secondary-button"
+              disabled={cesado}
+              onClick={editar}
+              type="button"
+            >
+              Editar
+            </button>
+            <button
+              aria-describedby={cesado ? 'empleado-cesado-aviso' : undefined}
+              className="danger-button"
+              disabled={cesado}
+              onClick={cesar}
+              ref={botonCeseRef}
+              type="button"
+            >
+              Registrar cese
+            </button>
+          </div>
+          {cesado && <p className="empleado-aviso" id="empleado-cesado-aviso">Empleado cesado: no admite cambios.</p>}
         </>
       )}
     </PanelDetalle>
