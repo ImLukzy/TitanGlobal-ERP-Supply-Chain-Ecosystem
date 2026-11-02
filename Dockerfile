@@ -2,6 +2,9 @@
 # de entorno ConnectionStrings__DefaultConnection (nunca en la imagen).
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+COPY src/TitanGlobal.Domain/TitanGlobal.Domain.csproj src/TitanGlobal.Domain/
+COPY src/TitanGlobal.Application/TitanGlobal.Application.csproj src/TitanGlobal.Application/
+COPY src/TitanGlobal.Infrastructure/TitanGlobal.Infrastructure.csproj src/TitanGlobal.Infrastructure/
 COPY src/TitanGlobal.Api/TitanGlobal.Api.csproj src/TitanGlobal.Api/
 RUN dotnet restore src/TitanGlobal.Api/TitanGlobal.Api.csproj
 COPY src/ src/

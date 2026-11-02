@@ -1,4 +1,5 @@
-using TitanGlobal.Api.Configuration;
+using TitanGlobal.Domain.Common;
+
 
 namespace TitanGlobal.Api.Tests;
 

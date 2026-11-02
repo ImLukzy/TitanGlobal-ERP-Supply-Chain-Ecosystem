@@ -5,10 +5,11 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using TitanGlobal.Api.Models;
-using TitanGlobal.Api.Modules.Modulo01_Clientes.Dtos;
+using TitanGlobal.Application.DTOs.Modulo01_Clientes;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
-using TitanGlobal.Api.Modules.Modulo77_AuditoriaTransaccional.Dtos;
+using TitanGlobal.Application.DTOs.Modulo77_AuditoriaTransaccional;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests.Modulo77_AuditoriaTransaccional;
 
@@ -375,8 +376,8 @@ public class AuditoriaTransaccionalApiTests
             CrearRegistro("Cliente", "2", "Modificacion", "b", hoy.AddDays(-2), null, "[]"),
             CrearRegistro("Producto", "3", "Baja", "c", hoy.AddDays(-6), null, "[]"));
 
-        TitanGlobal.Api.Modules.Modulo77_AuditoriaTransaccional.Dtos.ResumenAuditoriaDto? resumen =
-            await _clienteHttp.GetFromJsonAsync<TitanGlobal.Api.Modules.Modulo77_AuditoriaTransaccional.Dtos.ResumenAuditoriaDto>(
+        TitanGlobal.Application.DTOs.Modulo77_AuditoriaTransaccional.ResumenAuditoriaDto? resumen =
+            await _clienteHttp.GetFromJsonAsync<TitanGlobal.Application.DTOs.Modulo77_AuditoriaTransaccional.ResumenAuditoriaDto>(
                 "/api/v1/auditoria/resumen");
 
         Assert.NotNull(resumen);

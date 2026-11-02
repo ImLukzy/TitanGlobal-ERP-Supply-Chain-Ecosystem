@@ -2,6 +2,8 @@
 
 Texto de referencia entregado por el humano el 2026-10-14. Es lo que «se busca» por parte del backend. Donde el humano decidió otra cosa, manda la decisión; ver `docs/arquitectura.md` § Desviaciones decididas. Además del backend **se requiere frontend** (ver `docs/arquitectura.md` § Frontend).
 
+> **Nota (2026-11-02):** la estructura de carpetas de un solo proyecto (§1) fue sustituida el 2026-11-02 por una arquitectura en cuatro capas (`TitanGlobal.Domain`, `TitanGlobal.Application`, `TitanGlobal.Infrastructure` y `TitanGlobal.Api`), conservando una carpeta por módulo en cada capa. Manda [`docs/arquitectura.md`](arquitectura.md).
+
 Requisitos que se evalúan:
 - .NET 10 Web API en C#, Vertical Slice Architecture (monolito modular), 80 módulos en 8 dominios.
 - Reglas de código institucionales: sin `=>` en miembros (solo en lambdas), bloques `{ }` y `return` explícito, tipos explícitos.

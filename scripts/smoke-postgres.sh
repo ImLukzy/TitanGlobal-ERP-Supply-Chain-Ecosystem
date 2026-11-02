@@ -94,7 +94,7 @@ if [[ "$DATABASE_READY" != "1" ]]; then
 fi
 
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Api
+dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
 docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -f - < scripts/seed-dev.sql
 
 ASPNETCORE_ENVIRONMENT=Development dotnet run --no-build --project src/TitanGlobal.Api --urls "$BASE_URL" >/dev/null 2>&1 &

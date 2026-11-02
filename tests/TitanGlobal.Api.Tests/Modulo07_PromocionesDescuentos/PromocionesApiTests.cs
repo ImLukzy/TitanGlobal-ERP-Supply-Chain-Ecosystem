@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TitanGlobal.Api.Models;
-using TitanGlobal.Api.Modules.Modulo07_PromocionesDescuentos.Dtos;
+using TitanGlobal.Application.DTOs.Modulo07_PromocionesDescuentos;
 using TitanGlobal.Api.Tests.Modulo06_ListasPrecios;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests.Modulo07_PromocionesDescuentos;
 

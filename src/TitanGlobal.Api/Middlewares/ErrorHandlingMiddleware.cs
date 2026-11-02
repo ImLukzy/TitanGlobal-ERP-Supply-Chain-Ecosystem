@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TitanGlobal.Application.Exceptions;
 
 namespace TitanGlobal.Api.Middlewares;
 

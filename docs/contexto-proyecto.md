@@ -1,6 +1,6 @@
 # Contexto del proyecto TitanGlobal
 
-Documento único con todo lo que hay que saber del proyecto: qué es, qué pide el examen, cómo está construido, qué está implementado, qué decisiones se tomaron y qué falta. **Se actualiza en cada integración** (ver §11). Última actualización: 2026-10-31.
+Documento único con todo lo que hay que saber del proyecto: qué es, qué pide el examen, cómo está construido, qué está implementado, qué decisiones se tomaron y qué falta. **Se actualiza en cada integración** (ver §11). Última actualización: 2026-11-02.
 
 ## 1. Qué es
 ERP transaccional para una corporación manufacturera y logística ficticia, **TitanGlobal**: 80 módulos en 8 dominios (comercial y CRM, compras e importaciones, inventarios WMS, manufactura MRP, logística TMS, finanzas, capital humano HCM y gobierno y seguridad). La lista completa está en [`arquitectura.md`](arquitectura.md).
@@ -10,7 +10,7 @@ ERP transaccional para una corporación manufacturera y logística ficticia, **T
 
 ## 2. Qué se evalúa (Lab 08 / Examen)
 El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
-- **Backend en .NET 10** con EF Core y PostgreSQL, arquitectura por módulos (vertical slices).
+- **Backend en .NET 10** con EF Core y PostgreSQL; el 2026-11-02 se sustituyó la Vertical Slice de un solo proyecto por **cuatro capas** (`Domain`, `Application`, `Infrastructure`, `Api`) según el Lab 10, conservando una carpeta por módulo (`ModuloNN_Nombre`) en cada capa (spec 50).
 - **Modelo del enunciado:** `Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra` (no se modifican).
 - **Contratos fijos:** `IGenericRepository<T>` (`AsQueryable`, `AddAsync`, `Update`, `Remove`) e `IUnitOfWork` (`Repository<T>()`, `CompleteAsync()`).
 - **12 patrones LINQ** en el módulo de órdenes de compra (`api/v1/ordenes-compra`).
@@ -22,22 +22,30 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 ## 3. Stack
 | Capa | Tecnología |
 |---|---|
-| API | .NET 10, ASP.NET Core con controladores, OpenAPI nativo |
+| API | .NET 10, ASP.NET Core con controladores, OpenAPI nativo (`/openapi/v1.json`) y Swagger en desarrollo (`/swagger`) |
 | Datos | EF Core + Npgsql, PostgreSQL 16 en local (Docker, puerto 5433) y 18 en Neon |
-| Tests backend | xUnit + `WebApplicationFactory` + EF InMemory; smoke contra PostgreSQL real |
+| Tests backend | xUnit + `WebApplicationFactory` + EF InMemory + `ArquitecturaTests`; smoke contra PostgreSQL real |
 | Frontend | React 19, React Router, Vite, TypeScript estricto, Vitest, ESLint sin warnings |
 | Despliegue | Neon (BD), Render (API en Docker), Vercel (frontend) |
 
 ## 4. Arquitectura
-- **Vertical slices:** `src/TitanGlobal.Api/Modules/ModuloNN_Nombre/{Controllers,Dtos,UseCases}`; `NN` sigue el orden de `arquitectura.md`, y el namespace sigue a la carpeta.
-- **UseCases** concretos sin interfaz, registrados por reflexión. Controladores delgados. Validaciones en un helper estático por módulo (`ValidacionX`).
+- **Cuatro capas con carpeta por módulo (`ModuloNN_Nombre`, donde `NN` sigue el orden de `arquitectura.md`):**
+  - `src/TitanGlobal.Domain`: `Models/`, `Repositories/`, `Common/`.
+  - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/`, `Services/`.
+  - `src/TitanGlobal.Infrastructure`: `Persistence/`, `Migrations/`, `Repositories/Implementation/`, `Configuration/`.
+  - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/`, `Services/`, `Program.cs`.
+  - Tests en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` y `tests/TitanGlobal.Api.Tests/Arquitectura/`.
+- **Dirección de dependencias:** `Api` → `Application` e `Infrastructure`; `Infrastructure` → `Application` y `Domain`; `Application` → `Domain`. `Domain` no depende de nadie. Prohibido: EF Core, Npgsql o ASP.NET en `Domain`; Npgsql o ASP.NET en `Application`; ASP.NET en `Infrastructure`. `Application` conserva `Microsoft.EntityFrameworkCore` solo para los operadores asíncronos de LINQ. El gate lo comprueba con las reglas `f` y `g` de `scripts/check-rules.sh` y con `tests/TitanGlobal.Api.Tests/Arquitectura/ArquitecturaTests.cs`.
+- **UseCases** concretos sin interfaz en `Application`, registrados por reflexión desde `ServiceRegistrationExtensions.AddApplicationServices`. Controladores delgados en `Api`. Validaciones en un helper estático por módulo (`ValidacionX`).
 - **Persistencia** solo con `IUnitOfWork` / `IGenericRepository<T>`, consultas asíncronas proyectadas a DTO (sin N+1).
-- **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403, cabecera `X-User-Role`: `Bloqueado` y `SinPermiso` se rechazan) → Authorization → Controllers.
-- **Errores de negocio:** `ReglaNegocioException(statusCode, mensaje)` → `{ StatusCode, Message }` sin `Detail` (400, 404, 409). Las carreras de PostgreSQL se traducen: `23505` → 409 y `23503` → 400/409.
+- **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403, cabecera `X-User-Role`: `Bloqueado` y `SinPermiso` se rechazan) → Authorization → Controllers. La autenticación con login, JWT y BCrypt es una **segunda etapa** todavía no implementada: hoy sigue `X-User-Role`.
+- **Errores de negocio y restricciones:** en `Application` se usa `ReglaNegocioException(CodigosEstado.Status..., mensaje)` (`using TitanGlobal.Application.Exceptions;`) → `{ StatusCode, Message }` sin `Detail` (400, 404, 409). `UnitOfWork.CompleteAsync()` traduce las violaciones de PostgreSQL (`23505` y `23503`) a `ViolacionRestriccionException`, que los casos de uso capturan con `catch (ViolacionRestriccionException excepcion) when (excepcion.Tipo == TipoViolacionRestriccion.Unicidad)` (o `ReferenciaForanea`, y `excepcion.Restriccion` para el nombre de la restricción). Nunca `DbUpdateException` ni `PostgresException` en `Application`.
+- **Auditoría desacoplada de HTTP:** `TitanGlobalDbContext` obtiene el usuario (`X-Usuario`) y la ruta mediante el puerto `IContextoSolicitud` (`Application/Services`), implementado por `ContextoSolicitud` (`Api/Services`).
 - **Acciones POST sin cuerpo** (`aprobar`, `recibir`): atributo `[PermitirCuerpoVacio]`; el middleware no contiene rutas.
-- **Fechas:** se guardan en UTC (`FechasUtc.Normalizar`); el frontend las muestra en UTC.
+- **Fechas:** se guardan en UTC (`FechasUtc.Normalizar`, en `TitanGlobal.Domain.Common`); el frontend las muestra en UTC.
 - **Números de documento** (`SC-000NNN`, `OA-000NNN`): los asigna el servidor a partir del Id, dentro de una transacción (`TransactionScope`). Los datos de ejemplo usan `SC-DEV-…` y `OA-DEV-…` para no chocar.
-- **Reglas de código** (las revisa el revisor): [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef`.
+- **Reglas de código** (las revisa el revisor): [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
+- **Specs nuevas de módulo:** `docs/specs/moduloNN-nombre-{backend|frontend}.md`, sin número global (solo las specs transversales llevan número).
 
 ## 5. Modelo de datos
 | Entidad | Módulo | Relaciones y notas |
@@ -93,15 +101,15 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`), tests del backend, `npm ci` + lint, typecheck, tests y build del frontend. Último gate integrado (2026-10-15): 585 tests del backend y 253 del frontend en verde.
-- **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra, siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`, incluidas las reglas `f` y `g` de separación de capas), tests del backend (incluidos `ArquitecturaTests` y `UnitOfWorkTests`), que el modelo no tenga cambios sin migración, `npm ci` + lint, typecheck, tests y build del frontend.
+- **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra (`-p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`), siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → revisión por otro compañero (máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
 ## 8. Despliegue
-Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `main`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación y sus datos se restauran con el seed.
+Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-erp` (us-east-1), Render `titanglobal-api` (se redespliega al hacer push a `main`), Vercel `titanglobal-erp` (se despliega con el CLI). Las migraciones se aplican a Neon a mano antes de subir el código. La demo no tiene autenticación (login, JWT y BCrypt son una segunda etapa todavía no implementada; hoy sigue `X-User-Role`) y sus datos se restauran con el seed.
 
 ## 9. Equipo
-- **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`equipo/primer-dia.md`](equipo/primer-dia.md) y [`guia-companeros.md`](guia-companeros.md). Cadencia y meta de 3 módulos por semana: [`equipo/cadencia.md`](equipo/cadencia.md).
+- **Personas:** 7 personas. Lukas Melgar (13 módulos, todos terminados, y la integración), Leonel Portillo, Antony Huayhua, Kelvin Pinto, Alexander, Sergio y Maxi (11 o 12 módulos cada uno). Quién lleva cada módulo: [`equipo/asignaciones.md`](equipo/asignaciones.md). Cómo empezar: [`equipo/primer-dia.md`](equipo/primer-dia.md), [`guia-companeros.md`](guia-companeros.md), [`equipo/crear-modulo.md`](equipo/crear-modulo.md) y [`equipo/adaptar-rama-a-capas.md`](equipo/adaptar-rama-a-capas.md). Cadencia y meta de 3 módulos por semana: [`equipo/cadencia.md`](equipo/cadencia.md).
 - **Flujo:** spec, rama propia, gate, revisión por otro compañero, QA, pull request e integración por Lukas: [`equipo/equipo.md`](equipo/equipo.md).
 - **Errores que no hay que repetir:** [`equipo/lecciones.md`](equipo/lecciones.md).
 
@@ -122,6 +130,7 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-15 | La auditoría (77) se captura en `SaveChanges` del `DbContext` (funciona igual en la API y en los tests); el usuario sale de la cabecera opcional `X-Usuario` y no se toca el pipeline del enunciado | integración (spec 45) |
 | 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
 | 2026-10-31 | Reparto entre 7 personas (sustituye al de 4): Lukas 13 (terminados, más la integración), Leonel 11, Antony 11, Kelvin 11, Alexander 11, Sergio 11 y Maxi 12 | Lukas |
+| 2026-11-02 | Sustituir la Vertical Slice de un solo proyecto por cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`) según el Lab 10 conservando una carpeta `ModuloNN_Nombre` en cada capa; dejar login, JWT y BCrypt para una segunda etapa (hoy sigue `X-User-Role`); adaptar ramas en curso con `scripts/adaptar-rama-capas.py` y nombrar las specs de módulo sin número global (`moduloNN-nombre-{backend|frontend}.md`) | Lukas (spec 50) |
 
 ## 11. Cómo se mantiene este documento
 En cada integración, la integración actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
@@ -129,8 +138,8 @@ En cada integración, la integración actualiza aquí: §5 (entidades y migracio
 ## 12. Pendiente
 - **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo y qué queda: [`equipo/relevo.md`](equipo/relevo.md).
   - Las pantallas 08, 09, 10, 77 y 78 se integraron en `main` el 2026-10-31; falta su QA visual.
-  - Pantallas por empezar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44).
-- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Quedan por empezar las pantallas de 72 RolesPermisos (Sergio) y 71 Usuarios (Alexander) (ver [`equipo/relevo.md`](equipo/relevo.md)). El resto de módulos está por empezar.
-- **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
+  - Pantallas en ramas por adaptar e integrar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44). Estado de cada rama: [`equipo/relevo.md`](equipo/relevo.md) §1.
+- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Las pantallas de 72 RolesPermisos (Sergio) y 71 Usuarios (Alexander) están en sus ramas ([`equipo/relevo.md`](equipo/relevo.md) §1).md`](equipo/relevo.md)). El resto de módulos está por empezar.
+- **Accesos:** los seis compañeros ya trabajan en el repositorio; Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.

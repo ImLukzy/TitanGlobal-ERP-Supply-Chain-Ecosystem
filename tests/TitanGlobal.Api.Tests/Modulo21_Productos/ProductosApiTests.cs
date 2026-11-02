@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TitanGlobal.Api.Models;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
-using TitanGlobal.Api.Modules.Modulo21_Productos.Dtos;
+using TitanGlobal.Application.DTOs.Modulo21_Productos;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests.Modulo21_Productos;
 

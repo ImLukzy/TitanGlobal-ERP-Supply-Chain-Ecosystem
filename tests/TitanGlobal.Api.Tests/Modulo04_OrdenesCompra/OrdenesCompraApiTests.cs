@@ -7,8 +7,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TitanGlobal.Api.Models;
-using TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.Dtos;
+using TitanGlobal.Application.DTOs.Modulo04_OrdenesCompra;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 
