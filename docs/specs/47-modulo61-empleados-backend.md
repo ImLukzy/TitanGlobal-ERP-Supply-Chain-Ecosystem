@@ -321,12 +321,12 @@ Como el seed hace `TRUNCATE`, cada `smoke-postgres.sh` parte de estos cuatro reg
 - [x] Tarea 1: entidad `Empleado`, `DbContext` (solo añadidos) y migración `Empleados`.
 - [x] Tarea 2: DTOs, `AdministrarEmpleadosUseCase`, `ValidacionEmpleado` y controlador.
 - [x] Tarea 3: pruebas T1 a T10, seed y `smoke-postgres.sh`.
-- [ ] Tarea 4: A1 a A9.
+- [x] Tarea 4: A1 a A9.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| 2026-11-02 | A1 (build) | Compilacion con warnings como error | `dotnet build -warnaserror --no-restore`: 0 advertencias, 0 errores. Gate `verify.sh` pendiente (bash no disponible en Windows) |
+| 2026-11-02 | A1 | Gate `scripts/verify.sh` en verde, 0 warnings | Ejecutado en un clon limpio de la rama con `core.autocrlf=false` (commit `c0f54a5`, mismo contenido que `680ac74`). Build 0 advertencias y 0 errores; backend 661/661 pasan; frontend lint, typecheck, 353/353 tests y build pasan. En la copia de trabajo de esta maquina `core.autocrlf=true` deja CRLF en 348 `.cs` preexistentes y `dotnet format` falla por ello; no se cambió la configuración del usuario |
 | 2026-11-02 | A2, A3, A4, A5, A6 | Tests T1 a T10 del modulo 61 | `dotnet test`: 76/76 pasan en Modulo61_Empleados |
 | 2026-11-02 | Suite completa | Sin regresiones del modulo | 660/661. Falla preexistente `Modulo72_RolesPermisos.CatalogoCoincideConLosOchentaModulosDeArquitectura`: `core.autocrlf=true` deja `\r` en `docs/arquitectura.md`. Sin cambios de nuestra parte en esos archivos |
 | 2026-11-02 | A7 | Smoke PostgreSQL: migracion `Empleados` aplicada y checks de empleados | `scripts/smoke-postgres.sh` ejecutado contra PostgreSQL 16 local en Docker (puerto 5433, no Neon): `SMOKE OK`, 207 comprobaciones HTTP. Ejecutado desde Git Bash con `ss` y `python3` de compatibilidad fuera del repo |
