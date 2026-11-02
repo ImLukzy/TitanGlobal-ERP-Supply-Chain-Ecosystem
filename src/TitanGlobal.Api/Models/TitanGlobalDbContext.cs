@@ -74,6 +74,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
+    public DbSet<Empleado> Empleados { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurarAuditoria(modelBuilder);
@@ -778,6 +780,80 @@ public partial class TitanGlobalDbContext : DbContext
             .WithOne()
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Legajo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.TipoDocumento)
+            .HasMaxLength(10)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.NumeroDocumento)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Nombres)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Apellidos)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.FechaNacimiento)
+            .HasColumnType("date")
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.FechaIngreso)
+            .HasColumnType("date")
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Cargo)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Area)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Email)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Telefono)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.Estado)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.FechaCese)
+            .HasColumnType("date");
+
+        modelBuilder.Entity<Empleado>()
+            .Property(empleado => empleado.MotivoCese)
+            .HasMaxLength(300);
+
+        modelBuilder.Entity<Empleado>()
+            .HasIndex(empleado => empleado.Legajo)
+            .IsUnique();
+
+        modelBuilder.Entity<Empleado>()
+            .HasIndex(empleado => new { empleado.TipoDocumento, empleado.NumeroDocumento })
+            .IsUnique();
 
     }
 }
