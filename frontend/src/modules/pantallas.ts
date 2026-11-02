@@ -17,6 +17,7 @@ import { ReclamosPostventaPage } from './reclamos-postventa/ReclamosPostventaPag
 import { DevolucionesComercialesPage } from './devoluciones-comerciales/DevolucionesComercialesPage';
 import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 import { NotificacionesAlertasPage } from './notificaciones-alertas/NotificacionesAlertasPage';
+import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -37,4 +38,5 @@ export const pantallas: Record<string, ComponentType> = {
   '24-zonas-almacenaje': ZonasAlmacenajePage,
   '09-reclamos-postventa': ReclamosPostventaPage,
   '78-notificaciones-alertas': NotificacionesAlertasPage,
+  '72-roles-permisos': RolesPermisosPage,
 };
