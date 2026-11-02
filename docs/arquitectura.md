@@ -4,11 +4,30 @@ Sistema empresarial transaccional para una corporación multinacional manufactur
 
 Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **frontend** (§ Frontend). Donde este documento y el enunciado difieren, manda § Desviaciones decididas.
 
-## Estilo
-- **Vertical slices:** cada módulo vive en `Modules/ModuloNN_Nombre/` con `Controllers/`, `Dtos/` y `UseCases/`.
-- **Capas transversales:** solo `Middlewares/`, `Models/` (EF Core), `Repositories/` (repositorio genérico + unidad de trabajo), `Services/` (exclusivamente técnicos: auth) y `Configuration/`.
-- **Casos de uso concretos sin interfaz**, registrados por reflexión (toda clase concreta terminada en `UseCase`).
+## Estilo y estructura en cuatro capas
+- **Cuatro capas con carpeta por módulo** (decidido el 2026-11-02 según el Lab 10, spec 50):
+  - `src/TitanGlobal.Domain`: `Models/` (entidades), `Repositories/` (`IGenericRepository<T>`, `IUnitOfWork`), `Common/` (`FechasUtc`).
+  - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/` (`ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`), `Services/` (`IContextoSolicitud`).
+  - `src/TitanGlobal.Infrastructure`: `Persistence/` (`TitanGlobalDbContext`, `TitanGlobalDbContext.Auditoria.cs`), `Migrations/`, `Repositories/Implementation/` (`GenericRepository<T>`, `UnitOfWork`), `Configuration/` (`InfrastructureServicesExtensions`).
+  - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/` (`ServiceRegistrationExtensions`), `Services/` (`IAuthService`, `AuthService`, `ContextoSolicitud`), `Program.cs`.
+  - Las pruebas viven en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` y `tests/TitanGlobal.Api.Tests/Arquitectura/`.
+- **Dirección de dependencias:** `Api` → `Application` e `Infrastructure`; `Infrastructure` → `Application` y `Domain`; `Application` → `Domain`. `Domain` no depende de nadie.
+  ```
+  Api ──────────► Application ──► Domain
+   │                  ▲             ▲
+   └─► Infrastructure ┴─────────────┘
+  ```
+  - **Prohibido:** EF Core, Npgsql o ASP.NET en `Domain`; Npgsql o ASP.NET en `Application`; ASP.NET en `Infrastructure`.
+  - `Application` conserva `Microsoft.EntityFrameworkCore` únicamente para los operadores asíncronos de LINQ (`ToListAsync`, `AnyAsync`, `SumAsync`, etc.).
+  - El gate comprueba estas fronteras con las reglas `f` y `g` de `scripts/check-rules.sh` y con `tests/TitanGlobal.Api.Tests/Arquitectura/ArquitecturaTests.cs`.
+- **Traducción de errores y puertos entre capas:**
+  - En `Application` se usa `CodigosEstado.Status400BadRequest` / `Status404NotFound` / `Status409Conflict` (en lugar de `StatusCodes` de ASP.NET) con `ReglaNegocioException` (`using TitanGlobal.Application.Exceptions;`).
+  - `UnitOfWork.CompleteAsync()` traduce las violaciones de PostgreSQL (`23505` y `23503`) a `ViolacionRestriccionException`, con `TipoViolacionRestriccion.Unicidad` o `TipoViolacionRestriccion.ReferenciaForanea` y `excepcion.Restriccion` para el nombre de la restricción. En `Application` nunca se capturan `DbUpdateException` ni `PostgresException`.
+  - La auditoría del `DbContext` obtiene el usuario (`X-Usuario`) y la ruta mediante el puerto `IContextoSolicitud` (`Application/Services`), implementado por `ContextoSolicitud` en `Api/Services`.
+- **Casos de uso concretos sin interfaz**, registrados por reflexión sobre el ensamblado de `TitanGlobal.Application` en `ServiceRegistrationExtensions.AddApplicationServices` (toda clase concreta terminada en `UseCase`).
 - **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers. Como Routing va antes, ParameterValidation lee los metadatos del endpoint: las acciones sin cuerpo se declaran con `[PermitirCuerpoVacio]` (spec 18).
+- **Autenticación y roles:** hoy sigue la cabecera `X-User-Role` tal como pide el enunciado. La autenticación con login, JWT y BCrypt queda para una **segunda etapa**, todavía no hecha.
+- **Documentación de la API en desarrollo:** Swagger UI en `http://localhost:5080/swagger` (con `X-User-Role` autorizable) y documento OpenAPI en `/openapi/v1.json`.
 
 Las reglas de código están en `CONTRIBUTING.md` § Reglas de código.
 
@@ -110,28 +129,31 @@ Las reglas de código están en `CONTRIBUTING.md` § Reglas de código.
 - 79 ParametrosSistema
 - 80 CierresPeriodo
 
-> **Numeración (decidida por el humano el 2026-10-14):** vale el orden de esta lista. Las carpetas llevan número de dos dígitos, `Modules/ModuloNN_Nombre/`; por ejemplo, `Modules/Modulo04_OrdenesCompra/`. El namespace sigue a la carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra.UseCases`. `Modulo00_Sistema` queda reservado para los endpoints técnicos (salud).
+> **Numeración (decidida por el humano el 2026-10-14, adaptada a cuatro capas el 2026-11-02):** vale el orden de esta lista. Las carpetas llevan número de dos dígitos, `ModuloNN_Nombre`, dentro de cada capa (`Controllers/ModuloNN_Nombre/`, `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`); por ejemplo, `Modulo04_OrdenesCompra`. El namespace sigue a la capa y a la carpeta: `TitanGlobal.Api.Controllers.Modulo04_OrdenesCompra`, `TitanGlobal.Application.DTOs.Modulo04_OrdenesCompra` y `TitanGlobal.Application.UseCases.Modulo04_OrdenesCompra`. `Modulo00_Sistema` queda reservado para los endpoints técnicos (salud).
 
 ## Módulo de referencia
-`Modulo04_OrdenesCompra` es la plantilla de todos los módulos (código en `docs/enunciado.md` §3). Incluye:
-- Un caso de uso transaccional de escritura: `CrearOrdenCompraUseCase`.
-- Un caso de uso analítico con los 12 patrones LINQ obligatorios, numerados en comentarios (`AnaliticaOrdenesCompraUseCase`).
-- Un controlador delgado (`api/v1/ordenes-compra`).
+`Modulo04_OrdenesCompra` es la plantilla del enunciado (código original en `docs/enunciado.md` §3), repartida en las cuatro capas:
+- Un caso de uso transaccional de escritura: `CrearOrdenCompraUseCase` (`src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/`).
+- Un caso de uso analítico con los 12 patrones LINQ obligatorios, numerados en comentarios: `AnaliticaOrdenesCompraUseCase` (`src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/`).
+- Un controlador delgado (`api/v1/ordenes-compra`): `OrdenesCompraController` (`src/TitanGlobal.Api/Controllers/Modulo04_OrdenesCompra/`).
+
+Para programar un módulo CRUD completo en cuatro capas, el módulo de referencia es `Modulo11_Proveedores` (o `Modulo13_SolicitudesCompra` si hay líneas y estados); ver [`docs/equipo/crear-modulo.md`](equipo/crear-modulo.md).
 
 ## Contratos fijados por el enunciado
-- `IGenericRepository<T>`: `IQueryable<T> AsQueryable()`, `Task AddAsync(T)`, `void Update(T)`, `void Remove(T)`.
-- `IUnitOfWork : IDisposable`: `IGenericRepository<T> Repository<T>()`, `Task<int> CompleteAsync()`.
-- Entidades `Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra` con exactamente los campos de `docs/enunciado.md` §3.1 (`Cantidad` es `int`; importes `decimal(18,2)`).
+- `IGenericRepository<T>` (`TitanGlobal.Domain.Repositories`): `IQueryable<T> AsQueryable()`, `Task AddAsync(T)`, `void Update(T)`, `void Remove(T)`.
+- `IUnitOfWork : IDisposable` (`TitanGlobal.Domain.Repositories`): `IGenericRepository<T> Repository<T>()`, `Task<int> CompleteAsync()`.
+- Entidades `Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra` (`TitanGlobal.Domain.Models`) con exactamente los campos de `docs/enunciado.md` §3.1 (`Cantidad` es `int`; importes `decimal(18,2)`).
 - Mensajes de error literales de `docs/enunciado.md` §4.
 
 ## Desviaciones decididas (mandan sobre el enunciado)
 | Enunciado | Proyecto | Decisión |
 |---|---|---|
 | Árbol de ejemplo con `Modulo02_OrdenesCompra` | `Modulo04_OrdenesCompra` (orden de la lista) | humano, 2026-10-14 |
-| Namespace `TitanGlobal.Api.Modules.OrdenesCompra` | namespace = carpeta: `TitanGlobal.Api.Modules.Modulo04_OrdenesCompra` | humano, 2026-10-14 |
+| Namespace `TitanGlobal.Api.Modules.OrdenesCompra` | namespace = capa + carpeta: `TitanGlobal.Api.Controllers.Modulo04_OrdenesCompra`, `TitanGlobal.Application.DTOs.Modulo04_OrdenesCompra`, `TitanGlobal.Application.UseCases.Modulo04_OrdenesCompra` | humano, 2026-10-14 y 2026-11-02 |
 | `RoleBasedAccessMiddleware` lee la cabecera directamente | lee el rol vía `IAuthService` (misma cabecera `X-User-Role`) | spec 01 |
-| Registro de servicios dentro de `Program.cs` | métodos de extensión en `Configuration/DependencyInjectionExtensions.cs`, llamados desde `Program.cs` | spec 01 (el árbol del enunciado ya lo incluye) |
+| Registro de servicios dentro de `Program.cs` | métodos de extensión en `ServiceRegistrationExtensions.cs` (`Api/Configuration`) e `InfrastructureServicesExtensions.cs` (`Infrastructure/Configuration`), llamados desde `Program.cs` | spec 01 y spec 50 |
 | Solo backend | backend + frontend | humano, 2026-10-14 |
+| Vertical Slice en un solo proyecto (`src/TitanGlobal.Api/Modules/...`) | cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`) según el Lab 10, conservando una carpeta `ModuloNN_Nombre` en cada capa; login, JWT y BCrypt quedan para una segunda etapa (hoy sigue `X-User-Role`) | humano, 2026-11-02 (spec 50) |
 
 ## Frontend
 Decidido por el humano el 2026-10-14: **React + Vite + TypeScript**, en la carpeta `frontend/` de este mismo repo.

@@ -28,7 +28,7 @@ git switch main
 
 docker compose up -d db
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Api
+dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
 docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql
 ```
 
@@ -47,6 +47,7 @@ Puertos: API `5080`, frontend `5173`, PostgreSQL `5433`.
 ## 4. Comprobar
 
 - [ ] `http://localhost:5080/api/v1/sistema/salud` → `{"estado":"OK"}`.
+- [ ] `http://localhost:5080/swagger` abre Swagger UI en desarrollo (el documento OpenAPI sigue en `/openapi/v1.json`).
 - [ ] `http://localhost:5173/modulos/01-clientes` muestra clientes.
 - [ ] `./scripts/verify.sh` termina en verde.
 - [ ] `./scripts/smoke-postgres.sh` termina con `SMOKE OK` (solo si tocas base de datos).
@@ -54,6 +55,8 @@ Puertos: API `5080`, frontend `5173`, PostgreSQL `5433`.
 ## 5. Leer
 
 - [ ] [`CONTRIBUTING.md`](../../CONTRIBUTING.md): reglas de código y flujo de un módulo.
+- [ ] [`docs/equipo/crear-modulo.md`](crear-modulo.md): paso a paso para crear un módulo backend en las cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`).
+- [ ] [`docs/equipo/adaptar-rama-a-capas.md`](adaptar-rama-a-capas.md): solo si ya tenías una rama empezada antes de la migración a cuatro capas.
 - [ ] [`docs/equipo/cadencia.md`](cadencia.md): cómo se trabaja cada semana y la meta de 3 módulos.
 - [ ] [`docs/contexto-proyecto.md`](../contexto-proyecto.md): qué está hecho y qué falta.
 - [ ] [`docs/enunciado.md`](../enunciado.md): lo que se evalúa.
@@ -66,7 +69,7 @@ Puertos: API `5080`, frontend `5173`, PostgreSQL `5433`.
 
 - [ ] Confirma con Lukas el módulo y la semana.
 - [ ] Crea el issue con la plantilla del repositorio y asígnate.
-- [ ] Escribe la spec con [`docs/specs/_TEMPLATE.md`](../specs/_TEMPLATE.md) y pide revisión.
+- [ ] Escribe la spec con [`docs/specs/_TEMPLATE.md`](../specs/_TEMPLATE.md) en `docs/specs/moduloNN-nombre-{backend|frontend}.md` (sin número global) y pide revisión.
 - [ ] Crea la rama desde `main` y empieza por el backend o por la pantalla, según la spec.
 - [ ] Antes de pedir revisión, repasa la lista de [`CONTRIBUTING.md`](../../CONTRIBUTING.md) §6.
 

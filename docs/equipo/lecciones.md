@@ -5,7 +5,7 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Tests con puertos fijos:** no se ejecutan dos a la vez, porque se cruzan y dan falsos fallos. Antes de lanzarlos hay que comprobar que los puertos están libres.
 - **Un fallo reportado por un compañero puede venir de su entorno.** Antes de corregir código, se reproduce con las dependencias del repo restauradas.
 - **Una spec no puede citar documentos que el equipo no tiene.** La spec 01 decía «del documento original» y la implementación inventó campos y contratos. Toda referencia externa se copia al repo (`docs/enunciado.md`) antes de despachar.
-- **Migraciones EF escritas a mano:** sin `Designer` ni `ModelSnapshot`, la siguiente migración vuelve a crear todo. Siempre `dotnet ef migrations add`.
+- **Migraciones EF escritas a mano:** sin `Designer` ni `ModelSnapshot`, la siguiente migración vuelve a crear todo. Siempre `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
 - **Gate de reglas con huecos:** `check-rules.sh` dejaba pasar `public int X => 1;`, `get => …` y `foreach (var …)`. Cada regla necesita fixtures buenos y malos que cubran sus variantes.
 - **Entorno de la máquina:** hacían falta `aspnet-runtime-10.0` (tests y API) y `docker-compose` (BD). Instalados el 2026-10-14.
 - **Capturas con animaciones:** la captura del menú móvil de QA salía cortada porque se tomó a mitad de la transición de 0,2 s. Antes de capturar hay que esperar a que termine (`waitForTimeout` ≥ duración o `prefers-reduced-motion`), y las capturas de página completa no sirven para elementos `fixed`.
@@ -40,3 +40,10 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
   - selects y campos con el estilo común también dentro de diálogos y del simulador/evaluador; placeholders que se lean completos;
   - nada se sale de su panel a 1280 px (casillas de filtros, columnas de la derecha);
   - **CSS común** (`app.css`, `.tabla-paginada`): no cambiar selectores de reglas compartidas, porque subir su especificidad (p. ej. `th` → `thead th`) pisa los estilos de cabecera de otras pantallas. Si hay que corregir algo común, hacerlo con una regla mínima nueva y adjuntar capturas de al menos 3 pantallas existentes antes y después.
+
+## Choques de numeración en specs y paso a cuatro capas (2026-11-02)
+- **Qué pasó:** al trabajar varias personas en paralelo, cuatro ramas eligieron el mismo número global de spec (`47`) a la vez. Además, en el proyecto único los casos de uso dependían directamente de `Npgsql` (`PostgresException`) y de ASP.NET (`StatusCodes`).
+- **Regla:**
+  - Las specs nuevas de módulo se nombran `docs/specs/moduloNN-nombre-{backend|frontend}.md`, **sin número global** (el número de módulo `NN` ya es único). Solo las specs transversales llevan número global.
+  - En las cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`), `Application` usa `CodigosEstado` y captura `ViolacionRestriccionException` (`TipoViolacionRestriccion.Unicidad` o `ReferenciaForanea`), nunca `StatusCodes`, `DbUpdateException` ni `PostgresException`. El gate lo verifica con las reglas `f` y `g` de `scripts/check-rules.sh` y con `ArquitecturaTests`.
+  - Quien tenga una rama empezada con la estructura anterior no la rehace a mano: crea una rama nueva desde `origin/main` y ejecuta `python3 scripts/adaptar-rama-capas.py rama origin/tu-nombre/moduloXX-nombre` (ver [`adaptar-rama-a-capas.md`](adaptar-rama-a-capas.md)).

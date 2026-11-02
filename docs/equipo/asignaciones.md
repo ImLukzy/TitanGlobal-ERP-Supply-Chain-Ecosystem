@@ -4,6 +4,8 @@ Reparto de los 80 módulos entre **7 personas**: 13 para Lukas (todos terminados
 
 Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4) y pedir a Lukas que la revise antes de programar. Un módulo lo lleva una sola persona de principio a fin (backend y pantalla).
 
+Hay módulos en ramas que aún no están en `main`; aquí figuran como pendientes hasta que se integren. Su estado está en [`relevo.md`](relevo.md) §1.
+
 ## Resumen por persona
 | Persona | Rol | Módulos | Bloque |
 |---|---|---|---|

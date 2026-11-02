@@ -21,7 +21,7 @@ Lukas Melgar hace además la integración: revisa cada pull request, integra en 
 
 ## Flujo por módulo
 
-1. **Spec** en `docs/specs/NN-*.md` (plantilla `_TEMPLATE.md`). Lukas la revisa antes de programar.
+1. **Spec** en `docs/specs/moduloNN-nombre-{backend|frontend}.md` (plantilla `_TEMPLATE.md`). Lukas la revisa antes de programar.
 2. **Rama propia** desde la de integración: `git switch -c tu-nombre/moduloXX-nombre main`.
 3. **Gate:** `./scripts/verify.sh` en verde antes de pedir revisión.
 4. **Revisión:** otro compañero lee solo la spec y el diff. Máximo 3 ciclos de corrección. Un cambio pequeño sin lógica puede saltarse este paso.

@@ -25,7 +25,7 @@ export NEON_PROJECT_ID=...     # proyecto titanglobal-erp → Settings
 - Las ramas del plan gratuito tienen límites de número y de cómputo: borrar las que ya no se usen. Una rama no ve los cambios posteriores de la principal; para ponerla al día: Neon → rama → *Reset from parent* (se pierden sus datos).
 
 ## Migraciones y datos
-- Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de Lukas (integración), y comprobar después con la API desplegada.
+- Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de Lukas (integración), y comprobar después con la API desplegada.
 - Datos de demostración: `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql` (idempotente; reinicia los datos de las tablas del enunciado).
 
 ## Tras cada integración (lo hace Lukas)
@@ -38,4 +38,4 @@ export NEON_PROJECT_ID=...     # proyecto titanglobal-erp → Settings
 
 ## Limitaciones conocidas
 - Render free se duerme tras ~15 min sin tráfico: la primera petición puede tardar ~1 minuto.
-- La demo no tiene autenticación (el enunciado no la pide): cualquiera con la URL puede crear o borrar datos de demostración. Se restauran con el seed.
+- La demo no tiene autenticación con login, JWT ni BCrypt (esa es una segunda etapa todavía no implementada; hoy sigue `X-User-Role` tal como pide el enunciado): cualquiera con la URL puede crear o borrar datos de demostración. Se restauran con el seed.
