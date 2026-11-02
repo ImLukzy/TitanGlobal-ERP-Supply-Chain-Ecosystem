@@ -317,12 +317,18 @@ Como el seed hace `TRUNCATE`, cada `smoke-postgres.sh` parte de estos cuatro reg
 | A9 | Alcance | en el diff contra `main`, los únicos archivos son los de §3; `Middlewares/`, `Services/`, `Program.cs`, `Configuration/`, `Models/Rol.cs` y `Models/Usuario.cs` sin cambios | 0 archivos fuera de §3 |
 
 ## 6. Checklist de ejecución
-- [ ] Spec aprobada por Lukas. Decisión 5 confirmada antes de programar la regla de cese.
-- [ ] Tarea 1: entidad `Empleado`, `DbContext` (solo añadidos) y migración `Empleados`.
-- [ ] Tarea 2: DTOs, `AdministrarEmpleadosUseCase`, `ValidacionEmpleado` y controlador.
+- [x] Spec aprobada por Lukas. Decisión 5 confirmada antes de programar la regla de cese.
+- [x] Tarea 1: entidad `Empleado`, `DbContext` (solo añadidos) y migración `Empleados`.
+- [x] Tarea 2: DTOs, `AdministrarEmpleadosUseCase`, `ValidacionEmpleado` y controlador.
 - [ ] Tarea 3: pruebas T1 a T10, seed y `smoke-postgres.sh`.
 - [ ] Tarea 4: A1 a A9.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-02 | A1 (build) | Compilacion con warnings como error | `dotnet build -warnaserror --no-restore`: 0 advertencias, 0 errores. Gate `verify.sh` pendiente (bash no disponible en Windows) |
+| 2026-11-02 | A2, A3, A4, A5, A6 | Tests T1 a T10 del modulo 61 | `dotnet test`: 76/76 pasan en Modulo61_Empleados |
+| 2026-11-02 | Suite completa | Sin regresiones del modulo | 660/661. Falla preexistente `Modulo72_RolesPermisos.CatalogoCoincideConLosOchentaModulosDeArquitectura`: `core.autocrlf=true` deja `\r` en `docs/arquitectura.md`. Sin cambios de nuestra parte en esos archivos |
+| — | A7 | Smoke PostgreSQL | pendiente: Docker no instalado; PostgreSQL 18 local sin usar porque el seed hace TRUNCATE |
+| — | A8 | OpenAPI | pendiente |
+| 2026-11-02 | A9 | Alcance | `git diff --name-only main HEAD`: backend 61 solo en §3 (`Modules/Modulo61_Empleados`, `Models/Empleado.cs`, DbContext, migracion `Empleados`, snapshot, tests, seed, smoke). Sin cambios en `Middlewares/`, `Services/`, `Program.cs`, `Configuration/`, `Models/Rol.cs` ni `Models/Usuario.cs`. El resto de la rama es la spec 44 (frontend 71) y docs |
