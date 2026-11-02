@@ -519,4 +519,22 @@ INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribi
 SELECT setval(pg_get_serial_sequence('"Roles"', 'Id'), (SELECT MAX("Id") FROM "Roles"));
 SELECT setval(pg_get_serial_sequence('"PermisosRoles"', 'Id'), (SELECT MAX("Id") FROM "PermisosRoles"));
 
+INSERT INTO "VehiculosFlota" ("Id", "Placa", "Marca", "Modelo", "Anio", "Tipo", "CapacidadKg", "Activo", "Observaciones") VALUES
+    (1, 'ABC-123', 'Volvo', 'FH16', 2022, 'Camion', 20000.00, TRUE, 'Unidad de larga distancia'),
+    (2, 'DEF-456', 'Mercedes-Benz', 'Sprinter', 2021, 'Furgon', 1500.00, TRUE, NULL),
+    (3, 'GHI-789', 'Scania', 'R450', 2023, 'Camion', 18000.00, TRUE, NULL),
+    (4, 'JKL-012', 'Toyota', 'Hilux', 2020, 'Furgon', 1000.00, FALSE, 'Unidad en mantenimiento'),
+    (5, 'MNO-345', 'Honda', 'CB500', 2022, 'Moto', 50.00, TRUE, 'Reparto urbano'),
+    (6, 'PQR-678', 'Iveco', 'Daily', 2021, 'Otro', 3500.00, TRUE, NULL)
+ON CONFLICT ("Placa") DO UPDATE SET
+    "Marca" = EXCLUDED."Marca",
+    "Modelo" = EXCLUDED."Modelo",
+    "Anio" = EXCLUDED."Anio",
+    "Tipo" = EXCLUDED."Tipo",
+    "CapacidadKg" = EXCLUDED."CapacidadKg",
+    "Activo" = EXCLUDED."Activo",
+    "Observaciones" = EXCLUDED."Observaciones";
+
+SELECT setval(pg_get_serial_sequence('"VehiculosFlota"', 'Id'), (SELECT MAX("Id") FROM "VehiculosFlota"));
+
 COMMIT;
