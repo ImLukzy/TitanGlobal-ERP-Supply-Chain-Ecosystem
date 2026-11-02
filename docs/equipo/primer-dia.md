@@ -18,6 +18,9 @@ Checklist para dejar el proyecto funcionando en tu máquina. Si algo falla, avis
 - [ ] Node.js 22 LTS (`nvm use` lee el `.nvmrc` del repositorio).
 - [ ] Docker con Docker Compose.
 - [ ] Git.
+- [ ] Python 3 (`python3 --version`): lo usan el gate y `scripts/adaptar-rama-capas.py`.
+
+**En Windows** ejecuta los scripts `.sh` y el script de Python desde **Git Bash**, no desde PowerShell, que no puede ejecutar `./scripts/verify.sh`. Si `python3` no existe en Git Bash, comprueba `python --version` y avisa a Lukas con el error.
 
 ## 3. Clonar y levantar
 

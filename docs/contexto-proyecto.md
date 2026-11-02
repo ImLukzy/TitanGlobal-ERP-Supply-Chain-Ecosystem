@@ -101,7 +101,7 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`, incluidas las reglas `f` y `g` de separación de capas), tests del backend (incluidos `ArquitecturaTests` y `UnitOfWorkTests`), `npm ci` + lint, typecheck, tests y build del frontend.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`, incluidas las reglas `f` y `g` de separación de capas), tests del backend (incluidos `ArquitecturaTests` y `UnitOfWorkTests`), que el modelo no tenga cambios sin migración, `npm ci` + lint, typecheck, tests y build del frontend.
 - **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra (`-p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`), siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → revisión por otro compañero (máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
@@ -138,8 +138,8 @@ En cada integración, la integración actualiza aquí: §5 (entidades y migracio
 ## 12. Pendiente
 - **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo y qué queda: [`equipo/relevo.md`](equipo/relevo.md).
   - Las pantallas 08, 09, 10, 77 y 78 se integraron en `main` el 2026-10-31; falta su QA visual.
-  - Pantallas por empezar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44).
-- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Quedan por empezar las pantallas de 72 RolesPermisos (Sergio) y 71 Usuarios (Alexander) (ver [`equipo/relevo.md`](equipo/relevo.md)). El resto de módulos está por empezar.
-- **Accesos:** invitar a los compañeros al repositorio (falta su usuario de GitHub); Vercel Hobby no admite miembros.
+  - Pantallas en ramas por adaptar e integrar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44). Estado de cada rama: [`equipo/relevo.md`](equipo/relevo.md) §1.
+- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Las pantallas de 72 RolesPermisos (Sergio) y 71 Usuarios (Alexander) están en sus ramas ([`equipo/relevo.md`](equipo/relevo.md) §1).md`](equipo/relevo.md)). El resto de módulos está por empezar.
+- **Accesos:** los seis compañeros ya trabajan en el repositorio; Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.

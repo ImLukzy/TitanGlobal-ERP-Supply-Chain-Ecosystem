@@ -379,7 +379,7 @@ public class ProveedoresApiTests
 
 ### 10. Gate
 
-Ejecuta el gate completo antes de subir tu rama:
+Ejecuta el gate completo antes de subir tu rama (en Windows, desde Git Bash):
 
 ```sh
 ./scripts/verify.sh

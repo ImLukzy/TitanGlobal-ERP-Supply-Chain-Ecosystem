@@ -14,8 +14,8 @@ git switch -c tu-nombre/moduloXX-nombre-capas origin/main
 python3 scripts/adaptar-rama-capas.py rama origin/tu-nombre/moduloXX-nombre
 ```
 
-> **En Windows (PowerShell o Git Bash):** si `python3` no está definido o abre la Microsoft Store, ejecuta el comando con `python`:
-> ```powershell
+> **En Windows** ejecútalo desde **Git Bash**, porque el script llama a `bash` para comprobar las reglas. Si `python3` no está definido, usa `python`:
+> ```sh
 > python scripts/adaptar-rama-capas.py rama origin/tu-nombre/moduloXX-nombre
 > ```
 > Si tu rama solo existe en tu máquina local y nunca la subiste con `git push`, pasa el nombre local (`tu-nombre/moduloXX-nombre` sin `origin/`).

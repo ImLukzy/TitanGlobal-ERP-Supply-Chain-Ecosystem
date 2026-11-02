@@ -368,7 +368,9 @@ def modo_rama(rama, sin_dotnet):
 
     nombre = nombre_migracion(migraciones)
     reglas_correctas = True
-    if not conflictos:
+    if not shutil.which("bash"):
+        print("\nNo se encontró bash: las reglas no se han comprobado. En Windows usa Git Bash.")
+    elif not conflictos:
         reglas = subprocess.run(["bash", "scripts/check-rules.sh"], capture_output=True, text=True)
         reglas_correctas = reglas.returncode == 0
         if not reglas_correctas:
