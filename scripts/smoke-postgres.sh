@@ -7,6 +7,7 @@ COMPOSE_CLEANUP_REQUIRED=0
 CLIENTE_CREADO_ID=""
 PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
+IMPUESTO_CREADO_ID=""
 SOLICITUD_CREADA_ID=""
 ORDEN_ABASTECIMIENTO_CREADA_ID=""
 ALMACEN_CREADO_ID=""
@@ -262,6 +263,17 @@ checks = {
     "openapi-alertas": lambda data: all(path in data["paths"] for path in ["/api/v1/alertas", "/api/v1/alertas/resumen", "/api/v1/alertas/descartar", "/api/v1/alertas/restaurar"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/alertas", "get"), ("/api/v1/alertas/resumen", "get"), ("/api/v1/alertas/descartar", "post"), ("/api/v1/alertas/restaurar", "post")]),
     "openapi-roles": lambda data: all(path in data["paths"] for path in ["/api/v1/roles", "/api/v1/roles/{id}", "/api/v1/roles/{id}/permisos", "/api/v1/roles/matriz"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/roles", "get"), ("/api/v1/roles", "post"), ("/api/v1/roles/{id}", "get"), ("/api/v1/roles/{id}", "put"), ("/api/v1/roles/{id}", "delete"), ("/api/v1/roles/{id}/permisos", "get"), ("/api/v1/roles/{id}/permisos", "put"), ("/api/v1/roles/matriz", "get")]),
     "openapi-usuarios": lambda data: all(path in data["paths"] for path in ["/api/v1/usuarios", "/api/v1/usuarios/{id}", "/api/v1/usuarios/{id}/permisos", "/api/v1/usuarios/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/usuarios", "get"), ("/api/v1/usuarios", "post"), ("/api/v1/usuarios/{id}", "get"), ("/api/v1/usuarios/{id}", "put"), ("/api/v1/usuarios/{id}", "delete"), ("/api/v1/usuarios/{id}/permisos", "get"), ("/api/v1/usuarios/resumen", "get")]),
+    "impuestos-list": lambda data: [(item["id"], item["codigo"], item["tipo"], item["porcentajeVigente"]) for item in sorted(data, key=lambda item: item["id"])] == [(1, "IGV", "IGV", 18.0), (2, "RET-4TA", "RETENCION", 8.0)],
+    "impuesto-detail": lambda data: data["id"] == 1 and data["codigo"] == "IGV" and data["pais"] == "PER" and data["activo"] is True and [(tasa["porcentaje"], tasa["fechaInicio"], tasa["fechaFin"]) for tasa in data["tasas"]] == [(18.0, "2020-01-01T00:00:00Z", None)],
+    "impuesto-created": lambda data: data["id"] > 0,
+    "impuesto-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un impuesto con el código IGV." and "Detail" not in data,
+    "tasa-created": lambda data: data["id"] > 0 and data["impuestoId"] > 0,
+    "tasa-overlap": lambda data: data["StatusCode"] == 400 and data["Message"] == "Ya existe una tasa activa para ese periodo." and "Detail" not in data,
+    "impuesto-smoke-detail": lambda data: data["codigo"] == "SMOKE-IMP" and [(tasa["porcentaje"], tasa["fechaInicio"], tasa["fechaFin"]) for tasa in data["tasas"]] == [(10.0, "2027-01-01T00:00:00Z", None), (5.0, "2026-01-01T00:00:00Z", "2026-12-31T00:00:00Z")],
+    "impuesto-calculo": lambda data: data["impuestoId"] == 1 and data["codigo"] == "IGV" and data["baseImponible"] == 100.13 and data["porcentajeAplicado"] == 18.0 and data["importeImpuesto"] == 18.02 and data["total"] == 118.15 and data["fechaOperacion"] == "2026-05-10T00:00:00Z",
+    "impuesto-calculo-abierto": lambda data: data["porcentajeAplicado"] == 10.0 and data["importeImpuesto"] == 20.0 and data["total"] == 220.0 and data["fechaOperacion"] == "2028-03-01T00:00:00Z",
+    "impuesto-inactive": lambda data: data["StatusCode"] == 404 and data["Message"] == "El impuesto no existe o está inactivo." and "Detail" not in data,
+    "openapi-impuestos": lambda data: all(path in data["paths"] for path in ["/api/v1/impuestos", "/api/v1/impuestos/{id}", "/api/v1/impuestos/{id}/tasas", "/api/v1/impuestos/calcular"]),
     "openapi-auditoria": lambda data: all(path in data["paths"] for path in ["/api/v1/auditoria", "/api/v1/auditoria/{id}", "/api/v1/auditoria/entidades", "/api/v1/auditoria/resumen"]) and all(list(data["paths"][path]) == ["get"] for path in ["/api/v1/auditoria", "/api/v1/auditoria/{id}", "/api/v1/auditoria/entidades", "/api/v1/auditoria/resumen"]),
     "auditoria-clientes": lambda data: data["total"] == 3 and [item["accion"] for item in data["items"]] == ["Baja", "Modificacion", "Alta"] and all(item["entidad"] == "Cliente" and item["usuario"] == "smoke" for item in data["items"]) and [item["camposCambiados"] for item in data["items"]] == [4, 2, 4],
     "auditoria-alta": lambda data: data["entidad"] == "Cliente" and data["accion"] == "Alta" and data["entidadId"] == str(data["cambios"][0]["despues"]) and all(campo["antes"] is None for campo in data["cambios"]) and {campo["campo"]: campo["despues"] for campo in data["cambios"]} == {"Id": data["entidadId"], "Nombre": "Cliente Smoke", "Ruc": "20987654321", "Descripcion": "Alta de smoke"},
@@ -400,6 +412,10 @@ request_check() {
 
     if [[ "$validation" == "product-created" ]]; then
         PRODUCTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "impuesto-created" ]]; then
+        IMPUESTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
     if [[ "$validation" == "provider-created" ]]; then
@@ -661,5 +677,18 @@ request_check 'Rechazar correo de usuario duplicado' POST '/api/v1/usuarios' 409
 request_check 'Proteger último ADMIN activo' PUT '/api/v1/usuarios/1' 409 usuario-last-admin '{"nombreUsuario":"admin","nombreCompleto":"Administrador del sistema","email":"admin@titanglobal.example","activo":false,"rolIds":[1]}'
 request_check 'Proteger rol VENTAS asignado' DELETE '/api/v1/roles/2' 409 usuario-role-protected
 request_check 'Eliminar usuario smoke' DELETE "/api/v1/usuarios/${USUARIO_CREADO_ID}" 204 ''
+request_check 'OpenAPI de impuestos y tasas' GET '/openapi/v1.json' 200 openapi-impuestos
+request_check 'Listado de impuestos del seed' GET '/api/v1/impuestos' 200 impuestos-list
+request_check 'Detalle del IGV' GET '/api/v1/impuestos/1' 200 impuesto-detail
+request_check 'POST impuesto válido' POST '/api/v1/impuestos' 201 impuesto-created '{"codigo":"SMOKE-IMP","nombre":"Impuesto smoke","tipo":"IVA","pais":"PER","activo":true}'
+request_check 'POST impuesto con código del seed' POST '/api/v1/impuestos' 409 impuesto-duplicate '{"codigo":"igv","nombre":"IGV duplicado","tipo":"IGV","pais":"PER","activo":true}'
+request_check 'POST tasa con fechas sin zona' POST "/api/v1/impuestos/${IMPUESTO_CREADO_ID}/tasas" 201 tasa-created '{"porcentaje":5,"fechaInicio":"2026-01-01","fechaFin":"2026-12-31"}'
+request_check 'POST tasa sin fecha final y con fecha UTC Z' POST "/api/v1/impuestos/${IMPUESTO_CREADO_ID}/tasas" 201 tasa-created '{"porcentaje":10,"fechaInicio":"2027-01-01T00:00:00Z"}'
+request_check 'POST tasa que se solapa con la abierta' POST "/api/v1/impuestos/${IMPUESTO_CREADO_ID}/tasas" 400 tasa-overlap '{"porcentaje":12,"fechaInicio":"2027-06-01"}'
+request_check 'Detalle del impuesto smoke con fechas UTC' GET "/api/v1/impuestos/${IMPUESTO_CREADO_ID}" 200 impuesto-smoke-detail
+request_check 'Calcular IGV con fecha sin zona y redondeo' POST '/api/v1/impuestos/calcular' 200 impuesto-calculo '{"impuestoId":1,"baseImponible":100.125,"fechaOperacion":"2026-05-10"}'
+request_check 'Calcular con la tasa sin fecha final' POST '/api/v1/impuestos/calcular' 200 impuesto-calculo-abierto "{\"impuestoId\":${IMPUESTO_CREADO_ID},\"baseImponible\":200,\"fechaOperacion\":\"2028-03-01T00:00:00Z\"}"
+request_check 'DELETE impuesto smoke (desactivar)' DELETE "/api/v1/impuestos/${IMPUESTO_CREADO_ID}" 204 ''
+request_check 'Calcular con impuesto desactivado' POST '/api/v1/impuestos/calcular' 404 impuesto-inactive "{\"impuestoId\":${IMPUESTO_CREADO_ID},\"baseImponible\":200,\"fechaOperacion\":\"2028-03-01\"}"
 request_check 'OpenAPI de auditoría transaccional' GET '/openapi/v1.json' 200 openapi-auditoria
 printf 'SMOKE OK\n'
