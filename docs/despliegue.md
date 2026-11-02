@@ -13,6 +13,17 @@ Entorno para ir viendo el avance. No es producción con datos reales: la base ti
 ## Secretos
 - La cadena de conexión de Neon solo vive en la variable de entorno `ConnectionStrings__DefaultConnection` de Render (formato Npgsql, `SSL Mode=VerifyFull`). Nunca en el repositorio, en `appsettings*.json` ni en la documentación.
 
+## Ramas de Neon para compañeros
+Cada compañero que necesite una base en la nube recibe una rama `dev-<nombre>`, copia de la rama principal. No hace falta invitarlo al proyecto de Neon.
+```sh
+export NEON_API_KEY=...        # Neon → Account settings → API keys
+export NEON_PROJECT_ID=...     # proyecto titanglobal-erp → Settings
+./scripts/neon-rama.sh leonel franco   # crea dev-leonel y dev-franco (o reutiliza las existentes) e imprime sus cadenas Npgsql
+```
+- Cada cadena se envía **por mensaje privado** solo a su dueño.
+- Si una cadena se filtra: Neon → rama → Roles → *Reset password* (cambia la de esa rama), o se borra la rama y se vuelve a crear con el script.
+- Las ramas del plan gratuito tienen límites de número y de cómputo: borrar las que ya no se usen. Una rama no ve los cambios posteriores de la principal; para ponerla al día: Neon → rama → *Reset from parent* (se pierden sus datos).
+
 ## Migraciones y datos
 - Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de Lukas (integración), y comprobar después con la API desplegada.
 - Datos de demostración: `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql` (idempotente; reinicia los datos de las tablas del enunciado).

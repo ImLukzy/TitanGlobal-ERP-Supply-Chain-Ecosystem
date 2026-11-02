@@ -37,6 +37,17 @@ Puertos: API 5080, frontend 5173, PostgreSQL 5433. La contraseña de `docker-com
 
 Comprobación rápida: http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}` y http://localhost:5173/modulos/01-clientes muestra clientes.
 
+### Probar contra una base en la nube (opcional)
+Para desarrollar basta con Docker. Si necesitas una base en la nube (por ejemplo, para enseñar algo desde otra máquina), pide a Lukas tu **rama de Neon** (`dev-<tu-nombre>`): es una copia de la base de la demo solo para ti, y puedes romperla sin afectar a nadie. No necesitas cuenta en Neon. Lukas te enviará por mensaje privado una cadena de conexión, que usas así:
+```sh
+dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080 \
+  --ConnectionStrings:DefaultConnection="<tu cadena>"
+dotnet ef database update -p src/TitanGlobal.Api --connection "<tu cadena>"   # si tu rama tiene migraciones nuevas
+```
+Esa cadena es un secreto: no la pegues en el repositorio, en `appsettings*.json`, en issues ni en el chat del grupo. Si se filtra, avisa a Lukas para que la rote.
+
+Las vistas previas de Vercel (el enlace que aparece en tu pull request) sirven para revisar **pantallas**, pero llaman a la API de `main` con la base de la demo: no sirven para probar endpoints ni migraciones nuevos.
+
 ## 4. Cómo se trabaja (en orden)
 La meta del equipo es **3 módulos terminados por semana**. El detalle de roles, tablero y límites está en [`equipo/cadencia.md`](equipo/cadencia.md).
 
