@@ -25,6 +25,7 @@ USUARIO_CREADO_ID=""
 AUDITORIA_ALTA_ID=""
 AUDITORIA_MODIFICACION_ID=""
 AUDITORIA_BAJA_ID=""
+EMPLEADO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -319,6 +320,15 @@ checks = {
     "reclamo-close-conflict": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El reclamo REC-\d{6} está cerrado\.", data["Message"]) is not None and "Detail" not in data,
     "reclamo-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 2 no está en la orden OC-001." and "Detail" not in data,
     "reclamo-no-rejection-motive": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
+    "openapi-empleados": lambda data: all(path in data["paths"] for path in ["/api/v1/empleados", "/api/v1/empleados/{id}", "/api/v1/empleados/{id}/cese"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/empleados", "get"), ("/api/v1/empleados", "post"), ("/api/v1/empleados/{id}", "get"), ("/api/v1/empleados/{id}", "put"), ("/api/v1/empleados/{id}/cese", "post")]) and "delete" not in data["paths"]["/api/v1/empleados/{id}"],
+    "empleados-cesados": lambda data: data["total"] == 1 and data["items"][0]["legajo"] == "EMP-000004",
+    "empleado-detail": lambda data: data["legajo"] == "EMP-000001",
+    "empleado-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "empleado-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un empleado con el documento DNI 10000001." and "Detail" not in data,
+    "empleado-minor": lambda data: data["StatusCode"] == 400 and data["Message"] == "El empleado debe tener al menos 18 años a la fecha de ingreso." and "Detail" not in data,
+    "empleado-cesado": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "empleado-ceased-edit": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede editar un empleado cesado." and "Detail" not in data,
+    "empleado-cese-repeated": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El empleado [0-9]+ ya está cesado\.", data["Message"]) is not None and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -456,6 +466,10 @@ request_check() {
 
     if [[ "$validation" == "devolucion-created" ]]; then
         DEVOLUCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "empleado-created" ]]; then
+        EMPLEADO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -662,4 +676,13 @@ request_check 'Proteger último ADMIN activo' PUT '/api/v1/usuarios/1' 409 usuar
 request_check 'Proteger rol VENTAS asignado' DELETE '/api/v1/roles/2' 409 usuario-role-protected
 request_check 'Eliminar usuario smoke' DELETE "/api/v1/usuarios/${USUARIO_CREADO_ID}" 204 ''
 request_check 'OpenAPI de auditoría transaccional' GET '/openapi/v1.json' 200 openapi-auditoria
+request_check 'OpenAPI de empleados' GET '/openapi/v1.json' 200 openapi-empleados
+request_check 'Empleados cesados' GET '/api/v1/empleados?estado=Cesado' 200 empleados-cesados
+request_check 'Detalle del empleado 1' GET '/api/v1/empleados/1' 200 empleado-detail
+request_check 'POST empleado válido' POST '/api/v1/empleados' 200 empleado-created '{"tipoDocumento":"DNI","numeroDocumento":"20000001","nombres":"Empleado","apellidos":"Smoke Prueba","fechaNacimiento":"1995-04-10","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas","email":"smoke.empleado@titanglobal.example","telefono":"999000100"}'
+request_check 'POST empleado con documento del seed' POST '/api/v1/empleados' 409 empleado-duplicate '{"tipoDocumento":"DNI","numeroDocumento":"10000001","nombres":"Duplicado","apellidos":"Smoke Prueba","fechaNacimiento":"1995-04-10","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas"}'
+request_check 'POST empleado menor de edad' POST '/api/v1/empleados' 400 empleado-minor '{"tipoDocumento":"DNI","numeroDocumento":"20000002","nombres":"Menor","apellidos":"Smoke Prueba","fechaNacimiento":"2010-01-01","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas"}'
+request_check 'Cesar empleado creado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 200 empleado-cesado '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
+request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
 printf 'SMOKE OK\n'

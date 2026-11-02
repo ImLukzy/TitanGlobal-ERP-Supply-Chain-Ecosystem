@@ -519,4 +519,14 @@ INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribi
 SELECT setval(pg_get_serial_sequence('"Roles"', 'Id'), (SELECT MAX("Id") FROM "Roles"));
 SELECT setval(pg_get_serial_sequence('"PermisosRoles"', 'Id'), (SELECT MAX("Id") FROM "PermisosRoles"));
 
+TRUNCATE TABLE "Empleados" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Empleados" ("Id", "Legajo", "TipoDocumento", "NumeroDocumento", "Nombres", "Apellidos", "FechaNacimiento", "FechaIngreso", "Cargo", "Area", "Email", "Telefono", "Estado", "FechaCese", "MotivoCese") VALUES
+    (1, 'EMP-000001', 'DNI', '10000001', 'Ana', 'Torres Vega', DATE '1990-05-14', DATE '2021-03-01', 'Gerente de Ventas', 'Ventas', 'ana.torres@titanglobal.example', '999000001', 'Activo', NULL, NULL),
+    (2, 'EMP-000002', 'DNI', '10000002', 'Luis', 'Rojas Mendoza', DATE '1988-11-02', DATE '2019-08-16', 'Analista de Compras', 'Compras', 'luis.rojas@titanglobal.example', '999000002', 'Activo', NULL, NULL),
+    (3, 'EMP-000003', 'CE', '004512367', 'Maria', 'Salazar Quispe', DATE '1995-02-20', DATE '2024-01-08', 'Almacenero', 'Almacen', 'maria.salazar@titanglobal.example', '999000003', 'Activo', NULL, NULL),
+    (4, 'EMP-000004', 'Pasaporte', 'P1234567', 'Carlos', 'Diaz Soto', DATE '1982-07-30', DATE '2018-05-02', 'Auxiliar de Logistica', 'Logistica', NULL, NULL, 'Cesado', DATE '2026-09-30', 'Renuncia voluntaria');
+
+SELECT setval(pg_get_serial_sequence('"Empleados"', 'Id'), (SELECT MAX("Id") FROM "Empleados"));
+
 COMMIT;
