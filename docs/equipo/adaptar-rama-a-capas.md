@@ -1,5 +1,7 @@
 # Adaptar una rama en curso a las cuatro capas
 
+Las ramas de módulos 22, 33, 41, 42, 61, 71, 72 y 75 ya están integradas ([`relevo.md`](relevo.md) §1): no tienes que adaptarlas. Esta guía es para otro trabajo que tengas con la estructura anterior.
+
 Si empezaste una rama antes de que `main` pasara a las cuatro capas (2026-11-02, spec 50), **no hagas `git merge` ni `git rebase` a mano**: como todos los archivos de `src/TitanGlobal.Api/Modules/...` y `Models/...` cambiaron de proyecto y de namespace, un rebase normal produce conflictos en cada archivo.
 
 Usa el script `scripts/adaptar-rama-capas.py`, que reproduce tus cambios sobre una rama limpia creada desde `origin/main`.

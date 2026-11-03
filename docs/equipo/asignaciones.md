@@ -4,7 +4,7 @@ Reparto de los 80 módulos entre **7 personas**: 13 para Lukas (todos terminados
 
 Primer paso de cada módulo: escribir su spec (ver `docs/guia-companeros.md` §4) y pedir a Lukas que la revise antes de programar. Un módulo lo lleva una sola persona de principio a fin (backend y pantalla).
 
-Hay módulos en ramas que aún no están en `main`; aquí figuran como pendientes hasta que se integren. Su estado está en [`relevo.md`](relevo.md) §1.
+Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](relevo.md) §1.
 
 ## Resumen por persona
 | Persona | Rol | Módulos | Bloque |
@@ -50,7 +50,7 @@ Hay módulos en ramas que aún no están en `main`; aquí figuran como pendiente
 | 19 RecepcionMercaderia | Compras y Abastecimiento Global | Sergio | pendiente | — |
 | 20 AcuerdosAbastecimiento | Compras y Abastecimiento Global | Sergio | pendiente | — |
 | 21 Productos | Inventarios y Almacenes (WMS) | Lukas Melgar | terminado | 09, 10 |
-| 22 CategoriasProducto | Inventarios y Almacenes (WMS) | Maxi | pendiente | — |
+| 22 CategoriasProducto | Inventarios y Almacenes (WMS) | Maxi | backend integrado, pantalla pendiente | modulo22 |
 | 23 Almacenes | Inventarios y Almacenes (WMS) | Lukas Melgar | terminado | 19, 20 |
 | 24 ZonasAlmacenaje | Inventarios y Almacenes (WMS) | Lukas Melgar | terminado | 21, 22 |
 | 25 LotesSeries | Inventarios y Almacenes (WMS) | Maxi | pendiente | — |
@@ -61,7 +61,7 @@ Hay módulos en ramas que aún no están en `main`; aquí figuran como pendiente
 | 30 ReabastecimientoAutomatico | Inventarios y Almacenes (WMS) | Maxi | pendiente | — |
 | 31 ListasMateriales | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 32 RutasProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
-| 33 CentrosTrabajo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
+| 33 CentrosTrabajo | Manufactura y Producción (MRP) | Antony Huayhua | backend integrado, pantalla pendiente | modulo33 |
 | 34 OrdenesProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 35 ConsumoMateriales | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 36 ControlCalidadInsumos | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
@@ -69,8 +69,8 @@ Hay módulos en ramas que aún no están en `main`; aquí figuran como pendiente
 | 38 MermasProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 39 MantenimientoPreventivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 40 MantenimientoCorrectivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
-| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
-| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
+| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo41 |
+| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo42 |
 | 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 44 ConsolidacionCarga | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 45 GuiasRemision | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
@@ -89,7 +89,7 @@ Hay módulos en ramas que aún no están en `main`; aquí figuran como pendiente
 | 58 Presupuestos | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 59 CentrosCosto | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 60 ActivosFijos | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
-| 61 Empleados | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
+| 61 Empleados | Capital Humano y Nóminas (HCM) | Alexander | backend y pantalla integrados, falta QA visual | modulo61 |
 | 62 ContratosLaborales | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 63 AsistenciaBiometrica | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 64 TurnosHorarios | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
@@ -99,11 +99,11 @@ Hay módulos en ramas que aún no están en `main`; aquí figuran como pendiente
 | 68 EvaluacionDesempeno | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 69 Capacitaciones | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Alexander | backend terminado, pantalla pendiente | 43, 44 |
-| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | backend terminado, pantalla pendiente | 41, 42 |
+| 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Alexander | pantalla integrada, falta QA visual | 43, 44 |
+| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | backend terminado, pantalla parcial: falta matriz y editor | 41, 42 |
 | 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Kelvin Pinto | pendiente | — |
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
-| 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | pendiente | — |
+| 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | backend integrado, pantalla pendiente | modulo75 |
 | 76 SeriesNumeracion | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
 | 77 AuditoriaTransaccional | Gobierno Corporativo, Seguridad y Auditoría | Maxi | pantalla integrada; falta QA visual | 45, 46 |
 | 78 NotificacionesAlertas | Gobierno Corporativo, Seguridad y Auditoría | Maxi | pantalla integrada; falta QA visual | 37, 38 |

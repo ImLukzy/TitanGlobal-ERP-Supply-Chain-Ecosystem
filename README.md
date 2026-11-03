@@ -35,9 +35,15 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 | 10 DevolucionesComerciales | ✅ | ✅ | pendiente |
 | 78 NotificacionesAlertas | ✅ | ✅ | pendiente |
 | 08 ComisionesVendedores | ✅ | ✅ | pendiente |
-| 72 RolesPermisos | ✅ | pendiente | — |
-| 71 Usuarios | ✅ | pendiente | — |
+| 72 RolesPermisos | ✅ | parcial: falta matriz y editor | pendiente |
+| 71 Usuarios | ✅ | ✅ | pendiente |
 | 77 AuditoriaTransaccional | ✅ | ✅ | pendiente |
+| 61 Empleados | ✅ | ✅ | pendiente |
+| 75 ImpuestosTasas | ✅ | pendiente | — |
+| 22 CategoriasProducto | ✅ | pendiente | — |
+| 33 CentrosTrabajo | ✅ | pendiente | — |
+| 41 VehiculosFlota | ✅ | pendiente | — |
+| 42 Conductores | ✅ | pendiente | — |
 
 Las pantallas 08, 09, 10, 77 y 78 se integraron en `main` el 2026-10-31; su QA visual de extremo a extremo queda como tarea de la semana 0 del plan ([`docs/equipo/cadencia.md`](docs/equipo/cadencia.md)).
 

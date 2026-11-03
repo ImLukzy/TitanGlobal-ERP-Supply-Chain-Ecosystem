@@ -68,8 +68,14 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 | `Vendedor`, `AsignacionVenta`, `LiquidacionComision` | 08 | vendedores con % de comisión; una orden se asigna a un vendedor; liquidación mensual que conserva los importes; un mes liquidado no admite cambios de asignación |
 | `Rol`, `PermisoRol` | 72 | roles con permisos de lectura/escritura por módulo (80); `ADMIN` de sistema; solo datos, el 403 del enunciado no cambia |
 | `ZonaAlmacenaje` | 24 | código único por almacén, tipo y temperatura; las zonas activas no superan la capacidad del almacén |
+| `Impuesto`, `TasaImpuesto` | 75 | código único; tasas con vigencia sin solape |
+| `CategoriaProducto` | 22 | nombre único; baja lógica; sin relación con `Producto.Categoria` |
+| `CentroTrabajo` | 33 | código único; planta como texto |
+| `VehiculoFlota` | 41 | placa única |
+| `Conductor` | 42 | licencia única; sin relación con `VehiculoFlota` |
+| `Empleado` | 61 | documento único; cese con fecha y motivo |
 
-Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`, `Cotizaciones`, `ContratosComerciales`, `ListasPrecios`, `Promociones`, `ReclamosPostventa`, `DevolucionesComerciales`, `AlertasDescartadas`, `ComisionesVendedores`, `RolesPermisos`.
+Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`, `Cotizaciones`, `ContratosComerciales`, `ListasPrecios`, `Promociones`, `ReclamosPostventa`, `DevolucionesComerciales`, `AlertasDescartadas`, `ComisionesVendedores`, `RolesPermisos`, `AddModulo75ImpuestosTasas`, `Modulo22CategoriasProducto`, `CentrosTrabajo`, `VehiculosFlotaConductores`, `Empleados`.
 
 ## 6. Módulos implementados
 | Módulo | API | Lo que hace | Pantalla | Specs |
@@ -90,6 +96,14 @@ Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `Solicitude
 | 09 ReclamosPostventa | `api/v1/reclamos-postventa` | reclamos sobre órdenes del cliente con tipo y prioridad; plazo de atención (2/5/10 días) y vencidos; Abierto → EnProceso → Resuelto → Cerrado o Rechazado; cumplimiento de plazos | terminado (backend y pantalla); falta QA visual | 33, 34 |
 | 10 DevolucionesComerciales | `api/v1/devoluciones-comerciales` | devoluciones de productos de una orden (opcionalmente de un reclamo); nunca más de lo comprado menos lo ya devuelto; importe con el precio de la orden; tasa de devolución | terminado (backend y pantalla); falta QA visual | 35, 36 |
 | 78 NotificacionesAlertas | `api/v1/alertas` | centro de alertas calculadas desde los módulos (reclamos vencidos, órdenes atrasadas, contratos excedidos o por vencer, almacenes casi llenos, cotizaciones vencidas, solicitudes antiguas); descartar y restaurar | terminado (backend y pantalla); falta QA visual | 37, 38 |
+| 72 RolesPermisos (pantalla) | `api/v1/roles` | pestaña de roles; **faltan matriz y editor de permisos** | parcial | 42 |
+| 75 ImpuestosTasas | `api/v1/impuestos` | impuestos, tasas con vigencia y cálculo; sin cierre de tasas | pendiente | modulo75 |
+| 22 CategoriasProducto | `api/v1/categorias-producto` | catálogo con baja lógica y resumen | pendiente | modulo22 |
+| 33 CentrosTrabajo | `api/v1/centros-trabajo` | líneas y celdas por planta, capacidad, costo y resumen | pendiente | modulo33 |
+| 41 VehiculosFlota | `api/v1/vehiculos-flota` | flota con tipos, capacidad y resumen | pendiente | modulo41 |
+| 42 Conductores | `api/v1/conductores` | licencias y habilitación | pendiente | modulo42 |
+| 61 Empleados | `api/v1/empleados` | legajo, alta, edición y cese | integrada, falta QA | modulo61 |
+| 71 Usuarios (pantalla) | `api/v1/usuarios` | mantenimiento de usuarios y roles | integrada, falta QA | 44 |
 | 08 ComisionesVendedores | `api/v1/comisiones-vendedores` | vendedores con % de comisión; asignación de cada orden a un vendedor; comisiones del mes; liquidación mensual y pago | terminado (backend y pantalla); falta QA visual | 39, 40 |
 | 72 RolesPermisos | `api/v1/roles` | roles y permisos de lectura/escritura por módulo (80), matriz roles × módulos; solo datos: el 403 del enunciado no cambia | backend integrado; pantalla pendiente (spec 42) | 41, 42 |
 | 71 Usuarios | `api/v1/usuarios` | usuarios con varios roles y permisos efectivos por módulo (unión de roles); siempre queda un ADMIN activo; solo datos: el 403 del enunciado no cambia | backend integrado; pantalla pendiente (spec 44) | 43, 44 |
@@ -138,8 +152,8 @@ En cada integración, la integración actualiza aquí: §5 (entidades y migracio
 ## 12. Pendiente
 - **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo y qué queda: [`equipo/relevo.md`](equipo/relevo.md).
   - Las pantallas 08, 09, 10, 77 y 78 se integraron en `main` el 2026-10-31; falta su QA visual.
-  - Pantallas en ramas por adaptar e integrar: 72 RolesPermisos (spec 42) y 71 Usuarios (spec 44). Estado de cada rama: [`equipo/relevo.md`](equipo/relevo.md) §1.
-- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Las pantallas de 72 RolesPermisos (Sergio) y 71 Usuarios (Alexander) están en sus ramas ([`equipo/relevo.md`](equipo/relevo.md) §1).md`](equipo/relevo.md)). El resto de módulos está por empezar.
+  - Módulos 22, 33, 41, 42, 61, 71, 72 y 75 integrados el 2026-11-02 con pendientes: lo que le falta a cada uno está en [`equipo/relevo.md`](equipo/relevo.md) §1.
+- **Reparto:** 7 personas y 80 módulos en [`equipo/asignaciones.md`](equipo/asignaciones.md). Lukas lleva 13 terminados (01, 02, 03, 04, 05, 06, 07, 11, 13, 15, 21, 23, 24). Los compañeros tienen integrados 22, 33, 41, 42, 61, 71, 72 y 75, aún sin terminar ([`equipo/relevo.md`](equipo/relevo.md) §1).md`](equipo/relevo.md)). El resto de módulos está por empezar.
 - **Accesos:** los seis compañeros ya trabajan en el repositorio; Vercel Hobby no admite miembros.
 - **Acabado menor:** el menú lateral no abre el dominio del módulo actual; texto del panel de detalle vacío («Selecciona…») más grande que el resto en SolicitudesCompra, Cotizaciones y Contratos (corregir en el componente compartido); números `OA-DEV-…` partidos en dos líneas a 1280 px; partir `ProveedoresPage.tsx` (624 líneas); plural en «Solo quedan 1 unidades…» (devoluciones); test intermitente `AlmacenesPage` «muestra capacidades del seed…» (1 fallo en ~40 ejecuciones con carga).
 - **Resto:** ninguno sin dueño.
