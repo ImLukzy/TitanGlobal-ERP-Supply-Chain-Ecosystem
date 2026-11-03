@@ -561,4 +561,35 @@ ON CONFLICT ("Codigo") DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('"CentrosTrabajo"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "CentrosTrabajo"));
 
+INSERT INTO "VehiculosFlota" ("Id", "Placa", "Marca", "Modelo", "Anio", "Tipo", "CapacidadKg", "Activo", "Observaciones") VALUES
+    (1, 'ABC-123', 'Volvo', 'FH16', 2022, 'Camion', 20000.00, TRUE, 'Unidad de larga distancia'),
+    (2, 'DEF-456', 'Mercedes-Benz', 'Sprinter', 2021, 'Furgon', 1500.00, TRUE, NULL),
+    (3, 'GHI-789', 'Scania', 'R450', 2023, 'Camion', 18000.00, TRUE, NULL),
+    (4, 'JKL-012', 'Toyota', 'Hilux', 2020, 'Furgon', 1000.00, FALSE, 'Unidad en mantenimiento'),
+    (5, 'MNO-345', 'Honda', 'CB500', 2022, 'Moto', 50.00, TRUE, 'Reparto urbano'),
+    (6, 'PQR-678', 'Iveco', 'Daily', 2021, 'Otro', 3500.00, TRUE, NULL)
+ON CONFLICT ("Placa") DO UPDATE SET
+    "Marca" = EXCLUDED."Marca",
+    "Modelo" = EXCLUDED."Modelo",
+    "Anio" = EXCLUDED."Anio",
+    "Tipo" = EXCLUDED."Tipo",
+    "CapacidadKg" = EXCLUDED."CapacidadKg",
+    "Activo" = EXCLUDED."Activo",
+    "Observaciones" = EXCLUDED."Observaciones";
+
+SELECT setval(pg_get_serial_sequence('"VehiculosFlota"', 'Id'), (SELECT MAX("Id") FROM "VehiculosFlota"));
+
+INSERT INTO "Conductores" ("Id", "Nombre", "DocumentoLicencia", "VencimientoLicencia", "Habilitado", "Activo", "Observaciones") VALUES
+    (1, 'Carlos Ruiz', 'PLT-0001', TIMESTAMPTZ '2027-12-31 00:00:00+00', TRUE, TRUE, NULL),
+    (2, 'Maria Quispe', 'PLT-0002', TIMESTAMPTZ '2026-06-30 00:00:00+00', TRUE, TRUE, NULL),
+    (3, 'Jose Flores', 'PLT-0003', TIMESTAMPTZ '2028-01-15 00:00:00+00', FALSE, TRUE, 'Sin habilitacion')
+ON CONFLICT ("DocumentoLicencia") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "VencimientoLicencia" = EXCLUDED."VencimientoLicencia",
+    "Habilitado" = EXCLUDED."Habilitado",
+    "Activo" = EXCLUDED."Activo",
+    "Observaciones" = EXCLUDED."Observaciones";
+
+SELECT setval(pg_get_serial_sequence('"Conductores"', 'Id'), (SELECT MAX("Id") FROM "Conductores"));
+
 COMMIT;

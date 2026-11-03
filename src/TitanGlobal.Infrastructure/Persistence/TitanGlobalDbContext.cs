@@ -80,6 +80,10 @@ public partial class TitanGlobalDbContext : DbContext
 
     public DbSet<CentroTrabajo> CentrosTrabajo { get; set; } = null!;
 
+    public DbSet<VehiculoFlota> VehiculosFlota { get; set; } = null!;
+
+    public DbSet<Conductor> Conductores { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurarAuditoria(modelBuilder);
@@ -853,6 +857,61 @@ public partial class TitanGlobalDbContext : DbContext
 
         modelBuilder.Entity<CentroTrabajo>()
             .HasIndex(centro => centro.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.Placa)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.Marca)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.Modelo)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.Tipo)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.CapacidadKg)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .Property(vehiculo => vehiculo.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<VehiculoFlota>()
+            .HasIndex(vehiculo => vehiculo.Placa)
+            .IsUnique();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.Nombre)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.DocumentoLicencia)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.VencimientoLicencia)
+            .HasColumnType("timestamp with time zone")
+            .IsRequired();
+
+        modelBuilder.Entity<Conductor>()
+            .Property(conductor => conductor.Observaciones)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Conductor>()
+            .HasIndex(conductor => conductor.DocumentoLicencia)
             .IsUnique();
 
     }
