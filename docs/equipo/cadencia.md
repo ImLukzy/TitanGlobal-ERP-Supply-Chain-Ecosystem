@@ -88,7 +88,7 @@ La semana 0 es de arranque: onboarding, QA de las pantallas ya integradas y arra
 | 3 | 51 FacturacionElectronica · 31 ListasMateriales · 42 Conductores | Leonel · Antony · Kelvin | Kelvin · Maxi · Sergio |
 | 4 | 25 LotesSeries · 14 Licitaciones · 62 ContratosLaborales | Maxi · Sergio · Alexander | Alexander · Leonel · Antony |
 
-**Estado a 2026-11-02:** varios módulos de esta tabla ya están avanzados en ramas (22, 33, 41, 42, 61, 71, 72 y 75) y antes de integrarlos hay que adaptarlos a las cuatro capas. Qué le falta a cada uno: [`relevo.md`](relevo.md) §1. La tabla se ajusta en la próxima reunión del lunes.
+**Estado a 2026-11-02:** los módulos 22, 33, 41, 42, 61, 71, 72 y 75 ya están integrados en `main`, pero no terminados: la mayoría no tiene pantalla o le falta QA. Qué le falta a cada uno: [`relevo.md`](relevo.md) §1. La tabla se ajusta en la próxima reunión del lunes.
 
 El orden sigue las dependencias de [`asignaciones.md`](asignaciones.md). Si un módulo se adelanta o se atrasa, se ajusta la tabla el lunes, no durante la semana.
 
