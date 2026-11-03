@@ -1359,6 +1359,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .usuarios-detail-grid > div { min-width: 0; }
 .usuarios-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
 .usuarios-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.usuarios-detail-wide { grid-column: 1 / -1; }
 .usuarios-detail-roles { grid-column: 1 / -1; }
 .usuarios-permisos { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
 .usuarios-permisos h3 { margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; }
