@@ -103,6 +103,8 @@ dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/Titan
 dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
 ```
 
+Después de generarla, ejecuta `dotnet format`: `dotnet ef` crea los archivos con BOM y, si no lo haces, `./scripts/verify.sh` falla con `error CHARSET`.
+
 Nunca escribas una migración ni edites `TitanGlobalDbContextModelSnapshot.cs` a mano.
 
 ### 5. DTOs
@@ -140,6 +142,15 @@ Reglas obligatorias en `Application`:
   - Unicidad (`23505`): `catch (ViolacionRestriccionException excepcion) when (excepcion.Tipo == TipoViolacionRestriccion.Unicidad)`
   - Clave foránea (`23503`): `catch (ViolacionRestriccionException excepcion) when (excepcion.Tipo == TipoViolacionRestriccion.ReferenciaForanea)`
   - Si una tabla tiene varias restricciones únicas, distingue cuál falló leyendo `excepcion.Restriccion`.
+
+Lo que los tests con EF InMemory no detectan y en PostgreSQL acaba en 500. Valídalo siempre:
+- **Fechas:** las columnas son `timestamptz` y solo aceptan UTC, pero una petición puede traer `"2027-12-31"` sin `Z`. Normaliza con `FechasUtc.Normalizar` (`TitanGlobal.Domain.Common`) antes de guardar o de filtrar. Si la fecha es un día, sin hora (vigencias, vencimientos), usa `FechasUtc.Normalizar(DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc))` para que no se mueva de día. Declara la fecha obligatoria como `DateTime?` en el DTO si quieres devolver tu propio mensaje cuando falte. Ejemplo: `ValidacionImpuesto` en `Modulo75_ImpuestosTasas`.
+- **Textos:** valida la misma longitud máxima que la columna.
+- **Decimales:** en `decimal(18,2)`, un valor de más de 16 dígitos enteros desborda, y uno con más decimales se redondea en silencio (`0.001` se guarda como `0.00`). Rechaza ambos con 400.
+
+Patrones a copiar según lo que pida la spec:
+- **Listado paginado y resumen:** `ListarProveedoresUseCase` y `ResumenProveedoresUseCase`, con los mensajes de paginación y la agregación en la consulta, sin `ToListAsync` previo.
+- **Baja lógica:** `DesactivarImpuestoUseCase` en `Modulo75_ImpuestosTasas`. Los módulos anteriores usan baja física, como `EliminarProveedorUseCase`.
 
 Ejemplo de validación (`src/TitanGlobal.Application/UseCases/Modulo11_Proveedores/ValidacionProveedor.cs`):
 
@@ -314,7 +325,9 @@ Con la API arrancada en desarrollo (`dotnet run --project src/TitanGlobal.Api --
 
 ### 8. Pruebas
 
-Añade las pruebas de integración en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/<Recurso>ApiTests.cs`. Cubre todos los mensajes de error literales de la spec, los límites de validación, los filtros y el resumen (`tests/TitanGlobal.Api.Tests/Modulo11_Proveedores/ProveedoresApiTests.cs`):
+Añade las pruebas de integración en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/<Recurso>ApiTests.cs`. Cubre todos los mensajes de error literales de la spec, los límites de validación, los filtros y el resumen (`tests/TitanGlobal.Api.Tests/Modulo11_Proveedores/ProveedoresApiTests.cs`).
+
+Las pruebas de módulo comparten infraestructura: `[Collection("Modulo04")]` da acceso a `OrdenesCompraApiFactory`, definida en `tests/TitanGlobal.Api.Tests/Modulo04_OrdenesCompra/OrdenesCompraApiTests.cs`, con una base InMemory común y sin ejecución en paralelo. Por eso cada clase restablece sus propios datos en el constructor. `RestablecerProveedores` y `AssertBusinessErrorAsync` son métodos privados de ese archivo de ejemplo: cópialos y adáptalos, porque no están en una clase común. Recortado:
 
 ```csharp
 using System.Net;
@@ -355,7 +368,7 @@ public class ProveedoresApiTests
 
 ### 9. Seed y smoke
 
-1. **Seed (`scripts/seed-dev.sql`):** añade al final del archivo los datos de ejemplo de tu módulo de forma idempotente (`ON CONFLICT ... DO UPDATE`) y actualiza la secuencia si insertas con `Id` explícito:
+1. **Seed (`scripts/seed-dev.sql`):** añade al final del archivo, **antes del `COMMIT;`**, los datos de ejemplo de tu módulo de forma idempotente (`ON CONFLICT ... DO UPDATE`) y actualiza la secuencia si insertas con `Id` explícito:
    ```sql
    INSERT INTO "Proveedores" ("Id", "RazonSocial", "Ruc", "Pais", "Email", "Telefono", "Activo") VALUES
        (1, 'Andes Suministros S.A.C.', '20600000001', 'Peru', 'ventas@andes.example', '+51 1 555-0101', TRUE)
@@ -366,7 +379,10 @@ public class ProveedoresApiTests
        "Telefono" = EXCLUDED."Telefono",
        "Activo" = EXCLUDED."Activo";
    ```
-2. **Smoke (`scripts/smoke-postgres.sh`):** añade las comprobaciones contra PostgreSQL real al final del script y ejecútalo:
+2. **Smoke (`scripts/smoke-postgres.sh`):** cada comprobación tiene tres partes. Si falta la validación, falla con `la respuesta no coincide con la validación X`.
+   - Una validación con ese nombre en el diccionario Python del script. Por ejemplo: `"provider-duplicate": lambda data: data["StatusCode"] == 409 and ...`.
+   - Si necesitas el id de lo que creas: una variable al principio del script (`PROVEEDOR_CREADO_ID=""`) y su captura dentro de `request_check`; busca cómo lo hace `PROVEEDOR_CREADO_ID`.
+   - La llamada a `request_check`, al final del script, antes de `SMOKE OK`:
    ```sh
    request_check 'Proveedores por país peru' GET '/api/v1/proveedores?pais=peru' 200 providers-list
    request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
@@ -405,4 +421,6 @@ Confirma los cambios con tu identidad de git, sube tu rama y abre el pull reques
 | `g: UseCase fuera de Application` o el contenedor DI no resuelve el `UseCase` | La clase `*UseCase` se creó en `Api` o `Infrastructure`, o no termina en `UseCase` | Moverla a `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/` y asegurar que sea `public class ...UseCase` concreta sin interfaz |
 | `e: controlador con dependencia de persistencia` | El controlador recibe `IUnitOfWork`, `IGenericRepository<T>` o `TitanGlobalDbContext` | Inyectar solo casos de uso en el controlador; llevar las consultas a un `UseCase` en `Application` |
 | `a: var usado como tipo` o `b: miembro con cuerpo de expresión` | Se usó `var` o `=>` en un método, constructor o propiedad | Declarar el tipo explícito y usar bloque `{ }` con `return` (`=>` solo vale dentro de lambdas LINQ o de configuración) |
+| `error CHARSET` al ejecutar `./scripts/verify.sh` | `dotnet ef` generó la migración con BOM | Ejecuta `dotnet format` y confirma el resultado |
+| 500 en PostgreSQL con tests en verde | Fecha sin UTC, texto más largo que la columna o decimal que desborda: EF InMemory no los detecta | Valida en `Application` (§6) y añade el caso al smoke |
 | `Your target project 'TitanGlobal.Api' doesn't match your migrations assembly 'TitanGlobal.Infrastructure'` | Se ejecutó `dotnet ef` con `-p src/TitanGlobal.Api` | Usar siempre `-p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` |

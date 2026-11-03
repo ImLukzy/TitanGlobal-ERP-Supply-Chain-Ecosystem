@@ -452,6 +452,8 @@ function FormularioProveedor({ proveedor, paises, cancelar, guardado }: {
 
 Para dar de baja o eliminar un registro, usa el componente reutilizable `DialogoBaja` (`frontend/src/components/DialogoBaja.tsx`).
 
+`DialogoBaja` siempre escribe «Eliminar {entidad}»; su texto no se puede cambiar por ahora. Tenlo en cuenta si tu módulo hace baja lógica.
+
 Propiedades de accesibilidad garantizadas por `DialogoBaja`:
 - Contenedor modal con `role="dialog"` y `aria-modal="true"`.
 - Trampa de foco (`Tab` y `Shift+Tab`) entre los botones interactivos del diálogo.

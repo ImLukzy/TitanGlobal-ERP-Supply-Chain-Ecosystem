@@ -27,7 +27,7 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 - **Mensajes literales:** usa los mensajes de error idénticos a los especificados en la spec.
 - **Entidades de Domain limpias:** prohibidos los atributos de EF Core (`[Index]`, `[Precision]`) y `using Microsoft.EntityFrameworkCore;` en las entidades; configúralos en `TitanGlobalDbContext.OnModelCreating`. `[Required]` y `[MaxLength]` son de .NET y sí se permiten.
 - **Fechas UTC obligatorias:** normaliza siempre con `FechasUtc` (`TitanGlobal.Domain.Common`). La columna es `timestamptz`: una fecha sin `Z` causa error 500 en PostgreSQL real (los tests en memoria no lo detectan).
-- **Validación de límites:** valida en `Application` obligatoriedad, longitudes máximas y rangos numéricos; cualquier desbordamiento de columna causa un error 500.
+- **Validación de límites:** valida en `Application` obligatoriedad, longitudes máximas, rangos numéricos y número de decimales. Lo que excede la columna causa un error 500 o se redondea en silencio, y los tests en memoria tampoco lo detectan.
 - **Frontend consistente:** usa los componentes compartidos (`PaginaModulo`, `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`) y variables de `tokens.css`.
 
 ## 4. Lo que nunca se hace
@@ -58,14 +58,14 @@ npm --prefix frontend run verify                                           # Ver
 ./scripts/verify.sh                                                        # Gate completo obligatorio
 ./scripts/smoke-postgres.sh                                                # Smoke test contra PostgreSQL real
 ```
-*Aviso:* no ejecutes dos `smoke-postgres.sh` a la vez; usan puertos fijos y fallan por colisión.
+*Avisos:* no ejecutes dos `smoke-postgres.sh` a la vez; usan puertos fijos y fallan por colisión. Tras `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`, ejecuta `dotnet format`: si no, el gate falla con `error CHARSET`.
 
 ## 7. Definition of Done
 Un módulo nuevo no está terminado solo porque compile. Requiere:
 1. Spec aprobada en `docs/specs/`.
 2. Pruebas de integración para cada regla y mensaje literal en `tests/TitanGlobal.Api.Tests/`.
-3. Datos de ejemplo idempotentes al final de `scripts/seed-dev.sql`.
-4. Comprobaciones en `scripts/smoke-postgres.sh` finalizando en `SMOKE OK`.
+3. Datos de ejemplo idempotentes al final de `scripts/seed-dev.sql`, antes del `COMMIT;`.
+4. Comprobaciones en `scripts/smoke-postgres.sh` (`request_check` más su validación en el diccionario Python) finalizando en `SMOKE OK`.
 5. Pantalla React con componentes compartidos y diseño responsive (375 px y 1280 px en claro y oscuro).
 6. `./scripts/verify.sh` en verde con cero warnings.
 
