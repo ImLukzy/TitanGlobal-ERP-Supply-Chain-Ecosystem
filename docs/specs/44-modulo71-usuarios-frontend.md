@@ -48,5 +48,6 @@
 |---|---|---|---|
 | 2026-11-01 | A1 | Gate frontend en verde | `npm --prefix frontend run verify`: lint sin warnings, typecheck, 55 archivos y 353 tests pasan, build correcto |
 | 2026-11-01 | A2–A4 | Tests de api, listado, detalle, formulario y baja pasan | `npm --prefix frontend run test`: 55 archivos, 353 tests |
-| — | A5 | Sin regresiones y 10 ejecuciones seguidas | pendiente |
-| — | A6 | Capturas 375 y 1280 px, claro y oscuro | pendiente |
+| 2026-11-03 | A1 | Gate frontend en verde | Sobre a746ace: `npm run verify` con lint sin warnings, typecheck, 470 tests en 61 archivos y build |
+| 2026-11-03 | A5 | Parcial: 5 ejecuciones de las 10 del criterio | `vitest run` con 470/470 sobre a746ace (tandas de 3 y 2); Alexander lo limitó a 5. Corregidas 2 pruebas de baja intermitentes en `UsuarioFormulario.test.tsx`, que comprobaban la petición sin esperar al efecto |
+| 2026-11-03 | A6 | Parcial | Con API y PostgreSQL local en lugar de `page.route`. Email en fila completa (37cf17f): los 5 emails del seed miden 1 línea a 375 y 1280, sin scroll horizontal de página. Márgenes a 375: 34 px en panel, 18 px en diálogo y 50 px en formulario. Comparación con Contratos: mismo panel y diálogo; la tabla de Contratos cabe (465/465 px) y la de Usuarios usa scroll interno (560/458 px). 14 capturas sin versionar. Pendiente: repetir 3 capturas de detalle anteriores a la corrección (1280 claro, 375 claro y 375 oscuro), porque la herramienta de captura dio timeouts |
