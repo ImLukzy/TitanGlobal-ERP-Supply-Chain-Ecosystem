@@ -598,6 +598,86 @@ namespace TitanGlobal.Infrastructure.Migrations
                     b.ToTable("DevolucionesComerciales");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Domain.Models.Empleado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Apellidos")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Area")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Cargo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateOnly?>("FechaCese")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("FechaIngreso")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("FechaNacimiento")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Legajo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("MotivoCese")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Nombres")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NumeroDocumento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Legajo")
+                        .IsUnique();
+
+                    b.HasIndex("TipoDocumento", "NumeroDocumento")
+                        .IsUnique();
+
+                    b.ToTable("Empleados");
+                });
+
             modelBuilder.Entity("TitanGlobal.Domain.Models.Impuesto", b =>
                 {
                     b.Property<int>("Id")
