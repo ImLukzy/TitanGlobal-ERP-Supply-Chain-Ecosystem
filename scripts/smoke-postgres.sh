@@ -27,6 +27,8 @@ USUARIO_CREADO_ID=""
 AUDITORIA_ALTA_ID=""
 AUDITORIA_MODIFICACION_ID=""
 AUDITORIA_BAJA_ID=""
+CENTRO_TRABAJO_SEED_ID=""
+CENTRO_TRABAJO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -44,6 +46,9 @@ cleanup() {
         fi
         if [[ -n "$LISTA_PRECIOS_CREADA_ID" ]]; then
             curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" >/dev/null 2>&1 || true
+        fi
+        if [[ -n "$CENTRO_TRABAJO_CREADO_ID" ]]; then
+            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" >/dev/null 2>&1 || true
         fi
         kill "$API_PID" 2>/dev/null || true
         wait "$API_PID" 2>/dev/null || true
@@ -338,6 +343,17 @@ checks = {
     "reclamo-close-conflict": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El reclamo REC-\d{6} está cerrado\.", data["Message"]) is not None and "Detail" not in data,
     "reclamo-product-not-order": lambda data: data["StatusCode"] == 400 and data["Message"] == "El producto 2 no está en la orden OC-001." and "Detail" not in data,
     "reclamo-no-rejection-motive": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de rechazo es obligatorio." and "Detail" not in data,
+    "openapi-centros-trabajo": lambda data: all(path in data["paths"] for path in ["/api/v1/centros-trabajo", "/api/v1/centros-trabajo/{id}", "/api/v1/centros-trabajo/plantas", "/api/v1/centros-trabajo/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/centros-trabajo", "get"), ("/api/v1/centros-trabajo", "post"), ("/api/v1/centros-trabajo/{id}", "get"), ("/api/v1/centros-trabajo/{id}", "put"), ("/api/v1/centros-trabajo/{id}", "delete"), ("/api/v1/centros-trabajo/plantas", "get"), ("/api/v1/centros-trabajo/resumen", "get")]),
+    "centros-planta": lambda data: data["total"] == 3 and [item["codigo"] for item in data["items"]] == ["CT-LIM-C01", "CT-LIM-L01", "CT-LIM-L02"] and all(item["planta"] == "Planta Lima" for item in data["items"]),
+    "centros-tipo": lambda data: data["total"] == 2 and [item["codigo"] for item in data["items"]] == ["CT-ARE-C01", "CT-LIM-C01"] and all(item["tipo"] == "Celda" for item in data["items"]),
+    "centros-inactivos": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "CT-ARE-L01" and data["items"][0]["activo"] is False,
+    "centro-detail": lambda data: data["codigo"] == "CT-LIM-C01" and data["nombre"] == "Celda de ensamblaje" and data["tipo"] == "Celda" and data["planta"] == "Planta Lima" and data["capacidadHorasDia"] == 8.0 and data["costoHora"] == 85.5 and data["responsable"] == "Rosa Quispe" and data["activo"] is True,
+    "centro-plantas": lambda data: data == ["Planta Arequipa", "Planta Lima"],
+    "centros-summary": lambda data: data["totalCentros"] == 5 and data["activos"] == 4 and data["inactivos"] == 1 and data["capacidadTotalHorasDia"] == 68.0 and data["capacidadActivaHorasDia"] == 44.0 and [(item["tipo"], item["totalCentros"], item["capacidadHorasDia"]) for item in data["porTipo"]] == [("Linea", 3, 48.0), ("Celda", 2, 20.0)] and [(item["planta"], item["totalCentros"], item["activos"]) for item in data["porPlanta"]] == [("Planta Lima", 3, 3), ("Planta Arequipa", 2, 1)],
+    "centro-created": lambda data: data["id"] > 0,
+    "centro-cost-overflow": lambda data: data["StatusCode"] == 400 and data["Message"] == "El costo por hora no puede superar 9999999999999999.99." and "Detail" not in data,
+    "centro-capacity-decimals": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad admite como máximo 2 decimales." and "Detail" not in data,
+    "centro-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un centro de trabajo con el código CT-LIM-L01." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -483,6 +499,14 @@ request_check() {
 
     if [[ "$validation" == "devolucion-created" ]]; then
         DEVOLUCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "centros-planta" ]]; then
+        CENTRO_TRABAJO_SEED_ID="$(python3 -c 'import json,sys; print(next(item["id"] for item in json.loads(sys.argv[1])["items"] if item["codigo"] == "CT-LIM-C01"))' "$body")"
+    fi
+
+    if [[ "$validation" == "centro-created" ]]; then
+        CENTRO_TRABAJO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 }
 
@@ -709,4 +733,17 @@ request_check 'Calcular con la tasa sin fecha final' POST '/api/v1/impuestos/cal
 request_check 'DELETE impuesto smoke (desactivar)' DELETE "/api/v1/impuestos/${IMPUESTO_CREADO_ID}" 204 ''
 request_check 'Calcular con impuesto desactivado' POST '/api/v1/impuestos/calcular' 404 impuesto-inactive "{\"impuestoId\":${IMPUESTO_CREADO_ID},\"baseImponible\":200,\"fechaOperacion\":\"2028-03-01\"}"
 request_check 'OpenAPI de auditoría transaccional' GET '/openapi/v1.json' 200 openapi-auditoria
+request_check 'OpenAPI de centros de trabajo' GET '/openapi/v1.json' 200 openapi-centros-trabajo
+request_check 'Centros de trabajo de planta lima' GET '/api/v1/centros-trabajo?planta=planta%20lima' 200 centros-planta
+request_check 'Centros de trabajo tipo celda' GET '/api/v1/centros-trabajo?tipo=celda' 200 centros-tipo
+request_check 'Centros de trabajo inactivos' GET '/api/v1/centros-trabajo?activo=false' 200 centros-inactivos
+request_check 'Detalle del centro CT-LIM-C01' GET "/api/v1/centros-trabajo/${CENTRO_TRABAJO_SEED_ID}" 200 centro-detail
+request_check 'Plantas de centros de trabajo' GET '/api/v1/centros-trabajo/plantas' 200 centro-plantas
+request_check 'Resumen de centros de trabajo' GET '/api/v1/centros-trabajo/resumen' 200 centros-summary
+request_check 'POST centro de trabajo válido' POST '/api/v1/centros-trabajo' 200 centro-created '{"codigo":"CT-SMK-01","nombre":"Centro Smoke","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":8,"costoHora":10.5,"responsable":"QA","activo":true}'
+request_check 'POST centro de trabajo con código del seed' POST '/api/v1/centros-trabajo' 409 centro-duplicate '{"codigo":"CT-LIM-L01","nombre":"Duplicado","tipo":"Linea","planta":"Planta Lima","capacidadHorasDia":8,"costoHora":10}'
+request_check 'POST centro de trabajo con costo fuera de rango' POST '/api/v1/centros-trabajo' 400 centro-cost-overflow '{"codigo":"CT-SMK-02","nombre":"Costo excedido","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":8,"costoHora":100000000000000000}'
+request_check 'POST centro de trabajo con capacidad de tres decimales' POST '/api/v1/centros-trabajo' 400 centro-capacity-decimals '{"codigo":"CT-SMK-03","nombre":"Capacidad con decimales","tipo":"Celda","planta":"Planta Smoke","capacidadHorasDia":0.001,"costoHora":10}'
+request_check 'DELETE centro de trabajo recién creado' DELETE "/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" 204 ''
+CENTRO_TRABAJO_CREADO_ID=""
 printf 'SMOKE OK\n'
