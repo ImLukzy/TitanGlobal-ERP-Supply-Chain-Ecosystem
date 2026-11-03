@@ -532,4 +532,15 @@ INSERT INTO "TasasImpuestos" ("Id", "ImpuestoId", "Porcentaje", "FechaInicio", "
 SELECT setval(pg_get_serial_sequence('"Impuestos"', 'Id'), (SELECT MAX("Id") FROM "Impuestos"));
 SELECT setval(pg_get_serial_sequence('"TasasImpuestos"', 'Id'), (SELECT MAX("Id") FROM "TasasImpuestos"));
 
+INSERT INTO "CategoriasProducto" ("Id", "Nombre", "Descripcion", "Activa") VALUES
+    (1, 'Computo', 'Laptops y equipos de cómputo', TRUE),
+    (2, 'Perifericos', 'Mouse, teclados y accesorios de entrada', TRUE),
+    (3, 'Pantallas', 'Monitores y pantallas', TRUE),
+    (4, 'Descontinuados', NULL, FALSE)
+ON CONFLICT ("Nombre") DO UPDATE SET
+    "Descripcion" = EXCLUDED."Descripcion",
+    "Activa" = EXCLUDED."Activa";
+
+SELECT setval(pg_get_serial_sequence('"CategoriasProducto"', 'Id'), (SELECT MAX("Id") FROM "CategoriasProducto"));
+
 COMMIT;
