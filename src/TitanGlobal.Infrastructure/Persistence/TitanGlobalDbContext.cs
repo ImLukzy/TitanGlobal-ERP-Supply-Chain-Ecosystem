@@ -74,8 +74,8 @@ public partial class TitanGlobalDbContext : DbContext
     public DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
 
     public DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
-    
-    
+
+
     public DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -782,7 +782,7 @@ public partial class TitanGlobalDbContext : DbContext
             .WithOne()
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         modelBuilder.Entity<CategoriaProducto>()
             .ToTable("CategoriasProducto");
 
