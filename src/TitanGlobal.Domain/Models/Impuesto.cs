@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace TitanGlobal.Domain.Models;
 
-[Index(nameof(Codigo), IsUnique = true)]
 public class Impuesto
 {
     public int Id { get; set; }
