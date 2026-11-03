@@ -124,6 +124,36 @@ namespace TitanGlobal.Infrastructure.Migrations
                     b.ToTable("AsignacionesVentas");
                 });
 
+            modelBuilder.Entity("TitanGlobal.Domain.Models.CategoriaProducto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("CategoriasProducto", (string)null);
+                });
+
             modelBuilder.Entity("TitanGlobal.Domain.Models.Cliente", b =>
                 {
                     b.Property<int>("Id")
