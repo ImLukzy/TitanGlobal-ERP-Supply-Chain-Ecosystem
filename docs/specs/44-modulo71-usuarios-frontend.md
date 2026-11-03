@@ -38,11 +38,15 @@
 | A6 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: listado con detalle y permisos efectivos (un dominio abierto), formulario y diálogo de baja; comparación con Contratos adjunta; márgenes ≥ 16 px, sin scroll horizontal ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros, tabla y detalle con permisos efectivos.
-- [ ] Tarea 3: formulario y baja.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros, tabla y detalle con permisos efectivos.
+- [x] Tarea 3: formulario y baja.
 - [ ] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-01 | A1 | Gate frontend en verde | `npm --prefix frontend run verify`: lint sin warnings, typecheck, 55 archivos y 353 tests pasan, build correcto |
+| 2026-11-01 | A2–A4 | Tests de api, listado, detalle, formulario y baja pasan | `npm --prefix frontend run test`: 55 archivos, 353 tests |
+| — | A5 | Sin regresiones y 10 ejecuciones seguidas | pendiente |
+| — | A6 | Capturas 375 y 1280 px, claro y oscuro | pendiente |
