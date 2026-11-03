@@ -780,5 +780,15 @@ public partial class TitanGlobalDbContext : DbContext
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Impuesto>()
+            .HasIndex(impuesto => impuesto.Codigo)
+            .IsUnique();
+
+        modelBuilder.Entity<TasaImpuesto>()
+            .HasIndex(tasa => new { tasa.ImpuestoId, tasa.FechaInicio });
+
+        modelBuilder.Entity<TasaImpuesto>()
+            .Property(tasa => tasa.Porcentaje)
+            .HasPrecision(18, 6);
     }
 }

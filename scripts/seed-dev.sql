@@ -519,4 +519,17 @@ INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribi
 SELECT setval(pg_get_serial_sequence('"Roles"', 'Id'), (SELECT MAX("Id") FROM "Roles"));
 SELECT setval(pg_get_serial_sequence('"PermisosRoles"', 'Id'), (SELECT MAX("Id") FROM "PermisosRoles"));
 
+TRUNCATE TABLE "TasasImpuestos", "Impuestos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Impuestos" ("Id", "Codigo", "Nombre", "Tipo", "Descripcion", "Pais", "Activo", "FechaCreacion") VALUES
+    (1, 'IGV', 'Impuesto general a las ventas', 'IGV', 'IGV del 18 % sobre ventas gravadas', 'PER', TRUE, TIMESTAMPTZ '2026-01-01 00:00:00+00'),
+    (2, 'RET-4TA', 'Retención de cuarta categoría', 'RETENCION', 'Retención sobre honorarios', 'PER', TRUE, TIMESTAMPTZ '2026-01-01 00:00:00+00');
+
+INSERT INTO "TasasImpuestos" ("Id", "ImpuestoId", "Porcentaje", "FechaInicio", "FechaFin", "Activo", "Observacion") VALUES
+    (1, 1, 18.000000, TIMESTAMPTZ '2020-01-01 00:00:00+00', NULL, TRUE, 'Tasa vigente del IGV'),
+    (2, 2, 8.000000, TIMESTAMPTZ '2020-01-01 00:00:00+00', NULL, TRUE, 'Retención sobre honorarios');
+
+SELECT setval(pg_get_serial_sequence('"Impuestos"', 'Id'), (SELECT MAX("Id") FROM "Impuestos"));
+SELECT setval(pg_get_serial_sequence('"TasasImpuestos"', 'Id'), (SELECT MAX("Id") FROM "TasasImpuestos"));
+
 COMMIT;
