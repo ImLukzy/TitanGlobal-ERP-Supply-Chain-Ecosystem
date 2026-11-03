@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
 using TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto;
 
@@ -17,6 +18,8 @@ public class CategoriasProductoController : ControllerBase
     private readonly ActualizarCategoriaProductoUseCase _actualizarCategoriaProductoUseCase;
 
     private readonly DesactivarCategoriaProductoUseCase _desactivarCategoriaProductoUseCase;
+    
+    private readonly ReactivarCategoriaProductoUseCase _reactivarCategoriaProductoUseCase;
 
     private readonly ObtenerResumenCategoriasProductoUseCase _obtenerResumenCategoriasProductoUseCase;
 
@@ -26,6 +29,7 @@ public class CategoriasProductoController : ControllerBase
         CrearCategoriaProductoUseCase crearCategoriaProductoUseCase,
         ActualizarCategoriaProductoUseCase actualizarCategoriaProductoUseCase,
         DesactivarCategoriaProductoUseCase desactivarCategoriaProductoUseCase,
+        ReactivarCategoriaProductoUseCase reactivarCategoriaProductoUseCase,
         ObtenerResumenCategoriasProductoUseCase obtenerResumenCategoriasProductoUseCase)
     {
         _listarCategoriasProductoUseCase = listarCategoriasProductoUseCase;
@@ -33,6 +37,7 @@ public class CategoriasProductoController : ControllerBase
         _crearCategoriaProductoUseCase = crearCategoriaProductoUseCase;
         _actualizarCategoriaProductoUseCase = actualizarCategoriaProductoUseCase;
         _desactivarCategoriaProductoUseCase = desactivarCategoriaProductoUseCase;
+        _reactivarCategoriaProductoUseCase = reactivarCategoriaProductoUseCase;
         _obtenerResumenCategoriasProductoUseCase = obtenerResumenCategoriasProductoUseCase;
     }
 
@@ -84,6 +89,15 @@ public class CategoriasProductoController : ControllerBase
     public async Task<IActionResult> Desactivar(int id)
     {
         await _desactivarCategoriaProductoUseCase.ExecuteAsync(id);
+
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/reactivar")]
+    [PermitirCuerpoVacio]
+    public async Task<IActionResult> Reactivar(int id)
+    {
+        await _reactivarCategoriaProductoUseCase.ExecuteAsync(id);
 
         return NoContent();
     }
