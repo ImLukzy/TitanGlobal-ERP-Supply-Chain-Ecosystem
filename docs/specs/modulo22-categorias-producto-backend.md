@@ -272,3 +272,31 @@ Se adjuntarán:
 La especificación será revisada por Lukas antes de comenzar la implementación.
 
 Cualquier modificación de alcance, especialmente una futura relación entre productos y categorías, deberá ser revisada y aprobada antes de incorporarse al código.
+
+## 14. Ampliación: reactivar categorías y unicidad en base de datos
+
+### 14.1. Reactivar una categoría
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/v1/categorias-producto/{id}/reactivar` | Cambia `Activa` a `true`. Sin cuerpo. Responde 204. |
+
+Reglas, en este orden:
+1. Si la categoría no existe: 404, «La categoría {id} no existe.»
+2. Si ya está activa: 409, «La categoría {id} ya está activa.»
+3. En otro caso se marca como activa y no se modifica ningún otro dato.
+
+Reactivar no puede producir duplicados: el índice único de `Nombre` incluye las categorías inactivas.
+
+### 14.2. Unicidad del nombre sin distinguir mayúsculas
+
+La regla «no se permiten nombres duplicados, sin distinguir mayúsculas» se garantiza también en PostgreSQL, y no solo en el caso de uso, para que dos peticiones simultáneas no puedan registrar «Hogar» y «HOGAR». La columna `Nombre` usa el tipo `citext` y conserva el índice único. Si la base ya contiene nombres que solo difieren en mayúsculas, hay que unificarlos antes de aplicar la migración.
+
+Mensaje literal (sin cambios): 409, «Ya existe una categoría con el nombre {nombre}.»
+
+### 14.3. Criterios de aceptación adicionales
+- [ ] Se puede reactivar una categoría inactiva y vuelve a aparecer en el listado por defecto.
+- [ ] Reactivar una categoría activa devuelve 409 con el mensaje literal.
+- [ ] Reactivar una categoría inexistente devuelve 404 con el mensaje literal.
+- [ ] La base rechaza nombres que solo difieren en mayúsculas.
+- [ ] Hay pruebas, seed y smoke para cada caso.
