@@ -1403,6 +1403,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .empleados-detail-grid > div { min-width: 0; }
 .empleados-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
 .empleados-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.empleados-detail-wide { grid-column: 1 / -1; }
 @media (max-width: 1023px) { .empleados-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
 @media (max-width: 760px) { .empleados-filters { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .empleados-summary { grid-template-columns: minmax(0, 1fr); } }
