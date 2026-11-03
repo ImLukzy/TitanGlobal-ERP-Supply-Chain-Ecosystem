@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { isUserRole } from '../api/roleStore';
+import { modulosConPantalla } from '../modules/avance';
 import { dominios } from '../modules/catalogo';
 import { AlertasIndicador } from './AlertasIndicador';
 import { useRole } from './RoleContext';
@@ -93,7 +94,7 @@ export function AppLayout() {
                 >
                   <span className="domain-icon" aria-hidden="true">{String(indice + 1).padStart(2, '0')}</span>
                   <span>{dominio.nombre}</span>
-                  <span className="domain-count">10</span>
+                  <span className="domain-count" title="Módulos con pantalla">{modulosConPantalla(dominio).length}/{dominio.modulos.length}</span>
                 </summary>
                 <ul>
                   {dominio.modulos.map((modulo) => (
