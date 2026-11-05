@@ -1,12 +1,14 @@
 import { act, render as renderBase, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 import { expect, vi } from 'vitest';
 import { crearPermisosPrueba, permisosAdminPrueba, permisosVentasPrueba } from './permisos.testUtils';
 import { RolesPermisosPage } from './RolesPermisosPage';
-import type { PermisoModulo } from './tipos';
+import type { MatrizPermisos, NivelPermiso, PermisoModulo } from './tipos';
 
 export interface OpcionesApiRoles {
+  /** El GET de la matriz responde 500. */
+  errorMatriz?: boolean;
   /** El GET de los permisos de un rol responde 500. */
   errorPermisos?: boolean;
   /** El PUT de los permisos responde 409. */
@@ -35,8 +37,65 @@ interface RolPrueba {
   modulosConEscritura: number;
 }
 
-export function render(ui: ReactNode) {
-  return renderBase(<MemoryRouter>{ui}</MemoryRouter>);
+/** Muestra (oculta) la ruta actual para comprobar `?vista=` sin interferir con las consultas por rol. */
+function RutaActual() {
+  const ubicacion = useLocation();
+  return <span data-testid="ruta-actual" hidden>{`${ubicacion.pathname}${ubicacion.search}`}</span>;
+}
+
+export function render(ui: ReactNode, ruta = '/') {
+  return renderBase(
+    <MemoryRouter initialEntries={[ruta]}>
+      <RutaActual />
+      {ui}
+    </MemoryRouter>,
+  );
+}
+
+const rolesMatriz = [
+  { id: 1, codigo: 'ADMIN' },
+  { id: 4, codigo: 'ALMACEN' },
+  { id: 3, codigo: 'COMPRAS' },
+  { id: 5, codigo: 'CONSULTA' },
+  { id: 2, codigo: 'VENTAS' },
+];
+
+/** Los mismos permisos del seed: el orden de los roles es el del código, como en la API. */
+function nivelMatriz(codigo: string, numero: number): NivelPermiso {
+  const enRango = (desde: number, hasta: number) => numero >= desde && numero <= hasta;
+  switch (codigo) {
+    case 'ADMIN':
+      return 'Escritura';
+    case 'VENTAS':
+      if (enRango(1, 10)) {
+        return 'Escritura';
+      }
+      return numero === 21 ? 'Lectura' : 'Ninguno';
+    case 'COMPRAS':
+      if (enRango(11, 20)) {
+        return 'Escritura';
+      }
+      return enRango(21, 24) ? 'Lectura' : 'Ninguno';
+    case 'ALMACEN':
+      if (enRango(21, 30)) {
+        return 'Escritura';
+      }
+      return enRango(11, 20) ? 'Lectura' : 'Ninguno';
+    default:
+      return 'Lectura';
+  }
+}
+
+function matrizPrueba(): MatrizPermisos {
+  return {
+    roles: rolesMatriz,
+    modulos: crearPermisosPrueba(() => 'ninguno').map((modulo) => ({
+      moduloNumero: modulo.moduloNumero,
+      moduloNombre: modulo.moduloNombre,
+      dominio: modulo.dominio,
+      permisos: rolesMatriz.map((rol) => nivelMatriz(rol.codigo, modulo.moduloNumero)),
+    })),
+  };
 }
 
 const rolesIniciales: RolPrueba[] = [
@@ -80,6 +139,12 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
     const url = String(input);
     const metodo = init.method ?? 'GET';
     llamadas.push({ url, init });
+    if (url.endsWith('/roles/matriz') && metodo === 'GET') {
+      if (opciones.errorMatriz) {
+        return Response.json({ StatusCode: 500, Message: 'No se pudo cargar la matriz de permisos.' }, { status: 500 });
+      }
+      return Response.json(matrizPrueba());
+    }
     const rutaPermisos = /\/roles\/(\d+)\/permisos$/.exec(url);
     if (rutaPermisos !== null) {
       const rolId = Number(rutaPermisos[1]);
@@ -177,6 +242,23 @@ export async function esperarCargaInicialRoles(fetchMock: ReturnType<typeof vi.f
   await waitFor(() => {
     expect(screen.getByRole('button', { name: 'ADMIN' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Administrador' })).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/roles?'))).toHaveLength(1);
+  });
+}
+
+/** Abre la pantalla en la pestaña Matriz y espera a que carguen la lista (oculta) y la matriz. */
+export async function esperarCargaInicialMatriz(fetchMock: ReturnType<typeof vi.fn>) {
+  vi.useFakeTimers();
+  render(<RolesPermisosPage />, '/?vista=matriz');
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(301);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  vi.useRealTimers();
+  await waitFor(() => {
+    expect(screen.getByRole('table')).toBeInTheDocument();
     expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes('/roles?'))).toHaveLength(1);
   });
 }
