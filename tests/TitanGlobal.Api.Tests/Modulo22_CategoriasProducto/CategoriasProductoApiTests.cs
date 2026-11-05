@@ -446,7 +446,51 @@ public class CategoriasProductoApiTests
         Assert.True(rutas.GetProperty("/api/v1/categorias-producto/{id}").TryGetProperty("delete", out _));
         Assert.True(rutas.GetProperty("/api/v1/categorias-producto/resumen").TryGetProperty("get", out _));
     }
+    
+    [Fact]
+    public async Task ReactivarMarcaComoActivaUnaCategoriaInactiva()
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsync(Ruta + "/3/reactivar", null);
+        CategoriaProductoDto? reactivada = await _clienteHttp.GetFromJsonAsync<CategoriaProductoDto>(Ruta + "/3");
+        List<CategoriaProductoDto>? activas = await _clienteHttp.GetFromJsonAsync<List<CategoriaProductoDto>>(Ruta);
 
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        Assert.NotNull(reactivada);
+        Assert.True(reactivada.Activa);
+        Assert.NotNull(activas);
+        Assert.Contains(activas, categoria => categoria.Id == 3);
+    }
+
+    [Fact]
+    public async Task ReactivarCategoriaActivaDevuelveConflicto()
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsync(Ruta + "/1/reactivar", null);
+
+        await AfirmarErrorNegocioAsync(respuesta, HttpStatusCode.Conflict, 409, "La categoría 1 ya está activa.");
+    }
+
+    [Fact]
+    public async Task ReactivarCategoriaInexistenteDevuelveNotFound()
+    {
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsync(Ruta + "/999/reactivar", null);
+
+        await AfirmarErrorNegocioAsync(respuesta, HttpStatusCode.NotFound, 404, "La categoría 999 no existe.");
+    }
+
+    [Fact]
+    public async Task ReactivarActualizaElResumen()
+    {
+        await _clienteHttp.PostAsync(Ruta + "/3/reactivar", null);
+
+        ResumenCategoriasProductoDto? resumen = await _clienteHttp.GetFromJsonAsync<ResumenCategoriasProductoDto>(
+            Ruta + "/resumen");
+
+        Assert.NotNull(resumen);
+        Assert.Equal(3, resumen.TotalCategorias);
+        Assert.Equal(3, resumen.CategoriasActivas);
+        Assert.Equal(0, resumen.CategoriasInactivas);
+    }
+    
     private void RestablecerDatos()
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
