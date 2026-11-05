@@ -2,7 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { AppRoutes } from './App';
+import { AccesoProtegido } from './layout/AccesoProtegido';
 import { RoleProvider } from './layout/RoleContext';
+import { SesionProvider } from './layout/SesionContext';
 import './styles/tokens.css';
 import './styles/app.css';
 
@@ -15,9 +17,13 @@ if (rootElement === null) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
-      <RoleProvider>
-        <AppRoutes />
-      </RoleProvider>
+      <SesionProvider>
+        <AccesoProtegido>
+          <RoleProvider>
+            <AppRoutes />
+          </RoleProvider>
+        </AccesoProtegido>
+      </SesionProvider>
     </BrowserRouter>
   </StrictMode>,
 );

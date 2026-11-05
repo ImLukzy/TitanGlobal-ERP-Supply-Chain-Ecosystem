@@ -32,7 +32,8 @@ Antes de programar la pantalla, el backend del módulo debe estar implementado e
    - **Frontend:** `http://localhost:5173`.
    - **PostgreSQL:** puerto `5433` (usuario `titanglobal`, base `titanglobal`, contraseña del archivo `docker-compose.yml`).
 4. **Consultar el contrato:**
-   - Abre `http://localhost:5080/swagger` en tu navegador. Swagger UI documenta todas las rutas `api/v1/...` y permite ejecutar peticiones. Con el botón **Authorize** puedes enviar la cabecera `X-User-Role`. Hoy no hay permisos por endpoint: la API solo rechaza con 403 los roles `Bloqueado` y `SinPermiso`, y el resto de valores pasa.
+   - Abre `http://localhost:5080/swagger` en tu navegador. Swagger UI documenta todas las rutas `api/v1/...` y permite ejecutar peticiones. Toda la API exige token: ejecuta `POST /api/v1/autenticacion/login` con `admin` / `Admin2026!` (seed local), copia el `token` y pégalo en **Authorize** → **Bearer**. En el mismo botón puedes enviar la cabecera `X-User-Role`: la API rechaza con 403 los roles `Bloqueado` y `SinPermiso`, y el resto de valores pasa.
+   - El frontend abre con la pantalla de inicio de sesión. En local entra con `admin` / `Admin2026!` o con la cuenta de demostración `invitado` / `Demo2026!` (sin rol `ADMIN`: no puede crear, editar ni borrar usuarios o roles).
    - Revisa `http://localhost:5080/openapi/v1.json` para verificar el contrato OpenAPI exacto: nombres de propiedades en camelCase, tipos de datos, parámetros de query y códigos de estado HTTP.
 
 ---
@@ -139,7 +140,7 @@ Implementa en `frontend/src/modules/<modulo>/api.ts` las funciones de consulta y
 #### Cómo trata los errores el cliente HTTP
 
 El cliente compartido `solicitar<T>` en `frontend/src/api/client.ts`:
-- Envía automáticamente la cabecera `X-Usuario: demo` (configurable) y `X-User-Role` con el rol activo en sesión (`getSelectedRole()`).
+- Envía automáticamente `Authorization: Bearer <token>` de la sesión iniciada, la cabecera `X-Usuario` con el usuario de la sesión y `X-User-Role` con el rol simulado (`getSelectedRole()`). Si la API responde 401, borra la sesión y vuelve la pantalla de inicio de sesión.
 - Si la respuesta HTTP no es exitosa (`!response.ok`), inspecciona el cuerpo JSON. El backend de TitanGlobal devuelve los errores de negocio formateados como `{ StatusCode, Message }` a través del middleware de excepciones. `client.ts` extrae esa propiedad `Message` y lanza una instancia de `ApiError`:
   ```typescript
   export class ApiError extends Error {

@@ -1,6 +1,8 @@
 import { getSelectedRole } from './roleStore';
+import { getSesion, limpiarSesion } from './sesionStore';
 
 const API_BASE = '/api/v1';
+const RUTA_LOGIN = '/autenticacion/login';
 const GENERIC_ERROR = 'No se pudo completar la solicitud.';
 const SERVER_GENERIC_ERROR = 'La API no está disponible o no respondió correctamente.';
 const NETWORK_ERROR = 'No se pudo conectar con la API.';
@@ -21,18 +23,23 @@ export class ApiError extends Error {
   }
 }
 
-function crearHeaders(): Headers {
+function crearHeaders(ruta: string): Headers {
   const headers = new Headers();
   const role = getSelectedRole();
-  headers.set('X-Usuario', usuarioSolicitud);
-  if (role !== null) {
+  const sesion = getSesion();
+  headers.set('X-Usuario', sesion === null ? usuarioSolicitud : sesion.usuario.nombreUsuario);
+  if (sesion !== null) {
+    headers.set('Authorization', `Bearer ${sesion.token}`);
+  }
+  // El rol simulado no se envía al iniciar sesión: con «Bloqueado» no se podría volver a entrar.
+  if (role !== null && ruta !== RUTA_LOGIN) {
     headers.set('X-User-Role', role);
   }
   return headers;
 }
 
 async function solicitar<T>(ruta: string, init: RequestInit): Promise<T> {
-  const headers = crearHeaders();
+  const headers = crearHeaders(ruta);
   new Headers(init.headers).forEach((value, key) => headers.set(key, value));
   try {
     const response = await fetch(`${API_BASE}${ruta}`, { ...init, headers });
@@ -45,6 +52,9 @@ async function solicitar<T>(ruta: string, init: RequestInit): Promise<T> {
         }
       } catch {
         message = response.status >= 500 ? SERVER_GENERIC_ERROR : GENERIC_ERROR;
+      }
+      if (response.status === 401 && ruta !== RUTA_LOGIN) {
+        limpiarSesion();
       }
       throw new ApiError(response.status, message);
     }

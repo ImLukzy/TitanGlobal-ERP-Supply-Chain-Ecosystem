@@ -40,19 +40,19 @@ cleanup() {
 
     if [[ -n "$API_PID" ]]; then
         if [[ -n "$USUARIO_CREADO_ID" ]]; then
-            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/usuarios/${USUARIO_CREADO_ID}" >/dev/null 2>&1 || true
+            curl -sS --max-time 3 -H "Authorization: Bearer ${TOKEN_ACTUAL:-}" -X DELETE "$BASE_URL/api/v1/usuarios/${USUARIO_CREADO_ID}" >/dev/null 2>&1 || true
         fi
         if [[ -n "$ROL_CREADO_ID" ]]; then
-            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/roles/${ROL_CREADO_ID}" >/dev/null 2>&1 || true
+            curl -sS --max-time 3 -H "Authorization: Bearer ${TOKEN_ACTUAL:-}" -X DELETE "$BASE_URL/api/v1/roles/${ROL_CREADO_ID}" >/dev/null 2>&1 || true
         fi
         if [[ -n "$PROMOCION_CREADA_ID" ]]; then
-            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/promociones/${PROMOCION_CREADA_ID}" >/dev/null 2>&1 || true
+            curl -sS --max-time 3 -H "Authorization: Bearer ${TOKEN_ACTUAL:-}" -X DELETE "$BASE_URL/api/v1/promociones/${PROMOCION_CREADA_ID}" >/dev/null 2>&1 || true
         fi
         if [[ -n "$LISTA_PRECIOS_CREADA_ID" ]]; then
-            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" >/dev/null 2>&1 || true
+            curl -sS --max-time 3 -H "Authorization: Bearer ${TOKEN_ACTUAL:-}" -X DELETE "$BASE_URL/api/v1/listas-precios/${LISTA_PRECIOS_CREADA_ID}" >/dev/null 2>&1 || true
         fi
         if [[ -n "$CENTRO_TRABAJO_CREADO_ID" ]]; then
-            curl -sS --max-time 3 -X DELETE "$BASE_URL/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" >/dev/null 2>&1 || true
+            curl -sS --max-time 3 -H "Authorization: Bearer ${TOKEN_ACTUAL:-}" -X DELETE "$BASE_URL/api/v1/centros-trabajo/${CENTRO_TRABAJO_CREADO_ID}" >/dev/null 2>&1 || true
         fi
         kill "$API_PID" 2>/dev/null || true
         wait "$API_PID" 2>/dev/null || true
@@ -158,6 +158,13 @@ checks = {
     "buyers": lambda data: data == ["Acme Industrial", "Beta Comercio"],
     "created": lambda data: data["id"] > 0,
     "empty-body": lambda data: data["StatusCode"] == 400 and data["Message"] == "El cuerpo de la petición (Body) no puede estar vacío.",
+    "login-ok": lambda data: len(data["token"]) > 20 and data["usuario"]["nombreUsuario"] == "admin" and data["roles"] == ["ADMIN"] and "contrasenaHash" not in json.dumps(data),
+    "login-invalid": lambda data: data["StatusCode"] == 401 and data["Message"] == "Usuario o contraseña incorrectos." and "Detail" not in data,
+    "no-session": lambda data: data["StatusCode"] == 401 and data["Message"] == "Debe iniciar sesión para acceder a este recurso." and "Detail" not in data,
+    "perfil-admin": lambda data: data["nombreUsuario"] == "admin" and data["roles"] == ["ADMIN"],
+    "login-invitado": lambda data: len(data["token"]) > 20 and data["usuario"]["nombreUsuario"] == "invitado" and data["roles"] == [],
+    "perfil-invitado": lambda data: data["nombreUsuario"] == "invitado" and data["roles"] == [],
+    "forbidden-admin": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
     "blocked": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
     "clients-list": lambda data: data["total"] == 1 and [item["id"] for item in data["items"]] == [1] and data["items"][0]["ruc"] == "20111111111",
     "cliente-detail": lambda data: data["id"] == 1 and data["nombre"] == "Acme Industrial" and data["ruc"] == "20111111111" and data["totalOrdenes"] == 4 and data["montoTotal"] == 10000.0 and data["ultimaOrdenFecha"] == "2026-03-10T00:00:00Z",
@@ -419,6 +426,9 @@ request_check() {
     if [[ -n "$usuario" ]]; then
         cabecera_usuario=(-H "X-Usuario: $usuario")
     fi
+    if [[ -n "${TOKEN_ACTUAL:-}" ]]; then
+        cabecera_usuario+=(-H "Authorization: Bearer $TOKEN_ACTUAL")
+    fi
 
     if [[ -n "$payload" ]]; then
         local payload_file
@@ -561,7 +571,24 @@ request_check() {
     if [[ "$validation" == "empleado-created" ]]; then
         EMPLEADO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
+        TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
+    fi
 }
+
+# Sin token solo responden la salud y el inicio de sesión; el resto de comprobaciones usa el token del administrador.
+TOKEN_ACTUAL=''
+TOKEN_LOGIN=''
+request_check 'Salud sin token' GET '/api/v1/sistema/salud' 200 ''
+request_check 'Clientes sin token' GET '/api/v1/clientes' 401 no-session
+request_check 'Login con contraseña incorrecta' POST '/api/v1/autenticacion/login' 401 login-invalid '{"nombreUsuario":"admin","contrasena":"Incorrecta1"}'
+request_check 'Login de la cuenta de demostración' POST '/api/v1/autenticacion/login' 200 login-invitado '{"nombreUsuario":"invitado","contrasena":"Demo2026!"}'
+TOKEN_ACTUAL="$TOKEN_LOGIN"
+request_check 'Perfil de la cuenta de demostración' GET '/api/v1/autenticacion/perfil' 200 perfil-invitado
+request_check 'La cuenta de demostración no cambia contraseñas' PUT '/api/v1/usuarios/1/contrasena' 403 forbidden-admin '{"contrasena":"Cambiada2026!"}'
+request_check 'Login del administrador' POST '/api/v1/autenticacion/login' 200 login-ok '{"nombreUsuario":"admin","contrasena":"Admin2026!"}'
+TOKEN_ACTUAL="$TOKEN_LOGIN"
+request_check 'Perfil del administrador' GET '/api/v1/autenticacion/perfil' 200 perfil-admin
 
 request_check 'Filtro de productos' GET '/api/v1/ordenes-compra/productos/filtro?termino=LAPTOP&minPrecio=1000' 200 filter
 request_check 'Suma desde fecha simple' GET '/api/v1/ordenes-compra/ventas/suma?fechaInicio=2026-01-01' 200 sum

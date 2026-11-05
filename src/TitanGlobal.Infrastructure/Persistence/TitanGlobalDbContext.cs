@@ -990,5 +990,9 @@ public partial class TitanGlobalDbContext : DbContext
             .HasIndex(empleado => new { empleado.TipoDocumento, empleado.NumeroDocumento })
             .IsUnique();
 
+        modelBuilder.Entity<Usuario>()
+            .Property(usuario => usuario.ContrasenaHash)
+            .HasMaxLength(100);
+
     }
 }

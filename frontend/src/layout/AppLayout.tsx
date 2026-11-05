@@ -5,6 +5,7 @@ import { modulosConPantalla } from '../modules/avance';
 import { dominios } from '../modules/catalogo';
 import { AlertasIndicador } from './AlertasIndicador';
 import { useRole } from './RoleContext';
+import { useSesionOpcional } from './SesionContext';
 import './alertas-indicador.css';
 
 export function AppLayout() {
@@ -12,6 +13,8 @@ export function AppLayout() {
   const [expandedDomains, setExpandedDomains] = useState<string[]>([dominios[0].nombre]);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   const { role, setRole } = useRole();
+  const sesionContexto = useSesionOpcional();
+  const sesion = sesionContexto === null ? null : sesionContexto.sesion;
 
   useEffect(() => {
     if (!menuOpen) {
@@ -64,6 +67,14 @@ export function AppLayout() {
               <option value="SinPermiso">SinPermiso</option>
             </select>
           </label>
+          {sesionContexto !== null && sesion !== null && (
+            <div className="sesion-usuario">
+              <span className="sesion-usuario-nombre" title={sesion.usuario.nombreUsuario}>
+                {sesion.usuario.nombreCompleto === '' ? sesion.usuario.nombreUsuario : sesion.usuario.nombreCompleto}
+              </span>
+              <button className="secondary-button" onClick={sesionContexto.cerrarSesion} type="button">Cerrar sesión</button>
+            </div>
+          )}
         </div>
       </header>
       <div className="workspace">

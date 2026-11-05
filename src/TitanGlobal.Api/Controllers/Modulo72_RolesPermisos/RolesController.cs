@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo72_RolesPermisos;
 using TitanGlobal.Application.UseCases.Modulo72_RolesPermisos;
@@ -39,6 +40,8 @@ public class RolesController : ControllerBase
     }
 
     [HttpPost]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarRolRequestDto solicitud)
     {
         int id = await _administrarRoles.CrearAsync(solicitud);
@@ -46,6 +49,8 @@ public class RolesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarRolRequestDto solicitud)
     {
         int actualizado = await _administrarRoles.ActualizarAsync(id, solicitud);
@@ -53,6 +58,8 @@ public class RolesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Eliminar(int id)
     {
         await _eliminarRol.EjecutarAsync(id);
@@ -67,6 +74,8 @@ public class RolesController : ControllerBase
     }
 
     [HttpPut("{id:int}/permisos")]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> GuardarPermisos(int id, [FromBody] GuardarPermisosRequestDto solicitud)
     {
         List<PermisoModuloDto> permisos = await _administrarRoles.GuardarPermisosAsync(id, solicitud);

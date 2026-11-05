@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo71_Usuarios;
 using TitanGlobal.Application.UseCases.Modulo71_Usuarios;
@@ -47,6 +48,8 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPost]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarUsuarioRequestDto solicitud)
     {
         int id = await _administrarUsuarios.CrearAsync(solicitud);
@@ -54,6 +57,8 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarUsuarioRequestDto solicitud)
     {
         int actualizado = await _administrarUsuarios.ActualizarAsync(id, solicitud);
@@ -61,6 +66,8 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Eliminar(int id)
     {
         await _administrarUsuarios.EliminarAsync(id);
