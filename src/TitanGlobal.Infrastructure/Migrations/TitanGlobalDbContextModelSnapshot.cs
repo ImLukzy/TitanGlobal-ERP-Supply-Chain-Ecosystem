@@ -1386,6 +1386,10 @@ namespace TitanGlobal.Infrastructure.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ContrasenaHash")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)

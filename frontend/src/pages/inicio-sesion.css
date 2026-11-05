@@ -1,0 +1,46 @@
+.inicio-sesion {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--page);
+  color: var(--ink);
+}
+.inicio-sesion-tarjeta {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.inicio-sesion-marca { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+.inicio-sesion h1 { margin: 20px 0; font-size: 22px; }
+.inicio-sesion-formulario { display: grid; gap: 16px; }
+.inicio-sesion-formulario .form-field label { font-size: 12px; }
+.inicio-sesion-formulario .form-field input { min-height: 40px; font-size: 14px; }
+.inicio-sesion-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bad-soft);
+  color: var(--bad);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.inicio-sesion-boton { min-height: 42px; font-size: 13px; }
+.inicio-sesion-boton:disabled { cursor: progress; opacity: .6; }
+.inicio-sesion-aviso {
+  margin: 20px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .inicio-sesion-tarjeta { padding: 24px 18px; }
+}

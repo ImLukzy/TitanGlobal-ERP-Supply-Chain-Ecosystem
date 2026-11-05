@@ -1421,3 +1421,14 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .empleado-cese-form textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
 .empleado-contador { margin: -6px 0 0; color: var(--ink-faint); font-size: 9px; text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) { .empleado-form { grid-template-columns: minmax(0, 1fr); } }
+
+.sesion-usuario { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.sesion-usuario-nombre { max-width: 180px; overflow: hidden; color: var(--ink-soft); font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 860px) {
+  .sesion-usuario-nombre { display: none; }
+  .sesion-usuario .secondary-button { min-width: 0; padding: 0 8px; font-size: 10px; }
+}
+@media (max-width: 420px) {
+  .topbar-actions { gap: 8px; }
+  .role-picker select { max-width: 84px; }
+}
