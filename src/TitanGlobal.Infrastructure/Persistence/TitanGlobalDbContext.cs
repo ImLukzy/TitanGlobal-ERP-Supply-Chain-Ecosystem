@@ -791,6 +791,7 @@ public partial class TitanGlobalDbContext : DbContext
             .HasForeignKey(enlace => enlace.RolId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.HasPostgresExtension("citext");
         modelBuilder.Entity<CategoriaProducto>()
             .ToTable("CategoriasProducto");
 
@@ -799,7 +800,7 @@ public partial class TitanGlobalDbContext : DbContext
 
         modelBuilder.Entity<CategoriaProducto>()
             .Property(categoria => categoria.Nombre)
-            .HasMaxLength(100)
+            .HasColumnType("citext")
             .IsRequired();
 
         modelBuilder.Entity<CategoriaProducto>()
