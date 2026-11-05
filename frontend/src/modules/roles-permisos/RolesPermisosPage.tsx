@@ -3,6 +3,7 @@ import { DialogoBaja } from '../../components/DialogoBaja';
 import { PaginaModulo } from '../../components/PaginaModulo';
 import { eliminarRol } from './api';
 import { mensajeError } from './errores';
+import { EditorPermisos } from './EditorPermisos';
 import { RolDetallePanel } from './RolDetallePanel';
 import { RolFormulario } from './RolFormulario';
 import { RolesLista } from './RolesLista';
@@ -16,8 +17,10 @@ export function RolesPermisosPage() {
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState('');
   const [eliminando, setEliminando] = useState(false);
+  const [editandoPermisos, setEditandoPermisos] = useState(false);
   const [seleccionPrevia, setSeleccionPrevia] = useState<number | null>(datos.seleccionado);
   const botonEliminarRef = useRef<HTMLButtonElement>(null);
+  const botonPermisosRef = useRef<HTMLButtonElement>(null);
 
   if (seleccionPrevia !== datos.seleccionado) {
     setSeleccionPrevia(datos.seleccionado);
@@ -25,6 +28,7 @@ export function RolesPermisosPage() {
     if (seleccionPrevia !== null) {
       setMostrarFormulario(false);
       setRolEdicion(null);
+      setEditandoPermisos(false);
     }
   }
 
@@ -35,15 +39,28 @@ export function RolesPermisosPage() {
   }, []);
 
   function abrirNuevo(): void {
+    setEditandoPermisos(false);
     setRolEdicion(null);
     setMostrarFormulario(true);
   }
 
   function abrirEdicion(): void {
     if (datos.detalle !== null) {
+      setEditandoPermisos(false);
       setRolEdicion(datos.detalle);
       setMostrarFormulario(true);
     }
+  }
+
+  function abrirPermisos(): void {
+    setMostrarFormulario(false);
+    setRolEdicion(null);
+    setEditandoPermisos(true);
+  }
+
+  function cerrarPermisos(): void {
+    setEditandoPermisos(false);
+    window.requestAnimationFrame(() => botonPermisosRef.current?.focus());
   }
 
   function cerrarFormulario(): void {
@@ -91,9 +108,11 @@ export function RolesPermisosPage() {
         />
         <RolDetallePanel
           botonEliminarRef={botonEliminarRef}
+          botonPermisosRef={botonPermisosRef}
           cargando={datos.cargandoDetalle}
           detalle={datos.detalle}
           editar={abrirEdicion}
+          editarPermisos={abrirPermisos}
           eliminar={() => {
             setErrorEliminar('');
             setDialogoAbierto(true);
@@ -107,6 +126,14 @@ export function RolesPermisosPage() {
           guardado={rolGuardado}
           key={rolEdicion?.id ?? 'nuevo'}
           rol={rolEdicion}
+        />
+      )}
+      {editandoPermisos && datos.detalle !== null && (
+        <EditorPermisos
+          cerrar={cerrarPermisos}
+          guardado={datos.refrescar}
+          key={datos.detalle.id}
+          rol={datos.detalle}
         />
       )}
       {dialogoAbierto && datos.detalle !== null && (

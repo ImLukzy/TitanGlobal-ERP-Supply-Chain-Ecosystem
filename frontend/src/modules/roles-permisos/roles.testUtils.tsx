@@ -2,9 +2,15 @@ import { act, render as renderBase, screen, waitFor } from '@testing-library/rea
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 import { expect, vi } from 'vitest';
+import { crearPermisosPrueba, permisosAdminPrueba, permisosVentasPrueba } from './permisos.testUtils';
 import { RolesPermisosPage } from './RolesPermisosPage';
+import type { PermisoModulo } from './tipos';
 
 export interface OpcionesApiRoles {
+  /** El GET de los permisos de un rol responde 500. */
+  errorPermisos?: boolean;
+  /** El PUT de los permisos responde 409. */
+  errorGuardarPermisos?: boolean;
   vacio?: boolean;
   errorLista?: boolean;
   errorGuardar?: boolean;
@@ -53,6 +59,16 @@ function listadoRol(rol: RolPrueba) {
   };
 }
 
+function permisosDeRol(rolId: number): PermisoModulo[] {
+  if (rolId === 1) {
+    return permisosAdminPrueba();
+  }
+  if (rolId === 2) {
+    return permisosVentasPrueba();
+  }
+  return crearPermisosPrueba(() => 'ninguno');
+}
+
 export function prepararApi(opciones: OpcionesApiRoles = {}) {
   const roles = [...rolesIniciales];
   let liberarDetalle: () => void = () => undefined;
@@ -64,6 +80,25 @@ export function prepararApi(opciones: OpcionesApiRoles = {}) {
     const url = String(input);
     const metodo = init.method ?? 'GET';
     llamadas.push({ url, init });
+    const rutaPermisos = /\/roles\/(\d+)\/permisos$/.exec(url);
+    if (rutaPermisos !== null) {
+      const rolId = Number(rutaPermisos[1]);
+      if (metodo === 'PUT') {
+        if (opciones.errorGuardarPermisos) {
+          return Response.json(
+            { StatusCode: 409, Message: 'El rol ADMIN es de sistema y no se puede modificar de esa forma.' },
+            { status: 409 },
+          );
+        }
+        const enviados = (JSON.parse(String(init.body)) as { permisos: Array<Pick<PermisoModulo, 'moduloNumero' | 'puedeLeer' | 'puedeEscribir'>> }).permisos;
+        const base = permisosDeRol(rolId);
+        return Response.json(base.map((permiso) => ({ ...permiso, ...enviados.find((item) => item.moduloNumero === permiso.moduloNumero) })));
+      }
+      if (opciones.errorPermisos) {
+        return Response.json({ StatusCode: 500, Message: 'No se pudieron cargar los permisos del rol.' }, { status: 500 });
+      }
+      return Response.json(permisosDeRol(rolId));
+    }
     if (url.includes('/roles?') && metodo === 'GET') {
       if (opciones.errorLista) {
         return Response.json({ StatusCode: 500, Message: 'No se pudo cargar la lista de roles.' }, { status: 500 });

@@ -1421,3 +1421,31 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .empleado-cese-form textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
 .empleado-contador { margin: -6px 0 0; color: var(--ink-faint); font-size: 9px; text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) { .empleado-form { grid-template-columns: minmax(0, 1fr); } }
+
+/* Módulo 72 · Editor de permisos por módulo. */
+.roles-permisos-panel { margin-top: 15px; }
+.permisos-dominios { display: grid; gap: 10px; }
+.permisos-dominio { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.permisos-dominio > summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 11px 13px; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; }
+.permisos-dominio > summary:focus-visible { border-radius: 8px; outline: 2px solid var(--accent); outline-offset: 2px; }
+.permisos-dominio-resumen { color: var(--ink-soft); font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.permisos-atajos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 13px 10px; }
+.permisos-lista { margin: 0; padding: 0 13px 6px; list-style: none; }
+.permiso-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 16px; padding: 7px 0; border-top: 1px solid var(--line); }
+.permiso-modulo { min-width: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.permiso-numero { display: inline-block; min-width: 22px; margin-right: 7px; color: var(--ink-faint); font-size: 10px; font-variant-numeric: tabular-nums; }
+.permiso-casilla { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; color: var(--ink-soft); cursor: pointer; font-size: 11px; }
+.permiso-casilla input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.permiso-casilla input:disabled { cursor: not-allowed; }
+.permisos-acciones { align-items: flex-start; }
+.permisos-acciones p { max-width: none; }
+.permisos-acciones .permisos-contador { color: var(--ink); font-size: 11px; font-weight: 700; }
+.permisos-acciones .rol-form-nota { margin-top: 4px; color: var(--ink-faint); }
+.permisos-acciones .permisos-error { margin-top: 6px; color: var(--bad); }
+.permisos-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+@media (max-width: 720px) {
+  .permiso-fila { grid-template-columns: auto auto minmax(0, 1fr); }
+  .permiso-modulo { grid-column: 1 / -1; }
+  .permisos-acciones { flex-direction: column; align-items: stretch; }
+}
