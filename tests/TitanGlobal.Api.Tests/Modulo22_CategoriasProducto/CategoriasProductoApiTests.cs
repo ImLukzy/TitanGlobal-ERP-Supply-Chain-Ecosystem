@@ -446,7 +446,7 @@ public class CategoriasProductoApiTests
         Assert.True(rutas.GetProperty("/api/v1/categorias-producto/{id}").TryGetProperty("delete", out _));
         Assert.True(rutas.GetProperty("/api/v1/categorias-producto/resumen").TryGetProperty("get", out _));
     }
-    
+
     [Fact]
     public async Task ReactivarMarcaComoActivaUnaCategoriaInactiva()
     {
@@ -490,7 +490,7 @@ public class CategoriasProductoApiTests
         Assert.Equal(3, resumen.CategoriasActivas);
         Assert.Equal(0, resumen.CategoriasInactivas);
     }
-    
+
     private void RestablecerDatos()
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
