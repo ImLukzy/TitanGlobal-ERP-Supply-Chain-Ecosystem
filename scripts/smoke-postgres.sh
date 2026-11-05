@@ -231,6 +231,9 @@ checks = {
     "categoria-producto-created": lambda data: data["id"] > 0,
     "categoria-producto-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una categoría con el nombre computo.",
     "categoria-producto-deactivated": lambda data: data["nombre"] == "Categoría Smoke" and data["descripcion"] == "Alta de smoke" and data["activa"] is False,
+        "categoria-producto-reactivated": lambda data: data["nombre"] == "Categoría Smoke" and data["activa"] is True,
+        "categoria-producto-already-active": lambda data: data["StatusCode"] == 409 and data["Message"] == "La categoría 1 ya está activa.",
+        "categoria-producto-notfound": lambda data: data["StatusCode"] == 404 and data["Message"] == "La categoría 9999 no existe.",
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
     "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
@@ -613,6 +616,11 @@ request_check 'POST categoría de producto válida' POST '/api/v1/categorias-pro
 request_check 'POST categoría de producto duplicada sin importar mayúsculas' POST '/api/v1/categorias-producto' 409 categoria-producto-duplicate '{"nombre":"computo"}'
 request_check 'DELETE categoría de producto recién creada (baja lógica)' DELETE "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 204 ''
 request_check 'Categoría de producto recién creada queda inactiva' GET "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 200 categoria-producto-deactivated
+request_check 'Reactivar categoría de producto recién creada' POST "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}/reactivar" 204 ''
+request_check 'Categoría de producto reactivada queda activa' GET "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 200 categoria-producto-reactivated
+request_check 'Reactivar categoría de producto ya activa' POST '/api/v1/categorias-producto/1/reactivar' 409 categoria-producto-already-active
+request_check 'Reactivar categoría de producto inexistente' POST '/api/v1/categorias-producto/9999/reactivar' 404 categoria-producto-notfound
+request_check 'DELETE categoría de producto reactivada (baja lógica)' DELETE "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 204 ''
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive
