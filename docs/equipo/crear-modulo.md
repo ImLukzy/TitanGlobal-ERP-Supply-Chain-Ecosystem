@@ -321,13 +321,13 @@ public class ProveedoresController : ControllerBase
 }
 ```
 
-Con la API arrancada en desarrollo (`dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080`), puedes probar los endpoints en `http://localhost:5080/swagger` (incluye el botón **Authorize** para enviar la cabecera `X-User-Role`) y verificar el contrato en `http://localhost:5080/openapi/v1.json`.
+Con la API arrancada en desarrollo (`dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080`), puedes probar los endpoints en `http://localhost:5080/swagger`. Toda la API exige token: ejecuta `POST /api/v1/autenticacion/login` con `admin` / `Admin2026!` (contraseña del seed local), copia el `token` y pégalo en **Authorize** → **Bearer**. Sin token, cualquier ruta responde 401 «Debe iniciar sesión para acceder a este recurso.». En el mismo botón puedes enviar la cabecera `X-User-Role` y verificar el contrato en `http://localhost:5080/openapi/v1.json`.
 
 ### 8. Pruebas
 
 Añade las pruebas de integración en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/<Recurso>ApiTests.cs`. Cubre todos los mensajes de error literales de la spec, los límites de validación, los filtros y el resumen (`tests/TitanGlobal.Api.Tests/Modulo11_Proveedores/ProveedoresApiTests.cs`).
 
-Las pruebas de módulo comparten infraestructura: `[Collection("Modulo04")]` da acceso a `OrdenesCompraApiFactory`, definida en `tests/TitanGlobal.Api.Tests/Modulo04_OrdenesCompra/OrdenesCompraApiTests.cs`, con una base InMemory común y sin ejecución en paralelo. Por eso cada clase restablece sus propios datos en el constructor. `RestablecerProveedores` y `AssertBusinessErrorAsync` son métodos privados de ese archivo de ejemplo: cópialos y adáptalos, porque no están en una clase común. Recortado:
+Las pruebas de módulo comparten infraestructura: `[Collection("Modulo04")]` da acceso a `OrdenesCompraApiFactory`, definida en `tests/TitanGlobal.Api.Tests/Modulo04_OrdenesCompra/OrdenesCompraApiTests.cs`, con una base InMemory común y sin ejecución en paralelo. Por eso cada clase restablece sus propios datos en el constructor. Los clientes que crean las fábricas ya llevan un token de administrador (`TokenPruebas.AutenticarComoAdministrador`), así que no tienes que iniciar sesión en tus pruebas; si necesitas probar una ruta sin token, pon `cliente.DefaultRequestHeaders.Authorization = null`. `RestablecerProveedores` y `AssertBusinessErrorAsync` son métodos privados de ese archivo de ejemplo: cópialos y adáptalos, porque no están en una clase común. Recortado:
 
 ```csharp
 using System.Net;

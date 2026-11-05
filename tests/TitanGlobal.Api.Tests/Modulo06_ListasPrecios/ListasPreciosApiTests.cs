@@ -426,6 +426,12 @@ public sealed class ListasPreciosApiFactory : WebApplicationFactory<Program>
     private bool _baseDatosSembrada;
     private readonly string _nombreBaseDatos = "Modulo06ListasPreciosTests-" + Guid.NewGuid();
 
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        TokenPruebas.AutenticarComoAdministrador(client, Services);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder constructorAnfitrion)
     {
         constructorAnfitrion.ConfigureServices(servicios =>

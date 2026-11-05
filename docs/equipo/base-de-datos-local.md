@@ -41,7 +41,9 @@ Get-Content scripts/seed-dev.sql -Raw | docker compose exec -T db psql -U titang
 ```sh
 dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080
 ```
-Abre http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}` y http://localhost:5080/api/v1/clientes → lista de clientes.
+Abre http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}`. El resto de rutas pide iniciar sesión: http://localhost:5080/api/v1/clientes responde 401 sin token. Para ver datos, inicia sesión en Swagger (`/swagger`, `POST /api/v1/autenticacion/login`) o en el frontend.
+
+**Usuarios del seed local:** `admin` / `Admin2026!` (rol `ADMIN`) e `invitado` / `Demo2026!` (cuenta de demostración, sin roles). Estas contraseñas solo valen en tu base local; la de `admin` en la demo es otra. En local la API genera una clave JWT nueva en cada arranque, así que tras reiniciarla tendrás que volver a iniciar sesión.
 
 ### Día a día
 | Quiero… | Comando |

@@ -292,12 +292,13 @@ INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema") VALUE
     (4, 'ALMACEN', 'Almacén', 'Gestión de inventarios', FALSE),
     (5, 'CONSULTA', 'Consulta', 'Solo lectura', FALSE);
 
-INSERT INTO "Usuarios" ("Id", "NombreUsuario", "NombreCompleto", "Email", "Activo", "FechaAlta") VALUES
-    (1, 'admin', 'Administrador del sistema', 'admin@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-01 00:00:00+00'),
-    (2, 'ana.ventas', 'Ana Torres', 'ana.ventas@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-02 00:00:00+00'),
-    (3, 'luis.compras', 'Luis Rojas', 'luis.compras@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-03 00:00:00+00'),
-    (4, 'maria.almacen', 'María León', 'maria.almacen@titanglobal.example', FALSE, TIMESTAMPTZ '2026-01-04 00:00:00+00'),
-    (5, 'invitado', 'Usuario Invitado', 'invitado@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-05 00:00:00+00');
+-- Contraseñas solo de desarrollo (hash BCrypt): admin → Admin2026!, invitado → Demo2026! (cuenta de demostración).
+INSERT INTO "Usuarios" ("Id", "NombreUsuario", "NombreCompleto", "Email", "Activo", "FechaAlta", "ContrasenaHash") VALUES
+    (1, 'admin', 'Administrador del sistema', 'admin@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-01 00:00:00+00', '$2a$11$d.nABDr1rIlogD5.EnGkh.r3dpHaNEluF.2zXgF1SRs5BD1ACgYva'),
+    (2, 'ana.ventas', 'Ana Torres', 'ana.ventas@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-02 00:00:00+00', NULL),
+    (3, 'luis.compras', 'Luis Rojas', 'luis.compras@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-03 00:00:00+00', NULL),
+    (4, 'maria.almacen', 'María León', 'maria.almacen@titanglobal.example', FALSE, TIMESTAMPTZ '2026-01-04 00:00:00+00', NULL),
+    (5, 'invitado', 'Usuario Invitado', 'invitado@titanglobal.example', TRUE, TIMESTAMPTZ '2026-01-05 00:00:00+00', '$2a$11$DWRsjvIcsNBeL9BRCdQsx.oy2vvO6p4UrphYNXmkgcQQzDFrngpAC');
 
 INSERT INTO "UsuariosRoles" ("Id", "UsuarioId", "RolId") VALUES
     (1, 1, 1),

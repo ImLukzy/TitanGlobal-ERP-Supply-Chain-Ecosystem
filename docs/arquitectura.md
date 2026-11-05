@@ -26,8 +26,8 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
   - La auditoría del `DbContext` obtiene el usuario (`X-Usuario`) y la ruta mediante el puerto `IContextoSolicitud` (`Application/Services`), implementado por `ContextoSolicitud` en `Api/Services`.
 - **Casos de uso concretos sin interfaz**, registrados por reflexión sobre el ensamblado de `TitanGlobal.Application` en `ServiceRegistrationExtensions.AddApplicationServices` (toda clase concreta terminada en `UseCase`).
 - **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers. Como Routing va antes, ParameterValidation lee los metadatos del endpoint: las acciones sin cuerpo se declaran con `[PermitirCuerpoVacio]` (spec 18).
-- **Autenticación y roles:** hoy sigue la cabecera `X-User-Role` tal como pide el enunciado. La autenticación con login, JWT y BCrypt queda para una **segunda etapa**, todavía no hecha.
-- **Documentación de la API en desarrollo:** Swagger UI en `http://localhost:5080/swagger` (con `X-User-Role` autorizable) y documento OpenAPI en `/openapi/v1.json`.
+- **Autenticación y roles:** inicio de sesión con contraseña guardada con BCrypt y JWT (spec 51). Toda la API exige token salvo `POST api/v1/autenticacion/login` y la salud. Crear, editar o borrar usuarios y roles, y cambiar contraseñas, exige el rol `ADMIN`. La cabecera `X-User-Role` del enunciado se conserva: `Bloqueado` y `SinPermiso` siguen respondiendo 403.
+- **Documentación de la API en desarrollo:** Swagger UI en `http://localhost:5080/swagger` (con token Bearer y `X-User-Role` autorizables) y documento OpenAPI en `/openapi/v1.json`.
 
 Las reglas de código están en `CONTRIBUTING.md` § Reglas de código.
 

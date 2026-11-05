@@ -8,11 +8,14 @@ namespace TitanGlobal.Api.Configuration;
 
 public static class ServiceRegistrationExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment entorno)
     {
         services.AddControllers();
         services.AddOpenApi();
-        services.AddAuthorization();
+        services.AddAutenticacionJwt(configuration, entorno);
         services.AddHttpContextAccessor();
         services.AddInfrastructureServices(configuration);
         services.AddScoped<IAuthService, AuthService>();
@@ -51,10 +54,22 @@ public static class ServiceRegistrationExtensions
                 In = ParameterLocation.Header,
                 Description = "Rol de la petición. Bloqueado o SinPermiso responden 403."
             });
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Token de POST /api/v1/autenticacion/login. Pega solo el token, sin «Bearer»."
+            });
             options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecuritySchemeReference("X-User-Role", document),
+                    new List<string>()
+                }
+                ,
+                {
+                    new OpenApiSecuritySchemeReference("Bearer", document),
                     new List<string>()
                 }
             });

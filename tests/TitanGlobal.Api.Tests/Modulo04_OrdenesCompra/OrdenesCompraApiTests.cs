@@ -223,6 +223,12 @@ public class OrdenesCompraApiFactory : WebApplicationFactory<Program>
 {
     private bool _databaseSeeded;
 
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        TokenPruebas.AutenticarComoAdministrador(client, Services);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>

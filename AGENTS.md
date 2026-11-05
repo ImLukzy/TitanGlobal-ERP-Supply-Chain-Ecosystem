@@ -28,6 +28,7 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 - **Entidades de Domain limpias:** prohibidos los atributos de EF Core (`[Index]`, `[Precision]`) y `using Microsoft.EntityFrameworkCore;` en las entidades; configúralos en `TitanGlobalDbContext.OnModelCreating`. `[Required]` y `[MaxLength]` son de .NET y sí se permiten.
 - **Fechas UTC obligatorias:** normaliza siempre con `FechasUtc` (`TitanGlobal.Domain.Common`). La columna es `timestamptz`: una fecha sin `Z` causa error 500 en PostgreSQL real (los tests en memoria no lo detectan).
 - **Validación de límites:** valida en `Application` obligatoriedad, longitudes máximas, rangos numéricos y número de decimales. Lo que excede la columna causa un error 500 o se redondea en silencio, y los tests en memoria tampoco lo detectan.
+- **Autenticación JWT:** todos los endpoints exigen token salvo los que llevan `[AllowAnonymous]` (login y salud). No añadas `[AllowAnonymous]` a un endpoint nuevo. Las fábricas de pruebas ya envían un token de administrador (`tests/TitanGlobal.Api.Tests/TokenPruebas.cs`).
 - **Frontend consistente:** usa los componentes compartidos (`PaginaModulo`, `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`) y variables de `tokens.css`.
 
 ## 4. Lo que nunca se hace
@@ -53,6 +54,7 @@ dotnet tool restore                                                        # Res
 dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api  # Aplicar migraciones
 docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql  # Cargar seed
 dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080     # API en puerto 5080 (Swagger: /swagger)
+# Toda la API pide token: POST /api/v1/autenticacion/login con admin / Admin2026! (seed local) y pega el token en Authorize de Swagger
 npm --prefix frontend ci && npm --prefix frontend run dev                 # Frontend en puerto 5173
 npm --prefix frontend run verify                                           # Verificación del frontend
 ./scripts/verify.sh                                                        # Gate completo obligatorio

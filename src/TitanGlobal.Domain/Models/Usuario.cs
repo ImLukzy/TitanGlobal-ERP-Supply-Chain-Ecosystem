@@ -10,6 +10,8 @@ public class Usuario
 
     public string Email { get; set; } = string.Empty;
 
+    public string? ContrasenaHash { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaAlta { get; set; }
