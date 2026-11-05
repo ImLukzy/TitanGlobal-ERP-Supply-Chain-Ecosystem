@@ -14,7 +14,7 @@ import {
   type DatosPanel,
   type FilaBarra,
   type Proceso,
-} from './panelOperaciones';
+} from './datosPanelOperaciones';
 
 function Barras({ id, titulo, slug, filas }: { id: string; titulo: string; slug: string; filas: FilaBarra[] | null }) {
   const maximo = filas === null ? 0 : Math.max(...filas.map((fila) => fila.valor), 0);
