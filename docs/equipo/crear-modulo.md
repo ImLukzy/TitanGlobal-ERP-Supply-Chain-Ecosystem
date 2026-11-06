@@ -48,6 +48,8 @@ CREATE TABLE "Proveedores" (
 CREATE UNIQUE INDEX "IX_Proveedores_Ruc" ON "Proveedores" ("Ruc");
 ```
 
+Si tu módulo valida rangos, estados o fechas, repítelos en la tabla con `CHECK` (nombre `CK_<Tabla>_<Regla>`), como en `database/002-reglas-integridad.sql`. **Nunca más estricto que tu validación en Application:** si la base rechaza algo que la API acepta, la API responde 500. Con decimales, usa `>= 0` salvo que valides también el número de decimales (PostgreSQL redondea antes de comprobar).
+
 Reglas:
 - Un script que ya está aplicado y fusionado en `main` **nunca se edita**: el cambio va en un script nuevo (por ejemplo, un `ALTER TABLE`).
 - Si otra persona eligió el mismo número que tú, quien integra después renombra su script al siguiente libre antes de fusionar.
