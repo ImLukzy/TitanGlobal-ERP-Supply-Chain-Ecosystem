@@ -280,39 +280,6 @@ public partial class TitanGlobalDbContext
         return await Database.BeginTransactionAsync(cancellationToken);
     }
 
-    private void ConfigurarAuditoria(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Fecha)
-            .HasColumnType("timestamp with time zone");
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Entidad)
-            .HasMaxLength(100)
-            .IsRequired();
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.EntidadId)
-            .HasMaxLength(50)
-            .IsRequired();
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Accion)
-            .HasMaxLength(20)
-            .IsRequired();
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Usuario)
-            .HasMaxLength(30)
-            .IsRequired();
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Ruta)
-            .HasMaxLength(200);
-        modelBuilder.Entity<RegistroAuditoria>()
-            .Property(registro => registro.Cambios)
-            .IsRequired();
-        modelBuilder.Entity<RegistroAuditoria>()
-            .HasIndex(registro => registro.Fecha);
-        modelBuilder.Entity<RegistroAuditoria>()
-            .HasIndex(registro => new { registro.Entidad, registro.EntidadId });
-    }
-
     private sealed record CambioPendienteAuditoria(EntityEntry Entrada, string Accion, List<CambioCampoAuditoria> Cambios);
 
     private sealed record CambioCampoAuditoria(string Campo, object? Antes, object? Despues);
