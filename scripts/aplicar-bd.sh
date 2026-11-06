@@ -53,7 +53,8 @@ for script in database/[0-9][0-9][0-9]-*.sql; do
         printf 'pendiente  %s\n' "$nombre"
         continue
     fi
-    if grep -qiE '^\s*(BEGIN|COMMIT|ROLLBACK|START TRANSACTION)\b' "$script"; then
+    # Solo sentencias de transacción (BEGIN; COMMIT;); el BEGIN de una función PL/pgSQL sí se admite.
+    if grep -qiE '^\s*(BEGIN(\s+(TRANSACTION|WORK))?|START\s+TRANSACTION|COMMIT|ROLLBACK)\s*;' "$script"; then
         printf 'ERROR: %s no puede tener BEGIN, COMMIT ni ROLLBACK: cada script ya se aplica en su propia transacción.\n' "$nombre" >&2
         exit 1
     fi

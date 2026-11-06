@@ -19,13 +19,13 @@ temporal=""
 
 if [[ "${1:-}" == "--comprobar" ]]; then
     temporal="$(mktemp -d)"
-    trap 'rm -rf "$temporal"' EXIT
     modelos="$temporal/Models"
     contexto="$temporal/Persistence"
 fi
 
 dotnet tool restore >/dev/null
 marca="$(mktemp)"
+trap 'rm -f "$marca"; [[ -n "$temporal" ]] && rm -rf "$temporal"' EXIT
 dotnet ef dbcontext scaffold "$conexion" Npgsql.EntityFrameworkCore.PostgreSQL \
     -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api \
     --context TitanGlobalDbContext --context-dir "$contexto" --output-dir "$modelos" \
@@ -40,7 +40,6 @@ if [[ -z "$temporal" ]]; then
             printf 'Borrada (su tabla ya no existe): %s\n' "$archivo"
         fi
     done
-    rm -f "$marca"
     dotnet format >/dev/null
     printf 'Entidades y TitanGlobalDbContext regenerados. Revisa el diff con git diff.\n'
     exit 0
@@ -76,7 +75,7 @@ for actual in src/TitanGlobal.Domain/Models/*.cs; do
             printf 'Entidad sin tabla en database/ (escrita a mano): %s en %s\n' "$clase" "$actual" >&2
             distintos=$((distintos + 1))
         fi
-    done < <(grep -oE '\bclass [A-Za-z_][A-Za-z0-9_]*' "$actual" | awk '{print $2}')
+    done < <(sed -nE 's/^\s*(public |internal )?(sealed |abstract |static )?(partial )?class ([A-Za-z_][A-Za-z0-9_]*).*/\4/p' "$actual")
     if grep -qE '^\s*public (sealed |abstract )?class ' "$actual"; then
         printf 'Solo se admiten clases partial escritas a mano en Models: %s\n' "$actual" >&2
         distintos=$((distintos + 1))

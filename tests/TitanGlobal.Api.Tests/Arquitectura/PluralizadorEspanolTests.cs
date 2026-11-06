@@ -35,6 +35,11 @@ public class PluralizadorEspanolTests
     [InlineData("LotesSeries", "LoteSeries")]
     [InlineData("DetallesGuia", "DetalleGuia")]
     [InlineData("LucesAlmacen", "LuzAlmacen")]
+    [InlineData("SolicitudesTraslado", "SolicitudTraslado")]
+    [InlineData("CierresPeriodo", "CierrePeriodo")]
+    [InlineData("SedesEmpresa", "SedeEmpresa")]
+    [InlineData("SucursalesEmpresa", "SucursalEmpresa")]
+    [InlineData("TimbresFiscales", "TimbreFiscales")]
     public void UnaTablaNuevaSingularizaSoloLaPrimeraPalabra(string tabla, string entidad)
     {
         Assert.Equal(entidad, _pluralizador.Singularize(tabla));
