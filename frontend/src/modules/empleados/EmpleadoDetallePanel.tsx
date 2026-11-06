@@ -80,7 +80,7 @@ export function EmpleadoDetallePanel({ empleado, cargando, error, editar, cesar,
           <section aria-labelledby="empleado-contacto-title" className="empleados-detail-section">
             <h3 id="empleado-contacto-title">Contacto</h3>
             <dl className="empleados-detail-grid">
-              <div>
+              <div className="empleados-detail-wide">
                 <dt>Email</dt>
                 <dd>{textoOpcional(empleado.email)}</dd>
               </div>
