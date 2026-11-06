@@ -53,10 +53,11 @@ El resto de módulos muestra «Pantalla pendiente». La lista completa está en 
 ```
 src/TitanGlobal.Domain/          Models/, Repositories/, Common/
 src/TitanGlobal.Application/     DTOs/ModuloNN_Nombre/, UseCases/ModuloNN_Nombre/, Exceptions/, Services/
-src/TitanGlobal.Infrastructure/  Persistence/, Migrations/, Repositories/Implementation/, Configuration/
+src/TitanGlobal.Infrastructure/  Persistence/, Repositories/Implementation/, Configuration/
 src/TitanGlobal.Api/             Controllers/ModuloNN_Nombre/, Middlewares/, Configuration/, Services/, Program.cs
 tests/TitanGlobal.Api.Tests/     tests de integración y de arquitectura (xUnit)
 frontend/                        SPA React + Vite + TS
-scripts/                         verify.sh (gate), check-rules.sh, smoke-postgres.sh, seed-dev.sql, adaptar-rama-capas.py
+database/                        scripts SQL del esquema (fuente de verdad de la base de datos)
+scripts/                         verify.sh (gate), check-rules.sh, aplicar-bd.sh, scaffold.sh, smoke-postgres.sh, seed-dev.sql, adaptar-rama-capas.py
 docs/                            enunciado, arquitectura, specs (una por tarea), despliegue, equipo
 ```

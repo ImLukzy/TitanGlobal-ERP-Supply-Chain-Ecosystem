@@ -28,13 +28,14 @@ export NEON_PROJECT_ID=plain-cloud-82246316
 - Si una cadena se filtra: cambia la contraseña de esa rama, o bórrala y vuelve a crearla.
 - El plan gratuito limita el número de ramas y el cómputo: borra las que no se usen. Una rama no ve los cambios posteriores de la principal.
 
-## Migraciones y datos
-- Render no aplica migraciones. Tras integrar una migración: `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api --connection "<cadena de Neon>"` desde la máquina de Lukas (integración), y comprobar después con la API desplegada.
+## Scripts de base de datos y datos
+- Render no aplica scripts. El esquema vive en `database/NNN-*.sql` (el proyecto ya no usa migraciones de EF Core). Tras integrar un script nuevo, Lukas lo aplica a Neon con `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f database/NNN-descripcion.sql` (copia de seguridad y ensayo en una rama antes) y comprueba después con la API desplegada. La base de la demo ya tiene el esquema de `001-esquema-inicial.sql`; el registro `control."ScriptsAplicados"` se creará en producción antes del primer script nuevo (spec 52).
+- El historial `__EFMigrationsHistory` que quedó en Neon se deja como está.
 - Datos de demostración: `psql "<URI de Neon>" -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql` (idempotente; reinicia los datos de las tablas del enunciado).
 
 ## Tras cada integración (lo hace Lukas)
 1. `./scripts/verify.sh` en verde en `main`.
-2. Si hay migraciones nuevas: aplicarlas a Neon (arriba) antes de subir el código.
+2. Si hay scripts nuevos en `database/`: aplicarlos a Neon (arriba) antes de subir el código.
 3. `git push origin main` → Render reconstruye la API (comprobar `render deploys list srv-db849hivcj2c73859c9g` hasta `live`).
 4. En la **raíz** del repositorio (no en `frontend/`): `npx vercel deploy --prod --yes`.
 5. Actualizar `docs/contexto-proyecto.md` (§5, §6, §7, §10, §12), el estado del `README.md` y `docs/equipo/asignaciones.md`.

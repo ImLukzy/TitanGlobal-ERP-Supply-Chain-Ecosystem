@@ -9,7 +9,7 @@
 
 - [ ] Spec aprobada y §6 marcado.
 - [ ] `./scripts/verify.sh` en verde.
-- [ ] Si cambia la base de datos: migración generada con `dotnet ef` y `./scripts/smoke-postgres.sh` → `SMOKE OK`.
+- [ ] Si cambia la base de datos: script `database/NNN-*.sql` aplicado, entidades regeneradas con `./scripts/scaffold.sh` (sin editar a mano lo generado) y `./scripts/smoke-postgres.sh` → `SMOKE OK`.
 - [ ] Tests nuevos para las reglas y los errores del módulo.
 - [ ] QA a 375 y 1280 px, en claro y en oscuro.
 - [ ] Evidencia en §7 de la spec.

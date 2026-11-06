@@ -69,8 +69,8 @@ Reglas:
 - [x] Scaffold de las 37 entidades y del DbContext; archivos partial a mano.
 - [x] `database/001-esquema-inicial.sql`, `aplicar-bd.sh` y `scaffold.sh`.
 - [x] Sin migraciones; gate y smoke adaptados.
-- [ ] Guías del equipo.
-- [ ] Verificar A1–A6 y anotar resultados en §7.
+- [x] Guías del equipo.
+- [x] Verificar A1–A6 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
@@ -80,3 +80,4 @@ Reglas:
 | 2026-11-05 | A3 | ✅ | 37 entidades con el mismo nombre; compilación sin cambiar ningún caso de uso; 927 pruebas en verde |
 | 2026-11-05 | A5 | ✅ | `smoke-postgres.sh`: «Aplicando 001-esquema-inicial.sql», «SCAFFOLD AL DÍA», 272 comprobaciones HTTP y `SMOKE OK` |
 | 2026-11-05 | A6 | ✅ | `Cliente.cs` con una propiedad añadida a mano → «Desactualizado: …/Cliente.cs», salida 1; base vacía → «la base local tiene scripts sin aplicar», salida 1; base sin registro con tablas → «se creó con las migraciones antiguas», salida 1 |
+| 2026-11-05 | Revisión de código | ✅ | Revisión independiente: 9 hallazgos; 8 corregidos (salida de `psql` con `\r` en Git Bash de Windows, entidades huérfanas al borrar una tabla, `--estado` que creaba el registro, scripts con `BEGIN`/`COMMIT` o sin `;` final, plural de `Unidades`/`Perfiles`/`Talleres`, contraseña entre comillas simples, comparación tolerante a espacios y clases escritas a mano en `Models`) y 1 descartado (`DateTime.UtcNow` en `ValoresIniciales` ya es UTC y es el valor que tenía la entidad). Pruebas nuevas `PluralizadorEspanolTests` (10) |

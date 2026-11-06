@@ -10,11 +10,11 @@ Las pantallas no dependen de las cuatro capas del backend (`Domain`, `Applicatio
 
 Antes de programar la pantalla, el backend del módulo debe estar implementado en `main` o en tu rama, con la base de datos local y la API levantadas.
 
-1. **Levantar base de datos y aplicar migraciones:**
+1. **Levantar base de datos y aplicar los scripts de `database/`:**
    ```sh
    docker compose up -d db
    dotnet tool restore
-   dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+   ./scripts/aplicar-bd.sh
    docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql
    ```
    El último comando carga los datos de ejemplo. En PowerShell usa la variante de [`base-de-datos-local.md`](base-de-datos-local.md).
