@@ -1484,3 +1484,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .matriz-filtros { grid-template-columns: minmax(0, 1fr); }
   .matriz-tabla tbody th[scope="row"] { min-width: 150px; }
 }
+
+/* Módulo 72 · Etiquetas de tipo legibles sobre la fila seleccionada. */
+.roles-table tbody tr.is-selected .rol-tipo { background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+.roles-table tbody tr.is-selected .rol-tipo.is-sistema { border-color: var(--accent-ink); color: var(--accent-ink); }
