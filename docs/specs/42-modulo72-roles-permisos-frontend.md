@@ -39,11 +39,17 @@
 | A7 | Visual | capturas (`page.route`) a 375 y 1280 px, claro y oscuro: editor de permisos con un dominio abierto, matriz y diálogo de baja; márgenes ≥ 16 px, sin scroll horizontal de página ni palabras partidas | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: pestaña Roles y formulario.
-- [ ] Tarea 3: editor de permisos y matriz.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: pestaña Roles y formulario.
+- [x] Tarea 3: editor de permisos y matriz.
 - [ ] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-05 | A2 | pasa | `npx vitest run src/modules/roles-permisos/api.test.ts`: 9 tests |
+| 2026-11-05 | A3 | pasa | `RolesPermisosPage.test.tsx` (21 tests) y `validacion.test.ts` (5 tests) |
+| 2026-11-05 | A4 | pasa | `EditorPermisos.test.tsx` (11), `permisos.test.ts` (11) y `usePermisosRol.test.tsx` (6) |
+| 2026-11-05 | A5 | pasa | `MatrizPermisos.test.tsx`: 9 tests |
+| 2026-11-05 | A6 | pasa | `npx vitest run` en la rama fusionada con `main`: 71 archivos y 534 tests, 10 ejecuciones seguidas sin fallos |
+| 2026-11-05 | A7 | adjuntas | capturas con `page.route` a 375 y 1280 px, claro y oscuro (editor con un dominio abierto, matriz, diálogo de baja y lista con rol de sistema): sin scroll horizontal de página, margen lateral mínimo de 34 px (375) y 67 px (1280), sin palabras partidas |
