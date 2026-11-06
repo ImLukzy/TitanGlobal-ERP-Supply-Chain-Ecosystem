@@ -104,8 +104,9 @@ if [[ "$DATABASE_READY" != "1" ]]; then
     exit 1
 fi
 
-dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+# La base se crea desde database/ y el código generado tiene que coincidir con ella (database first).
+./scripts/aplicar-bd.sh --reiniciar
+./scripts/scaffold.sh --comprobar
 docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -f - < scripts/seed-dev.sql
 
 ASPNETCORE_ENVIRONMENT=Development dotnet run --no-build --project src/TitanGlobal.Api --urls "$BASE_URL" >/dev/null 2>&1 &

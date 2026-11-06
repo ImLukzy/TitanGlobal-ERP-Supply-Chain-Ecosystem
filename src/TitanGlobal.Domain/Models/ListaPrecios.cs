@@ -1,6 +1,9 @@
+// Generado por scripts/scaffold.sh a partir de la base de datos (database/). No lo edites a mano:
+// cambia el script SQL y vuelve a generar. El código propio de la entidad va en un archivo partial aparte.
+
 namespace TitanGlobal.Domain.Models;
 
-public class ListaPrecios
+public partial class ListaPrecios
 {
     public int Id { get; set; }
 
@@ -16,9 +19,9 @@ public class ListaPrecios
 
     public DateTime? FechaFin { get; set; }
 
-    public bool Activa { get; set; } = true;
-
-    public virtual SegmentoCliente? SegmentoCliente { get; set; }
+    public bool Activa { get; set; }
 
     public virtual ICollection<ItemListaPrecios> Items { get; set; } = new List<ItemListaPrecios>();
+
+    public virtual SegmentoCliente? SegmentoCliente { get; set; }
 }

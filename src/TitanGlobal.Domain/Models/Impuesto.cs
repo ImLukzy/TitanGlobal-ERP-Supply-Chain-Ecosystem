@@ -1,35 +1,25 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+// Generado por scripts/scaffold.sh a partir de la base de datos (database/). No lo edites a mano:
+// cambia el script SQL y vuelve a generar. El código propio de la entidad va en un archivo partial aparte.
 
 namespace TitanGlobal.Domain.Models;
 
-public class Impuesto
+public partial class Impuesto
 {
     public int Id { get; set; }
 
-    [Required]
-    [MaxLength(30)]
     public string Codigo { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(120)]
     public string Nombre { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(20)]
     public string Tipo { get; set; } = string.Empty;
 
-    [MaxLength(250)]
     public string? Descripcion { get; set; }
 
-    [Required]
-    [MaxLength(3)]
-    public string Pais { get; set; } = "PER";
+    public string Pais { get; set; } = string.Empty;
 
-    public bool Activo { get; set; } = true;
+    public bool Activo { get; set; }
 
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; }
 
-    public virtual ICollection<TasaImpuesto> Tasas { get; set; } =
-        new List<TasaImpuesto>();
+    public virtual ICollection<TasaImpuesto> Tasas { get; set; } = new List<TasaImpuesto>();
 }
