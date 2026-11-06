@@ -105,7 +105,7 @@ public partial class Proveedor
 No edites a mano ningún archivo con esa cabecera ni `TitanGlobalDbContext.cs`: `./scripts/smoke-postgres.sh` crea la base desde `database/`, vuelve a generar y falla con «ERROR: el código generado no coincide…» si algo no coincide. El código propio va en archivos `partial` aparte:
 
 - **Valores iniciales** (`Activo = true`, `Estado = "Emitida"`…): el scaffold no los genera. Añade un constructor de la entidad en `src/TitanGlobal.Domain/Models/ValoresIniciales.cs` (por ejemplo, `Proveedor() { Activo = true; }`).
-- **Constructor y auditoría del contexto:** `TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs` en `src/TitanGlobal.Infrastructure/Persistence/`.
+- **Constructor y auditoría del contexto:** `TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs` en `src/TitanGlobal.Infrastructure/DbContextManual/`. `Persistence/` solo contiene el `TitanGlobalDbContext.cs` generado.
 - **Nombres en español:** el scaffold de EF pluraliza como en inglés. Si tu tabla no sigue la regla (solo cambia la primera palabra: `MovimientosInventario` → `MovimientoInventario`), añádela a `src/TitanGlobal.Api/Configuration/Scaffolding/PluralizadorEspanol.cs`. Si una colección necesita un nombre corto (`Detalles`), añádela a `src/TitanGlobal.Api/Configuration/Scaffolding/NombresNavegacion.cs`.
 
 ### 5. DTOs

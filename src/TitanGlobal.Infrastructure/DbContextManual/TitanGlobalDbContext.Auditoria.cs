@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Common;
 
+// Parte escrita a mano de TitanGlobalDbContext (clase partial). Vive fuera de Persistence/ para que esa carpeta
+// solo tenga lo que genera scripts/scaffold.sh; conserva el namespace Persistence para unirse a la misma clase.
 namespace TitanGlobal.Infrastructure.Persistence;
 
 public partial class TitanGlobalDbContext

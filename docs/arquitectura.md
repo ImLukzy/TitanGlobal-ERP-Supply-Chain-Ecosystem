@@ -8,7 +8,7 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
 - **Cuatro capas con carpeta por módulo** (decidido el 2026-11-02 según el Lab 10, spec 50):
   - `src/TitanGlobal.Domain`: `Models/` (entidades), `Repositories/` (`IGenericRepository<T>`, `IUnitOfWork`), `Common/` (`FechasUtc`).
   - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/` (`ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`), `Services/` (`IContextoSolicitud`).
-  - `src/TitanGlobal.Infrastructure`: `Persistence/` (`TitanGlobalDbContext` generado, `TitanGlobalDbContext.Constructor.cs`, `TitanGlobalDbContext.Auditoria.cs`), `Repositories/Implementation/` (`GenericRepository<T>`, `UnitOfWork`), `Configuration/` (`InfrastructureServicesExtensions`).
+  - `src/TitanGlobal.Infrastructure`: `Persistence/` (solo `TitanGlobalDbContext.cs`, generado), `DbContextManual/` (`TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs`, escritos a mano), `Repositories/Implementation/` (`GenericRepository<T>`, `UnitOfWork`), `Configuration/` (`InfrastructureServicesExtensions`).
   - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/` (`ServiceRegistrationExtensions`), `Services/` (`IAuthService`, `AuthService`, `ContextoSolicitud`), `Program.cs`.
   - Las pruebas viven en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` y `tests/TitanGlobal.Api.Tests/Arquitectura/`.
 - **Dirección de dependencias:** `Api` → `Application` e `Infrastructure`; `Infrastructure` → `Application` y `Domain`; `Application` → `Domain`. `Domain` no depende de nadie.
