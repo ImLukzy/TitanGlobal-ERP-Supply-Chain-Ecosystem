@@ -23,7 +23,7 @@ No cuentan: un backend sin pantalla, una pantalla sin QA, un módulo sin integra
 | Revisor | otro compañero | Lee solo la spec y el diff; aprueba o pide cambios |
 | QA | el revisor u otra persona | Recorre los criterios contra la API y PostgreSQL locales |
 | Integración | Lukas | Revisa la spec, integra en `main` con el gate en verde y despliega |
-| Coordinador de migraciones | rota cada semana | Ordena las migraciones y evita que dos personas generen una a la vez |
+| Coordinador de scripts de base de datos | rota cada semana | Ordena los scripts de `database/` y evita que dos personas usen el mismo número |
 
 El owner no revisa su propio módulo. El revisor se acuerda el lunes y se anota en el issue.
 
@@ -33,7 +33,7 @@ El owner no revisa su propio módulo. El revisor se acuerda el lunes y se anota 
 |---|---|
 | Lunes | Reunión de 30 min: se confirman los 3 módulos, owners, revisores y bloqueos. Lukas revisa las specs de la semana. |
 | Martes y miércoles | Implementación. El miércoles por la tarde se abre el PR aunque falten detalles. |
-| Jueves | Revisión, correcciones, migraciones e integración. El gate tiene que estar verde. |
+| Jueves | Revisión, correcciones, scripts de base de datos e integración. El gate tiene que estar verde. |
 | Viernes | QA visual, evidencia en la spec, demo de 30 min y retro de 15 min. |
 
 Las specs de la semana siguiente se revisan el viernes o el lunes, nunca el miércoles.
@@ -107,8 +107,8 @@ Si la media de dos semanas baja de 3, se recorta el alcance del bloque o se reas
 
 - **Más de 4 horas atascado:** pide ayuda en el canal con el comando, el error y lo que ya probaste.
 - **Más de un día bloqueado:** avisa a Lukas para reasignar o reducir el alcance.
-- **Conflicto de migración:** detente, actualiza `main`, borra tu migración y vuelve a generarla. Nunca edites el snapshot a mano.
-- **Dos personas con migraciones:** espera tu turno; el coordinador de la semana decide el orden.
+- **Conflicto de número de script:** detente, actualiza `main`, renombra tu `database/NNN-*.sql` al siguiente número libre y vuelve a ejecutar `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`. Nunca edites a mano lo generado.
+- **Dos personas con scripts nuevos:** quien integra después renombra el suyo; el coordinador de la semana decide el orden si hay dudas.
 
 ## 10. Protección de `main`
 

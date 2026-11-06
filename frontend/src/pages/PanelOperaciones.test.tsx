@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { dominios, modulos } from '../modules/catalogo';
 import { pantallas } from '../modules/pantallas';
 import { Inicio } from './Inicio';
-import { barrasVendidos, construirProcesos, type DatosPanel } from './panelOperaciones';
+import { barrasVendidos, construirProcesos, type DatosPanel } from './datosPanelOperaciones';
 
 const respuestas: Record<string, unknown> = {
   '/api/v1/sistema/salud': { estado: 'OK' },

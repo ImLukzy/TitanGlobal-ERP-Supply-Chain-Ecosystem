@@ -32,7 +32,7 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 - **Cuatro capas con carpeta por módulo (`ModuloNN_Nombre`, donde `NN` sigue el orden de `arquitectura.md`):**
   - `src/TitanGlobal.Domain`: `Models/`, `Repositories/`, `Common/`.
   - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/`, `Services/`.
-  - `src/TitanGlobal.Infrastructure`: `Persistence/`, `Migrations/`, `Repositories/Implementation/`, `Configuration/`.
+  - `src/TitanGlobal.Infrastructure`: `Persistence/`, `Repositories/Implementation/`, `Configuration/`.
   - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/`, `Services/`, `Program.cs`.
   - Tests en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` y `tests/TitanGlobal.Api.Tests/Arquitectura/`.
 - **Dirección de dependencias:** `Api` → `Application` e `Infrastructure`; `Infrastructure` → `Application` y `Domain`; `Application` → `Domain`. `Domain` no depende de nadie. Prohibido: EF Core, Npgsql o ASP.NET en `Domain`; Npgsql o ASP.NET en `Application`; ASP.NET en `Infrastructure`. `Application` conserva `Microsoft.EntityFrameworkCore` solo para los operadores asíncronos de LINQ. El gate lo comprueba con las reglas `f` y `g` de `scripts/check-rules.sh` y con `tests/TitanGlobal.Api.Tests/Arquitectura/ArquitecturaTests.cs`.
@@ -44,7 +44,7 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 - **Acciones POST sin cuerpo** (`aprobar`, `recibir`): atributo `[PermitirCuerpoVacio]`; el middleware no contiene rutas.
 - **Fechas:** se guardan en UTC (`FechasUtc.Normalizar`, en `TitanGlobal.Domain.Common`); el frontend las muestra en UTC.
 - **Números de documento** (`SC-000NNN`, `OA-000NNN`): los asigna el servidor a partir del Id, dentro de una transacción (`TransactionScope`). Los datos de ejemplo usan `SC-DEV-…` y `OA-DEV-…` para no chocar.
-- **Reglas de código** (las revisa el revisor): [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, migraciones solo con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
+- **Reglas de código** (las revisa el revisor): [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — sin `var`, sin `=>` en miembros, una sentencia por línea, nombres y comentarios en español, esquema solo con scripts `database/NNN-*.sql` y entidades generadas con `./scripts/scaffold.sh`.
 - **Specs nuevas de módulo:** `docs/specs/moduloNN-nombre-{backend|frontend}.md`, sin número global (solo las specs transversales llevan número).
 
 ## 5. Modelo de datos
@@ -75,7 +75,7 @@ El enunciado completo está en [`enunciado.md`](enunciado.md). Resumen:
 | `Conductor` | 42 | licencia única; sin relación con `VehiculoFlota` |
 | `Empleado` | 61 | documento único; cese con fecha y motivo |
 
-Migraciones, en orden: `Inicial`, `ClientesRucUnico`, `Proveedores`, `SolicitudesCompra`, `OrdenesAbastecimiento`, `Almacenes`, `ZonasAlmacenaje`, `SegmentosClientes`, `Cotizaciones`, `ContratosComerciales`, `ListasPrecios`, `Promociones`, `ReclamosPostventa`, `DevolucionesComerciales`, `AlertasDescartadas`, `ComisionesVendedores`, `RolesPermisos`, `AddModulo75ImpuestosTasas`, `Modulo22CategoriasProducto`, `CentrosTrabajo`, `VehiculosFlotaConductores`, `Empleados`.
+**Esquema y entidades (base de datos primero, spec 52).** El esquema vive en scripts SQL: `database/001-esquema-inicial.sql` crea las 37 tablas con sus claves e índices, y cada cambio posterior va en un `database/NNN-descripcion.sql` nuevo (un script fusionado no se edita). `./scripts/aplicar-bd.sh` los aplica a la base local; `./scripts/scaffold.sh` genera desde esa base las entidades de `src/TitanGlobal.Domain/Models/` y `TitanGlobalDbContext.cs` (no se editan a mano). El código propio va en archivos `partial` aparte: `ValoresIniciales.cs`, `TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs`; los nombres en español salen de `PluralizadorEspanol.cs` y `NombresNavegacion.cs` (`src/TitanGlobal.Api/Configuration/Scaffolding/`). Antes se usaban 25 migraciones de EF Core (code first); ya no existen.
 
 ## 6. Módulos implementados
 | Módulo | API | Lo que hace | Pantalla | Specs |
@@ -115,8 +115,8 @@ Cada spec en [`specs/`](specs/) tiene el contrato exacto (rutas, DTOs y mensajes
 **Frontend:** catálogo con los 80 módulos y menú por dominio; los módulos sin pantalla muestran «Pantalla pendiente». La portada es un panel de operaciones que lee los `/resumen` de los módulos y calcula el avance por dominio desde `pantallas.ts` (spec `panel-inicio-frontend`). Componentes compartidos: `PaginaModulo` (marco y miga de pan), `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`; utilidades en `lib/formato.ts` (moneda PEN, fechas en UTC, `formatearCantidad` para plurales). Selector «Rol de prueba» para probar el 403.
 
 ## 7. Calidad
-- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`, incluidas las reglas `f` y `g` de separación de capas), tests del backend (incluidos `ArquitecturaTests` y `UnitOfWorkTests`), que el modelo no tenga cambios sin migración, `npm ci` + lint, typecheck, tests y build del frontend.
-- **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, migra (`-p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`), siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
+- **Gate** `./scripts/verify.sh`: build sin warnings, `dotnet format`, reglas de código (`check-rules.sh`, incluidas las reglas `f` y `g` de separación de capas), tests del backend (incluidos `ArquitecturaTests` y `UnitOfWorkTests`), `npm ci` + lint, typecheck, tests y build del frontend.
+- **Smoke** `./scripts/smoke-postgres.sh`: levanta PostgreSQL, crea la base desde `database/` (`aplicar-bd.sh --reiniciar`), comprueba que el código generado coincide con ella (`scaffold.sh --comprobar`), siembra, arranca la API y prueba las rutas de todos los módulos → `SMOKE OK`.
 - **Proceso por tarea:** spec → implementación → revisión por otro compañero (máximo 3 ciclos) → QA de extremo a extremo con capturas a 375 y 1280 px en claro y oscuro → integración con el gate en verde → evidencia en §7 de la spec → despliegue.
 
 ## 8. Despliegue
@@ -145,10 +145,11 @@ Detalle y procedimiento en [`despliegue.md`](despliegue.md). Neon `titanglobal-e
 | 2026-10-15 | Reparto equitativo de los 80 módulos, 20 por persona y por bloques de dominio: Lukas (Comercial y seguridad), Leonel (Compras y Finanzas), Antony (Inventarios y Manufactura), Kelvin (Logística y Capital Humano) | Lukas |
 | 2026-10-31 | Reparto entre 7 personas (sustituye al de 4): Lukas 13 (terminados, más la integración), Leonel 11, Antony 11, Kelvin 11, Alexander 11, Sergio 11 y Maxi 12 | Lukas |
 | 2026-11-02 | Sustituir la Vertical Slice de un solo proyecto por cuatro capas (`Domain`, `Application`, `Infrastructure`, `Api`) según el Lab 10 conservando una carpeta `ModuloNN_Nombre` en cada capa; dejar login, JWT y BCrypt para una segunda etapa (hoy sigue `X-User-Role`); adaptar ramas en curso con `scripts/adaptar-rama-capas.py` y nombrar las specs de módulo sin número global (`moduloNN-nombre-{backend|frontend}.md`) | Lukas (spec 50) |
+| 2026-11-05 | Base de datos primero: el esquema pasa de migraciones de EF Core (code first) a scripts `database/NNN-*.sql`, y las entidades y el `TitanGlobalDbContext` se generan con `scripts/scaffold.sh` desde la base; el smoke falla si el código generado no coincide. La mejora del esquema (`CHECK`, longitudes, claves foráneas) queda para una segunda fase | Lukas (spec 52) |
 | 2026-11-05 | Inicio de sesión con JWT y BCrypt: toda la API exige token salvo login y salud; la pantalla de inicio de sesión muestra la cuenta de demostración `invitado`; la gestión de usuarios, roles y contraseñas exige `ADMIN`; `X-User-Role` se conserva | Lukas (spec 51) |
 
 ## 11. Cómo se mantiene este documento
-En cada integración, la integración actualiza aquí: §5 (entidades y migraciones), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
+En cada integración, la integración actualiza aquí: §5 (entidades y scripts de base de datos), §6 (módulos), §7 (último gate), §10 (decisiones nuevas) y §12 (pendientes), junto con el estado del [`README`](../README.md) y de [`equipo/asignaciones.md`](equipo/asignaciones.md). Si algo de aquí no coincide con el código, manda el código y se corrige el documento.
 
 ## 12. Pendiente
 - **Pausa del 2026-10-15:** Lukas pausó su parte. Dónde se quedó cada módulo y qué queda: [`equipo/relevo.md`](equipo/relevo.md).

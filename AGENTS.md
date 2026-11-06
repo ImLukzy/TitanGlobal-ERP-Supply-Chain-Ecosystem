@@ -12,9 +12,10 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 
 | Si necesitas… | Colócalo en… | Carpeta / Namespace | Prohibido usar allí |
 |---|---|---|---|
-| Entidad o puerto de repositorio | `TitanGlobal.Domain` | `Models/`, `Repositories/`, `Common/` | EF Core, Npgsql, ASP.NET, otras capas |
+| Entidad (generada con scaffold) o puerto de repositorio | `TitanGlobal.Domain` | `Models/`, `Repositories/`, `Common/` | EF Core, Npgsql, ASP.NET, otras capas |
 | Caso de uso, validación o DTO | `TitanGlobal.Application` | `DTOs/ModuloNN_...`, `UseCases/ModuloNN_...` | ASP.NET, Npgsql, `StatusCodes`, `Infrastructure`, `Api` |
-| DbContext, persistencia o migración | `TitanGlobal.Infrastructure` | `Persistence/`, `Migrations/`, `Configuration/` | ASP.NET, `Api` |
+| Tabla nueva o cambio de esquema | raíz del repositorio | `database/NNN-*.sql` | Editar un script ya fusionado |
+| DbContext (generado), persistencia o configuración | `TitanGlobal.Infrastructure` | `Persistence/`, `Configuration/` | ASP.NET, `Api` |
 | Endpoint HTTP, middleware o host | `TitanGlobal.Api` | `Controllers/ModuloNN_...`, `Program.cs` | Lógica de negocio, consultas directas a base de datos |
 | Pantalla React de un módulo | `frontend` | `src/modules/<modulo>/` | Modificar componentes compartidos rompiendo otras pantallas |
 
@@ -25,7 +26,7 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 - **Excepciones y códigos de estado:** en `Application` usa exclusivamente `using TitanGlobal.Application.Exceptions;`, `ReglaNegocioException` y `CodigosEstado` (nunca `StatusCodes` de ASP.NET).
 - **Restricciones de base de datos:** captura `ViolacionRestriccionException` (`TipoViolacionRestriccion.Unicidad` o `ReferenciaForanea`) lanzada por `UnitOfWork`. Prohibido capturar `DbUpdateException` o `PostgresException` en `Application`.
 - **Mensajes literales:** usa los mensajes de error idénticos a los especificados en la spec.
-- **Entidades de Domain limpias:** prohibidos los atributos de EF Core (`[Index]`, `[Precision]`) y `using Microsoft.EntityFrameworkCore;` en las entidades; configúralos en `TitanGlobalDbContext.OnModelCreating`. `[Required]` y `[MaxLength]` son de .NET y sí se permiten.
+- **Entidades de Domain limpias y generadas:** las entidades y la configuración de `TitanGlobalDbContext` salen del scaffold, sin atributos de EF Core (`[Index]`, `[Precision]`) ni `using Microsoft.EntityFrameworkCore;`. Longitudes, decimales, índices y claves foráneas se definen en el script SQL de `database/`. El código propio de una entidad (valores iniciales, métodos) va en un archivo `partial` aparte, como `src/TitanGlobal.Domain/Models/ValoresIniciales.cs`.
 - **Fechas UTC obligatorias:** normaliza siempre con `FechasUtc` (`TitanGlobal.Domain.Common`). La columna es `timestamptz`: una fecha sin `Z` causa error 500 en PostgreSQL real (los tests en memoria no lo detectan).
 - **Validación de límites:** valida en `Application` obligatoriedad, longitudes máximas, rangos numéricos y número de decimales. Lo que excede la columna causa un error 500 o se redondea en silencio, y los tests en memoria tampoco lo detectan.
 - **Autenticación JWT:** todos los endpoints exigen token salvo los que llevan `[AllowAnonymous]` (login y salud). No añadas `[AllowAnonymous]` a un endpoint nuevo. Las fábricas de pruebas ya envían un token de administrador (`tests/TitanGlobal.Api.Tests/TokenPruebas.cs`).
@@ -33,12 +34,12 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 
 ## 4. Lo que nunca se hace
 - Push directo a `main` o reescritura de historial (`git push --force`).
-- Escribir o editar una migración o `TitanGlobalDbContextModelSnapshot.cs` a mano.
+- Editar a mano los archivos generados (los que llevan la cabecera «Generado por scripts/scaffold.sh» y `TitanGlobalDbContext.cs`) ni un script de `database/` ya fusionado: los cambios van en un script nuevo. El código propio va en archivos `partial` aparte.
 - Modificar las cuatro entidades base (`Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra`), middlewares o el pipeline sin spec aprobada.
 - Debilitar, comentar o borrar tests existentes para que pase el gate.
 - Modificar archivos, pantallas o tablas asignadas a otra persona.
 - Subir secretos ni escribir cadenas de conexión en archivos, commits, chats o comandos de consola (`env`, `printenv`).
-- Aplicar migraciones contra la base de datos de producción (eso solo lo hace Lukas).
+- Aplicar scripts de `database/` contra la base de datos de producción (eso solo lo hace Lukas).
 
 ## 5. Commits
 - Haz los commits con la identidad git de la persona (`git config user.name` y `git config user.email`).
@@ -51,7 +52,8 @@ Ejecuta los scripts siempre desde Git Bash en Windows (no PowerShell).
 ```sh
 docker compose up -d db                                                    # Levantar PostgreSQL local (puerto 5433)
 dotnet tool restore                                                        # Restaurar herramientas EF
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api  # Aplicar migraciones
+./scripts/aplicar-bd.sh                                                    # Aplicar los scripts de database/ a la base local (--estado, --reiniciar)
+./scripts/scaffold.sh                                                      # Regenerar entidades y TitanGlobalDbContext desde la base local
 docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql  # Cargar seed
 dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080     # API en puerto 5080 (Swagger: /swagger)
 # Toda la API pide token: POST /api/v1/autenticacion/login con admin / Admin2026! (seed local) y pega el token en Authorize de Swagger
@@ -60,16 +62,17 @@ npm --prefix frontend run verify                                           # Ver
 ./scripts/verify.sh                                                        # Gate completo obligatorio
 ./scripts/smoke-postgres.sh                                                # Smoke test contra PostgreSQL real
 ```
-*Avisos:* no ejecutes dos `smoke-postgres.sh` a la vez; usan puertos fijos y fallan por colisión. Tras `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`, ejecuta `dotnet format`: si no, el gate falla con `error CHARSET`.
+*Avisos:* no ejecutes dos `smoke-postgres.sh` a la vez; usan puertos fijos y fallan por colisión. `./scripts/aplicar-bd.sh --reiniciar` borra y recrea la base local: después vuelve a cargar `scripts/seed-dev.sql`. Si `./scripts/smoke-postgres.sh` falla con «ERROR: el código generado no coincide…», alguien editó una entidad a mano o falta ejecutar `./scripts/scaffold.sh`.
 
 ## 7. Definition of Done
 Un módulo nuevo no está terminado solo porque compile. Requiere:
 1. Spec aprobada en `docs/specs/`.
-2. Pruebas de integración para cada regla y mensaje literal en `tests/TitanGlobal.Api.Tests/`.
-3. Datos de ejemplo idempotentes al final de `scripts/seed-dev.sql`, antes del `COMMIT;`.
-4. Comprobaciones en `scripts/smoke-postgres.sh` (`request_check` más su validación en el diccionario Python) finalizando en `SMOKE OK`.
-5. Pantalla React con componentes compartidos y diseño responsive (375 px y 1280 px en claro y oscuro).
-6. `./scripts/verify.sh` en verde con cero warnings.
+2. Si hay tablas nuevas: script `database/NNN-*.sql`, aplicado con `./scripts/aplicar-bd.sh`, y entidades regeneradas con `./scripts/scaffold.sh` (sin editar a mano lo generado).
+3. Pruebas de integración para cada regla y mensaje literal en `tests/TitanGlobal.Api.Tests/`.
+4. Datos de ejemplo idempotentes al final de `scripts/seed-dev.sql`, antes del `COMMIT;`.
+5. Comprobaciones en `scripts/smoke-postgres.sh` (`request_check` más su validación en el diccionario Python) finalizando en `SMOKE OK`.
+6. Pantalla React con componentes compartidos y diseño responsive (375 px y 1280 px en claro y oscuro).
+7. `./scripts/verify.sh` en verde con cero warnings.
 
 ## 8. Flujo
 1. **Spec:** `docs/specs/moduloNN-nombre-{backend|frontend}.md` (sin número global) aprobada por Lukas.

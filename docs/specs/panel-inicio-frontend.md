@@ -15,7 +15,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `frontend/src/pages/panelOperaciones.ts` | crear | Carga y transformación de datos |
+| `frontend/src/pages/datosPanelOperaciones.ts` | crear | Carga y transformación de datos (se llamaba `panelOperaciones.ts`; renombrado porque en macOS y Windows chocaba con `PanelOperaciones.tsx` al importar sin extensión) |
 | `frontend/src/pages/PanelOperaciones.tsx` | crear | Indicadores, atención, procesos y barras |
 | `frontend/src/pages/panel-operaciones.css` | crear | Archivo propio para no sumar conflictos en `app.css` |
 | `frontend/src/pages/PanelOperaciones.test.tsx` | crear | Pruebas del panel y de los dominios |

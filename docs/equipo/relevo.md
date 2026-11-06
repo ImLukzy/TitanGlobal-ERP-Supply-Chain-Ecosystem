@@ -15,7 +15,7 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
    ```
    No subas tu `main` antiguo.
 2. Empieza siempre desde `main`: `git switch -c tu-nombre/moduloXX-nombre origin/main`. **No sigas trabajando en tu rama antigua**: tiene la estructura vieja y ya no hace falta. Si tienes en ella commits sin subir o posteriores a los de la tabla, sigue [`adaptar-rama-a-capas.md`](adaptar-rama-a-capas.md).
-3. Aplica las migraciones nuevas en tu base local: `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
+3. Aplica los scripts nuevos de `database/` en tu base local: `./scripts/aplicar-bd.sh`. Si tu base se creó cuando el proyecto aún usaba migraciones, recréala con `./scripts/aplicar-bd.sh --reiniciar` y vuelve a cargar `scripts/seed-dev.sql`.
 
 | Persona | Módulos integrados | Lo que le falta para terminarlos |
 |---|---|---|
@@ -76,4 +76,4 @@ Al terminar, anotar la evidencia en el §7 de cada spec.
 ## 7. Avisos útiles
 - Con la máquina muy cargada, algunos tests del frontend pueden superar los 5 s y fallar por tiempo; repetir antes de investigar.
 - No cambies selectores de reglas compartidas de `app.css` (p. ej. `.tabla-paginada th`): pisan las cabeceras de otras pantallas (ver [`lecciones.md`](lecciones.md)).
-- Las migraciones solo con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`; en la demo las aplica Lukas en Neon antes de desplegar.
+- El esquema solo con scripts `database/NNN-*.sql` y entidades generadas con `./scripts/scaffold.sh`; en la demo los scripts los aplica Lukas en Neon antes de desplegar.
