@@ -1,5 +1,5 @@
 // Generado por scripts/scaffold.sh a partir de la base de datos (database/). No lo edites a mano:
-// cambia el script SQL y vuelve a generar. El constructor y la auditoría están en ../DbContextManual/.
+// cambia el script SQL y vuelve a generar. El constructor y la auditoría están en ../config/.
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Domain.Models;
 
