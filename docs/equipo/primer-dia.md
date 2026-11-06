@@ -31,7 +31,7 @@ git switch main
 
 docker compose up -d db
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+./scripts/aplicar-bd.sh
 docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql
 ```
 

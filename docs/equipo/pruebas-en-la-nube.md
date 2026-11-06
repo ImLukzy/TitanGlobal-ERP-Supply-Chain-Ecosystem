@@ -9,7 +9,7 @@ Lukas crea para cada persona del equipo una **rama propia de Neon**, llamada `de
 - **Es una copia aislada:** se genera a partir de la base de datos de la demo y contiene las mismas tablas y datos del seed.
 - **Contraseña propia:** el usuario es `titanglobal`, pero la contraseña es solo de tu rama y no sirve en producción.
 - **No necesitas cuenta en Neon:** no tienes que registrarte en la plataforma ni acceder a su consola web.
-- **Libertad para probar:** puedes insertar, modificar o borrar registros y probar migraciones sin afectar a nadie más.
+- **Libertad para probar:** puedes insertar, modificar o borrar registros y probar scripts de base de datos sin afectar a nadie más.
 
 ## La cadena de conexión es un secreto
 
@@ -41,13 +41,13 @@ $env:ConnectionStrings__DefaultConnection = "Host=ep-tu-rama.aws.neon.tech;Datab
 
 La API y las herramientas de Entity Framework leerán automáticamente esa variable mientras mantengas abierta esa sesión de terminal.
 
-### 2. Aplicar migraciones y arrancar la API
+### 2. Aplicar scripts y arrancar la API
 
-Si tu rama de código tiene migraciones nuevas, aplícalas a tu base de Neon:
+Si tu rama de código tiene scripts nuevos en `database/`, aplícalos a tu rama de Neon con `psql`, en orden y de uno en uno (`psql` te pide la contraseña; no la escribas en el comando):
 ```sh
-dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+psql "host=<host de tu rama> dbname=<base> user=<usuario> sslmode=require" -v ON_ERROR_STOP=1 -f database/NNN-descripcion.sql
 ```
+Las entidades se generan siempre contra tu base local (`./scripts/scaffold.sh`), no contra Neon.
 
 Arranca la API localmente en el puerto 5080:
 ```sh
@@ -81,7 +81,7 @@ La próxima vez que ejecutes `dotnet run`, la API volverá a tomar la cadena de 
 ## Qué debes tener en cuenta
 
 1. **Tu rama no es producción:**
-   Aplicar una migración o modificar datos en tu rama `dev-<nombre>` solo afecta a tu entorno. A la base de datos de producción (la demo desplegada) las migraciones las aplica únicamente Lukas al integrar tu pull request en `main`.
+   Aplicar un script o modificar datos en tu rama `dev-<nombre>` solo afecta a tu entorno. A la base de datos de producción (la demo desplegada) los scripts de `database/` los aplica únicamente Lukas al integrar tu pull request en `main`.
 2. **Las vistas previas de Vercel no usan tu rama:**
    Las URLs de preview que genera Vercel en los pull requests son solo para revisar el diseño y comportamiento visual del frontend. Están conectadas a la API central de la demo, nunca a tu rama personal de Neon.
 3. **Si tu rama se desfasó o se dañó:**
@@ -99,8 +99,8 @@ La próxima vez que ejecutes `dotnet run`, la API volverá a tomar la cadena de 
 | La primera petición tarda más de lo normal o da un timeout | Cómputo de Neon suspendido por inactividad | Espera unos segundos y recarga. |
 | `password authentication failed for user "titanglobal"` | Contraseña errónea o la rama fue recreada | Comprueba que no falten caracteres al copiar la cadena. Si Lukas recreó la rama, pídele la nueva cadena. |
 | La API sigue conectándose a `localhost:5433` | La variable de entorno se definió en otra terminal | Define `ConnectionStrings__DefaultConnection` en la misma terminal exacta donde ejecutas `dotnet run`. |
-| `relation "..." does not exist` | Faltan tablas en tu rama de Neon | Ejecuta `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` en esa misma terminal. |
+| `relation "..." does not exist` | Faltan tablas en tu rama de Neon | Aplica los scripts de `database/` a tu rama de Neon con `psql` (paso 2). |
 | Error SSL / `Authentication failed because the remote party sent a TLS alert` | Cadena sin parámetros SSL adecuados | Asegúrate de que la cadena termine con `;SSL Mode=VerifyFull` tal como te la envió Lukas. |
 | Error de sintaxis en PowerShell al asignar la variable | Faltan comillas dobles alrededor de la cadena | En PowerShell usa: `$env:ConnectionStrings__DefaultConnection = "Host=..."` (con comillas dobles obligatorias). |
-| Faltan columnas o tablas nuevas que un compañero ya integró en `main` | Tu rama de Neon se creó antes de esa migración | Aplica las migraciones locales con `dotnet ef database update`, o pide a Lukas que recree tu rama si necesitas refrescar los datos. |
+| Faltan columnas o tablas nuevas que un compañero ya integró en `main` | Tu rama de Neon se creó antes de ese script | Aplica a tu rama los scripts nuevos de `database/` con `psql`, o pide a Lukas que recree tu rama si necesitas refrescar los datos. |
 | La variable sigue activa tras querer volver a local | La terminal conserva el valor exportado | Ejecuta `unset ConnectionStrings__DefaultConnection` o abre una terminal nueva limpia. |

@@ -13,12 +13,12 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 - **Cuatro capas con carpeta por módulo (`ModuloNN_Nombre`, donde `NN` sigue el orden de [`docs/arquitectura.md`](docs/arquitectura.md)):**
   - `src/TitanGlobal.Domain`: `Models/`, `Repositories/`, `Common/`.
   - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/`, `Services/`.
-  - `src/TitanGlobal.Infrastructure`: `Persistence/`, `Migrations/`, `Repositories/Implementation/`, `Configuration/`.
+  - `src/TitanGlobal.Infrastructure`: `Persistence/`, `Repositories/Implementation/`, `Configuration/`.
   - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/`, `Services/`, `Program.cs`.
 - **Dirección de dependencias:** `Api` → `Application` e `Infrastructure`; `Infrastructure` → `Application` y `Domain`; `Application` → `Domain`. `Domain` no depende de nadie. Prohibido: EF Core, Npgsql o ASP.NET en `Domain`; Npgsql o ASP.NET en `Application`; ASP.NET en `Infrastructure` (`Application` conserva `Microsoft.EntityFrameworkCore` solo para los operadores asíncronos de LINQ). El gate lo comprueba con las reglas `f` y `g` de `scripts/check-rules.sh` y con `tests/TitanGlobal.Api.Tests/Arquitectura/ArquitecturaTests.cs`.
 - **Tests:** `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` (y pruebas de capas en `tests/TitanGlobal.Api.Tests/Arquitectura/`).
 - **Frontend por módulo:** `frontend/src/modules/<modulo>/`.
-- **Migraciones:** `src/TitanGlobal.Infrastructure/Migrations/`, siempre generadas con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
+- **Esquema de la base de datos:** scripts SQL en `database/NNN-descripcion.sql`. Las entidades de `src/TitanGlobal.Domain/Models/` y `TitanGlobalDbContext.cs` se generan desde la base con `./scripts/scaffold.sh` (flujo en [`docs/equipo/crear-modulo.md`](docs/equipo/crear-modulo.md)). Antes el proyecto usaba migraciones de EF Core; ya no.
 
 ## 3. Flujo de un módulo
 
@@ -40,7 +40,7 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 - **UseCases concretos sin interfaz**, nombre terminado en `UseCase`, en `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/`, registrados por reflexión sobre el ensamblado de `Application` (`ServiceRegistrationExtensions.AddApplicationServices`, llamado en `Program.cs`). Nunca registrar un UseCase a mano.
 - **Controladores delgados:** en `src/TitanGlobal.Api/Controllers/ModuloNN_Nombre/`, cero lógica de negocio; solo llaman a UseCases. Campos `private readonly _camelCase`.
 - **`Services/`** solo para servicios técnicos transversales (`IAuthService`/`AuthService` en `Api/Services` y el puerto `IContextoSolicitud` en `Application/Services` con `ContextoSolicitud` en `Api/Services`). La lógica de negocio va en `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/`.
-- **Entidades y persistencia:** entidades nuevas en `src/TitanGlobal.Domain/Models/`; sus `DbSet` y configuración en `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs`. Acceso a datos solo con `IUnitOfWork` / `IGenericRepository<T>`; consultas asíncronas (`ToListAsync`, `SumAsync`, `AnyAsync`…).
+- **Entidades y persistencia:** las entidades de `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` (con sus `DbSet` y configuración) se **generan** con `./scripts/scaffold.sh` y no se editan a mano; el código propio va en archivos `partial` aparte (`ValoresIniciales.cs`, `TitanGlobalDbContext.Constructor.cs`, `TitanGlobalDbContext.Auditoria.cs`). Acceso a datos solo con `IUnitOfWork` / `IGenericRepository<T>`; consultas asíncronas (`ToListAsync`, `SumAsync`, `AnyAsync`…).
 - **DTOs** por módulo en `src/TitanGlobal.Application/DTOs/ModuloNN_Nombre/`; nunca exponer entidades en controladores.
 - **Excepciones y códigos de estado en `Application`:** usa `using TitanGlobal.Application.Exceptions;` para `ReglaNegocioException`, y `CodigosEstado.Status400BadRequest`, `CodigosEstado.Status404NotFound` o `CodigosEstado.Status409Conflict` en lugar de `StatusCodes.Status409Conflict` (prohibido referenciar ASP.NET en `Application`).
 - **Conflictos de base de datos en `Application`:** captura `ViolacionRestriccionException` traducida por `UnitOfWork.CompleteAsync()`:
@@ -51,14 +51,15 @@ ERP transaccional para una corporación manufacturera y logística: 80 módulos 
 - **Errores en JSON** `{ StatusCode, Message }` (más `Detail` solo en 500), con los mensajes literales de [`docs/enunciado.md`](docs/enunciado.md) §4.
 - **Contratos** de repositorio y entidades: los de [`docs/enunciado.md`](docs/enunciado.md) §3.
 - **Código legible:** una sentencia por línea, un miembro por línea; nada de clases o métodos comprimidos.
-- **Migraciones** siempre con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` (con `Designer` y `ModelSnapshot`); nunca escritas a mano.
+- **Base de datos primero:** un cambio de esquema es un script nuevo `database/NNN-descripcion.sql`; nunca se edita un script ya fusionado ni un archivo con la cabecera «Generado por scripts/scaffold.sh».
 
 ## 5. Comandos
 
 ```sh
 docker compose up -d db
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+./scripts/aplicar-bd.sh      # aplica los scripts de database/ a la base local
+./scripts/scaffold.sh        # regenera entidades y TitanGlobalDbContext (solo si cambiaste el esquema)
 dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080
 npm --prefix frontend ci
 npm --prefix frontend run dev
@@ -71,7 +72,7 @@ npm --prefix frontend run dev
 
 - [ ] La spec está aprobada y el §6 marcado.
 - [ ] `./scripts/verify.sh` en verde, sin warnings.
-- [ ] Si cambió la base de datos: migración generada con `dotnet ef` y `SMOKE OK`.
+- [ ] Si cambió la base de datos: script `database/NNN-*.sql` aplicado, entidades regeneradas con `./scripts/scaffold.sh` y `SMOKE OK`.
 - [ ] Tests nuevos para las reglas y los errores del módulo.
 - [ ] QA a 375 y 1280 px, en claro y en oscuro, con capturas adjuntas.
 - [ ] Evidencia en §7 de la spec: fecha, criterio, resultado y comando o captura.
@@ -82,8 +83,8 @@ npm --prefix frontend run dev
 
 - **Un módulo, una persona.** Así nadie toca los mismos archivos.
 - **Ramas cortas:** integra a menudo; una rama que vive una semana acaba en conflictos.
-- **Migraciones serializadas:** solo una persona genera migración a la vez; avisa en el canal, actualiza `main` y vuelve a generar si hay conflicto. Nunca edites el snapshot a mano.
-- **Archivos compartidos** (`TitanGlobalDbContext.cs`, `scripts/seed-dev.sql`, `scripts/smoke-postgres.sh`, `frontend/src/modules/pantallas.ts`, `frontend/src/styles/app.css`): añade tu bloque al final y no reordenes lo de otros.
+- **Scripts de base de datos:** si dos personas eligen el mismo número de script, quien integra después renombra el suyo al siguiente libre, vuelve a aplicar y a regenerar con `./scripts/scaffold.sh`. Nunca edites a mano lo generado.
+- **Archivos compartidos** (`scripts/seed-dev.sql`, `scripts/smoke-postgres.sh`, `frontend/src/modules/pantallas.ts`, `frontend/src/styles/app.css`): añade tu bloque al final y no reordenes lo de otros.
 - **Núcleo congelado:** las 4 entidades del enunciado (`Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra`), los middlewares y el pipeline no se tocan sin una spec aprobada por Lukas.
 - **Commits con tu identidad git**, sin trailers ni menciones a herramientas externas.
 - **Nada de secretos** en el repositorio: ni `.env`, ni cadenas de conexión, ni tokens.

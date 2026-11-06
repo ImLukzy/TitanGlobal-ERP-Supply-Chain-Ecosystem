@@ -10,7 +10,7 @@
 Lo que quien implementa **no** debe tocar aunque parezca relacionado. Ejemplos:
 - Las 4 entidades del enunciado (`Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra`), los middlewares y el pipeline.
 - Eliminar páginas, rutas o funcionalidades existentes.
-- Migraciones EF Core no listadas en §3.
+- Scripts de `database/` no listados en §3.
 - Refactors fuera de los archivos de §3.
 
 **Decisiones de producto que requieren aprobación antes de ejecutar:** (lista o "ninguna").
@@ -18,9 +18,10 @@ Lo que quien implementa **no** debe tocar aunque parezca relacionado. Ejemplos:
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `src/TitanGlobal.Domain/Models/<Entidad>.cs` | crear / modificar | entidad `partial` en `TitanGlobal.Domain.Models` |
-| `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | modificar | `DbSet<Entidad>` y configuración en `OnModelCreating` |
-| `src/TitanGlobal.Infrastructure/Migrations/*_<Nombre>*.cs` + `TitanGlobalDbContextModelSnapshot.cs` | crear | generada con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` |
+| `database/NNN-<descripcion>.sql` | crear | `CREATE TABLE` / `ALTER TABLE` con el siguiente número libre; nunca se edita un script ya fusionado |
+| `src/TitanGlobal.Domain/Models/<Entidad>.cs` | regenerar | entidad `partial` generada por `./scripts/scaffold.sh` (no se edita a mano) |
+| `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `DbSet<Entidad>` y configuración, generados por `./scripts/scaffold.sh` |
+| `src/TitanGlobal.Domain/Models/ValoresIniciales.cs` | modificar | solo si la entidad necesita valores iniciales (`Activo = true`…) |
 | `src/TitanGlobal.Application/DTOs/ModuloNN_Nombre/*.cs` | crear | DTOs de entrada y salida |
 | `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/*.cs` | crear | casos de uso concretos sin interfaz y helper `Validacion<Entidad>` |
 | `src/TitanGlobal.Api/Controllers/ModuloNN_Nombre/<Recurso>Controller.cs` | crear | controlador delgado en `api/v1/<recurso>` |
@@ -33,7 +34,7 @@ Rutas comprobadas en el repositorio antes de redactar. Nada de "o equivalente".
 ## 4. Diseño y lógica
 - **UI (si aplica):** componentes compartidos (`PaginaModulo`, `TablaPaginada`, `PanelDetalle`, `DialogoBaja`, `CampoConError`) y clases de `frontend/src/styles/app.css`.
 - **API:** endpoints `api/v1/<recurso-en-kebab-case>`, respuestas JSON en camelCase y errores `{ StatusCode, Message }` con mensajes literales.
-- **Datos:** entidades en `src/TitanGlobal.Domain/Models/`, configuración en `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` y migración generada con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` (nunca editar una migración aplicada ni el snapshot a mano).
+- **Datos:** tabla en `database/NNN-<descripcion>.sql`; entidades en `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` generadas con `./scripts/scaffold.sh` (nunca editar a mano lo generado ni un script ya fusionado).
 - **Invariantes:** reglas de negocio solo en `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/`, lanzando `ReglaNegocioException` con `CodigosEstado` (`using TitanGlobal.Application.Exceptions;`) y traduciendo conflictos de base de datos mediante `ViolacionRestriccionException` (`TipoViolacionRestriccion.Unicidad` / `ReferenciaForanea`); reglas de código de `CONTRIBUTING.md`.
 
 ## 5. Criterios de aceptación (medibles)
@@ -46,7 +47,7 @@ Cada criterio debe poder comprobarse con un comando o una medición. Borra los q
 | A3 | Tests | `dotnet test` | todos en verde; +N tests nuevos: `<Clase>` › `<caso>` |
 | A4 | Contrato API | OpenAPI (`/openapi/v1.json`) y Swagger (`/swagger`) incluyen las rutas nuevas | presentes |
 | A5 | Comportamiento | test de integración: "<petición> → <código y cuerpo>" | pasa |
-| A6 | Datos y PostgreSQL | migración aplica con `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` y `./scripts/smoke-postgres.sh` | `SMOKE OK` |
+| A6 | Datos y PostgreSQL | el script aplica con `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` no da diferencias y `./scripts/smoke-postgres.sh` | `SMOKE OK` |
 
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A3 estén en verde.)*

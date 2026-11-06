@@ -27,7 +27,7 @@ git switch main                       # rama de integración (la que está despl
 
 docker compose up -d db               # PostgreSQL 16 en el puerto 5433
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+./scripts/aplicar-bd.sh               # crea las tablas desde los scripts de database/
 docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql   # datos de ejemplo
 
 dotnet run --project src/TitanGlobal.Api --urls http://localhost:5080   # API
@@ -55,8 +55,8 @@ La meta del equipo es **3 módulos terminados por semana**. El detalle de roles,
 6. **Pull request contra `main`** con la plantilla del repositorio: qué spec cumple, salida del gate y capturas a 375 y 1280 px si hay pantalla. El revisor asignado lo revisa y Lukas integra y despliega.
 
 ## 5. Para no pisarse
-- **Migraciones:** son el punto de choque más común (todas tocan `TitanGlobalDbContextModelSnapshot.cs` en `src/TitanGlobal.Infrastructure/Migrations/`). Antes de generar la tuya, actualiza tu rama (`git fetch && git rebase origin/main`) y genera con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`. **Nunca** edites a mano una migración ni el snapshot; si hay conflicto en el snapshot, borra tu migración, rebasa y vuelve a generarla.
-- **Archivos compartidos** (`src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs`, `scripts/seed-dev.sql`, `scripts/smoke-postgres.sh`, `frontend/src/modules/pantallas.ts`, `frontend/src/styles/app.css`): añade tu bloque al final y no reordenes lo de otros.
+- **Scripts de base de datos:** el punto de choque más común es elegir el mismo número de `database/NNN-*.sql`. Antes de crear el tuyo, actualiza tu rama (`git fetch && git rebase origin/main`) y toma el siguiente número libre; si chocas con otro, quien integra después renombra el suyo. Después ejecuta `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`. **Nunca** edites a mano un script ya fusionado ni los archivos generados (cabecera «Generado por scripts/scaffold.sh», entidades y `TitanGlobalDbContext.cs`); si hay conflicto en un archivo generado, rebasa y vuelve a ejecutar el scaffold.
+- **Archivos compartidos** (`scripts/seed-dev.sql`, `scripts/smoke-postgres.sh`, `frontend/src/modules/pantallas.ts`, `frontend/src/styles/app.css`): añade tu bloque al final y no reordenes lo de otros.
 - **No modifiques** las 4 entidades del enunciado (`Cliente`, `Producto`, `OrdenCompra`, `DetalleOrdenCompra`) ni los middlewares sin una spec aprobada.
 - **Acciones POST sin cuerpo** (aprobar, recibir…): atributo `[PermitirCuerpoVacio]`, nunca rutas dentro del middleware.
 - **Tests:** no borres ni debilites tests existentes; esperas con temporizadores falsos (`vi.useFakeTimers`), nunca `setTimeout` reales.

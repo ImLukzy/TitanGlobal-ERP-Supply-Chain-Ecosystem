@@ -1,6 +1,6 @@
 # Base de datos en tu máquina
 
-Cada persona trabaja con **su propia** PostgreSQL local. Nadie necesita acceso a Neon (la base de la demo) para desarrollar: tu base local tiene las mismas tablas (las crean las migraciones) y los mismos datos de ejemplo (`scripts/seed-dev.sql`). Si la rompes, la borras y la vuelves a crear en un minuto.
+Cada persona trabaja con **su propia** PostgreSQL local. Nadie necesita acceso a Neon (la base de la demo) para desarrollar: tu base local tiene las mismas tablas (las crean los scripts de `database/`) y los mismos datos de ejemplo (`scripts/seed-dev.sql`). Si la rompes, la borras y la vuelves a crear en un minuto.
 
 | Dato | Valor |
 |---|---|
@@ -20,11 +20,12 @@ docker compose up -d db
 docker compose ps            # db debe salir "healthy"
 ```
 
-**2. Crear las tablas** con las migraciones:
+**2. Crear las tablas** con los scripts de `database/`:
 ```sh
 dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+./scripts/aplicar-bd.sh
 ```
+`./scripts/aplicar-bd.sh --estado` muestra qué scripts están aplicados y cuáles pendientes.
 
 **3. Cargar los datos de ejemplo:**
 
@@ -51,7 +52,9 @@ Abre http://localhost:5080/api/v1/sistema/salud → `{"estado":"OK"}`. El resto 
 | Parar la base (los datos se conservan) | `docker compose stop db` |
 | Volver a arrancarla | `docker compose up -d db` |
 | Restaurar los datos de ejemplo | repetir el paso 3 |
-| Aplicar migraciones nuevas tras `git pull` | `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` |
+| Aplicar scripts nuevos tras `git pull` | `./scripts/aplicar-bd.sh` |
+| Regenerar entidades tras un script nuevo | `./scripts/scaffold.sh` |
+| Recrear la base desde `database/` (pierdes los datos) | `./scripts/aplicar-bd.sh --reiniciar` y repetir el paso 3 |
 | **Borrar todo y empezar de cero** | `docker compose down -v` y repetir los pasos 1 a 3 |
 | Entrar a la consola SQL | `docker compose exec db psql -U titanglobal -d titanglobal` |
 
@@ -79,14 +82,15 @@ $env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=t
 ```
 La API y `dotnet ef` la leen automáticamente mientras esa terminal siga abierta.
 
-**3. Migraciones y datos:**
+**3. Esquema y datos** (aplica los scripts de `database/` en orden, de uno en uno):
 ```sh
-dotnet tool restore
-dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api
+for script in database/*.sql; do psql -U titanglobal -h localhost -p 5432 -d titanglobal -v ON_ERROR_STOP=1 -f "$script"; done
 psql -U titanglobal -h localhost -p 5432 -d titanglobal -v ON_ERROR_STOP=1 -f scripts/seed-dev.sql
 ```
 
 **4. Comprobar** igual que en la opción A (en la misma terminal donde definiste la variable).
+
+Esta opción solo sirve para crear la base y usarla. `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh` trabajan con la base de Docker (puerto 5433): si vas a añadir tablas, usa la opción A.
 
 Para empezar de cero: `psql -U postgres -h localhost -p 5432 -c "DROP DATABASE titanglobal WITH (FORCE);"` y repetir desde el paso 1 (el `CREATE ROLE` dará error de que ya existe: es normal).
 
@@ -97,13 +101,13 @@ Para empezar de cero: `psql -U postgres -h localhost -p 5432 -c "DROP DATABASE t
 | `port is already allocated` o `address already in use` al hacer `docker compose up` | Otro programa usa el 5433. Ciérralo, o comprueba con `docker ps` que no tengas otro contenedor de PostgreSQL levantado. |
 | `Failed to connect to 127.0.0.1:5433` / `Connection refused` | La base no está arrancada: `docker compose up -d db` y espera a que salga `healthy`. |
 | `password authentication failed for user "titanglobal"` | Se creó el volumen con otra contraseña. `docker compose down -v` y repetir los pasos. |
-| `relation "Clientes" does not exist` al cargar el seed | Faltan las migraciones: haz el paso 2 antes del 3. |
+| `relation "Clientes" does not exist` al cargar el seed | Faltan las tablas: haz el paso 2 (`./scripts/aplicar-bd.sh`) antes del 3. |
 | `The term '<' ...` o `operador '<' reservado` en PowerShell | Usa la versión de PowerShell del paso 3. |
 | `dotnet ef` no se reconoce | Ejecuta `dotnet tool restore` en la raíz del repositorio. |
-| Tras `git pull` la API falla con columnas o tablas que no existen | Hay migraciones nuevas: `dotnet ef database update -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`. |
+| Tras `git pull` la API falla con columnas o tablas que no existen | Hay scripts nuevos en `database/`: `./scripts/aplicar-bd.sh`. |
 | Docker Desktop no arranca en Windows | Activa WSL 2 (`wsl --install` en PowerShell como administrador) y reinicia. Si no se puede, usa la opción B. |
 
 ## Reglas
 - Nunca subas al repositorio una cadena que no sea la de desarrollo local (ni de Neon, ni con otra contraseña).
-- Si creas una migración, genera con `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api` y aplícala **solo a tu base local**. A Neon las aplica Lukas al integrar.
+- Si cambias el esquema, escribe un `database/NNN-descripcion.sql` nuevo, aplícalo con `./scripts/aplicar-bd.sh` **solo a tu base local** y regenera con `./scripts/scaffold.sh`. A Neon los scripts los aplica Lukas al integrar.
 - Si tu módulo necesita datos de ejemplo, añádelos **al final** de `scripts/seed-dev.sql` en tu pull request, para que todos los tengan.

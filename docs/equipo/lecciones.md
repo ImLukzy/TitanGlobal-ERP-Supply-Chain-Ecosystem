@@ -5,12 +5,12 @@ Una lección por entrada: qué pasó, por qué y cómo evitarlo.
 - **Tests con puertos fijos:** no se ejecutan dos a la vez, porque se cruzan y dan falsos fallos. Antes de lanzarlos hay que comprobar que los puertos están libres.
 - **Un fallo reportado por un compañero puede venir de su entorno.** Antes de corregir código, se reproduce con las dependencias del repo restauradas.
 - **Una spec no puede citar documentos que el equipo no tiene.** La spec 01 decía «del documento original» y la implementación inventó campos y contratos. Toda referencia externa se copia al repo (`docs/enunciado.md`) antes de despachar.
-- **Migraciones EF escritas a mano:** sin `Designer` ni `ModelSnapshot`, la siguiente migración vuelve a crear todo. Siempre `dotnet ef migrations add <Nombre> -p src/TitanGlobal.Infrastructure -s src/TitanGlobal.Api`.
+- **Código generado editado a mano:** una entidad o el `TitanGlobalDbContext` retocados a mano se pierden o chocan en el siguiente scaffold, y el código deja de reflejar la base. El esquema se cambia en un script `database/NNN-*.sql`, se aplica con `./scripts/aplicar-bd.sh` y se regenera con `./scripts/scaffold.sh`; el smoke avisa si no coincide. (Antes el proyecto usaba migraciones de EF Core y la lección era no escribirlas a mano.)
 - **Gate de reglas con huecos:** `check-rules.sh` dejaba pasar `public int X => 1;`, `get => …` y `foreach (var …)`. Cada regla necesita fixtures buenos y malos que cubran sus variantes.
 - **Entorno de la máquina:** hacían falta `aspnet-runtime-10.0` (tests y API) y `docker-compose` (BD). Instalados el 2026-10-14.
 - **Capturas con animaciones:** la captura del menú móvil de QA salía cortada porque se tomó a mitad de la transición de 0,2 s. Antes de capturar hay que esperar a que termine (`waitForTimeout` ≥ duración o `prefers-reduced-motion`), y las capturas de página completa no sirven para elementos `fixed`.
 - **InMemory oculta fallos de Npgsql:** `ventas/suma?fechaInicio=2026-01-01` daba 500 en PostgreSQL (`DateTime` sin zona contra `timestamptz`) con todos los tests en verde, y el QA no lo vio porque probó con `…Z`. Las fechas se normalizan a UTC (`FechasUtc`) y cada módulo pasa `scripts/smoke-postgres.sh` con fechas sin zona.
-- **Migraciones en producción:** copia de seguridad, ensayo en una copia y OK humano. Después hay que comprobar que se aplicaron de verdad, porque algunos hostings no ejecutan el paso previo al despliegue.
+- **Scripts de base de datos en producción:** copia de seguridad, ensayo en una copia y OK humano. Después hay que comprobar que se aplicaron de verdad, porque algunos hostings no ejecutan el paso previo al despliegue.
 
 ## Avisos de fin de tarea que no llegan (2026-10-14)
 - **Qué pasó:** tras reiniciar una sesión de trabajo, los avisos de fin de tarea de un colaborador se rechazaron (sin tarea activa) y la integración, que solo miraba la cola de avisos, no los vio.
