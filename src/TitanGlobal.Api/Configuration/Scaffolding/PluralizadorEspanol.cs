@@ -118,14 +118,29 @@ public class PluralizadorEspanol : IPluralizer
         return "aeiou".Contains(palabra[^1]) ? palabra + "s" : palabra + "es";
     }
 
+    // Plural en -es tras d, l, n o r (Unidades, Perfiles, Ordenes, Talleres) → se quita -es; tras -ces → z (Luces).
+    // Excepción: -lles (Detalles) solo pierde la s. El resto (Clientes, Series) solo pierde la s.
     private static string ASingular(string palabra)
     {
-        if (palabra.EndsWith("ones", StringComparison.Ordinal) || palabra.EndsWith("ores", StringComparison.Ordinal)
-            || palabra.EndsWith("enes", StringComparison.Ordinal) || palabra.EndsWith("ales", StringComparison.Ordinal))
+        if (!palabra.EndsWith('s'))
         {
-            return palabra.Substring(0, palabra.Length - 2);
+            return palabra;
         }
 
-        return palabra.EndsWith('s') ? palabra.Substring(0, palabra.Length - 1) : palabra;
+        if (palabra.Length > 4 && palabra.EndsWith("es", StringComparison.Ordinal))
+        {
+            char anterior = palabra[palabra.Length - 3];
+            if (palabra.EndsWith("ces", StringComparison.Ordinal))
+            {
+                return palabra.Substring(0, palabra.Length - 3) + "z";
+            }
+
+            if ("dlnr".Contains(anterior) && !palabra.EndsWith("lles", StringComparison.Ordinal))
+            {
+                return palabra.Substring(0, palabra.Length - 2);
+            }
+        }
+
+        return palabra.Substring(0, palabra.Length - 1);
     }
 }

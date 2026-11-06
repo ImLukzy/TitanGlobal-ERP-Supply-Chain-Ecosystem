@@ -8,7 +8,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 psql_local() {
-    docker compose exec -T -e PGOPTIONS=--client-min-messages=warning db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -q "$@"
+    # tr quita el \r que añade Git Bash en Windows a la salida de docker.
+    docker compose exec -T -e PGOPTIONS=--client-min-messages=warning db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -q "$@" | tr -d '\r'
 }
 
 if [[ "${1:-}" == "--reiniciar" ]]; then
@@ -22,6 +23,14 @@ if [[ "$(psql_local -At -c "SELECT to_regclass('control.\"ScriptsAplicados\"') I
     printf 'ERROR: tu base local se creó con las migraciones antiguas. Recréala con: ./scripts/aplicar-bd.sh --reiniciar\n' >&2
     printf '       y vuelve a cargar los datos: docker compose exec -T db psql -U titanglobal -d titanglobal -f - < scripts/seed-dev.sql\n' >&2
     exit 1
+fi
+
+existe_registro="$(psql_local -At -c "SELECT to_regclass('control.\"ScriptsAplicados\"') IS NOT NULL;")"
+if [[ "${1:-}" == "--estado" && "$existe_registro" != "t" ]]; then
+    for script in database/[0-9][0-9][0-9]-*.sql; do
+        printf 'pendiente  %s\n' "$(basename "$script")"
+    done
+    exit 0
 fi
 
 psql_local -c 'CREATE SCHEMA IF NOT EXISTS control;
@@ -44,8 +53,12 @@ for script in database/[0-9][0-9][0-9]-*.sql; do
         printf 'pendiente  %s\n' "$nombre"
         continue
     fi
+    if grep -qiE '^\s*(BEGIN|COMMIT|ROLLBACK|START TRANSACTION)\b' "$script"; then
+        printf 'ERROR: %s no puede tener BEGIN, COMMIT ni ROLLBACK: cada script ya se aplica en su propia transacción.\n' "$nombre" >&2
+        exit 1
+    fi
     printf 'Aplicando %s\n' "$nombre"
-    { cat "$script"; printf '\nINSERT INTO control."ScriptsAplicados" ("Nombre") VALUES (%s);\n' "'$nombre'"; } \
+    { cat "$script"; printf '\n;\nINSERT INTO control."ScriptsAplicados" ("Nombre") VALUES (%s);\n' "'$nombre'"; } \
         | psql_local --single-transaction -f - >/dev/null
 done
 
