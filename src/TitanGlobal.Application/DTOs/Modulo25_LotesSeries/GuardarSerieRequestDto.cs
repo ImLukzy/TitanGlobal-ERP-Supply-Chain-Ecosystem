@@ -1,4 +1,4 @@
-﻿namespace TitanGlobal.Application.DTOs.Modulo25_LotesSeries;
+namespace TitanGlobal.Application.DTOs.Modulo25_LotesSeries;
 
 public class GuardarSerieRequestDto
 {
