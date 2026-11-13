@@ -603,4 +603,25 @@ INSERT INTO "Empleados" ("Id", "Legajo", "TipoDocumento", "NumeroDocumento", "No
 
 SELECT setval(pg_get_serial_sequence('"Empleados"', 'Id'), (SELECT MAX("Id") FROM "Empleados"));
 
+INSERT INTO "Lotes" ("ProductoId", "Codigo", "FechaFabricacion", "FechaVencimiento", "Cantidad", "Estado") VALUES
+                                                                                                               (1, 'LOT-2026-001', date_trunc('day', now()) - interval '60 days', date_trunc('day', now()) + interval '300 days', 100, 'Disponible'),
+                                                                                                               (1, 'LOT-2026-002', date_trunc('day', now()) - interval '90 days', date_trunc('day', now()) - interval '10 days', 50, 'Disponible'),
+                                                                                                               (2, 'LOT-2026-003', date_trunc('day', now()) - interval '30 days', date_trunc('day', now()) + interval '20 days', 80, 'Cuarentena'),
+                                                                                                               (3, 'LOT-2026-004', NULL, NULL, 20, 'Bloqueado')
+    ON CONFLICT ("ProductoId", "Codigo") DO UPDATE SET
+    "FechaFabricacion" = EXCLUDED."FechaFabricacion",
+                                                "FechaVencimiento" = EXCLUDED."FechaVencimiento",
+                                                "Cantidad" = EXCLUDED."Cantidad",
+                                                "Estado" = EXCLUDED."Estado";
+
+INSERT INTO "UnidadesSerie" ("ProductoId", "LoteId", "NumeroSerie", "Estado") VALUES
+                                                                                  (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0001', 'Disponible'),
+                                                                                  (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0002', 'Asignada'),
+                                                                                  (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0003', 'Disponible'),
+                                                                                  (2, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 2 AND "Codigo" = 'LOT-2026-003'), 'SN-1001', 'Disponible'),
+                                                                                  (3, NULL, 'SN-2001', 'Baja')
+    ON CONFLICT ("ProductoId", "NumeroSerie") DO UPDATE SET
+    "LoteId" = EXCLUDED."LoteId",
+                                                     "Estado" = EXCLUDED."Estado";
+
 COMMIT;
