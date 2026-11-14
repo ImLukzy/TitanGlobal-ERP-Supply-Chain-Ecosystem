@@ -19,6 +19,8 @@ public partial class Cliente
 
     public virtual ICollection<DevolucionComercial> DevolucionesComerciales { get; set; } = new List<DevolucionComercial>();
 
+    public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
+
     public virtual ICollection<OrdenCompra> OrdenesCompra { get; set; } = new List<OrdenCompra>();
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();

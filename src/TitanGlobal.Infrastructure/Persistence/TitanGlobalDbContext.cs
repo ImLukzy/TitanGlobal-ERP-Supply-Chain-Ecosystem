@@ -29,6 +29,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<DetalleDevolucion> DetallesDevolucion { get; set; } = null!;
 
+    public virtual DbSet<DetalleFactura> DetallesFactura { get; set; } = null!;
+
     public virtual DbSet<DetalleOrdenAbastecimiento> DetallesOrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<DetalleOrdenCompra> DetallesOrdenCompra { get; set; } = null!;
@@ -38,6 +40,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<DevolucionComercial> DevolucionesComerciales { get; set; } = null!;
 
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
+
+    public virtual DbSet<Factura> Facturas { get; set; } = null!;
 
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
@@ -226,6 +230,38 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<DetalleFactura>(entity =>
+        {
+            entity.HasIndex(e => e.FacturaId, "IX_DetallesFactura_FacturaId");
+
+            entity.HasIndex(e => e.ImpuestoId, "IX_DetallesFactura_ImpuestoId");
+
+            entity.HasIndex(e => e.ProductoId, "IX_DetallesFactura_ProductoId");
+
+            entity.Property(e => e.BaseImponible).HasPrecision(18, 2);
+            entity.Property(e => e.Cantidad).HasPrecision(18, 4);
+            entity.Property(e => e.Descripcion).HasMaxLength(300);
+            entity.Property(e => e.DescuentoPorcentaje).HasPrecision(5, 2);
+            entity.Property(e => e.ImporteDescuento).HasPrecision(18, 2);
+            entity.Property(e => e.ImporteImpuesto).HasPrecision(18, 2);
+            entity.Property(e => e.PorcentajeImpuesto).HasPrecision(18, 6);
+            entity.Property(e => e.PrecioUnitario).HasPrecision(18, 2);
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.Factura).WithMany(p => p.DetallesFactura)
+                .HasForeignKey(d => d.FacturaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Impuesto).WithMany(p => p.DetallesFactura)
+                .HasForeignKey(d => d.ImpuestoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.DetallesFactura)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<DetalleOrdenAbastecimiento>(entity =>
         {
             entity.HasIndex(e => e.OrdenAbastecimientoId, "IX_DetallesOrdenesAbastecimiento_OrdenAbastecimientoId");
@@ -317,6 +353,41 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.NumeroDocumento).HasMaxLength(20);
             entity.Property(e => e.Telefono).HasMaxLength(20);
             entity.Property(e => e.TipoDocumento).HasMaxLength(10);
+        });
+
+        modelBuilder.Entity<Factura>(entity =>
+        {
+            entity.HasIndex(e => e.ClienteId, "IX_Facturas_ClienteId");
+
+            entity.HasIndex(e => e.Estado, "IX_Facturas_Estado");
+
+            entity.HasIndex(e => e.FechaEmision, "IX_Facturas_FechaEmision");
+
+            entity.HasIndex(e => e.OrdenCompraId, "IX_Facturas_OrdenCompraId");
+
+            entity.HasIndex(e => new { e.TipoComprobante, e.Serie, e.Numero }, "IX_Facturas_TipoComprobante_Serie_Numero").IsUnique();
+
+            entity.Property(e => e.Estado)
+                .HasMaxLength(20)
+                .HasDefaultValueSql("'Borrador'::character varying");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Serie).HasMaxLength(10);
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.TipoComprobante).HasMaxLength(20);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+            entity.Property(e => e.TotalDescuento).HasPrecision(18, 2);
+            entity.Property(e => e.TotalImpuesto).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.Cliente).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.OrdenCompra).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.OrdenCompraId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Impuesto>(entity =>
