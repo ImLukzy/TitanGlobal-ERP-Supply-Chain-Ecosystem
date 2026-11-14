@@ -15,4 +15,7 @@
     <ProjectReference Include="..\TitanGlobal.Application\TitanGlobal.Application.csproj" />
     <ProjectReference Include="..\TitanGlobal.Domain\TitanGlobal.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="config\**\*.cs" Visible="false" />
+  </ItemGroup>
 </Project>
