@@ -29,6 +29,8 @@ public partial class Producto
 
     public virtual ICollection<Lote> Lotes { get; set; } = new List<Lote>();
 
+    public virtual ICollection<MovimientoKardex> MovimientosKardex { get; set; } = new List<MovimientoKardex>();
+
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();
