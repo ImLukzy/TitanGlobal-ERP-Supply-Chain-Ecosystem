@@ -112,8 +112,8 @@ internal static class ValidacionEvaluacionProveedor
             return null;
         }
 
-        string? canonica = Calificaciones.FirstOrDefault(
-            nombre => string.Equals(nombre, valor, StringComparison.OrdinalIgnoreCase));
+        string? canonica = Calificaciones.FirstOrDefault(nombre =>
+            string.Equals(nombre, valor, StringComparison.OrdinalIgnoreCase));
         if (canonica is null)
         {
             throw Error("La calificación debe ser Excelente, Bueno, Regular o Deficiente.");

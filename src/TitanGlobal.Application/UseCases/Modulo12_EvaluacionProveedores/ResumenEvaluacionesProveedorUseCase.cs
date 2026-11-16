@@ -19,15 +19,15 @@ public class ResumenEvaluacionesProveedorUseCase
     {
         // Se traen solo las columnas necesarias y los promedios se calculan en memoria,
         // para redondear igual en PostgreSQL y en la base de pruebas.
-        var filas = await _unitOfWork.Repository<EvaluacionProveedor>()
+        List<FilaEvaluacion> filas = await _unitOfWork.Repository<EvaluacionProveedor>()
             .AsQueryable()
-            .Select(evaluacion => new
+            .Select(evaluacion => new FilaEvaluacion
             {
-                evaluacion.ProveedorId,
+                ProveedorId = evaluacion.ProveedorId,
                 ProveedorNombre = evaluacion.Proveedor.RazonSocial,
-                evaluacion.Periodo,
-                evaluacion.PuntajeFinal,
-                evaluacion.Calificacion
+                Periodo = evaluacion.Periodo,
+                PuntajeFinal = evaluacion.PuntajeFinal,
+                Calificacion = evaluacion.Calificacion
             })
             .ToListAsync();
 
@@ -65,5 +65,18 @@ public class ResumenEvaluacionesProveedorUseCase
             PorCalificacion = porCalificacion,
             Ranking = ranking
         };
+    }
+
+    private sealed class FilaEvaluacion
+    {
+        public int ProveedorId { get; set; }
+
+        public string ProveedorNombre { get; set; } = string.Empty;
+
+        public string Periodo { get; set; } = string.Empty;
+
+        public decimal PuntajeFinal { get; set; }
+
+        public string Calificacion { get; set; } = string.Empty;
     }
 }
