@@ -42,11 +42,12 @@
 - [x] Tarea 1: tipos y `api.ts`.
 - [x] Tarea 2: pestaña Roles y formulario.
 - [x] Tarea 3: editor de permisos y matriz.
-- [ ] Tarea 4: tests, capturas y A1–A7.
+- [x] Tarea 4: tests, capturas y A1–A7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-05 | A1 | pasa | `./scripts/verify.sh` sobre la rama fusionada con `main` (macOS): backend 942 tests sin errores; frontend `eslint --max-warnings 0` sin avisos, `tsc -b`, 534 tests en 71 archivos y `vite build` correctos |
 | 2026-11-05 | A2 | pasa | `npx vitest run src/modules/roles-permisos/api.test.ts`: 9 tests |
 | 2026-11-05 | A3 | pasa | `RolesPermisosPage.test.tsx` (21 tests) y `validacion.test.ts` (5 tests) |
 | 2026-11-05 | A4 | pasa | `EditorPermisos.test.tsx` (11), `permisos.test.ts` (11) y `usePermisosRol.test.tsx` (6) |
