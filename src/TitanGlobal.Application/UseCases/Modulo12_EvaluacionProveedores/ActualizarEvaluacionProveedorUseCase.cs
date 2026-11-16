@@ -15,7 +15,7 @@ public class ActualizarEvaluacionProveedorUseCase
         _unitOfWork = unitOfWork;
     }
 
-    public async Task ExecuteAsync(int id, ActualizarEvaluacionRequestDto solicitud)
+    public async Task<int> ExecuteAsync(int id, ActualizarEvaluacionRequestDto solicitud)
     {
         EvaluacionProveedor? evaluacion = await _unitOfWork.Repository<EvaluacionProveedor>()
             .AsQueryable()
@@ -42,5 +42,7 @@ public class ActualizarEvaluacionProveedorUseCase
         evaluacion.Calificacion = ValidacionEvaluacionProveedor.CalcularCalificacion(puntajeFinal);
         evaluacion.Observaciones = observaciones;
         await _unitOfWork.CompleteAsync();
+
+        return evaluacion.Id;
     }
 }
