@@ -33,6 +33,9 @@ VEHICULO_CREADO_ID=""
 CONDUCTOR_CREADO_ID=""
 CONDUCTOR_SIN_ZONA_ID=""
 EMPLEADO_CREADO_ID=""
+LICITACION_CREADA_ID=""
+OFERTA_LICITACION_CREADA_ID=""
+LICITACION_BORRABLE_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -187,6 +190,15 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "licitaciones-abiertas": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 1] and all(item["estado"] == "Abierta" for item in data["items"]),
+    "licitacion-detalle": lambda data: data["id"] == 3 and data["numero"] == "LIC-2026-003" and data["estado"] == "Adjudicada" and data["proveedorAdjudicadoId"] == 1 and data["montoAdjudicado"] == 28000.0 and [(oferta["proveedorId"], oferta["esGanadora"]) for oferta in data["ofertas"]] == [(1, True), (4, False)],
+    "licitaciones-resumen": lambda data: data["totalLicitaciones"] == 5 and data["totalOfertas"] == 7 and data["presupuestoAbierto"] == 70000.0 and data["montoAdjudicado"] == 28000.0 and [(item["estado"], item["total"]) for item in data["porEstado"]] == [("Abierta", 2), ("Cerrada", 1), ("Adjudicada", 1), ("Cancelada", 1)],
+    "licitacion-created": lambda data: data["id"] > 0,
+    "oferta-licitacion-created": lambda data: data["id"] > 0,
+    "licitacion-borrable-created": lambda data: data["id"] > 0,
+    "licitacion-id": lambda data: data["id"] > 0,
+    "licitacion-adjudicada-smoke": lambda data: data["estado"] == "Adjudicada" and data["proveedorAdjudicadoId"] == 1 and data["montoAdjudicado"] == 900.0 and [oferta["esGanadora"] for oferta in data["ofertas"]] == [True],
+    "licitacion-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una licitación con el número LIC-2026-001.",
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
     "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
     "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
@@ -495,6 +507,18 @@ request_check() {
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "licitacion-created" ]]; then
+        LICITACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "oferta-licitacion-created" ]]; then
+        OFERTA_LICITACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "licitacion-borrable-created" ]]; then
+        LICITACION_BORRABLE_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -634,6 +658,17 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Licitaciones abiertas' GET '/api/v1/licitaciones?estado=abierta' 200 licitaciones-abiertas
+request_check 'Detalle de la licitación adjudicada 3' GET '/api/v1/licitaciones/3' 200 licitacion-detalle
+request_check 'Resumen de licitaciones' GET '/api/v1/licitaciones/resumen' 200 licitaciones-resumen
+request_check 'POST licitación válida' POST '/api/v1/licitaciones' 200 licitacion-created '{"numero":"LIC-SMOKE-001","titulo":"Licitación smoke","tipo":"ConcursoPrecios","presupuestoReferencial":1000,"fechaCierre":"2099-12-31T00:00:00Z"}'
+request_check 'POST oferta válida' POST "/api/v1/licitaciones/${LICITACION_CREADA_ID}/ofertas" 200 oferta-licitacion-created '{"proveedorId":1,"monto":900,"plazoEntregaDias":10}'
+request_check 'Cerrar licitación recién creada' POST "/api/v1/licitaciones/${LICITACION_CREADA_ID}/cerrar" 200 licitacion-id ''
+request_check 'Adjudicar licitación recién creada' POST "/api/v1/licitaciones/${LICITACION_CREADA_ID}/adjudicar" 200 licitacion-id "{\"ofertaId\":${OFERTA_LICITACION_CREADA_ID}}"
+request_check 'Detalle de la licitación adjudicada en el smoke' GET "/api/v1/licitaciones/${LICITACION_CREADA_ID}" 200 licitacion-adjudicada-smoke
+request_check 'POST licitación con número del seed' POST '/api/v1/licitaciones' 409 licitacion-duplicate '{"numero":"LIC-2026-001","titulo":"Duplicada","tipo":"ConcursoPrecios","presupuestoReferencial":1000,"fechaCierre":"2099-12-31T00:00:00Z"}'
+request_check 'POST licitación para borrar' POST '/api/v1/licitaciones' 200 licitacion-borrable-created '{"numero":"LIC-SMOKE-002","titulo":"Licitación a borrar","tipo":"SubastaInversa","presupuestoReferencial":500,"fechaCierre":"2099-12-31T00:00:00Z"}'
+request_check 'DELETE licitación sin ofertas' DELETE "/api/v1/licitaciones/${LICITACION_BORRABLE_ID}" 204 ''
 request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
 request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
 request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary
