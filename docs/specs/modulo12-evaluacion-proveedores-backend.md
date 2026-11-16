@@ -126,11 +126,22 @@ Resumen esperado del seed: 6 evaluaciones, 4 proveedores evaluados, promedio gen
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionEvaluacionProveedor`, casos de uso y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A7 y anotar resultados en §7.
+- [x] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, `ValidacionEvaluacionProveedor`, casos de uso y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A7 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-15 | A1 Compilación | OK | `./scripts/verify.sh` (macOS): compilación de las 5 capas sin errores |
+| 2026-11-15 | A2 Gate | OK | `./scripts/verify.sh` completo en verde: reglas de código y capas (`check-rules.sh`), backend 981 tests, frontend eslint/tsc/497 tests/build. El primer intento falló en las reglas `a` (var) y `b` (cuerpo de expresión) y se corrigió en `c0f21bc` |
+| 2026-11-15 | A3 Reglas | OK | `EvaluacionesProveedorApiTests`: mensajes literales 400/404/409 sin `Detail`, observaciones en blanco → `null`, proveedor inactivo aceptado, PUT recalcula sin cambiar proveedor ni periodo |
+| 2026-11-15 | A4 Cálculo | OK | `CreateCalculatesFinalScoreAndRating` (10 casos: límites 90, 75 y 60, 100/100/100, 0/0/0) y `UpdateRecalculatesScoreAndKeepsProviderAndPeriod` |
+| 2026-11-15 | A5 Consultas | OK | filtros por proveedor, periodo y calificación sin distinguir mayúsculas, paginación con `total`, orden por periodo descendente y resumen exacto del seed (78.72; ranking 6, 1, 4, 2) |
+| 2026-11-15 | A6 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `004`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-15 | A7 OpenAPI | OK | `OpenApiContainsSixEvaluationOperations` |
+
+`dotnet test` completo: 981 correctas, 0 con error (942 previas + 39 del módulo 12).
+
+**Notas de entorno (macOS):** `scaffold.sh` y `smoke-postgres.sh` necesitaron rodeos locales en Mac (GNU sed para `\s`, un `ss` de reemplazo y bash 5 por el arreglo vacío con `set -u`). No se modificaron los scripts.
