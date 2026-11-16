@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo26_KardexValorizado;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo26_KardexValorizado;
 using TitanGlobal.Application.UseCases.Modulo26_KardexValorizado;
 

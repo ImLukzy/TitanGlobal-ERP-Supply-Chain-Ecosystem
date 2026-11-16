@@ -1,4 +1,4 @@
-﻿namespace TitanGlobal.Application.DTOs.Modulo26_KardexValorizado;
+namespace TitanGlobal.Application.DTOs.Modulo26_KardexValorizado;
 
 public class LineaKardexDto
 {

@@ -1,4 +1,4 @@
-﻿using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 
