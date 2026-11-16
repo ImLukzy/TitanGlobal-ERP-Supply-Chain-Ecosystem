@@ -603,4 +603,16 @@ INSERT INTO "Empleados" ("Id", "Legajo", "TipoDocumento", "NumeroDocumento", "No
 
 SELECT setval(pg_get_serial_sequence('"Empleados"', 'Id'), (SELECT MAX("Id") FROM "Empleados"));
 
+TRUNCATE TABLE "EvaluacionesProveedor" RESTART IDENTITY;
+
+INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCumplimiento", "PuntajeCalidad", "PuntajePlazos", "PuntajeFinal", "Calificacion", "Observaciones", "FechaRegistro") VALUES
+    (1, 1, '2026-09', 90, 85, 80, 85.50, 'Bueno', 'Entregas completas, un retraso menor.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (2, 1, '2026-10', 95, 92, 90, 92.60, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (3, 2, '2026-10', 70, 65, 60, 65.50, 'Regular', 'Varios lotes fuera de especificación.', TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (4, 4, '2026-09', 55, 60, 50, 55.00, 'Deficiente', 'Incumplió plazos acordados.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (5, 4, '2026-10', 80, 78, 76, 78.20, 'Bueno', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (6, 6, '2026-10', 100, 90, 95, 95.50, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
+
 COMMIT;
