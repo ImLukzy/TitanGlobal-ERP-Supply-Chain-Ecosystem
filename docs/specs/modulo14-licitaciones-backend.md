@@ -167,11 +167,23 @@ Resumen esperado del seed: 5 licitaciones, 7 ofertas, presupuesto abierto 70000.
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionLicitacion`, casos de uso y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
+- [x] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, `ValidacionLicitacion`, casos de uso y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-16 | A1 Compilación | OK | `dotnet build` y `./scripts/verify.sh` (macOS): las 5 capas compilan sin errores |
+| 2026-11-16 | A2 Gate | OK | `./scripts/verify.sh` completo en verde: reglas de código y capas (`check-rules.sh`), backend, frontend eslint/tsc/497 tests/build |
+| 2026-11-16 | A3 Reglas de licitación | OK | `LicitacionesApiTests`: mensajes literales 400/404/409 de alta, edición y baja sin `Detail`; número guardado en mayúsculas y sin espacios; descripción en blanco → `null` |
+| 2026-11-16 | A4 Reglas de ofertas | OK | oferta válida, proveedor inexistente, inactivo y repetido, monto sobre el presupuesto, plazo y observaciones, licitación no abierta y plazo vencido; mejora de oferta solo en subasta inversa y solo a la baja |
+| 2026-11-16 | A5 Estados | OK | abrir → cerrar → adjudicar con proveedor y monto guardados y `esGanadora`; cancelar desde `Abierta` y `Cerrada`; cada transición inválida con su 409 literal |
+| 2026-11-16 | A6 Consultas | OK | filtros por estado, tipo y búsqueda sin distinguir mayúsculas, paginación con `total`, `totalOfertas`, ofertas del detalle ordenadas por monto y resumen exacto del seed (5 / 7 / 70000 / 28000) |
+| 2026-11-16 | A7 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `005`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-16 | A8 OpenAPI | OK | `OpenApiContainsElevenTenderOperations` |
+
+`dotnet test` completo: 988 correctas, 0 con error.
+
+**Notas de entorno (macOS):** `scaffold.sh` y `smoke-postgres.sh` necesitaron rodeos locales en Mac (GNU sed para `\s`, un `ss` de reemplazo y bash 5 por el arreglo vacío con `set -u`). No se modificaron los scripts.
