@@ -35,5 +35,7 @@ public partial class Producto
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();
 
+    public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacen { get; set; } = new List<TransferenciaAlmacen>();
+
     public virtual ICollection<UnidadSerie> UnidadesSerie { get; set; } = new List<UnidadSerie>();
 }

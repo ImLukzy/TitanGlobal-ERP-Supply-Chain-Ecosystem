@@ -75,6 +75,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
 
+    public virtual DbSet<TransferenciaAlmacen> TransferenciasAlmacen { get; set; } = null!;
+
     public virtual DbSet<UnidadSerie> UnidadesSerie { get; set; } = null!;
 
     public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
@@ -401,6 +403,8 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasIndex(e => new { e.ProductoId, e.AlmacenId, e.Fecha }, "IX_MovimientosKardex_ProductoId_AlmacenId_Fecha");
 
+            entity.HasIndex(e => e.TransferenciaId, "IX_MovimientosKardex_TransferenciaId");
+
             entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
             entity.Property(e => e.Referencia).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(10);
@@ -415,6 +419,10 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Producto).WithMany(p => p.MovimientosKardex)
                 .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Transferencia).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.TransferenciaId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -587,6 +595,32 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Porcentaje).HasPrecision(18, 6);
 
             entity.HasOne(d => d.Impuesto).WithMany(p => p.Tasas).HasForeignKey(d => d.ImpuestoId);
+        });
+
+        modelBuilder.Entity<TransferenciaAlmacen>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenDestinoId, "IX_TransferenciasAlmacen_AlmacenDestinoId");
+
+            entity.HasIndex(e => e.AlmacenOrigenId, "IX_TransferenciasAlmacen_AlmacenOrigenId");
+
+            entity.HasIndex(e => e.Fecha, "IX_TransferenciasAlmacen_Fecha");
+
+            entity.HasIndex(e => e.ProductoId, "IX_TransferenciasAlmacen_ProductoId");
+
+            entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.AlmacenDestino).WithMany(p => p.TransferenciasAlmacenAlmacenDestino)
+                .HasForeignKey(d => d.AlmacenDestinoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.AlmacenOrigen).WithMany(p => p.TransferenciasAlmacenAlmacenOrigen)
+                .HasForeignKey(d => d.AlmacenOrigenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.TransferenciasAlmacen)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<UnidadSerie>(entity =>
