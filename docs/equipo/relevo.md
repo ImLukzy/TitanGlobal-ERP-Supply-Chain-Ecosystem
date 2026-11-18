@@ -24,7 +24,7 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
 | Kelvin | 41 VehiculosFlota y 42 Conductores: backend, pruebas, seed y smoke | Pantallas, unicidad sin distinguir mayúsculas y relación entre `Habilitado` y vencimiento |
-| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual con capturas de ambas pantallas y que Lukas apruebe `docs/hcm-reglas-negocio.md` |
+| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: puede empezar el 62 con su spec |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
 
