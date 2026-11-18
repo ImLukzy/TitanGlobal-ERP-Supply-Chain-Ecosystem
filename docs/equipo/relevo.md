@@ -39,7 +39,7 @@ Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md
 | Módulo | Responsable | Spec de la pantalla | Estado | Siguiente paso |
 |---|---|---|---|---|
 | 72 RolesPermisos | Sergio | [42](../specs/42-modulo72-roles-permisos-frontend.md) | pestaña de roles integrada (§1) | completar la spec 42 y QA |
-| 71 Usuarios | Alexander | [44](../specs/44-modulo71-usuarios-frontend.md) | integrada (§1) | QA visual |
+| 71 Usuarios | Alexander | [44](../specs/44-modulo71-usuarios-frontend.md) | integrada (§1) | QA visual hecho (PR #20) |
 
 ## 4. Pantallas integradas el 2026-10-31
 
