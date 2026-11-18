@@ -170,8 +170,11 @@ describe('baja de usuarios', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(await screen.findByText('Página 1 de 1')).toBeInTheDocument();
-    const listados = fetchMock.mock.calls.map((llamada) => String(llamada[0])).filter((url) => url.includes('/usuarios?'));
-    expect(listados.at(-1)).toContain('pagina=1');
+    // El texto ya muestra la página 1 al confirmar el render; la nueva lectura sale después, en el efecto.
+    await waitFor(() => {
+      const listados = fetchMock.mock.calls.map((llamada) => String(llamada[0])).filter((url) => url.includes('/usuarios?'));
+      expect(listados.at(-1)).toContain('pagina=1');
+    });
   });
 
   it('A4 Escape cancela la baja sin petición y devuelve el foco al botón Eliminar', async () => {
