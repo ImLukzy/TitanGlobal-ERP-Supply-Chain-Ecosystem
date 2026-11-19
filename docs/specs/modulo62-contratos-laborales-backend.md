@@ -1,6 +1,6 @@
 # Especificación: modulo62-contratos-laborales-backend — ContratosLaborales (backend)
 
-> Borrador para revisión de Lukas. Estado: **sin aprobar**. No se programa nada hasta resolver las decisiones de §2.
+> Estado: **aprobada** por Lukas el 2026-11-18, con la opción A (recomendada) en las 8 decisiones de §2.
 
 ## 1. Objetivo
 **Problema:** no existe el contrato laboral de los empleados. Los módulos 63 (asistencia, A1), 65 (vacaciones), 66 (planillas, sueldo básico), 67 y 68 (D5) dependen de saber qué contrato está vigente y con qué cargo y sueldo (`docs/hcm-reglas-negocio.md` §2, módulo 62).
@@ -22,7 +22,7 @@ Reglas aplicadas: C1 a C6, T1, T3, T4, T5, T6 y E4 de `docs/hcm-reglas-negocio.m
 - Cambios en `Middlewares/`, `Services/`, `Program.cs`, `Configuration/`, `Models/Rol.cs` y `Models/Usuario.cs`, en las cuatro entidades base y en `UnitOfWork`.
 - Modificar el módulo 61 salvo lo que apruebe la decisión 2.
 
-**Decisiones de producto que requieren aprobación antes de ejecutar:**
+**Decisiones de producto, aprobadas por Lukas el 2026-11-18 con la opción A (recomendada) en todas:**
 
 1. **C6, estado `Vencido` sin proceso diario.** La regla C6 pide un «proceso diario», pero el proyecto no tiene ningún mecanismo de tareas programadas (búsqueda de `BackgroundService`, `IHostedService`, Hangfire y Quartz en `src/`: sin resultados). Los módulos 03, 05 y 09 resuelven «vencida» calculándolo al leer.
    - **A (recomendada):** `Vencido` se calcula al leer: un contrato con `Estado = Vigente` guardado y `FechaFin` anterior a hoy se devuelve como `Vencido` (filtro y listado incluidos). El estado guardado sigue `Vigente`. Además, cada escritura sobre los contratos de un empleado (alta, renovación) guarda como `Vencido` los contratos de ese empleado que ya pasaron su fecha de fin, para liberar la unicidad de C2 (decisión 7).
@@ -56,7 +56,7 @@ Reglas aplicadas: C1 a C6, T1, T3, T4, T5, T6 y E4 de `docs/hcm-reglas-negocio.m
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/002-contratos-laborales.sql` | crear | `CREATE TABLE "ContratosLaborales"` y `"AdendasContrato"` con sus índices (§4). `main` solo tiene `001-esquema-inicial.sql`; las ramas abiertas ya usan 002 a 005, así que quien integre después renombra al siguiente libre antes de fusionar (`docs/equipo/crear-modulo.md` §2) |
+| `database/008-contratos-laborales.sql` | crear | `CREATE TABLE "ContratosLaborales"` y `"AdendasContrato"` con sus índices (§4). Número 008 asignado por Lukas el 2026-11-18 para ordenar los scripts de las ramas abiertas |
 | `src/TitanGlobal.Domain/Models/ContratoLaboral.cs` | regenerar | entidad `partial` generada por `./scripts/scaffold.sh` (no se edita) |
 | `src/TitanGlobal.Domain/Models/AdendaContrato.cs` | regenerar | ídem |
 | `src/TitanGlobal.Domain/Models/Empleado.cs` | regenerar | solo gana la navegación `ContratosLaborales` al regenerar; no se edita a mano |
@@ -80,7 +80,7 @@ Verificado en el repositorio: existen `database/001-esquema-inicial.sql`, `scrip
 
 **Autenticación.** Toda la API exige JWT (`FallbackPolicy`, spec 51): sin token o con token inválido, 401 «Debe iniciar sesión para acceder a este recurso.». Las escrituras llevan además el rol de la decisión 6: sin el rol, 403 «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.». Ambos textos los escribe JwtBearer; esta spec no los redefine.
 
-**Tabla `ContratosLaborales`** (`database/002-contratos-laborales.sql`; entidad `ContratoLaboral`, generada):
+**Tabla `ContratosLaborales`** (`database/008-contratos-laborales.sql`; entidad `ContratoLaboral`, generada):
 | Columna | Tipo | Restricción |
 |---|---|---|
 | `Id` | `integer` identidad | PK `PK_ContratosLaborales` |
