@@ -77,3 +77,20 @@ Al terminar, anotar la evidencia en el §7 de cada spec.
 - Con la máquina muy cargada, algunos tests del frontend pueden superar los 5 s y fallar por tiempo; repetir antes de investigar.
 - No cambies selectores de reglas compartidas de `app.css` (p. ej. `.tabla-paginada th`): pisan las cabeceras de otras pantallas (ver [`lecciones.md`](lecciones.md)).
 - El esquema solo con scripts `database/NNN-*.sql` y entidades generadas con `./scripts/scaffold.sh`; en la demo los scripts los aplica Lukas en Neon antes de desplegar.
+
+## 8. Números de los scripts de base de datos
+Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada script tiene reservado este número (2026-11-18). Si tu rama usa otro, renómbralo antes de abrir el PR. Que queden huecos no importa: `./scripts/aplicar-bd.sh` aplica en orden los que falten.
+
+| Número | Script | Responsable | Rama | Renombrar |
+|---|---|---|---|---|
+| 001 | `001-esquema-inicial.sql` | — | `main` | — |
+| 002 | `002-lotes-series.sql` | Maxi | `maxi/modulo25-lotes-series` | no |
+| 003 | `003-kardex-valorizado.sql` | Maxi | `maxi/modulo26-kardex-valorizado` | no |
+| 004 | `004-transferencias-almacen.sql` | Maxi | `maxi/modulo27-transferencias-almacen` | no |
+| 005 | `005-evaluaciones-proveedor.sql` | Sergio | `sergio/modulo12-evaluacion-proveedores` | sí, desde 004 |
+| 006 | `006-licitaciones.sql` | Sergio | `sergio/modulo14-licitaciones` | sí, desde 005 |
+| 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
+| 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales` | — |
+| 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+
+Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
