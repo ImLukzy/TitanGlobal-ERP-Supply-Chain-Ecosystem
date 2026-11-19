@@ -1431,8 +1431,12 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .sesion-usuario .secondary-button { min-width: 0; padding: 0 8px; font-size: 10px; }
 }
 @media (max-width: 420px) {
+  .topbar { gap: 8px; }
   .topbar-actions { gap: 8px; }
-  .role-picker select { max-width: 84px; }
+  /* El nombre de la marca se oculta solo a la vista (lo sigue leyendo el lector de pantalla) para que quepan el rol y el botón. */
+  .brand > span:not(.brand-mark) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .role-picker select { max-width: 112px; }
+  .sesion-usuario .secondary-button { white-space: nowrap; }
 }
 
 /* Módulo 33: Centros de trabajo */

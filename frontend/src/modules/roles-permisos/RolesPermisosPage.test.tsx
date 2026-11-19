@@ -291,7 +291,7 @@ describe('pantalla de Roles (módulo 72)', () => {
   it('A6 registra el módulo 72 desde el catálogo', async () => {
     prepararApi();
     render(<RolesPermisosPage />);
-    expect(screen.getByRole('heading', { name: '72 · RolesPermisos' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '72 · Roles y permisos' })).toBeInTheDocument();
     const migas = screen.getByRole('navigation', { name: 'Miga de pan' });
     expect(within(migas).getByRole('link', { name: 'Inicio' })).toHaveAttribute('href', '/');
   });
