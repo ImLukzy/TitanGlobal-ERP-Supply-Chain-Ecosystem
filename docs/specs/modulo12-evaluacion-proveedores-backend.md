@@ -29,7 +29,7 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12) y, para la referencia a otr
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/NNN-evaluaciones-proveedor.sql` | crear | `CREATE TABLE "EvaluacionesProveedor"` con el siguiente número libre al momento de integrar (hoy `002` y `003` están en las PR #24 y #32; usar `004` y que Lukas renumere si hay choque) |
+| `database/005-evaluaciones-proveedor.sql` | crear | `CREATE TABLE "EvaluacionesProveedor"`; número `005` reservado para este módulo en `docs/equipo/relevo.md` §8 |
 | `src/TitanGlobal.Domain/Models/EvaluacionProveedor.cs` | regenerar | entidad `partial` generada por `./scripts/scaffold.sh` (no se edita a mano) |
 | `src/TitanGlobal.Domain/Models/Proveedor.cs` | regenerar | solo gana la navegación `EvaluacionesProveedor`, generada |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `DbSet<EvaluacionProveedor> EvaluacionesProveedor`, generado |
@@ -139,7 +139,7 @@ Resumen esperado del seed: 6 evaluaciones, 4 proveedores evaluados, promedio gen
 | 2026-11-15 | A3 Reglas | OK | `EvaluacionesProveedorApiTests`: mensajes literales 400/404/409 sin `Detail`, observaciones en blanco → `null`, proveedor inactivo aceptado, PUT recalcula sin cambiar proveedor ni periodo |
 | 2026-11-15 | A4 Cálculo | OK | `CreateCalculatesFinalScoreAndRating` (10 casos: límites 90, 75 y 60, 100/100/100, 0/0/0) y `UpdateRecalculatesScoreAndKeepsProviderAndPeriod` |
 | 2026-11-15 | A5 Consultas | OK | filtros por proveedor, periodo y calificación sin distinguir mayúsculas, paginación con `total`, orden por periodo descendente y resumen exacto del seed (78.72; ranking 6, 1, 4, 2) |
-| 2026-11-15 | A6 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `004`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-15 | A6 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `005`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-15 | A7 OpenAPI | OK | `OpenApiContainsSixEvaluationOperations` |
 
 `dotnet test` completo: 981 correctas, 0 con error (942 previas + 39 del módulo 12).
