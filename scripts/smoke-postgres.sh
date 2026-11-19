@@ -33,6 +33,9 @@ VEHICULO_CREADO_ID=""
 CONDUCTOR_CREADO_ID=""
 CONDUCTOR_SIN_ZONA_ID=""
 EMPLEADO_CREADO_ID=""
+ACUERDO_CREADO_ID=""
+LINEA_ACUERDO_CREADA_ID=""
+ACUERDO_BORRABLE_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -187,6 +190,16 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "acuerdos-vigentes": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 1] and all(item["estado"] == "Vigente" for item in data["items"]),
+    "acuerdo-detalle": lambda data: data["id"] == 1 and data["numero"] == "AM-2026-001" and data["proveedorId"] == 1 and data["montoComprometido"] == 90000.0 and data["montoConsumido"] == 20000.0 and [(linea["productoId"], linea["saldo"]) for linea in data["lineas"]] == [(1, 600), (2, 500)],
+    "acuerdos-resumen": lambda data: data["totalAcuerdos"] == 4 and data["montoMaximoVigente"] == 160000.0 and data["montoConsumido"] == 61750.0 and [(item["estado"], item["total"]) for item in data["porEstado"]] == [("Vigente", 2), ("Suspendido", 1), ("Cancelado", 1)],
+    "acuerdo-created": lambda data: data["id"] > 0,
+    "linea-acuerdo-created": lambda data: data["id"] > 0,
+    "acuerdo-borrable-created": lambda data: data["id"] > 0,
+    "acuerdo-id": lambda data: data["id"] > 0,
+    "acuerdo-consumo-suspendido": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El acuerdo \d+ no está vigente\.", data["Message"]) is not None,
+    "acuerdo-consumo-smoke": lambda data: data["estado"] == "Vigente" and data["montoComprometido"] == 1000.0 and data["montoConsumido"] == 400.0 and [(linea["cantidadConsumida"], linea["saldo"]) for linea in data["lineas"]] == [(40, 60)],
+    "acuerdo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un acuerdo con el número AM-2026-001.",
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
     "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
     "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
@@ -495,6 +508,18 @@ request_check() {
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "acuerdo-created" ]]; then
+        ACUERDO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "linea-acuerdo-created" ]]; then
+        LINEA_ACUERDO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "acuerdo-borrable-created" ]]; then
+        ACUERDO_BORRABLE_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -634,6 +659,19 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Acuerdos de abastecimiento vigentes' GET '/api/v1/acuerdos-abastecimiento?estado=vigente' 200 acuerdos-vigentes
+request_check 'Detalle del acuerdo 1' GET '/api/v1/acuerdos-abastecimiento/1' 200 acuerdo-detalle
+request_check 'Resumen de acuerdos de abastecimiento' GET '/api/v1/acuerdos-abastecimiento/resumen' 200 acuerdos-resumen
+request_check 'POST acuerdo válido' POST '/api/v1/acuerdos-abastecimiento' 200 acuerdo-created '{"numero":"AM-SMOKE-001","proveedorId":1,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":5000}'
+request_check 'POST línea válida' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas" 200 linea-acuerdo-created '{"productoId":1,"precioAcordado":10,"cantidadComprometida":100}'
+request_check 'POST consumo válido' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas/${LINEA_ACUERDO_CREADA_ID}/consumos" 200 acuerdo-id '{"cantidad":40}'
+request_check 'Suspender acuerdo recién creado' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/suspender" 200 acuerdo-id ''
+request_check 'POST consumo con el acuerdo suspendido' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas/${LINEA_ACUERDO_CREADA_ID}/consumos" 409 acuerdo-consumo-suspendido '{"cantidad":1}'
+request_check 'Reactivar acuerdo recién creado' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/reactivar" 200 acuerdo-id ''
+request_check 'Detalle del acuerdo con consumo' GET "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}" 200 acuerdo-consumo-smoke
+request_check 'POST acuerdo con número del seed' POST '/api/v1/acuerdos-abastecimiento' 409 acuerdo-duplicate '{"numero":"AM-2026-001","proveedorId":1,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":1000}'
+request_check 'POST acuerdo para borrar' POST '/api/v1/acuerdos-abastecimiento' 200 acuerdo-borrable-created '{"numero":"AM-SMOKE-002","proveedorId":2,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":500}'
+request_check 'DELETE acuerdo sin consumos' DELETE "/api/v1/acuerdos-abastecimiento/${ACUERDO_BORRABLE_ID}" 204 ''
 request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
 request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
 request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary

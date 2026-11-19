@@ -92,5 +92,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
 | 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales` | — |
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+| 010 | `010-acuerdos-abastecimiento.sql` | Sergio | `sergio/modulo20-acuerdos-abastecimiento` | no |
 
 Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
