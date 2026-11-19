@@ -19,6 +19,10 @@ public partial class Proveedor
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<Licitacion> Licitaciones { get; set; } = new List<Licitacion>();
+
+    public virtual ICollection<OfertaLicitacion> OfertasLicitacion { get; set; } = new List<OfertaLicitacion>();
+
     public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 
     public virtual ICollection<SolicitudCompra> SolicitudesCompra { get; set; } = new List<SolicitudCompra>();
