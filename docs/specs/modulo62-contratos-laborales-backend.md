@@ -304,13 +304,28 @@ Cubre: `Vigente` (1, 4), `Renovado` (2, 3, con cadena de renovación), `Vencido`
 
 ## 6. Checklist de ejecución
 - [x] Decisiones 1 a 8 de §2 resueltas por Lukas y spec aprobada (retirar de §4 lo que no aplique).
-- [ ] Tarea 1: script `database/008-contratos-laborales.sql`, `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`; revisar el `git diff` de lo generado.
-- [ ] Tarea 2: DTOs, `ValidacionContratoLaboral`, `AdministrarContratosLaboralesUseCase` y controlador con roles.
-- [ ] Tarea 3: efecto E4 en `CesarAsync` del 61 y su prueba (solo con la decisión 2 A).
-- [ ] Tarea 4: pruebas T1 a T13.
-- [ ] Tarea 5: seed (y rol `RRHH` con la decisión 6 A) y `smoke-postgres.sh`, incluidas las comprobaciones de roles actualizadas.
-- [ ] Tarea 6: verificar A1 a A14 y anotar los resultados en §7.
+- [x] Tarea 1: script `database/008-contratos-laborales.sql`, `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`; revisar el `git diff` de lo generado.
+- [x] Tarea 2: DTOs, `ValidacionContratoLaboral`, `AdministrarContratosLaboralesUseCase` y controlador con roles.
+- [x] Tarea 3: efecto E4 en `CesarAsync` del 61 y su prueba (solo con la decisión 2 A).
+- [x] Tarea 4: pruebas T1 a T13.
+- [x] Tarea 5: seed (y rol `RRHH` con la decisión 6 A) y `smoke-postgres.sh`, incluidas las comprobaciones de roles actualizadas.
+- [x] Tarea 6: verificar A1 a A14 y anotar los resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-19 | A1 | pasa | `dotnet build -warnaserror` dentro de `./scripts/verify.sh`: 0 errores, 0 warnings (commit `9f8a3eb`, PR #39) |
+| 2026-11-19 | A2 | pasa | `./scripts/verify.sh` exit 0 en una copia limpia de `9f8a3eb`: backend 1083/1083, frontend lint, typecheck, 497/497 y build |
+| 2026-11-19 | A3 | pasa | T1 y T2: mensajes 1 a 12; sueldo con más de 2 decimales o desbordado no se guarda ni se redondea |
+| 2026-11-19 | A4 | parcial | T3 y T4: mensajes 13 a 16; 409 secuencial también en el smoke. La carrera concurrente la cubre el índice único parcial `IX_ContratosLaborales_EmpleadoId_Vigente`, traducido a 409; falta una prueba concurrente explícita en el smoke |
+| 2026-11-19 | A5 | parcial | T5: inicio = fin + 1, anterior `Renovado`, mensajes 18 y 19. La atomicidad la da la `TransactionScope` de `RenovarAsync` (revisado en el código); sin prueba que fuerce un fallo a mitad |
+| 2026-11-19 | A6 | pasa | T6: mensajes 20 a 25; el contrato no cambia y las adendas conservan el historial |
+| 2026-11-19 | A7 | pasa | T3, T8, T9 y smoke: `Vencido` calculado al leer, con el filtro correcto |
+| 2026-11-19 | A8 | pasa | T7, T13 y smoke: mensajes 26 a 28 y 33 |
+| 2026-11-19 | A9 | pasa | T8 a T10: búsqueda, filtros, paginación, orden, `total`, mensajes 29 a 32 y 17; `PUT`/`DELETE` sin 2xx |
+| 2026-11-19 | A10 | pasa | T11 y smoke: 401 sin token, 403 sin rol de escritura, 200 con `RRHH` y `ADMIN` |
+| 2026-11-19 | A11 | pasa | T12 |
+| 2026-11-19 | A12 | pasa | `./scripts/smoke-postgres.sh` sobre `9f8a3eb`: `SMOKE OK`; `scaffold.sh --comprobar` al día |
+| 2026-11-19 | A13 | pasa | Test de OpenAPI y smoke: rutas presentes, sin `PUT` ni `DELETE` |
+| 2026-11-19 | A14 | aceptado | Un archivo fuera de §3: `Configuration/run/PluralizadorEspanol.cs`, que `crear-modulo.md` obliga a tocar para las tablas con plural irregular. Aprobado por Lukas en la revisión del PR #39 |
+| 2026-11-19 | Producción | aplicado | `008-contratos-laborales.sql` aplicado en Neon con copia de seguridad (`respaldo-bd`) y ensayo previo: 38 tablas con las mismas filas y `ContratosLaborales` y `AdendasContrato` creadas vacías. El rol `RRHH` no existe en la demo (solo en el seed local) |
