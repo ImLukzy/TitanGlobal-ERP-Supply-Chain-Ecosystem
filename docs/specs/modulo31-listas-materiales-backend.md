@@ -4,7 +4,7 @@
 
 El dominio de Manufactura necesita registrar qué componentes se requieren para fabricar un producto. El módulo permite consultar listas de materiales (BOM), preparar una versión en borrador, activarla y retirar la versión activa conservando su historial.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobación de Lukas confirmada por Antony.
 
 ## 2. Fuera de alcance
 
@@ -13,15 +13,17 @@ Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas
 - La pantalla React, que tendrá su propia spec una vez aprobado el contrato del backend.
 - Cambios manuales al modelo `Producto`, al pipeline y a scripts SQL fusionados.
 
-**Decisiones para aprobación:** una lista contiene los componentes directos para una unidad del producto fabricado. Se exige una unidad de medida por línea porque `Producto` aún no tiene ese campo. Se conserva cada versión usada en producción. La activación exige que el producto quede sin otra versión activa, por lo que el retiro y la activación de la versión siguiente son operaciones separadas.
+**Decisiones de alcance:** una lista contiene los componentes directos para una unidad del producto fabricado. Se exige una unidad de medida por línea porque `Producto` aún no tiene ese campo. Se conserva cada versión usada en producción. La activación exige que el producto quede sin otra versión activa, por lo que el retiro y la activación de la versión siguiente son operaciones separadas.
 
 ## 3. Archivos afectados
 
 | Archivo | Acción |
 |---|---|
 | `database/002-listas-materiales.sql` | Crear las tablas `ListasMateriales` y `DetallesListaMaterial` con el siguiente número libre al implementar (`002` al redactar). |
-| `src/TitanGlobal.Domain/Models/ListaMaterial.cs` y `DetalleListaMaterial.cs` | Generar con scaffold. Las navegaciones resultantes de las claves foráneas a `Producto` también salen del scaffold. |
+| `src/TitanGlobal.Domain/Models/ListaMateriales.cs` y `DetalleListaMaterial.cs` | Generar con scaffold. Las navegaciones resultantes de las claves foráneas a `Producto` también salen del scaffold. |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Regenerar con scaffold. |
+| `src/TitanGlobal.Infrastructure/config/TitanGlobalDbContext.ListasMateriales.cs` | Configurar la navegación de varias versiones por producto. |
+| `src/TitanGlobal.Domain/Repositories/IEscrituraListaMaterial.cs`, `src/TitanGlobal.Infrastructure/Repositories/Implementation/EscrituraListaMaterial.cs` e `InfrastructureServicesExtensions.cs` | Serializar las escrituras de una misma lista con un bloqueo de cabecera en PostgreSQL y registrar el servicio. |
 | `src/TitanGlobal.Application/DTOs/Modulo31_ListasMateriales/` y `UseCases/Modulo31_ListasMateriales/` | Crear DTOs, validación y casos de uso. |
 | `src/TitanGlobal.Api/Controllers/Modulo31_ListasMateriales/ListasMaterialesController.cs` | Crear el controlador HTTP. |
 | `tests/TitanGlobal.Api.Tests/Modulo31_ListasMateriales/` | Crear pruebas de integración del contrato. |
@@ -102,7 +104,7 @@ En las escrituras por ID se verifica primero la existencia y luego el estado. En
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance y el contrato.
+- [x] Aprobación de Lukas sobre el alcance y el contrato.
 - [ ] Primer commit de implementación: script SQL y scaffold.
 - [ ] Segundo commit de implementación: DTOs, validaciones y casos de uso.
 - [ ] Tercer commit de implementación: controlador, pruebas, seed y smoke.
@@ -112,3 +114,6 @@ En las escrituras por ID se verifica primero la existencia y luego el estado. En
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-18 | A1 | Terminó con avisos del frontend | `./scripts/verify.sh` salió con código 0. Compilación .NET sin advertencias, 968 pruebas de backend y 497 de frontend aprobadas. npm avisó sobre la versión de Node y la de ESLint. Vite avisó sobre un archivo superior a 500 kB. |
+| 2026-11-18 | A2–A4 | Correcto | `dotnet test --no-restore --filter FullyQualifiedName~Modulo31_ListasMateriales`: 26 pruebas aprobadas. OpenAPI confirmado en el smoke. |
+| 2026-11-18 | A5 | Correcto | `./scripts/smoke-postgres.sh`: scaffold al día, concurrencia verificada y `SMOKE OK` en un proyecto Docker aislado. |

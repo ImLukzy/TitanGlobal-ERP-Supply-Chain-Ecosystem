@@ -396,6 +396,20 @@ checks = {
     "empleado-cesado": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
     "empleado-ceased-edit": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede editar un empleado cesado." and "Detail" not in data,
     "empleado-cese-repeated": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El empleado [0-9]+ ya está cesado\.", data["Message"]) is not None and "Detail" not in data,
+    "openapi-listas-materiales": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/listas-materiales", "get"), ("/api/v1/listas-materiales", "post"),
+        ("/api/v1/listas-materiales/{id}", "get"), ("/api/v1/listas-materiales/{id}", "put"),
+        ("/api/v1/listas-materiales/{id}/activar", "post"), ("/api/v1/listas-materiales/{id}/retirar", "post"),
+    ]),
+    "listas-materiales-seed": lambda data: data["total"] == 2 and [
+        (item["version"], item["estado"], item["totalComponentes"]) for item in data["items"]
+    ] == [(2, "Borrador", 2), (1, "Activa", 2)],
+    "lista-material-creada": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "lista-material-retirada": lambda data: data["estado"] == "Retirada" and [
+        (item["componenteProductoId"], item["cantidad"], item["unidadMedida"]) for item in data["componentes"]
+    ] == [(6, 0.123456, "unidad")],
+    "lista-material-version-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1.",
+    "lista-material-edicion-bloqueada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar listas de materiales en borrador.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -571,6 +585,9 @@ request_check() {
     fi
     if [[ "$validation" == "empleado-created" ]]; then
         EMPLEADO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "lista-material-creada" ]]; then
+        LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -862,4 +879,80 @@ request_check 'POST empleado menor de edad' POST '/api/v1/empleados' 400 emplead
 request_check 'Cesar empleado creado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 200 empleado-cesado '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+request_check 'OpenAPI de listas de materiales' GET '/openapi/v1.json' 200 openapi-listas-materiales
+request_check 'Versiones de la lista de materiales del producto 1' GET '/api/v1/listas-materiales?productoId=1' 200 listas-materiales-seed
+request_check 'Rechazar versión repetida' POST '/api/v1/listas-materiales' 409 lista-material-version-duplicada '{"productoId":1,"version":1,"componentes":[{"componenteProductoId":3,"cantidad":1,"unidadMedida":"unidad"}]}'
+request_check 'Crear lista de materiales en borrador' POST '/api/v1/listas-materiales' 201 lista-material-creada '{"productoId":3,"version":1,"componentes":[{"componenteProductoId":5,"cantidad":1,"unidadMedida":"unidad"}]}'
+LISTA_MATERIAL_SMOKE="/api/v1/listas-materiales/${LISTA_MATERIAL_CREADA_ID}"
+LISTA_MATERIAL_EDICION='{"componentes":[{"componenteProductoId":6,"cantidad":0.123456,"unidadMedida":"unidad"}]}'
+request_check 'Editar lista de materiales en borrador' PUT "$LISTA_MATERIAL_SMOKE" 200 '' "$LISTA_MATERIAL_EDICION"
+request_check 'Activar lista de materiales' POST "$LISTA_MATERIAL_SMOKE/activar" 200 ''
+request_check 'Bloquear edición de lista activa' PUT "$LISTA_MATERIAL_SMOKE" 409 lista-material-edicion-bloqueada "$LISTA_MATERIAL_EDICION"
+request_check 'Retirar lista de materiales' POST "$LISTA_MATERIAL_SMOKE/retirar" 200 ''
+request_check 'Consultar lista de materiales retirada' GET "$LISTA_MATERIAL_SMOKE" 200 lista-material-retirada
+
+TITANGLOBAL_SMOKE_BOM_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/listas-materiales" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_BOM_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=10) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def componentes(cantidad):
+    return [{"componenteProductoId": 6, "cantidad": cantidad, "unidadMedida": "unidad"}]
+
+def crear(producto, version):
+    estado, respuesta = peticion("POST", datos={
+        "productoId": producto, "version": version, "componentes": componentes(1),
+    })
+    assert estado == 201, respuesta
+    return respuesta["id"]
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, [primera, segunda]))
+
+primera = crear(2, 1)
+segunda = crear(2, 2)
+resultados = en_paralelo(("POST", f"/{primera}/activar"), ("POST", f"/{segunda}/activar"))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "El producto 2 ya tiene una lista de materiales activa.", conflicto
+estado, activas = peticion("GET", "?productoId=2&estado=Activa")
+assert estado == 200 and activas["total"] == 1, activas
+
+id_lista = crear(4, 1)
+activacion, edicion = en_paralelo(
+    ("POST", f"/{id_lista}/activar"),
+    ("PUT", f"/{id_lista}", {"componentes": componentes(2)}),
+)
+assert activacion[0] == 200 and edicion[0] in (200, 409), (activacion, edicion)
+if edicion[0] == 409:
+    assert edicion[1]["Message"] == "Solo se pueden editar listas de materiales en borrador.", edicion
+estado, lista = peticion("GET", f"/{id_lista}")
+assert estado == 200 and lista["estado"] == "Activa", lista
+assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
+print("Concurrencia de listas de materiales OK")
+PY
 printf 'SMOKE OK\n'
