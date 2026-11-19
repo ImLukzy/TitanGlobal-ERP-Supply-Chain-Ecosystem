@@ -303,8 +303,8 @@ Cubre: `Vigente` (1, 4), `Renovado` (2, 3, con cadena de renovación), `Vencido`
 | A14 | Alcance | en el diff contra `main`, solo los archivos de §3; sin cambios en `Middlewares/`, `Services/`, `Program.cs`, `Configuration/`, `UnitOfWork`, entidades base ni archivos generados editados a mano | 0 archivos fuera de §3 |
 
 ## 6. Checklist de ejecución
-- [ ] Decisiones 1 a 8 de §2 resueltas por Lukas y spec aprobada (retirar de §4 lo que no aplique).
-- [ ] Tarea 1: script `database/002-contratos-laborales.sql` (renombrar al siguiente número libre si hay choque), `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`; revisar el `git diff` de lo generado.
+- [x] Decisiones 1 a 8 de §2 resueltas por Lukas y spec aprobada (retirar de §4 lo que no aplique).
+- [ ] Tarea 1: script `database/008-contratos-laborales.sql`, `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh`; revisar el `git diff` de lo generado.
 - [ ] Tarea 2: DTOs, `ValidacionContratoLaboral`, `AdministrarContratosLaboralesUseCase` y controlador con roles.
 - [ ] Tarea 3: efecto E4 en `CesarAsync` del 61 y su prueba (solo con la decisión 2 A).
 - [ ] Tarea 4: pruebas T1 a T13.
