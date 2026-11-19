@@ -32,7 +32,7 @@ Sigue el patrón de `Modulo13_SolicitudesCompra` (cabecera con detalle y cambios
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/NNN-licitaciones.sql` | crear | `CREATE TABLE "Licitaciones"` y `"OfertasLicitacion"`; usar `005` (el `004` es del módulo 12) y que Lukas renumere si hay choque |
+| `database/006-licitaciones.sql` | crear | `CREATE TABLE "Licitaciones"` y `"OfertasLicitacion"`; número `006` reservado para este módulo en `docs/equipo/relevo.md` §8 |
 | `src/TitanGlobal.Domain/Models/Licitacion.cs`, `OfertaLicitacion.cs`, `Proveedor.cs` | regenerar | entidades `partial` generadas por `./scripts/scaffold.sh` (no se editan a mano) |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `DbSet<Licitacion>` y `DbSet<OfertaLicitacion>`, generados |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold nombra mal las entidades (deben quedar `Licitacion` / `Licitaciones` y `OfertaLicitacion` / `OfertasLicitacion`) |
@@ -181,7 +181,7 @@ Resumen esperado del seed: 5 licitaciones, 7 ofertas, presupuesto abierto 70000.
 | 2026-11-16 | A4 Reglas de ofertas | OK | oferta válida, proveedor inexistente, inactivo y repetido, monto sobre el presupuesto, plazo y observaciones, licitación no abierta y plazo vencido; mejora de oferta solo en subasta inversa y solo a la baja |
 | 2026-11-16 | A5 Estados | OK | abrir → cerrar → adjudicar con proveedor y monto guardados y `esGanadora`; cancelar desde `Abierta` y `Cerrada`; cada transición inválida con su 409 literal |
 | 2026-11-16 | A6 Consultas | OK | filtros por estado, tipo y búsqueda sin distinguir mayúsculas, paginación con `total`, `totalOfertas`, ofertas del detalle ordenadas por monto y resumen exacto del seed (5 / 7 / 70000 / 28000) |
-| 2026-11-16 | A7 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `005`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-16 | A7 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `006`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-16 | A8 OpenAPI | OK | `OpenApiContainsElevenTenderOperations` |
 
 `dotnet test` completo: 988 correctas, 0 con error.
