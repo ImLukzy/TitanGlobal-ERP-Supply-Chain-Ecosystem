@@ -85,7 +85,7 @@ public class AcuerdosAbastecimientoApiTests
         Assert.Equal(90000m, detalle.MontoComprometido);
         Assert.Equal(20000m, detalle.MontoConsumido);
         Assert.Equal(new[] { 1, 2 }, detalle.Lineas.Select(linea => linea.ProductoId).ToArray());
-        Assert.Equal(new[] { "Empaque estándar", "Pallet de madera" }, detalle.Lineas.Select(linea => linea.ProductoNombre).ToArray());
+        Assert.Equal(new[] { "Laptop Pro", "Laptop Básica" }, detalle.Lineas.Select(linea => linea.ProductoNombre).ToArray());
         Assert.Equal(new[] { 600, 500 }, detalle.Lineas.Select(linea => linea.Saldo).ToArray());
     }
 
@@ -586,7 +586,6 @@ public class AcuerdosAbastecimientoApiTests
         contexto.LineasAcuerdoAbastecimiento.RemoveRange(contexto.LineasAcuerdoAbastecimiento);
         contexto.AcuerdosAbastecimiento.RemoveRange(contexto.AcuerdosAbastecimiento);
         contexto.Proveedores.RemoveRange(contexto.Proveedores);
-        contexto.Productos.RemoveRange(contexto.Productos);
         contexto.Proveedores.AddRange(
             CrearProveedor(1, "Andes Suministros S.A.C.", "20600000001", "Peru", true),
             CrearProveedor(2, "Minerales del Sur S.A.C.", "20600000002", "Peru", true),
@@ -594,11 +593,6 @@ public class AcuerdosAbastecimientoApiTests
             CrearProveedor(4, "Cobre Austral SpA", "76000000004", "Chile", true),
             CrearProveedor(5, "Servicios Andinos SpA", "76000000005", "Chile", false),
             CrearProveedor(6, "Shenzhen Parts Ltd.", "91000000006", "China", true));
-        contexto.Productos.AddRange(
-            CrearProducto(1, "Empaque estándar"),
-            CrearProducto(2, "Pallet de madera"),
-            CrearProducto(3, "Repuesto de maquinaria"),
-            CrearProducto(4, "Uniforme de planta"));
         DateTime finLargo = new DateTime(2099, 12, 31, 0, 0, 0, DateTimeKind.Utc);
         contexto.AcuerdosAbastecimiento.AddRange(
             CrearAcuerdo(1, "AM-2026-001", 1, "Vigente", new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), finLargo, 100000m),
@@ -624,11 +618,6 @@ public class AcuerdosAbastecimientoApiTests
     private static Proveedor CrearProveedor(int id, string razonSocial, string ruc, string pais, bool activo)
     {
         return new Proveedor { Id = id, RazonSocial = razonSocial, Ruc = ruc, Pais = pais, Activo = activo };
-    }
-
-    private static Producto CrearProducto(int id, string nombre)
-    {
-        return new Producto { Id = id, Nombre = nombre, Categoria = "Insumos", Precio = 10m };
     }
 
     private static AcuerdoAbastecimiento CrearAcuerdo(
