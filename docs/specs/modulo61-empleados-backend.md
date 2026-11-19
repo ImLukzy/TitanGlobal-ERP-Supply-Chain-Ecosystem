@@ -129,7 +129,7 @@ Verificado en el repositorio: todas las rutas marcadas «modificar» existen; la
 3. Obtener por `id`: si no existe, 404 (28).
 4. Si `Estado = Cesado`, 409 (23).
 5. Si `FechaCese < FechaIngreso`, 400 (24). Igual a la fecha de ingreso es válido (decisión 5).
-6. Guarda `Estado = Cesado`, `FechaCese` y `MotivoCese`. Nada más: E4 queda pendiente (decisión 1).
+6. Guarda `Estado = Cesado`, `FechaCese` y `MotivoCese`. Además cierra los contratos laborales vigentes del empleado (E4), según `docs/specs/modulo62-contratos-laborales-backend.md` (decisión 2 A y mensaje 33).
 
 *Consulta por id* (`ObtenerAsync`): 404 (28).
 
