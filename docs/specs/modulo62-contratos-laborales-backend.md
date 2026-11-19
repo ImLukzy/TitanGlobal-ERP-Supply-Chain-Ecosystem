@@ -97,7 +97,7 @@ Verificado en el repositorio: existen `database/001-esquema-inicial.sql`, `scrip
 | `MotivoCierre` | `character varying(300)` | nula; `Cese del empleado` en `Cerrado`; el motivo del usuario en `Anulado` |
 
 Índices y guardas de base de datos (decisión 7 A):
-- `CREATE UNIQUE INDEX "IX_ContratosLaborales_EmpleadoId_Vigente" ON "ContratosLaborales" ("EmpleadoId") WHERE "Estado" = 'Vigente';` es la guarda de C2 ante carreras.
+- `CREATE UNIQUE INDEX "IX_ContratosLaborales_EmpleadoId_Vigente" ON "ContratosLaborales" ("EmpleadoId", "Estado") WHERE "Estado" = 'Vigente';` es la guarda de C2 ante carreras. Incluye `Estado`, constante dentro del filtro, porque con solo `EmpleadoId` el scaffold genera una relación 1 a 1 con `Empleados`.
 - `CHECK` de red de seguridad (la validación previa de `Application` es la que responde): `"SueldoBasico" > 0`, `("Modalidad" = 'Indeterminado') = ("FechaFin" IS NULL)` y `"FechaFin" IS NULL OR "FechaFin" > "FechaInicio"`. Una violación de `CHECK` (`23514`) no la traduce `UnitOfWork`, por eso las reglas se validan antes de guardar.
 
 **Tabla `AdendasContrato`** (entidad `AdendaContrato`, generada):
