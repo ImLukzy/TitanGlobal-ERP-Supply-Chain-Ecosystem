@@ -34,4 +34,6 @@ public partial class Empleado
     public DateOnly? FechaCese { get; set; }
 
     public string? MotivoCese { get; set; }
+
+    public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
 }
