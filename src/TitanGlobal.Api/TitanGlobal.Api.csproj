@@ -10,10 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <!-- Sin PrivateAssets: Configuration/run (scaffold) usa tipos de este paquete y, si no se publica, la API no
+         arranca en Render al registrar los controladores (FileNotFoundException de EntityFrameworkCore.Design). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
   </ItemGroup>
   <ItemGroup>
