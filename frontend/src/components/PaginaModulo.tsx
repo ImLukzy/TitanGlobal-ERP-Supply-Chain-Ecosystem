@@ -30,11 +30,11 @@ export function PaginaModulo({ modulo: referencia, className = '', children }: P
         <span aria-hidden="true">/</span>
         <span>{modulo.dominio}</span>
         <span aria-hidden="true">/</span>
-        <span aria-current="page">{numero} · {modulo.nombre}</span>
+        <span aria-current="page">{numero} · {modulo.titulo}</span>
       </nav>
       <header className="module-page-heading">
         <div className="page-eyebrow">MÓDULO {numero} · {modulo.dominio}</div>
-        <h1>{numero} · {modulo.nombre}</h1>
+        <h1>{numero} · {modulo.titulo}</h1>
       </header>
       {children}
     </div>

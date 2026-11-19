@@ -14,6 +14,7 @@ describe('catálogo de módulos', () => {
     expect(modulos[3]).toMatchObject({
       numero: 4,
       nombre: 'OrdenesCompra',
+      titulo: 'Órdenes de compra',
       slug: '04-ordenes-compra',
       dominio: 'Comercial, Ventas y CRM',
     });

@@ -116,7 +116,7 @@ export function AppLayout() {
                         to={`/modulos/${modulo.slug}`}
                       >
                         <span>{String(modulo.numero).padStart(2, '0')}</span>
-                        <span>{modulo.nombre}</span>
+                        <span>{modulo.titulo}</span>
                       </NavLink>
                     </li>
                   ))}
@@ -124,7 +124,7 @@ export function AppLayout() {
               </details>
             ))}
           </nav>
-          <div className="sidebar-footer"><span className="status-dot" /> Entorno de desarrollo</div>
+          <div className="sidebar-footer"><span className="status-dot" /> {import.meta.env.PROD ? 'Demo en línea' : 'Entorno de desarrollo'}</div>
         </aside>
         <main className="main-content"><Outlet /></main>
       </div>

@@ -49,7 +49,7 @@ export function UsuarioDetallePanel({
               <dt>Usuario</dt>
               <dd>{usuario.nombreUsuario}</dd>
             </div>
-            <div>
+            <div className="usuarios-detail-wide">
               <dt>Email</dt>
               <dd>{usuario.email}</dd>
             </div>

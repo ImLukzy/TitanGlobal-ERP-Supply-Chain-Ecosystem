@@ -32,7 +32,7 @@ El gate comprueba estas fronteras con las reglas `f` y `g` de `scripts/check-rul
 
 ### 2. Script SQL de la tabla
 
-La base de datos es la fuente de verdad: primero se escribe la tabla y después se generan las entidades. Crea `database/NNN-descripcion.sql` con el **siguiente número libre** (mira los que ya hay en `database/`; el primero es `001-esquema-inicial.sql`) y escribe el `CREATE TABLE` o `ALTER TABLE`. Convenciones: tabla en plural y PascalCase, clave primaria `"Id"` con identidad, claves foráneas `"<Entidad>Id"` con su índice, e índices únicos con prefijo `IX_`. Pon las longitudes (`character varying(n)`) y los decimales (`numeric(18,2)`) que pide la spec. Ejemplo real, la tabla de Proveedores (`database/001-esquema-inicial.sql`):
+La base de datos es la fuente de verdad: primero se escribe la tabla y después se generan las entidades. Crea `database/NNN-descripcion.sql` con el **siguiente número libre** de la tabla de [`relevo.md` §8](relevo.md#8-números-de-los-scripts-de-base-de-datos), que también reserva los números de las ramas abiertas, y añade allí tu script y escribe el `CREATE TABLE` o `ALTER TABLE`. Convenciones: tabla en plural y PascalCase, clave primaria `"Id"` con identidad, claves foráneas `"<Entidad>Id"` con su índice, e índices únicos con prefijo `IX_`. Pon las longitudes (`character varying(n)`) y los decimales (`numeric(18,2)`) que pide la spec. Ejemplo real, la tabla de Proveedores (`database/001-esquema-inicial.sql`):
 
 ```sql
 CREATE TABLE "Proveedores" (
