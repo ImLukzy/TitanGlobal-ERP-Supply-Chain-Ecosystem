@@ -21,4 +21,7 @@
     <ProjectReference Include="..\TitanGlobal.Domain\TitanGlobal.Domain.csproj" />
     <ProjectReference Include="..\TitanGlobal.Infrastructure\TitanGlobal.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Configuration\run\**\*.cs" Visible="false" />
+  </ItemGroup>
 </Project>

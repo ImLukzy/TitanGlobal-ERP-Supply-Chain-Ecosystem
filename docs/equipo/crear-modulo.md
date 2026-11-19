@@ -32,7 +32,7 @@ El gate comprueba estas fronteras con las reglas `f` y `g` de `scripts/check-rul
 
 ### 2. Script SQL de la tabla
 
-La base de datos es la fuente de verdad: primero se escribe la tabla y después se generan las entidades. Crea `database/NNN-descripcion.sql` con el **siguiente número libre** (mira los que ya hay en `database/`; el primero es `001-esquema-inicial.sql`) y escribe el `CREATE TABLE` o `ALTER TABLE`. Convenciones: tabla en plural y PascalCase, clave primaria `"Id"` con identidad, claves foráneas `"<Entidad>Id"` con su índice, e índices únicos con prefijo `IX_`. Pon las longitudes (`character varying(n)`) y los decimales (`numeric(18,2)`) que pide la spec. Ejemplo real, la tabla de Proveedores (`database/001-esquema-inicial.sql`):
+La base de datos es la fuente de verdad: primero se escribe la tabla y después se generan las entidades. Crea `database/NNN-descripcion.sql` con el **siguiente número libre** de la tabla de [`relevo.md` §8](relevo.md#8-números-de-los-scripts-de-base-de-datos), que también reserva los números de las ramas abiertas, y añade allí tu script y escribe el `CREATE TABLE` o `ALTER TABLE`. Convenciones: tabla en plural y PascalCase, clave primaria `"Id"` con identidad, claves foráneas `"<Entidad>Id"` con su índice, e índices únicos con prefijo `IX_`. Pon las longitudes (`character varying(n)`) y los decimales (`numeric(18,2)`) que pide la spec. Ejemplo real, la tabla de Proveedores (`database/001-esquema-inicial.sql`):
 
 ```sql
 CREATE TABLE "Proveedores" (
@@ -105,8 +105,8 @@ public partial class Proveedor
 No edites a mano ningún archivo con esa cabecera ni `TitanGlobalDbContext.cs`: `./scripts/smoke-postgres.sh` crea la base desde `database/`, vuelve a generar y falla con «ERROR: el código generado no coincide…» si algo no coincide. El código propio va en archivos `partial` aparte:
 
 - **Valores iniciales** (`Activo = true`, `Estado = "Emitida"`…): el scaffold no los genera. Añade un constructor de la entidad en `src/TitanGlobal.Domain/Models/ValoresIniciales.cs` (por ejemplo, `Proveedor() { Activo = true; }`).
-- **Constructor y auditoría del contexto:** `TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs` en `src/TitanGlobal.Infrastructure/Persistence/`.
-- **Nombres en español:** el scaffold de EF pluraliza como en inglés. Si tu tabla no sigue la regla (solo cambia la primera palabra: `MovimientosInventario` → `MovimientoInventario`), añádela a `src/TitanGlobal.Api/Configuration/Scaffolding/PluralizadorEspanol.cs`. Si una colección necesita un nombre corto (`Detalles`), añádela a `src/TitanGlobal.Api/Configuration/Scaffolding/NombresNavegacion.cs`.
+- **Constructor y auditoría del contexto:** `TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs` en `src/TitanGlobal.Infrastructure/config/`. `Persistence/` solo contiene el `TitanGlobalDbContext.cs` generado.
+- **Nombres en español:** el scaffold de EF pluraliza como en inglés. Si tu tabla no sigue la regla (solo cambia la primera palabra: `MovimientosInventario` → `MovimientoInventario`), añádela a `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs`. Si una colección necesita un nombre corto (`Detalles`), añádela a `src/TitanGlobal.Api/Configuration/run/NombresNavegacion.cs`.
 
 ### 5. DTOs
 

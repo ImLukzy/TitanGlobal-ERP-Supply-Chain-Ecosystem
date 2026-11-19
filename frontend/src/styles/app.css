@@ -1359,6 +1359,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .usuarios-detail-grid > div { min-width: 0; }
 .usuarios-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
 .usuarios-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.usuarios-detail-wide { grid-column: 1 / -1; }
 .usuarios-detail-roles { grid-column: 1 / -1; }
 .usuarios-permisos { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
 .usuarios-permisos h3 { margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; }
@@ -1403,6 +1404,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .empleados-detail-grid > div { min-width: 0; }
 .empleados-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
 .empleados-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.empleados-detail-wide { grid-column: 1 / -1; }
 @media (max-width: 1023px) { .empleados-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
 @media (max-width: 760px) { .empleados-filters { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .empleados-summary { grid-template-columns: minmax(0, 1fr); } }
@@ -1429,8 +1431,59 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .sesion-usuario .secondary-button { min-width: 0; padding: 0 8px; font-size: 10px; }
 }
 @media (max-width: 420px) {
+  .topbar { gap: 8px; }
   .topbar-actions { gap: 8px; }
-  .role-picker select { max-width: 84px; }
+  /* El nombre de la marca se oculta solo a la vista (lo sigue leyendo el lector de pantalla) para que quepan el rol y el botón. */
+  .brand > span:not(.brand-mark) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .role-picker select { max-width: 112px; }
+  .sesion-usuario .secondary-button { white-space: nowrap; }
+}
+
+/* Módulo 33: Centros de trabajo */
+.centros-trabajo-page { padding-bottom: 42px; }
+.centros-trabajo-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.centros-trabajo-summary > .cliente-stat { grid-column: span 2; min-width: 0; }
+.centros-trabajo-summary > .cliente-stat:nth-child(4), .centros-trabajo-summary > .cliente-stat:nth-child(5) { grid-column: span 3; }
+.centros-trabajo-summary small { color: var(--ink-soft); font-size: 11px; }
+.centros-trabajo-summary-panel { grid-column: span 3; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.centros-trabajo-summary-panel h2 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.centros-trabajo-summary-panel table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--ink); }
+.centros-trabajo-summary-panel th, .centros-trabajo-summary-panel td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.centros-trabajo-summary-panel thead th { white-space: nowrap; color: var(--ink-soft); }
+.centros-trabajo-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.centros-trabajo-list-panel, .centros-trabajo-detail-panel { min-width: 0; }
+.centros-trabajo-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.centros-trabajo-filters > div { display: grid; min-width: 0; gap: 6px; }
+.centros-trabajo-filters label { font-size: 11px; color: var(--ink-soft); }
+.centros-trabajo-filters input, .centros-trabajo-filters select, .centros-trabajo-form input:not([type="checkbox"]), .centros-trabajo-form select { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 12px; }
+.centros-trabajo-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.centros-trabajo-table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 10px; text-align: left; }
+.centros-trabajo-table th { padding: 9px 5px; background: var(--surface-muted); color: var(--ink-soft); font-size: 10px; white-space: nowrap; }
+.centros-trabajo-table td { padding: 10px 5px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.centros-trabajo-table tr.is-selected { background: var(--accent-soft); }
+.centros-trabajo-table td:first-child { white-space: nowrap; }
+.centros-trabajo-code-button { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.centros-trabajo-number { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.centros-trabajo-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0; }
+.centros-trabajo-detail-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; }
+.centros-trabajo-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.centros-trabajo-detail-panel .clientes-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.centros-trabajo-detail-panel .clientes-detail-actions button { white-space: normal; }
+.centros-trabajo-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.centros-trabajo-active-field { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; }
+.centros-trabajo-form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.centros-trabajo-form-actions p { color: var(--bad); }
+@media (min-width: 1024px) {
+  .centros-trabajo-work-area { grid-template-columns: minmax(0, 1fr) 260px; }
+  .centros-trabajo-table { min-width: 0; }
+}
+@media (max-width: 719px) {
+  .centros-trabajo-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .centros-trabajo-summary > .cliente-stat { grid-column: auto; }
+  .centros-trabajo-summary > .cliente-stat:nth-child(4), .centros-trabajo-summary > .cliente-stat:nth-child(5) { grid-column: auto; }
+  .centros-trabajo-summary-panel { grid-column: 1 / -1; }
+  .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
+  .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
 
 /* Módulo 72 · Editor de permisos por módulo. */
