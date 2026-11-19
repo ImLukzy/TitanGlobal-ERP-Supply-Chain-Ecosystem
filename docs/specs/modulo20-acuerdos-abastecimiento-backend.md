@@ -167,12 +167,24 @@ Resumen esperado del seed: 4 acuerdos, monto máximo vigente 160000.00, monto co
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL y fila 010 en `relevo.md`, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionAcuerdoAbastecimiento`, casos de uso y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A9 y anotar resultados en §7.
+- [x] Tarea 1: script SQL y fila 010 en `relevo.md`, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, `ValidacionAcuerdoAbastecimiento`, casos de uso y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A9 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| | | | |
+| 2026-11-19 | A1 Compilación | OK | `dotnet build -warnaserror` y `./scripts/verify.sh` (macOS): las 5 capas compilan sin errores ni advertencias |
+| 2026-11-19 | A2 Gate | OK | `./scripts/verify.sh` completo en verde: reglas de código y capas (`check-rules.sh`), backend, frontend eslint/tsc/543 tests/build |
+| 2026-11-19 | A3 Reglas del acuerdo | OK | `AcuerdosAbastecimientoApiTests`: mensajes literales 400/404/409 de alta, edición y baja sin `Detail`; número guardado en mayúsculas y sin espacios; descripción en blanco → `null` |
+| 2026-11-19 | A4 Reglas de líneas | OK | línea válida, producto inexistente y repetido, precio y cantidad inválidos, compromiso sobre el monto máximo, acuerdo cancelado y baja de línea con y sin consumo |
+| 2026-11-19 | A5 Consumos | OK | consumo que reduce el saldo, consumo del saldo completo, cantidad sobre el saldo, acuerdo suspendido, cancelado, no iniciado y vencido, cada uno con su literal |
+| 2026-11-19 | A6 Estados | OK | suspender → reactivar → cancelar, cancelar desde `Suspendido` y cada transición inválida con su 409 literal |
+| 2026-11-19 | A7 Consultas | OK | filtros por estado, proveedor y búsqueda sin distinguir mayúsculas, paginación con `total`, montos comprometido y consumido, saldos del detalle y resumen exacto del seed (4 / 160000 / 61750) |
+| 2026-11-19 | A8 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `010`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA»; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-19 | A9 OpenAPI | OK | `OpenApiContainsTwelveAgreementOperations` |
+
+Los 46 tests del módulo 20 pasan y `dotnet test` completo termina sin errores.
+
+**Notas de entorno (macOS):** `scaffold.sh` y `smoke-postgres.sh` necesitaron rodeos locales en Mac (GNU sed para `\s`, un `ss` de reemplazo y bash 5 por el arreglo vacío con `set -u`). No se modificaron los scripts.
