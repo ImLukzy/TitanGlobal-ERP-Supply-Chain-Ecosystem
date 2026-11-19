@@ -3,7 +3,7 @@
 ## 1. Objetivo
 **Problema:** la base ya tenía claves primarias, 36 claves foráneas y 34 índices únicos, pero todas las demás reglas (precios no negativos, estados válidos, fechas ordenadas, longitudes en las tablas del enunciado) solo las comprobaba la aplicación.
 
-**Resultado esperado:** la base repite esas reglas con 63 restricciones `CHECK` y 4 longitudes, en `database/002-reglas-integridad.sql`. Un dato inválido cargado por fuera de la API (SQL a mano, otra herramienta) se rechaza.
+**Resultado esperado:** la base repite esas reglas con 63 restricciones `CHECK` y 4 longitudes, en `database/009-reglas-integridad.sql`. Un dato inválido cargado por fuera de la API (SQL a mano, otra herramienta) se rechaza.
 
 ## 2. Fuera de alcance
 - **Reglas que la aplicación no garantiza:** ninguna restricción es más estricta que la validación del código. Quedan sin regla `Clientes.Descripcion`, `Productos.Descripcion`, `OrdenesCompra.NumeroOrden` (longitud), `OrdenesCompra.Descripcion`, `RegistrosAuditoria.Cambios` y el par `Cotizaciones.Fecha`/`FechaValidez`.
@@ -14,7 +14,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/002-reglas-integridad.sql` | crear | 63 `CHECK` y 4 longitudes |
+| `database/009-reglas-integridad.sql` | crear | 63 `CHECK` y 4 longitudes |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `HasMaxLength` de Clientes y Productos (EF no genera los `CHECK`) |
 | `docs/equipo/crear-modulo.md`, `docs/contexto-proyecto.md` | modificar | regla para tablas nuevas y decisión |
 
@@ -27,14 +27,14 @@
 ## 5. Criterios de aceptación
 | # | Criterio | Cómo se verifica | Umbral |
 |---|---|---|---|
-| A1 | Se aplica | `./scripts/aplicar-bd.sh --reiniciar` | 001 y 002 aplicados; 63 `CHECK` en `pg_constraint` |
+| A1 | Se aplica | `./scripts/aplicar-bd.sh --reiniciar` | 001 y 009 aplicados; 63 `CHECK` en `pg_constraint` |
 | A2 | Seed | `scripts/seed-dev.sql` sobre la base nueva | sin errores |
 | A3 | Bloquea | precio negativo, RUC con letras, estado inventado | `violates check constraint` |
 | A4 | La API no se rompe | `./scripts/smoke-postgres.sh` | `SMOKE OK`, 0 respuestas 500 |
 | A5 | Gate | `./scripts/verify.sh` | en verde |
 
 ## 6. Checklist de ejecución
-- [x] Script 002 a partir de las validaciones del código.
+- [x] Script 009 (antes 002) a partir de las validaciones del código.
 - [x] Scaffold regenerado.
 - [x] Verificar A1–A5 y anotar en §7.
 - [ ] Aplicar en la demo (Lukas, con `neon-bd.py`).
