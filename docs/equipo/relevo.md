@@ -24,7 +24,7 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
 | Kelvin | 41 VehiculosFlota y 42 Conductores: backend, pruebas, seed y smoke | Pantallas, unicidad sin distinguir mayúsculas y relación entre `Habilitado` y vencimiento |
-| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual con capturas de ambas pantallas y que Lukas apruebe `docs/hcm-reglas-negocio.md` |
+| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: puede empezar el 62 con su spec |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
 
@@ -39,7 +39,7 @@ Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md
 | Módulo | Responsable | Spec de la pantalla | Estado | Siguiente paso |
 |---|---|---|---|---|
 | 72 RolesPermisos | Sergio | [42](../specs/42-modulo72-roles-permisos-frontend.md) | pestaña de roles integrada (§1) | completar la spec 42 y QA |
-| 71 Usuarios | Alexander | [44](../specs/44-modulo71-usuarios-frontend.md) | integrada (§1) | QA visual |
+| 71 Usuarios | Alexander | [44](../specs/44-modulo71-usuarios-frontend.md) | integrada (§1) | QA visual hecho (PR #20) |
 
 ## 4. Pantallas integradas el 2026-10-31
 
@@ -77,3 +77,20 @@ Al terminar, anotar la evidencia en el §7 de cada spec.
 - Con la máquina muy cargada, algunos tests del frontend pueden superar los 5 s y fallar por tiempo; repetir antes de investigar.
 - No cambies selectores de reglas compartidas de `app.css` (p. ej. `.tabla-paginada th`): pisan las cabeceras de otras pantallas (ver [`lecciones.md`](lecciones.md)).
 - El esquema solo con scripts `database/NNN-*.sql` y entidades generadas con `./scripts/scaffold.sh`; en la demo los scripts los aplica Lukas en Neon antes de desplegar.
+
+## 8. Números de los scripts de base de datos
+Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada script tiene reservado este número (2026-11-18). Si tu rama usa otro, renómbralo antes de abrir el PR. Que queden huecos no importa: `./scripts/aplicar-bd.sh` aplica en orden los que falten.
+
+| Número | Script | Responsable | Rama | Renombrar |
+|---|---|---|---|---|
+| 001 | `001-esquema-inicial.sql` | — | `main` | — |
+| 002 | `002-lotes-series.sql` | Maxi | `maxi/modulo25-lotes-series` | no |
+| 003 | `003-kardex-valorizado.sql` | Maxi | `maxi/modulo26-kardex-valorizado` | no |
+| 004 | `004-transferencias-almacen.sql` | Maxi | `maxi/modulo27-transferencias-almacen` | no |
+| 005 | `005-evaluaciones-proveedor.sql` | Sergio | `sergio/modulo12-evaluacion-proveedores` | sí, desde 004 |
+| 006 | `006-licitaciones.sql` | Sergio | `sergio/modulo14-licitaciones` | sí, desde 005 |
+| 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
+| 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales` | — |
+| 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+
+Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.

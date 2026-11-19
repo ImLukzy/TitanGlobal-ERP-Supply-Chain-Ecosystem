@@ -1,8 +1,8 @@
-# Capital Humano y Nóminas (61–70): reglas de negocio propuestas
+# Capital Humano y Nóminas (61–70): reglas de negocio
 
-Estado: **propuesta v0, pendiente de aprobación**. Ninguna regla se implementa hasta que Lukas la apruebe y exista la spec del módulo (`docs/specs/_TEMPLATE.md`).
+Estado: **v0 aprobada por Lukas el 2026-11-17** (decisiones en §3). Cada módulo necesita además su spec aprobada (`docs/specs/_TEMPLATE.md`) antes de implementarse.
 
-## 0. Supuestos a confirmar
+## 0. Supuestos
 
 | # | Supuesto | Motivo |
 |---|---|---|
@@ -10,7 +10,7 @@ Estado: **propuesta v0, pendiente de aprobación**. Ninguna regla se implementa 
 | S2 | Moneda única PEN en v0. | Evita conversión en planillas; el módulo 74 aún no existe. |
 | S3 | Planilla mensual en v0. | Más simple; quincenal se añade después. |
 | S4 | Parámetros legales (tasas, topes, tramos) viven en tablas del propio módulo 66 con seed, hasta que exista ParametrosSistema (79). | 79 está pendiente. |
-| S5 | Sin autenticación real: el rol llega por `X-User-Role` (`docs/contexto-proyecto.md`). Las reglas de aprobación usan el rol, no un usuario logueado. | Decisión vigente del proyecto. |
+| S5 | Las aprobaciones las hace un usuario autenticado con JWT y un rol con permiso (§3, decisión 4). | Autenticación JWT vigente (spec 51). |
 
 ## 1. Reglas transversales
 
@@ -44,7 +44,7 @@ Estado: **propuesta v0, pendiente de aprobación**. Ninguna regla se implementa 
 - **A4.** Tardanza = minutos de entrada posteriores a la hora del turno (64) más su tolerancia.
 - **A5.** Horas extra = horas trabajadas fuera de la jornada programada, con tope diario configurable (propuesta: 4 h).
 - **A6.** Jornada sin entrada o sin salida genera incidencia `SinMarcacion`, no cuenta como asistencia.
-- **A7.** Las horas extra se calculan, pero requieren aprobación de `Supervisor` antes de ir a planilla.
+- **A7.** Las horas extra se calculan, pero requieren aprobación de un usuario con rol `RRHH` o `ADMIN` antes de ir a planilla.
 
 ### 64 TurnosHorarios
 - **H1.** Turno: hora de entrada, hora de salida, tolerancia (0–30 min), días laborables, tipo `Fijo` o `Rotativo`.
@@ -58,7 +58,7 @@ Estado: **propuesta v0, pendiente de aprobación**. Ninguna regla se implementa 
 - **V2.** Vacaciones: 30 días calendario por año completo de servicio (devengo mensual de 2,5 días).
 - **V3.** Saldo vacacional = devengado − gozado − programado. Una solicitud no puede superar el saldo.
 - **V4.** Fecha de inicio ≤ fecha de fin. No solapa con otra ausencia aprobada del mismo empleado.
-- **V5.** Estados: `Pendiente` → `Aprobada` | `Rechazada`. Solo se cancela antes de la fecha de inicio.
+- **V5.** Estados: `Pendiente` → `Aprobada` | `Rechazada`. Aprueba o rechaza un usuario con rol `RRHH` o `ADMIN`. Solo se cancela antes de la fecha de inicio.
 - **V6.** Ausencia sin goce descuenta en planilla (66).
 
 ### 66 Planillas
@@ -100,11 +100,11 @@ Estado: **propuesta v0, pendiente de aprobación**. Ninguna regla se implementa 
 
 ### 71 Usuarios (ya implementado en backend)
 - **U1.** Siempre queda un ADMIN activo (`docs/contexto-proyecto.md`).
-- **U2.** Propuesta nueva: al cesar a un empleado (E2), su usuario asociado pasa a inactivo. Requiere decisión (ver Preguntas).
+- **U2.** Fuera de alcance v0: cesar a un empleado (E2) no cambia ningún usuario. `Usuarios` y `Empleados` no están enlazados.
 
-## 3. Preguntas abiertas
+## 3. Decisiones (2026-11-17)
 
-1. ¿Apruebas S1–S5 como base?
-2. ¿Al cesar un empleado (E2) desactivamos su usuario de 71 automáticamente (U2)?
-3. ¿El 61 Empleados debe servir de maestro para el 08 ComisionesVendedores, que hoy tiene su propio maestro de vendedores?
-4. ¿Quién aprueba horas extra y ausencias: el rol `Supervisor` o el jefe de área (que hoy no existe en el modelo)?
+1. Se aprueban los supuestos S1–S5 como base de v0.
+2. Al cesar un empleado (E2) **no** se desactiva su usuario del módulo 71 (U2 fuera de alcance v0).
+3. El 08 ComisionesVendedores conserva su propio maestro de vendedores; no depende del 61.
+4. Las horas extra (A7) y las ausencias (V5) las aprueba un usuario con rol `RRHH` o `ADMIN`. El rol `RRHH` se añade al seed con el primer módulo que lo use; no hay jefe de área en el modelo.
