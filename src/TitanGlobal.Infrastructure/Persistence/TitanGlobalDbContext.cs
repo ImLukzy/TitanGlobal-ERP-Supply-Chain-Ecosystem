@@ -53,6 +53,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Lote> Lotes { get; set; } = null!;
 
+    public virtual DbSet<MovimientoKardex> MovimientosKardex { get; set; } = null!;
+
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -431,6 +433,31 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Estado).HasMaxLength(20);
 
             entity.HasOne(d => d.Producto).WithMany(p => p.Lotes)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MovimientoKardex>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenId, "IX_MovimientosKardex_AlmacenId");
+
+            entity.HasIndex(e => e.LoteId, "IX_MovimientosKardex_LoteId");
+
+            entity.HasIndex(e => new { e.ProductoId, e.AlmacenId, e.Fecha }, "IX_MovimientosKardex_ProductoId_AlmacenId_Fecha");
+
+            entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
+            entity.Property(e => e.Referencia).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(10);
+
+            entity.HasOne(d => d.Almacen).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.AlmacenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Lote).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.LoteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.MovimientosKardex)
                 .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

@@ -245,17 +245,27 @@ checks = {
     "categoria-producto-created": lambda data: data["id"] > 0,
     "categoria-producto-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una categoría con el nombre computo.",
     "categoria-producto-deactivated": lambda data: data["nombre"] == "Categoría Smoke" and data["descripcion"] == "Alta de smoke" and data["activa"] is False,
-        "lotes-producto": lambda data: data["total"] >= 2 and all(item["productoId"] == 1 for item in data["items"]),
-        "lotes-busqueda": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "LOT-2026-001",
-        "lotes-resumen": lambda data: data["totalLotes"] >= 4 and data["bloqueados"] >= 1 and data["enCuarentena"] >= 1 and data["vencidos"] >= 1 and data["porVencer"] >= 1,
-        "lote-created": lambda data: data["id"] > 0,
-        "lote-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe el lote LOT-2026-001 para el producto 1.",
-        "lote-bad-dates": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha de vencimiento no puede ser anterior a la de fabricación.",
-        "lote-notfound": lambda data: data["StatusCode"] == 404 and data["Message"] == "El lote 9999 no existe.",
-        "serie-created": lambda data: data["id"] > 0,
-        "serie-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la serie SN-0001 para el producto 1.",
-        "serie-state-changed": lambda data: data["id"] > 0,
-        "serie-bad-transition": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede pasar la serie de Baja a Disponible.",
+    "lotes-producto": lambda data: data["total"] >= 2 and all(item["productoId"] == 1 for item in data["items"]),
+    "lotes-busqueda": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "LOT-2026-001",
+    "lotes-resumen": lambda data: data["totalLotes"] >= 4 and data["bloqueados"] >= 1 and data["enCuarentena"] >= 1 and data["vencidos"] >= 1 and data["porVencer"] >= 1,
+    "lote-created": lambda data: data["id"] > 0,
+    "lote-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe el lote LOT-2026-001 para el producto 1.",
+    "lote-bad-dates": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha de vencimiento no puede ser anterior a la de fabricación.",
+    "lote-notfound": lambda data: data["StatusCode"] == 404 and data["Message"] == "El lote 9999 no existe.",
+    "serie-created": lambda data: data["id"] > 0,
+    "serie-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la serie SN-0001 para el producto 1.",
+    "serie-state-changed": lambda data: data["id"] > 0,
+    "serie-bad-transition": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede pasar la serie de Baja a Disponible.",
+    "kardex-movimientos": lambda data: data["total"] == 3 and [item["tipo"] for item in data["items"]] == ["Salida", "Entrada", "Entrada"],
+    "kardex-peps": lambda data: data["metodo"] == "PEPS" and data["saldoCantidad"] == 70 and data["saldoValor"] == 800.0 and data["lineas"][2]["costoUnitario"] == 10.0 and data["lineas"][2]["valorMovimiento"] == 800.0,
+    "kardex-promedio": lambda data: data["metodo"] == "Promedio" and data["saldoCantidad"] == 70 and data["saldoValor"] == 746.67 and data["lineas"][2]["costoUnitario"] == 10.6667 and data["lineas"][2]["valorMovimiento"] == 853.33,
+    "kardex-saldos": lambda data: any(item["productoId"] == 1 and item["almacenId"] == 1 and item["saldo"] == 70 for item in data),
+    "kardex-resumen": lambda data: data["totalMovimientos"] >= 4 and data["totalEntradas"] >= 3 and data["totalSalidas"] >= 1,
+    "movimiento-created": lambda data: data["id"] > 0,
+    "movimiento-stock": lambda data: data["StatusCode"] == 409 and data["Message"] == "Stock insuficiente: el saldo es 70 y se pidieron 71.",
+    "movimiento-salida-costo": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las salidas no llevan costo unitario.",
+    "movimiento-almacen": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén 9999 no existe.",
+    "kardex-metodo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El método de valoración no es válido.",
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
     "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
@@ -706,6 +716,17 @@ request_check 'POST serie con número del seed' POST '/api/v1/lotes-series/serie
 request_check 'Serie a Asignada' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 200 serie-state-changed '{"estado":"Asignada"}'
 request_check 'Serie a Baja' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 200 serie-state-changed '{"estado":"Baja"}'
 request_check 'Serie de Baja no vuelve a Disponible' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 409 serie-bad-transition '{"estado":"Disponible"}'
+request_check 'Movimientos del producto 1 en el almacén 1' GET '/api/v1/kardex-valorizado/movimientos?productoId=1&almacenId=1' 200 kardex-movimientos
+request_check 'Kardex PEPS del producto 1' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=peps' 200 kardex-peps
+request_check 'Kardex promedio del producto 1' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=promedio' 200 kardex-promedio
+request_check 'Saldos del almacén 1' GET '/api/v1/kardex-valorizado/saldos?almacenId=1' 200 kardex-saldos
+request_check 'Resumen del kardex' GET '/api/v1/kardex-valorizado/resumen' 200 kardex-resumen
+request_check 'POST entrada válida' POST '/api/v1/kardex-valorizado/movimientos' 200 movimiento-created "{\"productoId\":2,\"almacenId\":1,\"tipo\":\"Entrada\",\"cantidad\":10,\"costoUnitario\":30.5,\"referencia\":\"SMOKE-${RUN_ID}\"}"
+request_check 'POST salida válida' POST '/api/v1/kardex-valorizado/movimientos' 200 movimiento-created '{"productoId":2,"almacenId":1,"tipo":"Salida","cantidad":5}'
+request_check 'POST salida sin stock suficiente' POST '/api/v1/kardex-valorizado/movimientos' 409 movimiento-stock '{"productoId":1,"almacenId":1,"tipo":"Salida","cantidad":71}'
+request_check 'POST salida con costo unitario' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-salida-costo '{"productoId":1,"almacenId":1,"tipo":"Salida","cantidad":1,"costoUnitario":5}'
+request_check 'POST movimiento en almacén inexistente' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-almacen '{"productoId":1,"almacenId":9999,"tipo":"Entrada","cantidad":1,"costoUnitario":5}'
+request_check 'Kardex con método inválido' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=lifo' 400 kardex-metodo
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive

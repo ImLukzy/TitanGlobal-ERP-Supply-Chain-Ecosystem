@@ -19,6 +19,8 @@ public partial class Lote
 
     public string Estado { get; set; } = string.Empty;
 
+    public virtual ICollection<MovimientoKardex> MovimientosKardex { get; set; } = new List<MovimientoKardex>();
+
     public virtual Producto Producto { get; set; } = null!;
 
     public virtual ICollection<UnidadSerie> UnidadesSerie { get; set; } = new List<UnidadSerie>();
