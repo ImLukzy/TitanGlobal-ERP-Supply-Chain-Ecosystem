@@ -649,4 +649,22 @@ INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "LoteId", "Fecha", "
     (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '20 days', 'Entrada', 50, 12.0000, 'SEED-KARDEX-02'),
     (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '10 days', 'Salida', 80, NULL, 'SEED-KARDEX-03'),
     (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '15 days', 'Entrada', 40, 25.5000, 'SEED-KARDEX-04');
+
+DELETE FROM "MovimientosKardex" WHERE "Referencia" LIKE 'SEED-TRF-%';
+DELETE FROM "TransferenciasAlmacen" WHERE "Observaciones" LIKE 'SEED-TRF-%';
+
+WITH nueva AS (
+INSERT INTO "TransferenciasAlmacen" ("ProductoId", "AlmacenOrigenId", "AlmacenDestinoId", "Cantidad", "CostoUnitario", "Fecha", "Observaciones")
+VALUES (
+    2,
+    (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'),
+    (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-ARE-01'),
+    10, 25.5000, now() - interval '5 days', 'SEED-TRF-01')
+    RETURNING "Id", "ProductoId", "AlmacenOrigenId", "AlmacenDestinoId", "Cantidad", "CostoUnitario", "Fecha"
+    )
+INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "Fecha", "Tipo", "Cantidad", "CostoUnitario", "Referencia", "TransferenciaId")
+SELECT "ProductoId", "AlmacenOrigenId", "Fecha", 'Salida', "Cantidad", NULL, 'SEED-TRF-01', "Id" FROM nueva
+UNION ALL
+SELECT "ProductoId", "AlmacenDestinoId", "Fecha", 'Entrada', "Cantidad", "CostoUnitario", 'SEED-TRF-01', "Id" FROM nueva;
+
 COMMIT;
