@@ -24,12 +24,8 @@ public class ResumenLotesUseCase
         int disponibles = await consulta.CountAsync(registro => registro.Estado == "Disponible");
         int enCuarentena = await consulta.CountAsync(registro => registro.Estado == "Cuarentena");
         int bloqueados = await consulta.CountAsync(registro => registro.Estado == "Bloqueado");
-        int vencidos = await consulta.CountAsync(
-            registro => registro.FechaVencimiento != null && registro.FechaVencimiento < hoy);
-        int porVencer = await consulta.CountAsync(
-            registro => registro.FechaVencimiento != null
-                        && registro.FechaVencimiento >= hoy
-                        && registro.FechaVencimiento <= limite);
+        int vencidos = await consulta.CountAsync(registro => registro.FechaVencimiento != null && registro.FechaVencimiento < hoy);
+        int porVencer = await consulta.CountAsync(registro => registro.FechaVencimiento != null && registro.FechaVencimiento >= hoy && registro.FechaVencimiento <= limite);
 
         return new ResumenLotesDto
         {

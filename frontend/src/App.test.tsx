@@ -38,7 +38,7 @@ describe('navegación', () => {
     }
     fireEvent.click(comprasSummary);
     expect(screen.getByText('Proveedores')).toBeInTheDocument();
-    expect(screen.getByText('AcuerdosAbastecimiento')).toBeInTheDocument();
+    expect(screen.getByText('Acuerdos de abastecimiento')).toBeInTheDocument();
     expect(within(comprasSummary.parentElement).getAllByRole('link')).toHaveLength(10);
   });
 
@@ -73,7 +73,7 @@ describe('navegación', () => {
     }));
     const { unmount } = renderApp('/modulos/04-ordenes-compra');
 
-    expect(screen.getByRole('heading', { name: '04 · OrdenesCompra' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '04 · Órdenes de compra' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Nueva orden' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Analítica' })).toBeInTheDocument();
     unmount();
@@ -81,7 +81,7 @@ describe('navegación', () => {
     expect(screen.getByRole('heading', { name: '01 · Clientes' })).toBeInTheDocument();
     unmount();
     renderApp('/modulos/02-segmentacion-clientes');
-    expect(screen.getByRole('heading', { name: '02 · SegmentacionClientes' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '02 · Segmentación de clientes' })).toBeInTheDocument();
   });
 
   it('muestra la pantalla pendiente para un módulo aún no implementado', () => {
