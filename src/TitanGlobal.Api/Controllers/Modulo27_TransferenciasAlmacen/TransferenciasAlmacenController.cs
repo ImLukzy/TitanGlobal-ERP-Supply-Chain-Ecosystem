@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo27_TransferenciasAlmacen;
 using TitanGlobal.Application.UseCases.Modulo27_TransferenciasAlmacen;
 

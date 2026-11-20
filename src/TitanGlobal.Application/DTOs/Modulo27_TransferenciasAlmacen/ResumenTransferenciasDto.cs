@@ -1,4 +1,4 @@
-﻿namespace TitanGlobal.Application.DTOs.Modulo27_TransferenciasAlmacen;
+namespace TitanGlobal.Application.DTOs.Modulo27_TransferenciasAlmacen;
 
 public class ResumenTransferenciasDto
 {
