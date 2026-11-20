@@ -92,4 +92,36 @@ describe('VehiculosFlotaPage', () => {
     expect(screen.queryByRole('button', { name: 'ABC-123' })).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Resumen de vehículos de flota' })).getByText('1,200.50')).toBeInTheDocument();
   });
+
+  it('ignora un detalle antiguo que termina después de seleccionar otro vehículo', async () => {
+    const { fetchMock } = prepararApiVehiculos();
+    const responder = fetchMock.getMockImplementation()!;
+    let resolverDetalle: (respuesta: Response) => void = () => { throw new Error('Falta solicitar el detalle antiguo'); };
+    fetchMock.mockImplementation(async (input, init) => {
+      if (String(input) === '/api/v1/vehiculos-flota/1') {
+        return new Promise<Response>((resolve) => { resolverDetalle = resolve; });
+      }
+      return responder(input, init);
+    });
+    renderVehiculos();
+    await screen.findByRole('button', { name: 'ABC-123' });
+    await waitFor(() => expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('/vehiculos-flota/1'))).toBe(true));
+    fireEvent.click(screen.getByRole('button', { name: 'XYZ-789' }));
+    await screen.findByText('En mantenimiento');
+    await act(async () => { resolverDetalle(Response.json(vehiculosBase[0])); });
+    expect(screen.getByRole('heading', { name: 'XYZ-789' })).toBeInTheDocument();
+    expect(screen.queryByText('Sin observaciones')).not.toBeInTheDocument();
+  });
+
+  it('conserva el diálogo y el mensaje de la API si falla la baja', async () => {
+    const { fetchMock, filas } = prepararApiVehiculos({ errorEliminar: true });
+    renderVehiculos();
+    await esperarCargaVehiculos(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar vehículo' }));
+    const dialogo = within(screen.getByRole('dialog'));
+    fireEvent.click(dialogo.getByRole('button', { name: 'Eliminar vehículo' }));
+    await dialogo.findByText('No se puede eliminar el vehículo.');
+    expect(filas).toHaveLength(2);
+    expect(dialogo.getByRole('button', { name: 'Eliminar vehículo' })).toBeEnabled();
+  });
 });

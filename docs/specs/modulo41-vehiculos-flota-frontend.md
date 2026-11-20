@@ -6,7 +6,7 @@
 
 Responsable: Kelvin Pinto. Contrato: `modulo41-vehiculos-flota-backend.md` §4. Guía: `../equipo/crear-pantalla.md`.
 
-**Estado:** propuesta pendiente de aprobación de Lukas; no acredita implementación ni QA.
+**Estado:** pantalla implementada localmente por autorización de Kelvin. La aprobación de Lukas sigue pendiente. La evidencia distingue las pruebas del frontend de las comprobaciones bloqueadas del gate y PostgreSQL.
 
 ## 2. Fuera de alcance
 - Cambios de API, tablas, entidades generadas, autenticación o dependencias.
@@ -71,3 +71,10 @@ Los commits se agrupan por cambios funcionales revisables, con las pruebas corre
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
 | 2026-11-19 | Preparación | Propuesta de spec; implementación pendiente | Contrato del backend y guías del repositorio consultados; sin declarar aprobación ni pruebas ejecutadas |
+| 2026-11-19 | A2–A5 | Verificación completa del frontend aprobada: 73 archivos, 582 pruebas | `npm --prefix frontend run verify`, con Node 24.22.1 desde Git Bash; lint y TypeScript aprobados, build correcto con aviso de bundle superior a 500 kB |
+| 2026-11-19 | A3–A4 adicional | 39 pruebas del módulo aprobadas, incluidos detalle obsoleto y error de baja | `npm --prefix frontend test -- src/modules/vehiculos-flota --maxWorkers=1` |
+| 2026-11-19 | A6 parcial | Capturas de detalle, formulario y baja a 375/1280 px en claro/oscuro; sin desbordamiento de página ni errores JavaScript | `../evidencias/modulo41/README.md`; API simulada, no acredita el seed ni PostgreSQL real |
+| 2026-11-19 | A1 bloqueado | El gate se detiene al compilar el proyecto de tests en `GenerateMvcTestManifestTask`: no se puede cargar `System.Private.DataContractSerialization, Version=10.0.0.0` | `./scripts/verify.sh`, repetido tras `dotnet build-server shutdown`, con el mismo resultado; sin cambiar tests, paquetes ni pipeline para eludirlo |
+| 2026-11-19 | PostgreSQL pendiente | Docker no está instalado/disponible en esta máquina | No se ejecutaron `aplicar-bd.sh --reiniciar`, scaffold ni smoke; tampoco se modificó el esquema |
+
+Los checklists permanecen abiertos hasta satisfacer el gate completo y las aprobaciones del repositorio. No se declara el módulo terminado, integrado ni desplegado.

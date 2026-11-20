@@ -1,0 +1,30 @@
+[
+  {
+    "width": 375,
+    "colorScheme": "light",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+  },
+  {
+    "width": 375,
+    "colorScheme": "dark",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+  },
+  {
+    "width": 1280,
+    "colorScheme": "light",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+  },
+  {
+    "width": 1280,
+    "colorScheme": "dark",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+  }
+]
