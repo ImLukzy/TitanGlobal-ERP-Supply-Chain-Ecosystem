@@ -271,7 +271,7 @@ checks = {
     "transferencias-resumen": lambda data: data["totalTransferencias"] >= 1 and data["unidadesTransferidas"] >= 10 and data["valorTransferido"] >= 255.0,
     "transferencia-created": lambda data: data["id"] > 0 and data["costoUnitario"] > 0,
     "transferencia-detalle": lambda data: data["productoId"] == 2 and data["cantidad"] == 1 and data["movimientoSalidaId"] > 0 and data["movimientoEntradaId"] > 0 and data["movimientoSalidaId"] != data["movimientoEntradaId"],
-    "transferencia-saldos": lambda data: any(item["productoId"] == 2 and item["almacenId"] == 2 and item["saldo"] >= 11 for item in data),
+    "transferencia-saldos": lambda data: any(item["productoId"] == 2 and item["almacenId"] == 3 and item["saldo"] >= 11 for item in data),
     "transferencia-mismo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén de origen y el de destino deben ser distintos.",
     "transferencia-stock": lambda data: data["StatusCode"] == 409 and data["Message"] == "Stock insuficiente: el saldo es 0 y se pidieron 1.",
     "transferencia-almacen": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén 9999 no existe.",
@@ -743,11 +743,11 @@ request_check 'POST movimiento en almacén inexistente' POST '/api/v1/kardex-val
 request_check 'Kardex con método inválido' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=lifo' 400 kardex-metodo
 request_check 'Transferencias del producto 2' GET '/api/v1/transferencias-almacen?productoId=2' 200 transferencias-producto
 request_check 'Resumen de transferencias' GET '/api/v1/transferencias-almacen/resumen' 200 transferencias-resumen
-request_check 'POST transferencia válida' POST '/api/v1/transferencias-almacen' 200 transferencia-created '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":2,"cantidad":1,"observaciones":"SMOKE"}'
+request_check 'POST transferencia válida' POST '/api/v1/transferencias-almacen' 200 transferencia-created '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":3,"cantidad":1,"observaciones":"SMOKE"}'
 request_check 'Detalle de la transferencia creada' GET "/api/v1/transferencias-almacen/${TRANSFERENCIA_CREADA_ID}" 200 transferencia-detalle
-request_check 'Saldos del almacén de destino' GET '/api/v1/kardex-valorizado/saldos?almacenId=2' 200 transferencia-saldos
+request_check 'Saldos del almacén de destino' GET '/api/v1/kardex-valorizado/saldos?almacenId=3' 200 transferencia-saldos
 request_check 'POST transferencia al mismo almacén' POST '/api/v1/transferencias-almacen' 400 transferencia-mismo '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":1,"cantidad":1}'
-request_check 'POST transferencia sin stock en el origen' POST '/api/v1/transferencias-almacen' 409 transferencia-stock '{"productoId":3,"almacenOrigenId":1,"almacenDestinoId":2,"cantidad":1}'
+request_check 'POST transferencia sin stock en el origen' POST '/api/v1/transferencias-almacen' 409 transferencia-stock '{"productoId":3,"almacenOrigenId":1,"almacenDestinoId":3,"cantidad":1}'
 request_check 'POST transferencia a un almacén inexistente' POST '/api/v1/transferencias-almacen' 400 transferencia-almacen '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":9999,"cantidad":1}'
 request_check 'Transferencia inexistente' GET '/api/v1/transferencias-almacen/9999' 404 transferencia-notfound
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
