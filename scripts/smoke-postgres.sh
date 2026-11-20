@@ -36,6 +36,9 @@ VEHICULO_CREADO_ID=""
 CONDUCTOR_CREADO_ID=""
 CONDUCTOR_SIN_ZONA_ID=""
 EMPLEADO_CREADO_ID=""
+CONTRATO_LABORAL_EMPLEADO_ID=""
+CONTRATO_LABORAL_CREADO_ID=""
+CONTRATO_LABORAL_RENOVADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -328,10 +331,10 @@ checks = {
     "usuario-duplicate-email": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un usuario con el email admin@titanglobal.example." and "Detail" not in data,
     "usuario-last-admin": lambda data: data["StatusCode"] == 409 and data["Message"] == "Debe quedar al menos un usuario activo con el rol ADMIN." and "Detail" not in data,
     "usuario-role-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el rol VENTAS porque tiene usuarios." and "Detail" not in data,
-    "roles-list": lambda data: data["total"] == 5 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "VENTAS"],
+    "roles-list": lambda data: data["total"] == 6 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "RRHH", "VENTAS"],
     "role-detail": lambda data: data["codigo"] == "VENTAS" and data["modulosConLectura"] == 11 and data["modulosConEscritura"] == 10,
     "role-permissions": lambda data: len(data) == 80 and data[20]["puedeLeer"] is True and data[20]["puedeEscribir"] is False,
-    "roles-matrix": lambda data: len(data["roles"]) == 5 and len(data["modulos"]) == 80 and data["modulos"][0]["permisos"] == ["Escritura", "Ninguno", "Ninguno", "Lectura", "Escritura"],
+    "roles-matrix": lambda data: len(data["roles"]) == 6 and len(data["modulos"]) == 80 and data["modulos"][0]["permisos"] == ["Escritura", "Ninguno", "Ninguno", "Lectura", "Ninguno", "Escritura"],
     "role-created": lambda data: data["id"] > 0,
     "role-invalid-write": lambda data: data["StatusCode"] == 400 and data["Message"] == "El módulo 1 no puede tener escritura sin lectura." and "Detail" not in data,
     "role-system-delete": lambda data: data["StatusCode"] == 409 and data["Message"] == "El rol ADMIN es de sistema y no se puede modificar de esa forma." and "Detail" not in data,
@@ -410,6 +413,25 @@ checks = {
     "empleado-cesado": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
     "empleado-ceased-edit": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede editar un empleado cesado." and "Detail" not in data,
     "empleado-cese-repeated": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El empleado [0-9]+ ya está cesado\.", data["Message"]) is not None and "Detail" not in data,
+    "contrato-laboral-empleado-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0 and data["numero"] == "CTR-" + str(data["id"]).zfill(6),
+    "contrato-laboral-created-e3": lambda data: isinstance(data.get("id"), int) and data["id"] > 0 and data["numero"] == "CTR-" + str(data["id"]).zfill(6),
+    "contrato-laboral-renovado": lambda data: isinstance(data.get("id"), int) and data["id"] > 0 and data["numero"] == "CTR-" + str(data["id"]).zfill(6),
+    "openapi-contratos-laborales": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-laborales", "/api/v1/contratos-laborales/{id}", "/api/v1/contratos-laborales/{id}/renovacion", "/api/v1/contratos-laborales/{id}/adendas", "/api/v1/contratos-laborales/{id}/anulacion"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-laborales", "get"), ("/api/v1/contratos-laborales", "post"), ("/api/v1/contratos-laborales/{id}", "get"), ("/api/v1/contratos-laborales/{id}/renovacion", "post"), ("/api/v1/contratos-laborales/{id}/adendas", "post"), ("/api/v1/contratos-laborales/{id}/anulacion", "post")]) and "put" not in data["paths"]["/api/v1/contratos-laborales/{id}"] and "delete" not in data["paths"]["/api/v1/contratos-laborales/{id}"],
+    "contrato-laboral-vencido": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CTR-000005" and data["items"][0]["estado"] == "Vencido",
+    "contrato-laboral-empleado-2": lambda data: data["total"] == 3,
+    "contrato-laboral-detail": lambda data: data["numero"] == "CTR-000001" and data["estado"] == "Vigente" and data["cargoVigente"] == "Gerente Comercial" and data["sueldoVigente"] == 9500.00 and len(data["adendas"]) == 1,
+    "contrato-laboral-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0 and data["numero"] == "CTR-" + str(data["id"]).zfill(6),
+    "contrato-laboral-empleado-cerrado": lambda data: data["total"] == 1 and data["items"][0]["estado"] == "Cerrado",
+    "contrato-laboral-cese-detail": lambda data: data["estado"] == "Cerrado" and data["fechaCierre"] == "2026-10-31" and data["motivoCierre"] == "Cese del empleado" and data["fechaFin"] == "2027-09-30",
+    "contrato-laboral-empleado-cesado": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El empleado [0-9]+ está cesado y no admite contratos nuevos\.", data["Message"]) is not None and "Detail" not in data,
+    "contrato-laboral-vigente-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 1 ya tiene un contrato vigente." and "Detail" not in data,
+    "contrato-laboral-vencido-empleado-3": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CTR-000005",
+    "contrato-laboral-id": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "contrato-laboral-adenda-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una adenda con fecha de vigencia igual o posterior." and "Detail" not in data,
+    "contrato-laboral-adenda-detail": lambda data: data["estado"] == "Vigente" and data["cargo"] == "Almacenero" and data["sueldoBasico"] == 1500.00 and data["cargoVigente"] == "Almacenero" and data["sueldoVigente"] == 1500.00 and len(data["adendas"]) == 1 and data["adendas"][0]["sueldoBasico"] == 1800.00 and data["adendas"][0]["fechaVigencia"] == "2027-03-01",
+    "contrato-laboral-renovacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede renovar\.", data["Message"]) is not None and "Detail" not in data,
+    "contrato-laboral-anulacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede anular\.", data["Message"]) is not None and "Detail" not in data,
+    "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -533,7 +555,7 @@ request_check() {
         CREATED_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
-    if [[ "$validation" == "role-created" ]]; then
+    if [[ "$validation" == "role-created" || "$validation" == "usuario-created" ]]; then
         CREATED_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
@@ -593,6 +615,15 @@ request_check() {
     fi
     if [[ "$validation" == "empleado-created" ]]; then
         EMPLEADO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "contrato-laboral-empleado-created" ]]; then
+        CONTRATO_LABORAL_EMPLEADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "contrato-laboral-created-e3" ]]; then
+        CONTRATO_LABORAL_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "contrato-laboral-renovado" ]]; then
+        CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -893,7 +924,30 @@ request_check 'Detalle del empleado 1' GET '/api/v1/empleados/1' 200 empleado-de
 request_check 'POST empleado válido' POST '/api/v1/empleados' 200 empleado-created '{"tipoDocumento":"DNI","numeroDocumento":"20000001","nombres":"Empleado","apellidos":"Smoke Prueba","fechaNacimiento":"1995-04-10","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas","email":"smoke.empleado@titanglobal.example","telefono":"999000100"}'
 request_check 'POST empleado con documento del seed' POST '/api/v1/empleados' 409 empleado-duplicate '{"tipoDocumento":"DNI","numeroDocumento":"10000001","nombres":"Duplicado","apellidos":"Smoke Prueba","fechaNacimiento":"1995-04-10","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas"}'
 request_check 'POST empleado menor de edad' POST '/api/v1/empleados' 400 empleado-minor '{"tipoDocumento":"DNI","numeroDocumento":"20000002","nombres":"Menor","apellidos":"Smoke Prueba","fechaNacimiento":"2010-01-01","fechaIngreso":"2026-10-01","cargo":"Analista de Pruebas","area":"Pruebas"}'
+request_check 'OpenAPI de contratos laborales' GET '/openapi/v1.json' 200 openapi-contratos-laborales
+request_check 'Contratos laborales vencidos (calculado)' GET '/api/v1/contratos-laborales?estado=Vencido' 200 contrato-laboral-vencido
+request_check 'Contratos laborales del empleado 2' GET '/api/v1/contratos-laborales?empleadoId=2' 200 contrato-laboral-empleado-2
+request_check 'Detalle del contrato laboral 1' GET '/api/v1/contratos-laborales/1' 200 contrato-laboral-detail
+request_check 'POST contrato laboral para el empleado creado' POST '/api/v1/contratos-laborales' 200 contrato-laboral-empleado-created '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-10-01","fechaFin":"2027-09-30","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
+request_check 'POST contrato laboral con contrato vigente' POST '/api/v1/contratos-laborales' 409 contrato-laboral-vigente-duplicado '{"empleadoId":1,"modalidad":"Indeterminado","fechaInicio":"2026-11-01","sueldoBasico":9000.00,"cargo":"Gerente Comercial"}'
+TOKEN_ADMIN_SMOKE="$TOKEN_ACTUAL"
+request_check 'Login de la cuenta sin rol de escritura' POST '/api/v1/autenticacion/login' 200 login-invitado '{"nombreUsuario":"invitado","contrasena":"Demo2026!"}'
+TOKEN_ACTUAL="$TOKEN_LOGIN"
+request_check 'POST contrato laboral sin rol RRHH o ADMIN' POST '/api/v1/contratos-laborales' 403 contrato-laboral-sin-rol '{"empleadoId":3,"modalidad":"PlazoFijo","fechaInicio":"2027-01-01","fechaFin":"2027-12-31","sueldoBasico":1500.00,"cargo":"Almacenero"}'
+TOKEN_ACTUAL="$TOKEN_ADMIN_SMOKE"
+request_check 'POST contrato laboral con vencido calculado' POST '/api/v1/contratos-laborales' 200 contrato-laboral-created-e3 '{"empleadoId":3,"modalidad":"PlazoFijo","fechaInicio":"2027-01-01","fechaFin":"2027-12-31","sueldoBasico":1500.00,"cargo":"Almacenero"}'
+request_check 'Contrato vencido del empleado 3 se conserva' GET '/api/v1/contratos-laborales?empleadoId=3&estado=Vencido' 200 contrato-laboral-vencido-empleado-3
+request_check 'POST adenda de sueldo' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_CREADO_ID}/adendas" 200 contrato-laboral-id '{"fechaVigencia":"2027-03-01","sueldoBasico":1800.00}'
+request_check 'POST adenda con vigencia repetida' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_CREADO_ID}/adendas" 409 contrato-laboral-adenda-duplicada '{"fechaVigencia":"2027-03-01","sueldoBasico":1900.00}'
+request_check 'Detalle del contrato laboral con adenda' GET "/api/v1/contratos-laborales/${CONTRATO_LABORAL_CREADO_ID}" 200 contrato-laboral-adenda-detail
+request_check 'POST renovación del contrato laboral' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_CREADO_ID}/renovacion" 200 contrato-laboral-renovado '{"modalidad":"PlazoFijo","fechaFin":"2028-12-31","sueldoBasico":1900.00,"cargo":"Almacenero"}'
+request_check 'POST renovación repetida' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_CREADO_ID}/renovacion" 409 contrato-laboral-renovacion-repetida '{"modalidad":"PlazoFijo","fechaFin":"2028-12-31","sueldoBasico":1900.00,"cargo":"Almacenero"}'
+request_check 'POST anulación del contrato renovado' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_RENOVADO_ID}/anulacion" 200 contrato-laboral-id '{"motivo":"Anulación de smoke"}'
+request_check 'POST anulación repetida' POST "/api/v1/contratos-laborales/${CONTRATO_LABORAL_RENOVADO_ID}/anulacion" 409 contrato-laboral-anulacion-repetida '{"motivo":"Anulación de smoke"}'
 request_check 'Cesar empleado creado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 200 empleado-cesado '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+request_check 'Contrato laboral del empleado cesado queda cerrado' GET '/api/v1/contratos-laborales?empleadoId='"${EMPLEADO_CREADO_ID}" 200 contrato-laboral-empleado-cerrado
+request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contratos-laborales/${CONTRATO_LABORAL_EMPLEADO_ID}" 200 contrato-laboral-cese-detail
+request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
 printf 'SMOKE OK\n'

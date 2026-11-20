@@ -10,6 +10,7 @@ public class PluralizadorEspanol : IPluralizer
     // Tabla → entidad. Una tabla nueva cuyo nombre no siga la regla general se añade aquí.
     private static readonly Dictionary<string, string> EntidadPorTabla = new Dictionary<string, string>
     {
+        { "AdendasContrato", "AdendaContrato" },
         { "AlertasDescartadas", "AlertaDescartada" },
         { "Almacenes", "Almacen" },
         { "AsignacionesVentas", "AsignacionVenta" },
@@ -18,6 +19,7 @@ public class PluralizadorEspanol : IPluralizer
         { "Clientes", "Cliente" },
         { "Conductores", "Conductor" },
         { "ContratosComerciales", "ContratoComercial" },
+        { "ContratosLaborales", "ContratoLaboral" },
         { "Cotizaciones", "Cotizacion" },
         { "DetallesCotizacion", "DetalleCotizacion" },
         { "DetallesDevolucion", "DetalleDevolucion" },

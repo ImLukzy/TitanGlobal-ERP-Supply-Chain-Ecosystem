@@ -8,7 +8,7 @@ afterEach(cleanup);
 describe('PaginaModulo', () => {
   it.each([
     [1, 'Comercial, Ventas y CRM', '01 · Clientes'],
-    ['04-ordenes-compra', 'Comercial, Ventas y CRM', '04 · OrdenesCompra'],
+    ['04-ordenes-compra', 'Comercial, Ventas y CRM', '04 · Órdenes de compra'],
   ] as const)('obtiene nombre y dominio del catálogo para %s', (modulo, dominio, titulo) => {
     render(<MemoryRouter><PaginaModulo modulo={modulo}><p>Contenido del módulo</p></PaginaModulo></MemoryRouter>);
     const migas = screen.getByRole('navigation', { name: 'Miga de pan' });

@@ -15,7 +15,9 @@ class_use_case = re.compile(r"\b(?:class|record)\s+\w*UseCase\b")
 controller_dependency = re.compile(r"\b(?:IUnitOfWork|DbContext|IGenericRepository|GenericRepository)\b")
 member_expression = re.compile(
     r"^\s*(?:(?:public|private|protected|internal|static|async|virtual|override|sealed|new|partial|extern|unsafe|readonly)\s+)*"
-    r"(?:[\w.<>?,\[\]]+\s+)?\w+\s*(?:\([^;{}]*\))?\s*=>"
+    # Un miembro lleva tipo y nombre, o nombre y parámetros. Una lambda partida en otra línea
+    # («registro => ...», «async registro => ...») solo tiene el parámetro y no cuenta.
+    r"(?:(?!(?:async|await|return|static)\b)[\w.<>?,\[\]]+\s+\w+\s*(?:\([^;{}]*\))?|\w+\s*\([^;{}]*\))\s*=>"
 )
 accessor_expression = re.compile(r"^\s*(?:get|set|init)\s*=>")
 layer_dependencies = {
