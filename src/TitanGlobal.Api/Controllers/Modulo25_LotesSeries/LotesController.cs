@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo25_LotesSeries;
 using TitanGlobal.Application.UseCases.Modulo25_LotesSeries;
 

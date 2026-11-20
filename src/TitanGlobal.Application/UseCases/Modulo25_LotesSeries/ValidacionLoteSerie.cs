@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
