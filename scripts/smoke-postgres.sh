@@ -10,6 +10,7 @@ PROVEEDOR_CREADO_ID=""
 IMPUESTO_CREADO_ID=""
 CATEGORIA_PRODUCTO_CREADA_ID=""
 LOTE_CREADO_ID=""
+TRANSFERENCIA_CREADA_ID=""
 SERIE_CREADA_ID=""
 RUN_ID="$(date +%s)"
 SOLICITUD_CREADA_ID=""
@@ -266,6 +267,15 @@ checks = {
     "movimiento-salida-costo": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las salidas no llevan costo unitario.",
     "movimiento-almacen": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén 9999 no existe.",
     "kardex-metodo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El método de valoración no es válido.",
+    "transferencias-producto": lambda data: data["total"] >= 1 and all(item["productoId"] == 2 for item in data["items"]),
+    "transferencias-resumen": lambda data: data["totalTransferencias"] >= 1 and data["unidadesTransferidas"] >= 10 and data["valorTransferido"] >= 255.0,
+    "transferencia-created": lambda data: data["id"] > 0 and data["costoUnitario"] > 0,
+    "transferencia-detalle": lambda data: data["productoId"] == 2 and data["cantidad"] == 1 and data["movimientoSalidaId"] > 0 and data["movimientoEntradaId"] > 0 and data["movimientoSalidaId"] != data["movimientoEntradaId"],
+    "transferencia-saldos": lambda data: any(item["productoId"] == 2 and item["almacenId"] == 2 and item["saldo"] >= 11 for item in data),
+    "transferencia-mismo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén de origen y el de destino deben ser distintos.",
+    "transferencia-stock": lambda data: data["StatusCode"] == 409 and data["Message"] == "Stock insuficiente: el saldo es 0 y se pidieron 1.",
+    "transferencia-almacen": lambda data: data["StatusCode"] == 400 and data["Message"] == "El almacén 9999 no existe.",
+    "transferencia-notfound": lambda data: data["StatusCode"] == 404 and data["Message"] == "La transferencia 9999 no existe.",
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
     "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
@@ -552,6 +562,10 @@ request_check() {
         if [[ "$validation" == "serie-created" ]]; then
             SERIE_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
         fi
+        
+        if [[ "$validation" == "transferencia-created" ]]; then
+                TRANSFERENCIA_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+        fi
 
     if [[ "$validation" == "solicitud-created" ]]; then
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
@@ -727,6 +741,15 @@ request_check 'POST salida sin stock suficiente' POST '/api/v1/kardex-valorizado
 request_check 'POST salida con costo unitario' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-salida-costo '{"productoId":1,"almacenId":1,"tipo":"Salida","cantidad":1,"costoUnitario":5}'
 request_check 'POST movimiento en almacén inexistente' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-almacen '{"productoId":1,"almacenId":9999,"tipo":"Entrada","cantidad":1,"costoUnitario":5}'
 request_check 'Kardex con método inválido' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=lifo' 400 kardex-metodo
+request_check 'Transferencias del producto 2' GET '/api/v1/transferencias-almacen?productoId=2' 200 transferencias-producto
+request_check 'Resumen de transferencias' GET '/api/v1/transferencias-almacen/resumen' 200 transferencias-resumen
+request_check 'POST transferencia válida' POST '/api/v1/transferencias-almacen' 200 transferencia-created '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":2,"cantidad":1,"observaciones":"SMOKE"}'
+request_check 'Detalle de la transferencia creada' GET "/api/v1/transferencias-almacen/${TRANSFERENCIA_CREADA_ID}" 200 transferencia-detalle
+request_check 'Saldos del almacén de destino' GET '/api/v1/kardex-valorizado/saldos?almacenId=2' 200 transferencia-saldos
+request_check 'POST transferencia al mismo almacén' POST '/api/v1/transferencias-almacen' 400 transferencia-mismo '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":1,"cantidad":1}'
+request_check 'POST transferencia sin stock en el origen' POST '/api/v1/transferencias-almacen' 409 transferencia-stock '{"productoId":3,"almacenOrigenId":1,"almacenDestinoId":2,"cantidad":1}'
+request_check 'POST transferencia a un almacén inexistente' POST '/api/v1/transferencias-almacen' 400 transferencia-almacen '{"productoId":2,"almacenOrigenId":1,"almacenDestinoId":9999,"cantidad":1}'
+request_check 'Transferencia inexistente' GET '/api/v1/transferencias-almacen/9999' 404 transferencia-notfound
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive
