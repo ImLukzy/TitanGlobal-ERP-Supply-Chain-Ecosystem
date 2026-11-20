@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Models;
@@ -67,8 +67,7 @@ public class ActualizarFacturaUseCase
         {
             OrdenCompra? ordenCompra = await repositorioOrdenes
                 .AsQueryable()
-                .FirstOrDefaultAsync(
-                    orden => orden.Id == request.OrdenCompraId.Value);
+                .FirstOrDefaultAsync(orden => orden.Id == request.OrdenCompraId.Value);
 
             if (ordenCompra == null)
             {

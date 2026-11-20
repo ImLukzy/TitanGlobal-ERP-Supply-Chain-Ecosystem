@@ -33,8 +33,7 @@ public class CalculoFactura
         {
             Producto? producto = await repositorioProductos
                 .AsQueryable()
-                .FirstOrDefaultAsync(
-                    producto => producto.Id == linea.ProductoId);
+                .FirstOrDefaultAsync(producto => producto.Id == linea.ProductoId);
 
             if (producto == null)
             {
@@ -61,8 +60,7 @@ public class CalculoFactura
             {
                 Impuesto? impuesto = await repositorioImpuestos
                     .AsQueryable()
-                    .FirstOrDefaultAsync(
-                        impuesto => impuesto.Id == linea.ImpuestoId.Value);
+                    .FirstOrDefaultAsync(impuesto => impuesto.Id == linea.ImpuestoId.Value);
 
                 if (impuesto == null)
                 {

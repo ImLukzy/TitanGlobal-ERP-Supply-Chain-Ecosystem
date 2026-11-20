@@ -1,4 +1,4 @@
-﻿using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
+using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
 
@@ -95,8 +95,7 @@ public static class ValidacionFactura
             .ToUpperInvariant();
 
         if (request.Moneda.Length != 3 ||
-            !request.Moneda.All(
-                caracter => caracter >= 'A' && caracter <= 'Z'))
+            !request.Moneda.All(caracter => caracter >= 'A' && caracter <= 'Z'))
         {
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,

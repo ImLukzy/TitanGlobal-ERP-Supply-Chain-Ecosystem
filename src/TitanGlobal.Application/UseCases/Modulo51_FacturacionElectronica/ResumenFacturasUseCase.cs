@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
@@ -25,8 +25,7 @@ public class ResumenFacturasUseCase
             (moneda ?? string.Empty).Trim().ToUpperInvariant();
 
         if (monedaNormalizada.Length != 3 ||
-            !monedaNormalizada.All(
-                caracter => caracter >= 'A' && caracter <= 'Z'))
+            !monedaNormalizada.All(caracter => caracter >= 'A' && caracter <= 'Z'))
         {
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,
@@ -61,14 +60,12 @@ public class ResumenFacturasUseCase
 
         if (desde.HasValue)
         {
-            consulta = consulta.Where(
-                factura => factura.FechaEmision >= desde.Value);
+            consulta = consulta.Where(factura => factura.FechaEmision >= desde.Value);
         }
 
         if (hasta.HasValue)
         {
-            consulta = consulta.Where(
-                factura => factura.FechaEmision <= hasta.Value);
+            consulta = consulta.Where(factura => factura.FechaEmision <= hasta.Value);
         }
 
         ResumenFacturasDto? resumen = await consulta

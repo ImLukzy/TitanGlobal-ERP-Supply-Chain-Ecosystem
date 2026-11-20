@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Models;
@@ -31,8 +31,7 @@ public class CrearFacturaUseCase
 
         Cliente? cliente = await repositorioClientes
             .AsQueryable()
-            .FirstOrDefaultAsync(
-                cliente => cliente.Id == request.ClienteId);
+            .FirstOrDefaultAsync(cliente => cliente.Id == request.ClienteId);
 
         if (cliente == null)
         {
@@ -47,8 +46,7 @@ public class CrearFacturaUseCase
         {
             ordenCompra = await repositorioOrdenes
                 .AsQueryable()
-                .FirstOrDefaultAsync(
-                    orden => orden.Id == request.OrdenCompraId.Value);
+                .FirstOrDefaultAsync(orden => orden.Id == request.OrdenCompraId.Value);
 
             if (ordenCompra == null)
             {

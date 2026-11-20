@@ -1,4 +1,4 @@
-﻿namespace TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
+namespace TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 
 public class PaginaFacturasDto
 {

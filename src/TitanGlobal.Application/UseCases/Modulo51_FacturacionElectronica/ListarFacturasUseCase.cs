@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
@@ -97,8 +97,7 @@ public class ListarFacturasUseCase
 
         if (clienteId.HasValue)
         {
-            consulta = consulta.Where(
-                factura => factura.ClienteId == clienteId.Value);
+            consulta = consulta.Where(factura => factura.ClienteId == clienteId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(tipoComprobante))
@@ -107,8 +106,7 @@ public class ListarFacturasUseCase
                 ValidacionFactura.NormalizarTipoComprobante(
                     tipoComprobante);
 
-            consulta = consulta.Where(
-                factura =>
+            consulta = consulta.Where(factura =>
                     factura.TipoComprobante == tipoNormalizado);
         }
 
@@ -117,8 +115,7 @@ public class ListarFacturasUseCase
             string estadoNormalizado =
                 NormalizarEstado(estado);
 
-            consulta = consulta.Where(
-                factura => factura.Estado == estadoNormalizado);
+            consulta = consulta.Where(factura => factura.Estado == estadoNormalizado);
         }
 
         if (!string.IsNullOrWhiteSpace(moneda))
@@ -127,16 +124,14 @@ public class ListarFacturasUseCase
                 moneda.Trim().ToUpperInvariant();
 
             if (monedaNormalizada.Length != 3 ||
-                !monedaNormalizada.All(
-                    caracter => caracter >= 'A' && caracter <= 'Z'))
+                !monedaNormalizada.All(caracter => caracter >= 'A' && caracter <= 'Z'))
             {
                 throw new ReglaNegocioException(
                     CodigosEstado.Status400BadRequest,
                     "La moneda debe tener un código de tres letras.");
             }
 
-            consulta = consulta.Where(
-                factura => factura.Moneda == monedaNormalizada);
+            consulta = consulta.Where(factura => factura.Moneda == monedaNormalizada);
         }
 
         DateTime? desde = fechaDesde.HasValue
@@ -158,14 +153,12 @@ public class ListarFacturasUseCase
 
         if (desde.HasValue)
         {
-            consulta = consulta.Where(
-                factura => factura.FechaEmision >= desde.Value);
+            consulta = consulta.Where(factura => factura.FechaEmision >= desde.Value);
         }
 
         if (hasta.HasValue)
         {
-            consulta = consulta.Where(
-                factura => factura.FechaEmision <= hasta.Value);
+            consulta = consulta.Where(factura => factura.FechaEmision <= hasta.Value);
         }
 
         int totalRegistros = await consulta.CountAsync();
