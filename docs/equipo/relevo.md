@@ -94,6 +94,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
 | 010 | `010-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | reservado en la rama independiente del 41 |
 | 011 | `011-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | reservado en la rama independiente del 42 |
-| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | reserva provisional; specs propuestas, pendientes aprobación de Lukas; SQL aún no creado |
+| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | creado, aplicado y comprobado localmente; revisión de Lukas pendiente, no aplicado en producción |
 
 Un script nuevo toma el siguiente número libre de esta tabla (013 en adelante) y se añade aquí en el mismo PR.

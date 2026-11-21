@@ -3,7 +3,7 @@
 ## 1. Objetivo
 Sustituir la pantalla pendiente de `/modulos/48-transportistas-terceros` por un maestro de transportistas y un registro de fletes, siguiendo Proveedores, Centros de Trabajo y las guías del equipo.
 
-Responsable: Kelvin Pinto. **Borrador pendiente de revisión de Lukas y de aprobación del contrato backend propuesto** en `modulo48-transportistas-terceros-backend.md`. No se declara pantalla implementada ni QA ejecutado.
+Responsable: Kelvin Pinto. **Implementación local autorizada por Kelvin; revisión de Lukas y aprobación del contrato backend pendientes** en `modulo48-transportistas-terceros-backend.md`. Evidencia de ejecución local en `docs/evidencias/modulo48/`.
 
 ## 2. Fuera de alcance y decisiones
 No modificar pantallas ajenas, autenticación, middleware, pipeline ni dependencias. No calcular tarifas, impuestos o conversiones de moneda; no generar facturas ni pagos. El alcance de fletes manuales, la identificación fiscal por país y la moneda declarativa dependen de las decisiones de la spec backend §2.
@@ -45,13 +45,14 @@ Las pruebas existentes se conservan. Las capturas simuladas, si se usan durante 
 
 ## 6. Checklist de ejecución
 - [ ] Lukas aprueba las specs y decisiones de producto del backend.
-- [ ] Backend y base local disponibles.
-- [ ] Contratos/cliente con pruebas.
-- [ ] Maestro con validación y baja.
-- [ ] Registro/consulta/cancelación de fletes.
-- [ ] Registro de ruta, gate, smoke y QA real; evidencia en §7.
+- [x] Backend y base local disponibles para las comprobaciones.
+- [x] Contratos/cliente con pruebas.
+- [x] Maestro con validación y baja.
+- [x] Registro/consulta/cancelación de fletes.
+- [x] Registro de ruta, gate, smoke y QA real; evidencia en §7.
 
 ## 7. Registro de verificación
 | Fecha | Estado | Evidencia |
 |---|---|---|
 | 2026-11-21 | Propuesta; implementación y pruebas pendientes | Contrato backend redactado para revisión y patrón de componentes contrastado con las pantallas existentes |
+| 2026-11-21 | Implementación local y QA real ejecutados; revisión de Lukas pendiente | Pruebas de API, validaciones y pantalla; cuatro escenarios 375/1280 claro/oscuro y 16 capturas con PostgreSQL real en `docs/evidencias/modulo48/` |

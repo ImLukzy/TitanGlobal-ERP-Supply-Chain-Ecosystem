@@ -1,0 +1,38 @@
+# Módulo 48 — Transportistas terceros
+
+Implementación local de Kelvin Pinto en `kelvin/modulo48-transportistas-terceros`. Revisión de las decisiones de producto por Lukas pendiente; este registro no acredita integración ni despliegue.
+
+## Comprobaciones
+
+| Comprobación final | Resultado |
+|---|---|
+| `./scripts/verify.sh` | Exit 0: .NET sin advertencias ni errores; formato, reglas, ESLint y TypeScript correctos |
+| Integración backend | 1.138 pruebas correctas, incluidas 53 propias del módulo 48 |
+| Frontend | 580 pruebas correctas en 73 archivos, incluidas 37 propias del módulo 48 |
+| PostgreSQL real | `SMOKE OK`, scaffold coincidente y restricciones SQL verificadas |
+| QA visual real | Cuatro escenarios correctos, 16 capturas |
+
+- PostgreSQL 16 local, script `012-transportistas-terceros.sql` aplicado y entidades regeneradas mediante scaffold. La comprobación del scaffold forma parte del smoke.
+- Datos de ejemplo cargados dos veces sin duplicados: seis transportistas y cuatro fletes, en PEN y USD, incluyendo un transportista inactivo y un flete cancelado.
+- El smoke verifica las diez operaciones, autenticación, filtros, resumen, baja protegida, duplicados normalizados, importe máximo exacto, fecha sin zona normalizada a UTC, motivo obligatorio y cancelación repetida. También comprueba directamente en PostgreSQL los índices únicos y la clave foránea.
+- La prueba visual usa Edge, API y PostgreSQL locales; no intercepta ni simula respuestas. Resultado detallado en [resultado-visual.json](resultado-visual.json).
+- Sin cambios en `main`, push ni PR.
+
+## Revisión visual real — 2026-11-21
+
+Cada escenario comprueba alta, edición y baja de un transportista sin historial; registro de un flete de `1234.50 USD`, consulta y cancelación con motivo; Escape y retorno de foco. No hay errores de JavaScript ni desbordamiento horizontal de la página. Las tablas permiten desplazamiento horizontal dentro de su región accesible en móvil.
+
+| Ancho / tema | Maestro y detalle | Formulario maestro | Registro de flete | Cancelación |
+|---|---|---|---|---|
+| 375 / claro | [Captura](375-light-transportistas.png) | [Captura](375-light-maestro-formulario.png) | [Captura](375-light-flete-formulario.png) | [Captura](375-light-cancelacion.png) |
+| 375 / oscuro | [Captura](375-dark-transportistas.png) | [Captura](375-dark-maestro-formulario.png) | [Captura](375-dark-flete-formulario.png) | [Captura](375-dark-cancelacion.png) |
+| 1280 / claro | [Captura](1280-light-transportistas.png) | [Captura](1280-light-maestro-formulario.png) | [Captura](1280-light-flete-formulario.png) | [Captura](1280-light-cancelacion.png) |
+| 1280 / oscuro | [Captura](1280-dark-transportistas.png) | [Captura](1280-dark-maestro-formulario.png) | [Captura](1280-dark-flete-formulario.png) | [Captura](1280-dark-cancelacion.png) |
+
+## Cómo repetir
+
+Usar Git Bash, .NET 10, Node 24 y Docker con PostgreSQL local. Ejecutar `./scripts/aplicar-bd.sh --reiniciar`, `./scripts/scaffold.sh`, cargar `scripts/seed-dev.sql` y ejecutar `./scripts/verify.sh`. Con los puertos 5080 y 5433 libres, ejecutar `./scripts/smoke-postgres.sh` por separado.
+
+Para revisión manual, preparar otra vez la base y el seed después del smoke: el contenedor de este repositorio no conserva datos al eliminarse. Iniciar API en 5080 y frontend en 5173, entrar con la cuenta administrativa del seed y abrir `/modulos/48-transportistas-terceros`. Repetir las operaciones anteriores en los cuatro escenarios de la tabla.
+
+Los importes recibidos se muestran como texto exacto con su moneda. El formulario rechaza cantidades que el navegador no pueda enviar con precisión; no convierte ni suma monedas diferentes. Vite conserva la advertencia existente de tamaño del paquete compartido; no se aumenta el umbral para ocultarla.
