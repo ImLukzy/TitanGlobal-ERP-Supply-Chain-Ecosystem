@@ -23,7 +23,7 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 | Leonel | 75 ImpuestosTasas: backend, pruebas, seed y smoke | Cierre o edición de tasas (hoy una tasa abierta impide registrar otra), tasa de 0 %, `Total` según el tipo de impuesto, paginación, resumen y pantalla |
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
-| Kelvin | 41 VehiculosFlota y 42 Conductores: backend, pruebas, seed y smoke | Pantallas, unicidad sin distinguir mayúsculas y relación entre `Habilitado` y vencimiento |
+| Kelvin | 41 VehiculosFlota y 42 Conductores: backend, pruebas, seed y smoke | **41:** pantalla/unicidad verificadas localmente en su rama independiente. **42:** pantalla, unicidad y presentación separada de habilitación/vigencia verificadas en `kelvin/modulo42-conductores` (2026-11-21), con gate, smoke y QA real aprobados. Ambos pendientes de revisión de Lukas, PR, integración y despliegue |
 | Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: backend del 62 integrado (PR #39) y `008` aplicado en la demo el 2026-11-19; sigue la pantalla del 62 con su spec |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
@@ -92,5 +92,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
 | 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales-backend` | no (en `main` por el PR #39 y aplicado en la demo) |
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+| 010 | `010-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | reservado en la rama independiente del 41 |
+| 011 | `011-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | aplicado/verificado localmente; pendiente de revisión/integración |
 
-Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
+Un script nuevo toma el siguiente número libre de esta tabla (012 en adelante) y se añade aquí en el mismo PR.

@@ -38,10 +38,17 @@ Otros módulos, relación con vehículos, entidades base, middleware, pipeline, 
 
 ## 6. Checklist
 - [ ] Revisión de Lukas.
-- [ ] Contratos, API y pruebas.
-- [ ] Listado, filtros y detalle.
-- [ ] Formulario, UTC y baja con pruebas.
-- [ ] Gate, smoke y QA real, evidencia en §7.
+- [x] Contratos, API y pruebas.
+- [x] Listado, filtros y detalle.
+- [x] Formulario, UTC y baja con pruebas.
+- [x] Gate, smoke y QA real, evidencia en §7.
 
 ## 7. Registro de verificación
-Pendiente; no declarar integración ni despliegue.
+| Fecha | Criterio | Resultado | Evidencia |
+|---|---|---|---|
+| 2026-11-21 | A1–A5 | Aprobados | `verify.sh`: 1090 pruebas backend y 582 frontend (74 archivos), lint/TypeScript/build correctos, compilación .NET con cero errores/advertencias; Vite conserva el aviso existente de tamaño de bundle |
+| 2026-11-21 | A2–A4 | 39 pruebas del módulo aprobadas | contratos HTTP, fechas UTC, paginación, búsqueda/filtros, detalle obsoleto, errores, alta/edición/baja, prevención de envíos duplicados y foco |
+| 2026-11-21 | A6 | Aprobado con datos reales | Edge, API y PostgreSQL locales, seed real, 375/1280 px claro/oscuro; sin desbordamiento ni errores JavaScript; conflicto por licencia en minúsculas, CRUD real y desactivación/reactivación de licencia vencida conservando su instante UTC |
+| 2026-11-21 | PostgreSQL | Aprobado | `SCAFFOLD AL DÍA` y `SMOKE OK`, sin cambios a pruebas ajenas ni archivos generados editados a mano |
+
+La implementación y verificación local están completas. Revisión de Lukas, PR, integración y despliegue pendientes; no se presentan como concedidos.
