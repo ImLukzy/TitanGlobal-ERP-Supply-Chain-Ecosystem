@@ -587,7 +587,7 @@ INSERT INTO "Conductores" ("Id", "Nombre", "DocumentoLicencia", "VencimientoLice
     (1, 'Carlos Ruiz', 'PLT-0001', TIMESTAMPTZ '2027-12-31 00:00:00+00', TRUE, TRUE, NULL),
     (2, 'Maria Quispe', 'PLT-0002', TIMESTAMPTZ '2026-06-30 00:00:00+00', TRUE, TRUE, NULL),
     (3, 'Jose Flores', 'PLT-0003', TIMESTAMPTZ '2028-01-15 00:00:00+00', FALSE, TRUE, 'Sin habilitacion')
-ON CONFLICT ("DocumentoLicencia") DO UPDATE SET
+ON CONFLICT (lower(btrim("DocumentoLicencia"))) DO UPDATE SET
     "Nombre" = EXCLUDED."Nombre",
     "VencimientoLicencia" = EXCLUDED."VencimientoLicencia",
     "Habilitado" = EXCLUDED."Habilitado",
