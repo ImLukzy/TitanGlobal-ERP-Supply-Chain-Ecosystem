@@ -92,5 +92,11 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
 | 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales-backend` | no (en `main` por el PR #39 y aplicado en la demo) |
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+| 010 | `010-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | reservado en la rama independiente del 41 |
+| 011 | `011-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | reservado en la rama independiente del 42 |
+| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | creado y comprobado localmente en su rama |
+| 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | creado y comprobado localmente en su rama |
+| 014 | `014-consolidacion-carga.sql` | Kelvin | `kelvin/modulo44-consolidacion-carga` | creado y comprobado localmente en su rama |
+| 015 | `015-guias-remision.sql` | Kelvin | `kelvin/modulo45-guias-remision` | reserva documental; spec pendiente de revisión, sin SQL creado ni aplicado |
 
-Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
+Un script nuevo toma el siguiente número libre de esta tabla (016 en adelante) y se añade aquí en el mismo PR. Las reservas 010–015 de Kelvin pertenecen a ramas independientes y no implican integración en main. Se han contrastado las reservas 010–014 con sus ramas antes de reservar 015.
