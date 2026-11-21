@@ -1485,3 +1485,36 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+/* Módulo 44: consolidación de carga */
+.consolidacion-carga-page { min-width: 0; }
+.consolidacion-carga-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.consolidacion-carga-summary article, .consolidacion-carga-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.consolidacion-carga-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.consolidacion-carga-summary strong { color: var(--ink); font-size: 30px; }
+.consolidacion-carga-toolbar, .consolidacion-carga-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.consolidacion-carga-toolbar { justify-content: space-between; }
+.consolidacion-carga-filters { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 12px; margin: 20px 0; }
+.consolidacion-carga-filters label { display: grid; gap: 8px; }
+.consolidacion-carga-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.consolidacion-carga-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.consolidacion-carga-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.consolidacion-carga-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.consolidacion-carga-page input, .consolidacion-carga-page select, .consolidacion-carga-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.consolidacion-carga-table thead th, .consolidacion-carga-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.consolidacion-carga-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.consolidacion-carga-table tbody .consolidacion-carga-selected > th, .consolidacion-carga-table tbody .consolidacion-carga-selected > td { background: var(--accent-soft); }
+.consolidacion-carga-totales { padding: 12px; background: var(--surface-muted); color: var(--ink); border-radius: 8px; overflow-wrap: normal; font-variant-numeric: tabular-nums; }
+.consolidacion-carga-details dt { color: var(--ink-soft); margin-top: 14px; }
+.consolidacion-carga-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.consolidacion-carga-dialog { max-height: 90vh; overflow-y: auto; }
+.consolidacion-carga-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.consolidacion-carga-confirmada { background: var(--good-soft); }
+.consolidacion-carga-cancelada { background: var(--bad-soft); }
+@media (max-width: 1100px) { .consolidacion-carga-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .consolidacion-carga-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .consolidacion-carga-filters, .consolidacion-carga-editor { grid-template-columns: minmax(0,1fr); }
+  .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
+  .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
+}
