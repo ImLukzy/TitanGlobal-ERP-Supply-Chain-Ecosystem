@@ -2,11 +2,11 @@
 
 ## 1. Objetivo
 
-El enunciado define `RutasDespacho (zonas, distancias, peajes)`, pero el repositorio no contiene una spec, tabla ni API del módulo 43. Crear un maestro de rutas consultable por los módulos posteriores de logística.
+El enunciado define `RutasDespacho (zonas, distancias, peajes)`. El módulo partía sin spec, tabla ni API; la implementación local proporciona un maestro de rutas consultable por los módulos posteriores de logística.
 
 Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Orden confirmado: 41 → 42 → 48 → **43** → 44 → 45 → 46 → 47 → 49 → 50 → 73. Rama propia: `kelvin/modulo43-rutas-despacho`, creada desde `origin/main` después de `git fetch origin`.
 
-**Estado: propuesta para revisión de Lukas. No hay código implementado, script SQL creado ni pruebas ejecutadas del 43.** La existencia de esta propuesta no implica aprobación.
+**Estado: implementado y verificado localmente, por autorización de Kelvin al indicar «Prosigue» sobre esta propuesta. La revisión y aprobación de Lukas siguen pendientes.** Esta autorización de trabajo local no se presenta como revisión de Lukas ni permite integrar o desplegar. El gate termina con exit 0; Vite mantiene su aviso previo de tamaño del paquete compartido, documentado en la evidencia.
 
 ## 2. Fuera de alcance y decisiones pendientes
 
@@ -15,6 +15,8 @@ No modificar las cuatro entidades base, autenticación, middlewares, pipeline, d
 No programar viajes, asignar vehículos/conductores/transportistas, optimizar recorridos, integrar mapas, gestionar entregas ni calcular combustible. Estas funcionalidades no están definidas para el 43 en el enunciado y requerirían su propia aprobación.
 
 **Decisiones de producto propuestas que Lukas debe revisar antes de programar:**
+
+Kelvin autorizó expresamente la implementación local de estas decisiones; su revisión por Lukas sigue siendo un pendiente para integrar. No se marca la spec como aprobada.
 
 1. El módulo es un maestro reutilizable de rutas, no un despacho programado con fecha, vehículo o conductor. Los módulos posteriores podrán referenciarlo mediante cambios aprobados, sin anticipar sus tablas.
 2. `Zona` es una clasificación textual de la ruta; no se crea otro catálogo ni un polígono geográfico. `Origen` y `Destino` son descripciones, sin modificar Cliente ni Sucursales.
@@ -125,11 +127,11 @@ Seed propuesto: seis rutas en al menos tres zonas, una inactiva, peaje cero y po
 ## 6. Checklist de ejecución
 
 - [ ] Lukas revisa las cuatro decisiones de §2 y aprueba esta spec.
-- [ ] Confirmar número SQL libre y crear el script; aplicar y generar entidades.
-- [ ] Implementar DTOs, casos de uso y controlador.
-- [ ] Añadir integración, seed y smoke propios del 43.
-- [ ] Completar la pantalla según la spec frontend.
-- [ ] Ejecutar A1–A6 y registrar resultados reales.
+- [x] Confirmar número SQL libre y crear el script; aplicar y generar entidades.
+- [x] Implementar DTOs, casos de uso y controlador.
+- [x] Añadir integración, seed y smoke propios del 43.
+- [x] Completar la pantalla según la spec frontend.
+- [x] Ejecutar A1–A6 y registrar resultados reales; conservar la salvedad de Vite en A1 y la aprobación de Lukas pendiente.
 
 Commits por avances funcionales con sus pruebas, identidad Git de Kelvin y sin atribución a herramientas. No hacer push ni PR sin que el usuario lo solicite; `main` permanece intacto.
 
@@ -138,3 +140,4 @@ Commits por avances funcionales con sus pruebas, identidad Git de Kelvin y sin a
 | Fecha | Estado | Evidencia |
 |---|---|---|
 | 2026-11-21 | Propuesta, pendiente de revisión | Asignación, orden y alcance mínimo contrastados con asignaciones/enunciado; ramas remotas actualizadas y búsqueda de specs previas sin resultados; sin código ni pruebas del 43 |
+| 2026-11-21 | Implementación local verificada; revisión pendiente | 46 pruebas propias; gate con 1.130 pruebas backend y 603 frontend, siete operaciones OpenAPI, seed repetido, scaffold coincidente y SMOKE OK; detalle y salvedad de Vite en `docs/evidencias/modulo43/README.md` |

@@ -4,13 +4,13 @@
 
 Sustituir la pantalla pendiente de `/modulos/43-rutas-despacho` por el maestro de rutas: zonas, distancias y peajes estimados, con alta, consulta, edición, desactivación y baja. Responsable: Kelvin Pinto.
 
-**Estado: propuesta pendiente de revisión de Lukas y de aprobación del contrato backend. No implementada ni verificada visualmente.** Seguir `docs/equipo/crear-pantalla.md` y los componentes existentes.
+**Estado: implementado y verificado localmente por autorización de Kelvin; revisión de Lukas y aprobación del contrato backend pendientes.** Se ejecutaron pruebas y QA real siguiendo `docs/equipo/crear-pantalla.md`; la evidencia registra el aviso previo de tamaño del paquete compartido de Vite.
 
 ## 2. Fuera de alcance y decisiones pendientes
 
 Aplican las cuatro decisiones de `modulo43-rutas-despacho-backend.md` §2. No construir mapas, viajes programados, asignaciones de personal/flota, tarifas o conversiones. No modificar pantallas ajenas, componentes compartidos, autenticación ni dependencias.
 
-Las cifras de peaje son estimaciones manuales por recorrido y moneda; no se presentan como pagos realizados ni se suman monedas diferentes. No implementar hasta que el contrato haya sido revisado según el flujo del repositorio.
+Las cifras de peaje son estimaciones manuales por recorrido y moneda; no se presentan como pagos realizados ni se suman monedas diferentes. La implementación local autorizada no sustituye la revisión del contrato exigida para integrarlo.
 
 ## 3. Archivos afectados
 
@@ -53,14 +53,15 @@ Las cifras de peaje son estimaciones manuales por recorrido y moneda; no se pres
 ## 6. Checklist de ejecución
 
 - [ ] Lukas aprueba las specs y decisiones del backend.
-- [ ] Backend y base local preparados mediante los scripts del proyecto.
-- [ ] Cliente y validaciones con pruebas.
-- [ ] Pantalla y flujos con pruebas temáticas.
-- [ ] Suite estable diez ejecuciones; gates y smoke correctos.
-- [ ] QA real con evidencia en §7 y capturas en `docs/evidencias/modulo43/`.
+- [x] Backend y base local preparados mediante los scripts del proyecto.
+- [x] Cliente y validaciones con pruebas.
+- [x] Pantalla y flujos con pruebas temáticas.
+- [x] Suite estable diez ejecuciones; gates y smoke con exit 0, conservando la salvedad de Vite documentada.
+- [x] QA real con evidencia en §7 y capturas en `docs/evidencias/modulo43/`.
 
 ## 7. Registro de verificación
 
 | Fecha | Estado | Evidencia |
 |---|---|---|
 | 2026-11-21 | Propuesta, implementación y QA pendientes | Contrato propuesto contrastado con el enunciado, plantilla de specs y guía de pantalla; sin evidencia de ejecución todavía |
+| 2026-11-21 | Implementación local y QA real verificados; revisión pendiente | 60 pruebas propias correctas durante diez repeticiones; cuatro escenarios 375/1280 claro/oscuro, contraste medido, fondo de selección uniforme y 12 capturas en `docs/evidencias/modulo43/` |

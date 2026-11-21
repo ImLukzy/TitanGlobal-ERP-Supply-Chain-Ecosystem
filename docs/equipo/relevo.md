@@ -95,6 +95,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 010 | `010-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | reservado en la rama independiente del 41 |
 | 011 | `011-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | reservado en la rama independiente del 42 |
 | 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | creado y comprobado localmente en su rama; revisión de Lukas pendiente |
-| 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | reserva provisional para las specs propuestas; pendiente de revisión de Lukas, sin SQL creado |
+| 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | creado, aplicado y verificado localmente; revisión de Lukas pendiente, no aplicado en producción |
 
 Un script nuevo toma el siguiente número libre de esta tabla (014 en adelante) y se añade aquí en el mismo PR. Las reservas 010–013 de Kelvin pertenecen a ramas independientes: esta tabla no implica que sus scripts estén integrados en main.

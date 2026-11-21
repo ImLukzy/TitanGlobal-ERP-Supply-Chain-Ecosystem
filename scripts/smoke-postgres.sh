@@ -151,6 +151,22 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    "m43-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m43-list": lambda d: d["total"] == 6 and len(d["items"]) == 6 and all(isinstance(r["distanciaKm"], str) and isinstance(r["peajeEstimado"], str) for r in d["items"]),
+    "m43-inactivas": lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "RTA-43005" and d["items"][0]["activo"] is False,
+    "m43-zonas": lambda d: d == ["Centro", "Norte", "Sur"],
+    "m43-resumen": lambda d: d["totalRutas"] == 6 and d["activas"] == 5 and d["inactivas"] == 1 and len(d["porZona"]) == 3 and all(z["totalRutas"] == 2 for z in d["porZona"]),
+    "m43-filtro": lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "RTA-43004" and d["items"][0]["moneda"] == "USD",
+    "m43-maximos": lambda d: d["codigo"] == "SMK-43" and d["distanciaKm"] == "99999999.99" and d["peajeEstimado"] == "9999999999999999.99" and d["moneda"] == "USD" and d["activo"] is False and d["observaciones"] is None,
+    "m43-cero": lambda d: d["distanciaKm"] == "25.50" and d["peajeEstimado"] == "0.00" and d["activo"] is True and d["observaciones"] == "Editada",
+    "m43-duplicate": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe una ruta de despacho con el código smk-43." and "Detail" not in d,
+    "m43-distancia": lambda d: d["StatusCode"] == 400 and d["Message"] == "La distancia debe ser mayor que cero.",
+    "m43-distancia-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "La distancia no puede tener más de 2 decimales.",
+    "m43-peaje-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "El peaje estimado no puede tener más de 2 decimales.",
+    "m43-peaje-negativo": lambda d: d["StatusCode"] == 400 and d["Message"] == "El peaje estimado no puede ser negativo.",
+    "m43-missing": lambda d: d["StatusCode"] == 404 and re.fullmatch(r"La ruta de despacho [0-9]+ no existe\.", d["Message"]) is not None,
+    "m43-vacia": lambda d: d["total"] == 6 and d["items"] == [] and d["pagina"] == 2147483647,
+    "m43-openapi": lambda d: all(verb in d["paths"]["/api/v1/rutas-despacho" + path] for path, verb in [("", "get"), ("", "post"), ("/{id}", "get"), ("/{id}", "put"), ("/{id}", "delete"), ("/zonas", "get"), ("/resumen", "get")]),
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -588,6 +604,9 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m43-created" ]]; then
+        RUTA_43_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -916,4 +935,51 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 43: maestro independiente de rutas, sin modificar el resto de módulos.
+TOKEN_43_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M43 exige sesión' GET '/api/v1/rutas-despacho' 401 no-session
+TOKEN_ACTUAL="$TOKEN_43_ADMIN"
+request_check 'M43 OpenAPI siete operaciones' GET '/openapi/v1.json' 200 m43-openapi
+request_check 'M43 rutas del seed' GET '/api/v1/rutas-despacho' 200 m43-list
+request_check 'M43 filtro false' GET '/api/v1/rutas-despacho?activo=false' 200 m43-inactivas
+request_check 'M43 zonas distintas' GET '/api/v1/rutas-despacho/zonas' 200 m43-zonas
+request_check 'M43 resumen sin mezclar monedas' GET '/api/v1/rutas-despacho/resumen' 200 m43-resumen
+request_check 'M43 filtros combinados' GET '/api/v1/rutas-despacho?zona=norte&activo=true&busqueda=GUAYAQUIL' 200 m43-filtro
+request_check 'M43 página enorme sin desbordar' GET '/api/v1/rutas-despacho?pagina=2147483647' 200 m43-vacia
+request_check 'M43 crear con máximos y false' POST '/api/v1/rutas-despacho' 200 m43-created '{"codigo":" SMK-43 ","nombre":"Ruta Smoke","zona":"Prueba","origen":"Lima","destino":"Callao","distanciaKm":99999999.99,"peajeEstimado":9999999999999999.99,"moneda":" usd ","activo":false,"observaciones":" "}'
+request_check 'M43 precisión y normalización persistidas' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 m43-maximos
+request_check 'M43 código duplicado normalizado' POST '/api/v1/rutas-despacho' 409 m43-duplicate '{"codigo":" smk-43 ","nombre":"Duplicada","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 editar código propio y peaje cero' PUT "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 created '{"codigo":"SMK-43","nombre":"Ruta Smoke editada","zona":"Prueba","origen":"Lima","destino":"Callao","distanciaKm":25.50,"peajeEstimado":0,"moneda":"USD","activo":true,"observaciones":" Editada "}'
+request_check 'M43 peaje cero conservado' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 m43-cero
+request_check 'M43 distancia positiva' POST '/api/v1/rutas-despacho' 400 m43-distancia '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":0,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 distancia sin redondeo' POST '/api/v1/rutas-despacho' 400 m43-distancia-decimales '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1.001,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 peaje sin redondeo' POST '/api/v1/rutas-despacho' 400 m43-peaje-decimales '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":0.001,"moneda":"PEN"}'
+request_check 'M43 peaje no negativo' POST '/api/v1/rutas-despacho' 400 m43-peaje-negativo '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":-1,"moneda":"PEN"}'
+# Verificar restricciones sin pasar por las prevalidaciones de Application.
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES (' smk-43 ', 'SQL', 'Centro', 'Lima', 'Callao', 1, 0, 'PEN');
+        RAISE EXCEPTION 'M43: falta unicidad normalizada del código';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES ('SQL-INVALIDA', 'SQL', 'Centro', 'Lima', 'Callao', 0, 0, 'PEN');
+        RAISE EXCEPTION 'M43: falta restricción de distancia positiva';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES ('SQL-INVALIDA', 'SQL', 'Centro', 'Lima', 'Callao', 1, -1, 'PEN');
+        RAISE EXCEPTION 'M43: falta restricción de peaje no negativo';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
+request_check 'M43 eliminar ruta sin asociaciones' DELETE "/api/v1/rutas-despacho/${RUTA_43_ID}" 204 ''
+request_check 'M43 confirmar baja' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 404 m43-missing
 printf 'SMOKE OK\n'

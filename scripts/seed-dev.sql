@@ -623,4 +623,15 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+-- Módulo 43: maestro de rutas; estimaciones por recorrido, sin conversión.
+INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda", "Activo", "Observaciones") VALUES
+('RTA-43001', 'Corredor Norte', 'Norte', 'Lima', 'Trujillo', 558.50, 98.00, 'PEN', true, 'Estimación de peajes por recorrido.'),
+('RTA-43002', 'Corredor Sur', 'Sur', 'Lima', 'Ica', 303.25, 35.50, 'PEN', true, NULL),
+('RTA-43003', 'Conexión urbana', 'Centro', 'Callao', 'Lima', 25.00, 0.00, 'PEN', true, 'Recorrido sin peajes estimados.'),
+('RTA-43004', 'Conexión internacional', 'Norte', 'Tumbes', 'Guayaquil', 280.00, 18.75, 'USD', true, NULL),
+('RTA-43005', 'Tramo Sur suspendido', 'Sur', 'Arequipa', 'Tacna', 368.20, 42.00, 'PEN', false, 'Ruta temporalmente desactivada.'),
+('RTA-43006', 'Corredor Centro', 'Centro', 'Lima', 'Huancayo', 302.40, 44.00, 'PEN', true, NULL)
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"RutasDespacho"', 'Id'), (SELECT MAX("Id") FROM "RutasDespacho"));
+
 COMMIT;
