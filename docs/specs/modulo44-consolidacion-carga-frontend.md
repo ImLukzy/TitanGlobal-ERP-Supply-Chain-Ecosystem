@@ -24,9 +24,9 @@ A1: cliente de ocho operaciones y validaciones con literales/límites. A2: consu
 
 ## 6. Checklist
 - [ ] Aprobación de Lukas.
-- [ ] API y datos locales preparados por scripts.
-- [ ] Cliente, cálculos, editor, estados y diálogos con pruebas temáticas.
-- [ ] Diez repeticiones, gates, smoke y QA real.
+- [x] API y datos locales preparados por scripts.
+- [x] Cliente, cálculos, editor, estados y diálogos con pruebas temáticas.
+- [x] Diez repeticiones, gates, smoke y QA real, con salvedades documentadas.
 
 ## 7. Registro
-2026-11-21: propuesta para implementación local; revisión pendiente, sin pruebas ni QA acreditados.
+2026-11-21: implementación y verificaciones locales en rama propia. Suite propia de 56 pruebas repetida diez veces; suite global de 599 correcta. QA con API/PostgreSQL reales en 375/1280 claro/oscuro, 16 capturas y mediciones en [evidencia](../evidencias/modulo44/README.md). Revisión de Lukas pendiente y advertencia global de tamaño del bundle registrada; sin integración ni despliegue.

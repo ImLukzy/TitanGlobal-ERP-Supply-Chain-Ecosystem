@@ -37,7 +37,7 @@ Página {items,total,pagina,tamanoPagina}; item id/codigo/nombre/estado/totalUni
 
 Orden de validación: en edición/baja/transiciones, buscar primero (404 `La consolidación {id} no existe.`); después estado permitido (409); después cabecera, líneas en orden, y finalmente código duplicado. Trim de textos y opcionales vacíos a null.
 
-400 literales de cabecera: `El código de la consolidación es obligatorio.` / `El código de la consolidación no puede superar 20 caracteres.`; `El nombre de la consolidación es obligatorio.` / `El nombre de la consolidación no puede superar 100 caracteres.`; `Las observaciones no pueden superar 500 caracteres.`; `La consolidación debe tener entre 1 y 100 líneas.`.
+400 literales de cabecera: `El código de la consolidación es obligatorio.` / `El código de la consolidación no puede superar 20 caracteres.`; `El nombre de la consolidación es obligatorio.` / `El nombre de la consolidación no puede superar 100 caracteres.`; `Las observaciones no pueden superar 500 caracteres.`; `La consolidación debe tener entre 1 y 100 líneas.`; `La consolidación no puede contener líneas nulas.`.
 
 Por cada línea (i empieza en 1): `Línea {i}: el SKU es obligatorio.` / `Línea {i}: el SKU no puede superar 40 caracteres.`; `Línea {i}: la descripción es obligatoria.` / `Línea {i}: la descripción no puede superar 200 caracteres.`. Campos numéricos, en el orden de la tabla anterior:
 - `Línea {i}: la cantidad debe estar entre 1 y 1000000.`
@@ -64,10 +64,10 @@ A1: build sin warnings/errores, formato/capas/reglas y verify exit0; registrar c
 
 ## 6. Checklist
 - [ ] Revisión y aprobación de Lukas.
-- [ ] Esquema y scaffold local.
-- [ ] API, reglas, integración y datos de ejemplo.
-- [ ] Pantalla y pruebas.
-- [ ] Gates, estabilidad, smoke y QA reales documentados.
+- [x] Esquema y scaffold local.
+- [x] API, reglas, integración y datos de ejemplo.
+- [x] Pantalla y pruebas.
+- [x] Gates, estabilidad, smoke y QA reales documentados, con salvedades en la evidencia.
 
 ## 7. Registro
-2026-11-21: propuesta de implementación local autorizada por Kelvin; revisión de Lukas pendiente. No acreditar pruebas ni despliegue todavía. Commits por avances funcionales, identidad Git de Kelvin, sin push ni PR ni cambios en main.
+2026-11-21: implementación local autorizada por Kelvin; revisión de Lukas pendiente. SQL aplicado y scaffold regenerado; 1140 pruebas backend (55 propias), 599 frontend (56 propias), verify con salida 0 y smoke con SMOKE OK. Estabilidad y QA documentados en [evidencia](../evidencias/modulo44/README.md). La advertencia de tamaño del bundle compartido de Vite impide acreditar cero advertencias globales. Commits por avances funcionales, identidad Git de Kelvin, sin push ni PR ni cambios en main. No acredita aprobación, integración ni despliegue.
