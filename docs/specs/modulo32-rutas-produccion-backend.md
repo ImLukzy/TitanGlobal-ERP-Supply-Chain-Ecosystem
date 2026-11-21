@@ -4,7 +4,7 @@
 
 Definir cómo se fabrica un producto mediante una secuencia de operaciones. Cada operación identifica su centro de trabajo y sus tiempos estándar de preparación y ejecución. El usuario puede consultar el historial, preparar una versión en borrador, activarla y retirarla.
 
-**Responsable:** Antony Huayhua. **Estado:** propuesta pendiente de revisión y aprobación de Lukas.
+**Responsable:** Antony Huayhua. **Estado:** aprobación de Lukas confirmada por Antony.
 
 ## 2. Alcance y decisiones para revisión
 
@@ -17,11 +17,12 @@ Definir cómo se fabrica un producto mediante una secuencia de operaciones. Cada
 
 | Ruta | Cambio |
 |---|---|
-| `database/NNN-rutas-produccion.sql` | Crear un script con el número libre según el registro de reservas vigente al implementar. |
+| `database/011-rutas-produccion.sql` y `docs/equipo/relevo.md` | Crear el script y registrar su número. |
 | `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar las entidades y sus relaciones con `./scripts/scaffold.sh`. |
 | `src/TitanGlobal.Domain/Repositories/` y `src/TitanGlobal.Infrastructure/Repositories/Implementation/` | Incorporar el puerto y la persistencia para serializar escrituras de una misma ruta. Registrar la implementación en la configuración de Infrastructure. |
 | `src/TitanGlobal.Application/DTOs/Modulo32_RutasProduccion/` y `src/TitanGlobal.Application/UseCases/Modulo32_RutasProduccion/` | Crear DTOs, validaciones y casos de uso. |
 | `src/TitanGlobal.Api/Controllers/Modulo32_RutasProduccion/RutasProduccionController.cs` | Publicar el contrato HTTP. |
+| `src/TitanGlobal.Application/UseCases/Modulo33_CentrosTrabajo/EliminarCentroTrabajoUseCase.cs` | Traducir la restricción de borrado de centros usados por rutas a 409. |
 | `tests/TitanGlobal.Api.Tests/Modulo32_RutasProduccion/` | Cubrir el contrato y sus reglas con pruebas de integración. |
 | `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Añadir datos de ejemplo idempotentes y comprobar el contrato en PostgreSQL. |
 
@@ -31,7 +32,7 @@ Definir cómo se fabrica un producto mediante una secuencia de operaciones. Cada
 
 | Tabla | Campos y restricciones |
 |---|---|
-| `RutasProduccion` | `Id`, `ProductoId` (FK a `Productos`), `Version` (entero positivo) y `Estado` (`Borrador`, `Activa`, `Retirada`). Unicidad de `(ProductoId, Version)` e índice único parcial de `ProductoId` para el estado `Activa`. |
+| `RutasProduccion` | `Id`, `ProductoId` (FK a `Productos`), `Version` (entero positivo) y `Estado` (`Borrador`, `Activa`, `Retirada`). Unicidad de `(ProductoId, Version)` e índice único parcial de `(ProductoId, Estado)` para `Estado = 'Activa'`. Incluir `Estado` en el índice permite que el scaffold genere la relación de un producto con varias versiones. |
 | `OperacionesRutaProduccion` | `Id`, `RutaProduccionId` (FK a `RutasProduccion`), `Secuencia` (entero entre 1 y 100), `Nombre` (`varchar(120)`), `CentroTrabajoId` (FK a `CentrosTrabajo`), `MinutosPreparacion` y `MinutosPorUnidad` (`numeric(10,2)`). Unicidad de `(RutaProduccionId, Secuencia)` e índice de `CentroTrabajoId`. |
 
 El alta crea una versión en `Borrador` con todas sus operaciones. Producto y versión quedan fijos después del alta. La edición reemplaza las operaciones completas de un borrador en una transacción. La secuencia debe contener los enteros del 1 al número de operaciones, independientemente del orden del JSON recibido. El SQL comprueba versión, estado, rango de secuencia y signo de los tiempos.
@@ -96,7 +97,9 @@ El listado valida página, tamaño, producto y estado en ese orden. Las escritur
 | Producto con otra ruta activa | 409 | El producto {productoId} ya tiene una ruta de producción activa. |
 | Retiro de una ruta que no está activa | 409 | Solo se pueden retirar rutas de producción activas. |
 
-Una operación en borrador admite un centro inactivo. `minutosPreparacion` debe estar presente aunque valga cero. Los tiempos se guardan con los decimales validados, incluidos valores con ceros finales. Las violaciones concurrentes de las restricciones de producto, centro y versión se traducen al mismo código y mensaje del contrato.
+Una operación en borrador admite un centro inactivo. `minutosPreparacion` debe estar presente aunque valga cero. Los ceros del extremo derecho de la parte decimal no cuentan para el límite de dos decimales. Las violaciones concurrentes de las restricciones de producto, centro y versión se traducen al mismo código y mensaje del contrato.
+
+El `DELETE /api/v1/centros-trabajo/{id:int}` del módulo 33 devuelve 409 con «No se puede eliminar el centro de trabajo {id} porque está en uso en una ruta de producción.» si alguna operación lo referencia, incluso en el historial.
 
 ## 5. Criterios de aceptación
 
@@ -111,12 +114,18 @@ Una operación en borrador admite un centro inactivo. `minutosPreparacion` debe 
 
 ## 6. Checklist de ejecución
 
-- [ ] Obtener la aprobación de Lukas sobre el alcance y el contrato.
-- [ ] Aplicar el script local y regenerar entidades y contexto.
-- [ ] Implementar persistencia, casos de uso y endpoints.
-- [ ] Incorporar pruebas de integración, seed y smoke.
-- [ ] Ejecutar A1–A6 y registrar los resultados antes de abrir el PR.
+- [x] Obtener la aprobación de Lukas sobre el alcance y el contrato.
+- [x] Aplicar el script local y regenerar entidades y contexto.
+- [x] Implementar persistencia, casos de uso y endpoints.
+- [x] Incorporar pruebas de integración, seed y smoke.
+- [x] Ejecutar A1–A6 y registrar los resultados.
+- [ ] Confirmar A1 sin advertencias.
 
 ## 7. Registro de verificación
 
-Pendiente de implementación.
+| Fecha | Criterio | Resultado | Evidencia |
+|---|---|---|---|
+| 2026-11-21 | A1 | Código 0 con advertencias | Compilación .NET sin advertencias. `./scripts/verify.sh` aprobó 1126 pruebas de backend y 543 de frontend. npm avisó sobre el requisito de Node de jsdom y la deprecación de ESLint. Vite avisó sobre un archivo superior a 500 kB. |
+| 2026-11-21 | A2–A4 | Correcto | 43 pruebas HTTP del módulo aprobadas. Cubren autenticación, mensajes, filtros, detalle ordenado y cambios de estado. El smoke confirmó las seis operaciones en OpenAPI y la protección de los centros referenciados. |
+| 2026-11-21 | A5 | Correcto | El script 011 se aplicó en PostgreSQL local aislado. `./scripts/scaffold.sh --comprobar` confirmó el código generado. El smoke verificó activaciones simultáneas y una edición concurrente con la activación, y terminó en `SMOKE OK`. |
+| 2026-11-21 | A6 | Correcto | Dos cargas del seed dejaron 2 rutas y 4 operaciones en cada corrida. |
