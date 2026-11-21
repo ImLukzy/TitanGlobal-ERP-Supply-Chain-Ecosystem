@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-Pantalla de Kelvin Pinto en `/modulos/45-guias-remision` para crear documentos internos de transporte con mercancías, consultarlos, emitirlos internamente y anularlos conservando sus datos. Depende del contrato [backend](modulo45-guias-remision-backend.md), aún propuesto. Lukas debe revisar ambas specs antes de programar, según crear-pantalla.md §1.
+Pantalla de Kelvin Pinto en `/modulos/45-guias-remision` para crear documentos internos de transporte con mercancías, consultarlos, emitirlos internamente y anularlos conservando sus datos. Depende del contrato [backend](modulo45-guias-remision-backend.md), aún propuesto. Kelvin autoriza expresamente desarrollarlo y probarlo localmente el 2026-11-21; queda pendiente la revisión de Lukas del flujo normal de crear-pantalla.md §1.
 
 ## 2. Fuera de alcance
 
@@ -22,6 +22,7 @@ Las decisiones backend §2 siguen pendientes. Sin cambios en pantallas/component
 | `frontend/src/modules/guias-remision/GuiaDetallePanel.tsx` | Cabecera, mercancías, estados e historial UTC |
 | `frontend/src/modules/guias-remision/GuiaFormulario.tsx` y `LineasGuiaEditor.tsx` | Cabecera y 1–100 líneas con claves de interfaz estables |
 | `frontend/src/modules/guias-remision/DialogoAnularGuia.tsx` | Motivo obligatorio, foco atrapado y retorno |
+| `frontend/src/modules/guias-remision/DialogoEmitirGuia.tsx` | Confirmación interna explícita, foco atrapado y retorno |
 | `frontend/src/modules/guias-remision/guias.testUtils.tsx` | Respuestas controladas y esperarCargaInicialGuias |
 | `frontend/src/modules/guias-remision/GuiasConsultas.test.tsx`, `GuiasFormulario.test.tsx`, `GuiasEstados.test.tsx` | Pruebas separadas por flujo, sin temporizadores reales |
 | `frontend/src/modules/pantallas.ts` | Añadir exclusivamente registro de 45 |
@@ -58,17 +59,17 @@ Comparar con una pantalla integrada de referencia en claro y oscuro. Capturas de
 ## 6. Checklist de ejecución
 
 - [ ] Revisión de Lukas de este diseño y del contrato backend.
-- [ ] Backend, SQL, seed y API locales preparados según scripts.
-- [ ] Cliente, consultas, formulario y transiciones implementados.
-- [ ] Pruebas temáticas y diez repeticiones sin fallos.
-- [ ] Gates y QA real con evidencia.
+- [x] Backend, SQL, seed y API locales preparados según scripts.
+- [x] Cliente, consultas, formulario y transiciones implementados.
+- [x] Pruebas temáticas y diez repeticiones sin fallos, más una bajo carga.
+- [x] Gates y QA real con evidencia; salvedad Vite documentada.
 
 ## 7. Registro
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
 | 2026-11-21 | Diseño | Propuesta pendiente de revisión | Este documento; asignación de Kelvin comprobada |
-| 2026-11-21 | A1–A6 | No ejecutados | No se ha programado la pantalla del módulo 45 |
+| 2026-11-21 | A1–A6 | Verificados localmente, con salvedades | 61 pruebas propias, 604 globales, diez repeticiones más una bajo carga, frontend verify final salida 0 y QA real 375/1280 claro/oscuro, 20 capturas propias y dos de referencia; [evidencia](../evidencias/modulo45/README.md). Revisión de Lukas y advertencia Vite pendientes |
 
 
 2026-11-21: Kelvin autoriza expresamente continuar con esta propuesta como implementación local, igual que los módulos anteriores. Esta autorización permite desarrollar y probar en su rama; no sustituye la revisión de Lukas ni autoriza publicación, integración o despliegue.

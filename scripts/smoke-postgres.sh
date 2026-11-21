@@ -151,6 +151,25 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    'm45-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm45-baja-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm45-list': lambda d: d['total'] == 3 and len(d['items']) == 3 and all(g['pesoBrutoKg'] == '12.34' and g['totalLineas'] == 1 for g in d['items']),
+    'm45-resumen': lambda d: d == {'total':3,'borradores':1,'emitidas':1,'anuladas':1},
+    'm45-maximos': lambda d: d['serie'] == 'SMK45' and d['pesoBrutoKg'] == '9999999999.99' and d['lineas'][0]['cantidad'] == '999999999.999' and d['fechaInicioTraslado'] == '2026-11-22T10:30:00Z',
+    'm45-editada': lambda d: d['totalLineas'] == 2 and [l['posicion'] for l in d['lineas']] == [1,2] and d['lineas'][1]['cantidad'] == '0.001',
+    'm45-emitida': lambda d: d['estado'] == 'Emitida' and d['fechaEmision'].endswith('Z') and d['fechaAnulacion'] is None and len(d['lineas']) == 2,
+    'm45-anulada': lambda d: d['estado'] == 'Anulada' and d['fechaEmision'].endswith('Z') and d['fechaAnulacion'].endswith('Z') and d['motivoAnulacion'] == 'Cambio de plan' and len(d['lineas']) == 2,
+    'm45-duplicado': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Ya existe una guía con la serie SMK45 y el número 1.',
+    'm45-edicion': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede editar una guía en borrador.',
+    'm45-baja': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede eliminar una guía en borrador.',
+    'm45-emision': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede emitir una guía en borrador.',
+    'm45-motivo': lambda d: d['StatusCode'] == 400 and d['Message'] == 'El motivo de anulación es obligatorio.',
+    'm45-repetida': lambda d: d['StatusCode'] == 409 and d['Message'] == 'La guía ya está anulada.',
+    'm45-decimales': lambda d: d['StatusCode'] == 400 and d['Message'] == 'Línea 1: la cantidad no puede tener más de 3 decimales.',
+    'm45-filtro': lambda d: d['total'] == 2 and all(g['estado'] == 'Anulada' for g in d['items']),
+    'm45-missing': lambda d: d['StatusCode'] == 404 and re.fullmatch(r'La guía de remisión [0-9]+ no existe\.',d['Message']) is not None,
+    'm45-openapi': lambda d: all(verb in d['paths']['/api/v1/guias-remision'+path] for path,verb in [('', 'get'),('', 'post'),('/{id}', 'get'),('/{id}', 'put'),('/{id}', 'delete'),('/{id}/emision', 'post'),('/{id}/anulacion', 'post'),('/resumen', 'get')]),
+
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -588,6 +607,12 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m45-created" ]]; then
+        GUIA_45_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m45-baja-created" ]]; then
+        BAJA_45_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -916,4 +941,57 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 45: documento interno, precisión, UTC e historial.
+TOKEN_45_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M45 exige sesión' GET '/api/v1/guias-remision' 401 no-session
+TOKEN_ACTUAL="$TOKEN_45_ADMIN"
+request_check 'M45 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m45-openapi
+request_check 'M45 seed y precisión' GET '/api/v1/guias-remision' 200 m45-list
+request_check 'M45 resumen' GET '/api/v1/guias-remision/resumen' 200 m45-resumen
+request_check 'M45 alta máximos y fecha sin zona' POST '/api/v1/guias-remision' 200 m45-created '{"serie":" smk45 ","numero":1,"fechaInicioTraslado":"2026-11-22T10:30:00","pesoBrutoKg":9999999999.99,"lineas":[{"sku":"SMK45","descripcion":"Mercancía","unidadMedida":"UND","cantidad":999999999.999}],"remitenteNombre":"RemitenteNombre","remitenteDocumento":"RemitenteDocumento","destinatarioNombre":"DestinatarioNombre","destinatarioDocumento":"DestinatarioDocument","direccionOrigen":"DireccionOrigen","direccionDestino":"DireccionDestino","motivoTraslado":"MotivoTraslado","transportista":"Transportista","conductor":"Conductor","placa":"Placa"}'
+request_check 'M45 máximos persistidos en UTC' GET "/api/v1/guias-remision/${GUIA_45_ID}" 200 m45-maximos
+request_check 'M45 número duplicado normalizado' POST '/api/v1/guias-remision' 409 m45-duplicado '{"serie":" smk45 ","numero":1,"fechaInicioTraslado":"2026-11-22T10:30:00","pesoBrutoKg":9999999999.99,"lineas":[{"sku":"SMK45","descripcion":"Mercancía","unidadMedida":"UND","cantidad":999999999.999}],"remitenteNombre":"RemitenteNombre","remitenteDocumento":"RemitenteDocumento","destinatarioNombre":"DestinatarioNombre","destinatarioDocumento":"DestinatarioDocument","direccionOrigen":"DireccionOrigen","direccionDestino":"DireccionDestino","motivoTraslado":"MotivoTraslado","transportista":"Transportista","conductor":"Conductor","placa":"Placa"}'
+request_check 'M45 no redondea cantidades' PUT "/api/v1/guias-remision/${GUIA_45_ID}" 400 m45-decimales '{"serie":" smk45 ","numero":1,"fechaInicioTraslado":"2026-11-22T10:30:00","pesoBrutoKg":9999999999.99,"lineas":[{"sku":"SMK45","descripcion":"Mercancía","unidadMedida":"UND","cantidad":1.0001}],"remitenteNombre":"RemitenteNombre","remitenteDocumento":"RemitenteDocumento","destinatarioNombre":"DestinatarioNombre","destinatarioDocumento":"DestinatarioDocument","direccionOrigen":"DireccionOrigen","direccionDestino":"DireccionDestino","motivoTraslado":"MotivoTraslado","transportista":"Transportista","conductor":"Conductor","placa":"Placa"}'
+request_check 'M45 reemplazo por dos líneas' PUT "/api/v1/guias-remision/${GUIA_45_ID}" 200 created '{"serie":" smk45 ","numero":1,"fechaInicioTraslado":"2026-11-22T10:30:00","pesoBrutoKg":12.34,"lineas":[{"sku":"SMK45","descripcion":"Mercancía","unidadMedida":"UND","cantidad":1.125},{"sku":"SMK45","descripcion":"Otra unidad","unidadMedida":"KG","cantidad":0.001}],"remitenteNombre":"RemitenteNombre","remitenteDocumento":"RemitenteDocumento","destinatarioNombre":"DestinatarioNombre","destinatarioDocumento":"DestinatarioDocument","direccionOrigen":"DireccionOrigen","direccionDestino":"DireccionDestino","motivoTraslado":"MotivoTraslado","transportista":"Transportista","conductor":"Conductor","placa":"Placa"}'
+request_check 'M45 detalle editado' GET "/api/v1/guias-remision/${GUIA_45_ID}" 200 m45-editada
+request_check 'M45 emisión interna sin cuerpo' POST "/api/v1/guias-remision/${GUIA_45_ID}/emision" 200 created
+request_check 'M45 emisión UTC y líneas' GET "/api/v1/guias-remision/${GUIA_45_ID}" 200 m45-emitida
+request_check 'M45 no emite otra vez' POST "/api/v1/guias-remision/${GUIA_45_ID}/emision" 409 m45-emision
+request_check 'M45 no edita terminal' PUT "/api/v1/guias-remision/${GUIA_45_ID}" 409 m45-edicion '{}'
+request_check 'M45 no elimina terminal' DELETE "/api/v1/guias-remision/${GUIA_45_ID}" 409 m45-baja
+request_check 'M45 exige motivo' POST "/api/v1/guias-remision/${GUIA_45_ID}/anulacion" 400 m45-motivo '{"motivo":" "}'
+request_check 'M45 anula preservando historial' POST "/api/v1/guias-remision/${GUIA_45_ID}/anulacion" 200 created '{"motivo":"  Cambio de plan  "}'
+request_check 'M45 historial UTC y mercancías' GET "/api/v1/guias-remision/${GUIA_45_ID}" 200 m45-anulada
+request_check 'M45 no anula otra vez' POST "/api/v1/guias-remision/${GUIA_45_ID}/anulacion" 409 m45-repetida '{"motivo":"Otra"}'
+request_check 'M45 filtrar anuladas' GET '/api/v1/guias-remision?estado=anulada' 200 m45-filtro
+request_check 'M45 borrador para baja' POST '/api/v1/guias-remision' 200 m45-baja-created '{"serie":"SMKBAJA","numero":1,"fechaInicioTraslado":"2026-11-22T10:30:00","pesoBrutoKg":12.34,"lineas":[{"sku":"SMK45","descripcion":"Mercancía","unidadMedida":"UND","cantidad":1.125},{"sku":"SMK45","descripcion":"Otra unidad","unidadMedida":"KG","cantidad":0.001}],"remitenteNombre":"RemitenteNombre","remitenteDocumento":"RemitenteDocumento","destinatarioNombre":"DestinatarioNombre","destinatarioDocumento":"DestinatarioDocument","direccionOrigen":"DireccionOrigen","direccionDestino":"DireccionDestino","motivoTraslado":"MotivoTraslado","transportista":"Transportista","conductor":"Conductor","placa":"Placa"}'
+request_check 'M45 baja en cascada' DELETE "/api/v1/guias-remision/${BAJA_45_ID}" 204 ''
+request_check 'M45 confirmar baja' GET "/api/v1/guias-remision/${BAJA_45_ID}" 404 m45-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "LineasGuiaRemision" l LEFT JOIN "GuiasRemision" g ON g."Id" = l."GuiaRemisionId" WHERE g."Id" IS NULL) THEN RAISE EXCEPTION 'M45: líneas huérfanas'; END IF;
+    BEGIN
+        UPDATE "GuiasRemision" SET "Numero" = 1 WHERE "Serie" = 'T045' AND "Numero" = 2;
+        RAISE EXCEPTION 'M45: falta unicidad';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "LineasGuiaRemision" ("GuiaRemisionId","Posicion","Sku","Descripcion","UnidadMedida","Cantidad") VALUES (2147483647,1,'FK','FK','UND',1);
+        RAISE EXCEPTION 'M45: falta FK';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "LineasGuiaRemision" SET "Cantidad" = 0 WHERE "Sku" = 'MAN-45001';
+        RAISE EXCEPTION 'M45: falta límite';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "GuiasRemision" SET "Estado" = 'Emitida' WHERE "Serie" = 'T045' AND "Numero" = 1;
+        RAISE EXCEPTION 'M45: falta coherencia de estados';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
 printf 'SMOKE OK\n'

@@ -623,4 +623,18 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 45: documentos internos de transporte, sin emisión fiscal.
+INSERT INTO "GuiasRemision" ("Serie","Numero","Estado","FechaInicioTraslado","RemitenteNombre","RemitenteDocumento","DestinatarioNombre","DestinatarioDocumento","DireccionOrigen","DireccionDestino","MotivoTraslado","Transportista","Conductor","Placa","PesoBrutoKg","Observaciones","FechaEmision","FechaAnulacion","MotivoAnulacion") VALUES
+('T045',1,'Borrador','2026-11-22T10:30:00Z','Planta Norte','DOC-45001','Centro Sur','DOC-45002','Avenida Industrial 100','Avenida Logística 200','Traslado interno','Operador de ejemplo','Conductor de ejemplo','ABC-450',12.34,NULL,NULL,NULL,NULL),
+('T045',2,'Emitida','2026-11-22T10:30:00Z','Planta Norte','DOC-45001','Centro Sur','DOC-45002','Avenida Industrial 100','Avenida Logística 200','Traslado interno','Operador de ejemplo','Conductor de ejemplo','ABC-450',12.34,NULL,'2026-11-21T12:00:00Z',NULL,NULL),
+('T045',3,'Anulada','2026-11-22T10:30:00Z','Planta Norte','DOC-45001','Centro Sur','DOC-45002','Avenida Industrial 100','Avenida Logística 200','Traslado interno','Operador de ejemplo','Conductor de ejemplo','ABC-450',12.34,NULL,'2026-11-21T12:00:00Z','2026-11-21T13:00:00Z','Cambio de programación.')
+ON CONFLICT ("Serie","Numero") DO NOTHING;
+INSERT INTO "LineasGuiaRemision" ("GuiaRemisionId","Posicion","Sku","Descripcion","UnidadMedida","Cantidad")
+SELECT g."Id",1,'MAN-45001','Mercancía manual de ejemplo','UND',1.125 FROM "GuiasRemision" g
+WHERE g."Serie" = 'T045' AND g."Numero" IN (1,2,3)
+AND NOT EXISTS (SELECT 1 FROM "LineasGuiaRemision" l WHERE l."GuiaRemisionId" = g."Id" AND l."Posicion" = 1);
+SELECT setval(pg_get_serial_sequence('"GuiasRemision"','Id'),(SELECT MAX("Id") FROM "GuiasRemision"));
+SELECT setval(pg_get_serial_sequence('"LineasGuiaRemision"','Id'),(SELECT MAX("Id") FROM "LineasGuiaRemision"));
+
 COMMIT;

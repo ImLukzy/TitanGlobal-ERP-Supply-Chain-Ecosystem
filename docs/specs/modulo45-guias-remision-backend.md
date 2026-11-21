@@ -4,7 +4,7 @@
 
 Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Siguiente módulo del orden 41 → 42 → 48 → 43 → 44 → **45** → 46 → 47 → 49 → 50 → 73.
 
-El enunciado solo define `GuiasRemision (documentos de transporte)`; no establece campos, reglas fiscales, numeración ni integración. Esta propuesta concreta un registro interno de documentos de transporte con cabecera, mercancías y estados, para que Lukas lo revise **antes de programar**, conforme a AGENTS.md §8 y crear-modulo.md §1. No es una especificación aprobada ni una implementación.
+El enunciado solo define `GuiasRemision (documentos de transporte)`; no establece campos, reglas fiscales, numeración ni integración. Esta propuesta concreta un registro interno de documentos de transporte con cabecera, mercancías y estados. Kelvin autorizó expresamente su implementación local el 2026-11-21; la revisión de Lukas exigida por el flujo normal sigue pendiente. No se presenta como especificación aprobada ni habilita integración o despliegue.
 
 Rama independiente: `kelvin/modulo45-guias-remision`, creada desde `origin/main` actualizado el 2026-11-21. Las ramas locales de los módulos anteriores se conservan; no se incorporan sus commits a esta rama ni se modifica main.
 
@@ -21,21 +21,21 @@ Quedan fuera las cuatro entidades congeladas, tablas/pantallas ajenas, middlewar
 
 ## 3. Archivos previstos
 
-| Ruta | Acción tras aprobación |
+| Ruta | Acción local autorizada por Kelvin |
 |---|---|
 | `database/015-guias-remision.sql` | Crear, comprobando otra vez la numeración reservada |
 | `src/TitanGlobal.Domain/Models/GuiaRemision.cs` y `LineaGuiaRemision.cs` | Generar por scaffold, nunca editar a mano |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Regenerar por scaffold |
 | `src/TitanGlobal.Api/Configuration/run/NombresNavegacion.cs` | Añadir únicamente el nombre de la colección propia si el scaffold lo requiere |
 | `src/TitanGlobal.Application/DTOs/Modulo45_GuiasRemision/*.cs` | DTOs GuardarGuiaRequestDto, LineaGuiaRequestDto, AnularGuiaRequestDto, GuiaListadoDto, GuiaDetalleDto, LineaGuiaDto, PaginaGuiasDto y ResumenGuiasDto |
-| `src/TitanGlobal.Application/UseCases/Modulo45_GuiasRemision/*.cs` | CrearGuiaUseCase, ActualizarGuiaUseCase, EliminarGuiaUseCase, ObtenerGuiaUseCase, ListarGuiasUseCase, EmitirGuiaUseCase, AnularGuiaUseCase, ResumenGuiasUseCase y ValidacionGuia |
+| `src/TitanGlobal.Application/UseCases/Modulo45_GuiasRemision/*.cs` | CrearGuiaUseCase, ActualizarGuiaUseCase, EliminarGuiaUseCase, ObtenerGuiaUseCase, ListarGuiasUseCase, EmitirGuiaUseCase, AnularGuiaUseCase, ResumenGuiasUseCase, ValidacionGuia y PresentacionGuia |
 | `src/TitanGlobal.Api/Controllers/Modulo45_GuiasRemision/GuiasRemisionController.cs` | Controlador delgado |
 | `tests/TitanGlobal.Api.Tests/Modulo45_GuiasRemision/GuiasRemisionApiTests.cs` y `RestriccionesGuiaTests.cs` | Integración de reglas, mensajes y traducción de restricciones |
 | `tests/TitanGlobal.Api.Tests/Arquitectura/PluralizadorEspanolTests.cs` | Añadir casos propios si se necesitan para los nombres generados |
 | `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Añadir bloque propio y validadores, sin alterar los de otros módulos |
 | `docs/equipo/asignaciones.md`, `docs/equipo/relevo.md` y specs de 45 | Estado y resultados reales |
 
-El 015 considera las reservas 010–014 de las ramas independientes de Kelvin. No se crean ni aplican tablas en esta fase documental.
+El 015 considera las reservas 010–014 de las ramas independientes de Kelvin. Aplicación de SQL y generación de entidades exclusivamente en PostgreSQL local; no se utiliza producción.
 
 ## 4. Contrato propuesto
 
@@ -45,7 +45,7 @@ El 015 considera las reservas 010–014 de las ramas independientes de Kelvin. N
 
 `LineasGuiaRemision`: Id identity; GuiaRemisionId FK con índice y borrado en cascada; Posicion integer 1–100; Sku varchar(40), Descripcion varchar(200), UnidadMedida varchar(10), obligatorios; Cantidad numeric(12,3).
 
-Índice único `(Serie, Numero)`. Serie se recorta y convierte a mayúsculas tanto en Application como mediante restricción SQL de formato; admite entre 1 y 8 caracteres ASCII A–Z/0–9. Número 1–99999999. Textos recortados y no vacíos en SQL. Cantidad 0.001–999999999.999; peso 0.01–9999999999.99. No redondear entradas con exceso de decimales. Estado y consistencia de fechas/motivo con checks SQL. Borrador sin fechas de cierre; Emitida con FechaEmision y sin anulación; Anulada con motivo/FechaAnulacion y puede conservar FechaEmision.
+Índice único `(Serie, Numero)`. Application recorta la serie y la convierte a mayúsculas; SQL exige ese formato ya normalizado mediante un check, sin transformar escrituras directas. Admite entre 1 y 8 caracteres ASCII A–Z/0–9. Número 1–99999999. Textos recortados y no vacíos en SQL. Cantidad 0.001–999999999.999; peso 0.01–9999999999.99. No redondear entradas con exceso de decimales. Estado y consistencia de fechas/motivo con checks SQL. Borrador sin fechas de cierre; Emitida con FechaEmision y sin anulación; Anulada con motivo/FechaAnulacion y puede conservar FechaEmision.
 
 FechaInicioTraslado se normaliza mediante FechasUtc preservando el instante recibido; sin zona se interpreta como UTC según las reglas del proyecto. No convertirla a día sin hora. DTO de entrada DateTime? para distinguir ausencia/default. No imponer comparación con «hoy» ni una secuencia temporal no aprobada. Fechas de emisión/anulación asignadas por el servidor en UTC.
 
@@ -117,11 +117,12 @@ No marcar resultados previstos como ejecutados; documentar advertencias reales s
 ## 6. Checklist de ejecución
 
 - [ ] Lukas revisa y aprueba el alcance y las decisiones de §2.
-- [ ] SQL local, scaffold y comprobación de nombres generados.
-- [ ] API, validaciones, transiciones y pruebas de cada literal/límite.
-- [ ] Seed y smoke PostgreSQL completos.
-- [ ] Pantalla y verificaciones según spec frontend.
-- [ ] Gates y evidencia registrados; revisión de compañero antes de integrar.
+- [x] SQL local, scaffold y comprobación de nombres generados.
+- [x] API, validaciones, transiciones y pruebas de cada literal/límite.
+- [x] Seed y smoke PostgreSQL completos.
+- [x] Pantalla y verificaciones según spec frontend.
+- [x] Gates y evidencia registrados, con salvedad de Vite.
+- [ ] Revisión de compañero antes de integrar.
 
 ## 7. Registro
 
@@ -129,7 +130,7 @@ No marcar resultados previstos como ejecutados; documentar advertencias reales s
 |---|---|---|---|
 | 2026-11-21 | Asignación y base | Comprobados | Módulo de Kelvin; referencias remotas actualizadas; rama propia desde origin/main |
 | 2026-11-21 | Contrato | Propuesta pendiente de revisión | Este archivo y spec frontend; no existe aprobación registrada |
-| 2026-11-21 | A1–A6 | No ejecutados | Todavía no hay implementación del módulo 45 |
+| 2026-11-21 | A1–A6 | Verificados localmente, con salvedades | 1143 pruebas backend (60 propias), 604 frontend (61 propias), gate salida 0, SMOKE OK, doble seed, diez repeticiones más una bajo carga y QA en cuatro escenarios; [evidencia](../evidencias/modulo45/README.md). Aprobación pendiente y advertencia global Vite registradas; no acredita cierre formal |
 
 
 2026-11-21: Kelvin autoriza expresamente continuar con esta propuesta como implementación local, igual que los módulos anteriores. Esta autorización permite desarrollar y probar en su rama; no sustituye la revisión de Lukas ni autoriza publicación, integración o despliegue.
