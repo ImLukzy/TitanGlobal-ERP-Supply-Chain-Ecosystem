@@ -51,6 +51,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = null!;
+
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -68,6 +70,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; } = null!;
 
     public virtual DbSet<Rol> Roles { get; set; } = null!;
+
+    public virtual DbSet<RutaProduccion> RutasProduccion { get; set; } = null!;
 
     public virtual DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
@@ -419,6 +423,23 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<OperacionRutaProduccion>(entity =>
+        {
+            entity.HasIndex(e => e.CentroTrabajoId, "IX_OperacionesRutaProduccion_CentroTrabajoId");
+
+            entity.HasIndex(e => new { e.RutaProduccionId, e.Secuencia }, "IX_OperacionesRutaProduccion_RutaProduccionId_Secuencia").IsUnique();
+
+            entity.Property(e => e.MinutosPorUnidad).HasPrecision(10, 2);
+            entity.Property(e => e.MinutosPreparacion).HasPrecision(10, 2);
+            entity.Property(e => e.Nombre).HasMaxLength(120);
+
+            entity.HasOne(d => d.CentroTrabajo).WithMany(p => p.OperacionesRutaProduccion)
+                .HasForeignKey(d => d.CentroTrabajoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.RutaProduccion).WithMany(p => p.OperacionesRutaProduccion).HasForeignKey(d => d.RutaProduccionId);
+        });
+
         modelBuilder.Entity<OrdenAbastecimiento>(entity =>
         {
             entity.HasIndex(e => e.Numero, "IX_OrdenesAbastecimiento_Numero").IsUnique();
@@ -549,6 +570,21 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Codigo).HasMaxLength(30);
             entity.Property(e => e.Descripcion).HasMaxLength(300);
             entity.Property(e => e.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<RutaProduccion>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProductoId, e.Estado }, "IX_RutasProduccion_ProductoId_Activa")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text = 'Activa'::text)");
+
+            entity.HasIndex(e => new { e.ProductoId, e.Version }, "IX_RutasProduccion_ProductoId_Version").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(8);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.RutasProduccion)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<SegmentoCliente>(entity =>
