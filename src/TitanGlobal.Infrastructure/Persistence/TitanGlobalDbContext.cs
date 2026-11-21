@@ -43,6 +43,10 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
 
+    public virtual DbSet<EntregaDespacho> EntregasDespacho { get; set; } = null!;
+
+    public virtual DbSet<EventoEntrega> EventosEntrega { get; set; } = null!;
+
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
@@ -361,6 +365,39 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.NumeroDocumento).HasMaxLength(20);
             entity.Property(e => e.Telefono).HasMaxLength(20);
             entity.Property(e => e.TipoDocumento).HasMaxLength(10);
+        });
+
+        modelBuilder.Entity<EntregaDespacho>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("EntregasDespacho_pkey");
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Destinatario).HasMaxLength(200);
+            entity.Property(e => e.DireccionDestino).HasMaxLength(300);
+            entity.Property(e => e.DocumentoReceptor).HasMaxLength(20);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Programada'::character varying");
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.ObservacionesEntrega).HasMaxLength(500);
+            entity.Property(e => e.Receptor).HasMaxLength(100);
+            entity.Property(e => e.ReferenciaConstancia).HasMaxLength(100);
+            entity.Property(e => e.ReferenciaGuia).HasMaxLength(40);
+        });
+
+        modelBuilder.Entity<EventoEntrega>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("EventosEntrega_pkey");
+
+            entity.HasIndex(e => e.EntregaDespachoId, "IX_EventosEntrega_EntregaDespachoId");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Estado).HasMaxLength(15);
+
+            entity.HasOne(d => d.EntregaDespacho).WithMany(p => p.Eventos)
+                .HasForeignKey(d => d.EntregaDespachoId)
+                .HasConstraintName("EventosEntrega_EntregaDespachoId_fkey");
         });
 
         modelBuilder.Entity<Impuesto>(entity =>
