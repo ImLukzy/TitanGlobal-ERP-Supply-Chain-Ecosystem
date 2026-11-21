@@ -69,6 +69,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Rol> Roles { get; set; } = null!;
 
+    public virtual DbSet<RutaDespacho> RutasDespacho { get; set; } = null!;
+
     public virtual DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
     public virtual DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
@@ -549,6 +551,22 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Codigo).HasMaxLength(30);
             entity.Property(e => e.Descripcion).HasMaxLength(300);
             entity.Property(e => e.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<RutaDespacho>(entity =>
+        {
+            entity.HasIndex(e => e.Zona, "IX_RutasDespacho_Zona");
+
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Destino).HasMaxLength(120);
+            entity.Property(e => e.DistanciaKm).HasPrecision(10, 2);
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.Nombre).HasMaxLength(100);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Origen).HasMaxLength(120);
+            entity.Property(e => e.PeajeEstimado).HasPrecision(18, 2);
+            entity.Property(e => e.Zona).HasMaxLength(100);
         });
 
         modelBuilder.Entity<SegmentoCliente>(entity =>
