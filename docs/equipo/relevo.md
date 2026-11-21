@@ -92,5 +92,8 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
 | 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales-backend` | no (en `main` por el PR #39 y aplicado en la demo) |
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
+| 010 | `010-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | reservado en la rama independiente del 41 |
+| 011 | `011-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | reservado en la rama independiente del 42 |
+| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | reserva provisional; specs propuestas, pendientes aprobación de Lukas; SQL aún no creado |
 
-Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
+Un script nuevo toma el siguiente número libre de esta tabla (013 en adelante) y se añade aquí en el mismo PR.
