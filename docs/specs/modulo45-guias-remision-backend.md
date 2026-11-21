@@ -130,3 +130,6 @@ No marcar resultados previstos como ejecutados; documentar advertencias reales s
 | 2026-11-21 | Asignación y base | Comprobados | Módulo de Kelvin; referencias remotas actualizadas; rama propia desde origin/main |
 | 2026-11-21 | Contrato | Propuesta pendiente de revisión | Este archivo y spec frontend; no existe aprobación registrada |
 | 2026-11-21 | A1–A6 | No ejecutados | Todavía no hay implementación del módulo 45 |
+
+
+2026-11-21: Kelvin autoriza expresamente continuar con esta propuesta como implementación local, igual que los módulos anteriores. Esta autorización permite desarrollar y probar en su rama; no sustituye la revisión de Lukas ni autoriza publicación, integración o despliegue.

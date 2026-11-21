@@ -43,9 +43,13 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
 
+    public virtual DbSet<GuiaRemision> GuiasRemision { get; set; } = null!;
+
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
+
+    public virtual DbSet<LineaGuiaRemision> LineasGuiaRemision { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
@@ -363,6 +367,31 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.TipoDocumento).HasMaxLength(10);
         });
 
+        modelBuilder.Entity<GuiaRemision>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("GuiasRemision_pkey");
+
+            entity.HasIndex(e => new { e.Serie, e.Numero }, "IX_GuiasRemision_Serie_Numero").IsUnique();
+
+            entity.Property(e => e.Conductor).HasMaxLength(100);
+            entity.Property(e => e.DestinatarioDocumento).HasMaxLength(20);
+            entity.Property(e => e.DestinatarioNombre).HasMaxLength(200);
+            entity.Property(e => e.DireccionDestino).HasMaxLength(300);
+            entity.Property(e => e.DireccionOrigen).HasMaxLength(300);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(10)
+                .HasDefaultValueSql("'Borrador'::character varying");
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.MotivoTraslado).HasMaxLength(200);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PesoBrutoKg).HasPrecision(12, 2);
+            entity.Property(e => e.Placa).HasMaxLength(20);
+            entity.Property(e => e.RemitenteDocumento).HasMaxLength(20);
+            entity.Property(e => e.RemitenteNombre).HasMaxLength(200);
+            entity.Property(e => e.Serie).HasMaxLength(8);
+            entity.Property(e => e.Transportista).HasMaxLength(200);
+        });
+
         modelBuilder.Entity<Impuesto>(entity =>
         {
             entity.HasIndex(e => e.Codigo, "IX_Impuestos_Codigo").IsUnique();
@@ -387,6 +416,22 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.Producto).WithMany(p => p.ItemsListaPrecios)
                 .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<LineaGuiaRemision>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("LineasGuiaRemision_pkey");
+
+            entity.HasIndex(e => e.GuiaRemisionId, "IX_LineasGuiaRemision_GuiaRemisionId");
+
+            entity.Property(e => e.Cantidad).HasPrecision(12, 3);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
+            entity.Property(e => e.Sku).HasMaxLength(40);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(10);
+
+            entity.HasOne(d => d.GuiaRemision).WithMany(p => p.Lineas)
+                .HasForeignKey(d => d.GuiaRemisionId)
+                .HasConstraintName("LineasGuiaRemision_GuiaRemisionId_fkey");
         });
 
         modelBuilder.Entity<LiquidacionComision>(entity =>
