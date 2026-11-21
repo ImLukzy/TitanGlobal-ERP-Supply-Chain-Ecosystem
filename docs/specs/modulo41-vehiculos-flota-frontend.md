@@ -6,13 +6,13 @@
 
 Responsable: Kelvin Pinto. Contrato: `modulo41-vehiculos-flota-backend.md` §4. Guía: `../equipo/crear-pantalla.md`.
 
-**Estado:** pantalla implementada localmente por autorización de Kelvin. La aprobación de Lukas sigue pendiente. La evidencia distingue las pruebas del frontend de las comprobaciones bloqueadas del gate y PostgreSQL.
+**Estado:** pantalla implementada y verificada localmente con gate, smoke y PostgreSQL real por autorización de Kelvin. La aprobación de Lukas, revisión, integración y despliegue siguen pendientes.
 
 ## 2. Fuera de alcance
 - Cambios de API, tablas, entidades generadas, autenticación o dependencias.
 - Relación entre vehículos y conductores.
 - Modificar pantallas ajenas o selectores compartidos de estilos.
-- La unicidad de placas sin distinguir mayúsculas, pendiente del backend según el relevo: requiere su propia especificación y script nuevo.
+- La implementación de unicidad de placas sin distinguir mayúsculas se especifica y verifica por separado en `modulo41-vehiculos-flota-integridad.md`; no queda resuelta solo con validación de pantalla.
 
 **Decisiones de producto que requieren aprobación antes de ejecutar:** ninguna adicional al contrato existente. Esta spec requiere la revisión previa establecida por el repositorio.
 
@@ -60,10 +60,10 @@ Responsable: Kelvin Pinto. Contrato: `modulo41-vehiculos-flota-backend.md` §4. 
 
 ## 6. Checklist de ejecución
 - [ ] Tarea 0: aprobación de Lukas de esta spec.
-- [ ] Tarea 1: contratos, cliente HTTP y pruebas de las siete operaciones.
-- [ ] Tarea 2: resumen, filtros, listado, paginación y detalle.
-- [ ] Tarea 3: formulario, validaciones, edición y baja accesible con sus pruebas.
-- [ ] Tarea 4: registrar pantalla, pasar el gate, realizar QA y registrar evidencia.
+- [x] Tarea 1: contratos, cliente HTTP y pruebas de las siete operaciones.
+- [x] Tarea 2: resumen, filtros, listado, paginación y detalle.
+- [x] Tarea 3: formulario, validaciones, edición y baja accesible con sus pruebas.
+- [x] Tarea 4: registrar pantalla, pasar el gate, realizar QA y registrar evidencia.
 
 Los commits se agrupan por cambios funcionales revisables, con las pruebas correspondientes; no por archivo ni por una cantidad fija. Se usa la identidad Git de Kelvin, sin trailers de atribución.
 
@@ -77,4 +77,8 @@ Los commits se agrupan por cambios funcionales revisables, con las pruebas corre
 | 2026-11-19 | A1 bloqueado | El gate se detiene al compilar el proyecto de tests en `GenerateMvcTestManifestTask`: no se puede cargar `System.Private.DataContractSerialization, Version=10.0.0.0` | `./scripts/verify.sh`, repetido tras `dotnet build-server shutdown`, con el mismo resultado; sin cambiar tests, paquetes ni pipeline para eludirlo |
 | 2026-11-19 | PostgreSQL pendiente | Docker no está instalado/disponible en esta máquina | No se ejecutaron `aplicar-bd.sh --reiniciar`, scaffold ni smoke; tampoco se modificó el esquema |
 
-Los checklists permanecen abiertos hasta satisfacer el gate completo y las aprobaciones del repositorio. No se declara el módulo terminado, integrado ni desplegado.
+| 2026-11-21 | A1–A5 | Aprobados | `./scripts/verify.sh` finaliza correctamente: 1090 pruebas backend, 582 frontend, lint y TypeScript aprobados y compilación .NET con cero errores/advertencias; Vite mantiene su aviso existente de tamaño de bundle |
+| 2026-11-21 | PostgreSQL | Aprobado | PostgreSQL 16 en Docker, scripts 001/008/010 aplicados; scaffold ejecutado y `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-21 | A6 | Aprobado con datos reales | Sustituidas las capturas simuladas por las de API/PostgreSQL local: 375 y 1280 px, claro y oscuro, detalle, formulario con 409 literal y baja; sin desbordamiento ni errores JavaScript; Escape devuelve el foco. Alta, selección, edición y baja reales verificadas, sin dejar el vehículo de QA |
+
+Los bloqueos del entorno registrados el 19 quedaron resueltos el 21. La implementación y verificación local están completas. Permanece abierta la aprobación de Lukas; no se declara integración ni despliegue.

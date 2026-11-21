@@ -1,30 +1,46 @@
 [
   {
+    "fecha": "2026-11-21",
     "width": 375,
     "colorScheme": "light",
     "desbordamiento": false,
     "errores": [],
-    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+    "datos": "PostgreSQL 16 local, seed-dev.sql y API real; sin respuestas simuladas",
+    "conflictoPlacaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "No ejecutado en este escenario; seed conservado"
   },
   {
+    "fecha": "2026-11-21",
     "width": 375,
     "colorScheme": "dark",
     "desbordamiento": false,
     "errores": [],
-    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+    "datos": "PostgreSQL 16 local, seed-dev.sql y API real; sin respuestas simuladas",
+    "conflictoPlacaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "No ejecutado en este escenario; seed conservado"
   },
   {
+    "fecha": "2026-11-21",
     "width": 1280,
     "colorScheme": "light",
     "desbordamiento": false,
     "errores": [],
-    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+    "datos": "PostgreSQL 16 local, seed-dev.sql y API real; sin respuestas simuladas",
+    "conflictoPlacaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "Alta, selección, edición y baja reales aprobadas; vehículo de QA eliminado"
   },
   {
+    "fecha": "2026-11-21",
     "width": 1280,
     "colorScheme": "dark",
     "desbordamiento": false,
     "errores": [],
-    "datos": "API simulada; no acredita PostgreSQL ni seed real"
+    "datos": "PostgreSQL 16 local, seed-dev.sql y API real; sin respuestas simuladas",
+    "conflictoPlacaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "No ejecutado en este escenario; seed conservado"
   }
 ]
