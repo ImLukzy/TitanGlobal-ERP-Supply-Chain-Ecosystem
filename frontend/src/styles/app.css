@@ -1485,3 +1485,40 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+/* Módulo 46: monitoreo de entregas */
+.monitoreo-entregas-page { min-width: 0; }
+.monitoreo-entregas-summary { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.monitoreo-entregas-summary article, .monitoreo-entregas-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.monitoreo-entregas-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.monitoreo-entregas-summary strong { color: var(--ink); font-size: 30px; }
+.monitoreo-entregas-toolbar, .monitoreo-entregas-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.monitoreo-entregas-toolbar { justify-content: space-between; }
+.monitoreo-entregas-filters { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 12px; margin: 20px 0; }
+.monitoreo-entregas-filters label { display: grid; gap: 8px; }
+.monitoreo-entregas-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.monitoreo-entregas-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.monitoreo-entregas-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.monitoreo-entregas-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.monitoreo-entregas-page input, .monitoreo-entregas-page select, .monitoreo-entregas-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.monitoreo-entregas-table th, .monitoreo-entregas-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.monitoreo-entregas-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.monitoreo-entregas-table tbody .monitoreo-entregas-selected > th, .monitoreo-entregas-table tbody .monitoreo-entregas-selected > td { background: var(--accent-soft); }
+.monitoreo-entregas-details dt { color: var(--ink-soft); margin-top: 14px; }
+.monitoreo-entregas-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.monitoreo-entregas-dialog { max-height: 90vh; overflow-y: auto; }
+.monitoreo-entregas-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.monitoreo-entregas-entregada { background: var(--good-soft); }
+.monitoreo-entregas-cancelada { background: var(--bad-soft); }
+@media (max-width: 1100px) { .monitoreo-entregas-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .monitoreo-entregas-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .monitoreo-entregas-filters, .monitoreo-entregas-editor { grid-template-columns: minmax(0,1fr); }
+  .monitoreo-entregas-card, .monitoreo-entregas-summary article { padding: 16px; }
+  .monitoreo-entregas-toolbar { flex-direction: column; align-items: stretch; }
+}
+
+.monitoreo-entregas-enruta { background: var(--accent-soft); }
+.monitoreo-entregas-history { padding-left: 22px; }
+.monitoreo-entregas-history li { margin: 16px 0; overflow-wrap: anywhere; }
+.monitoreo-entregas-history time { display: block; color: var(--ink-soft); margin-top: 6px; font-variant-numeric: tabular-nums; }

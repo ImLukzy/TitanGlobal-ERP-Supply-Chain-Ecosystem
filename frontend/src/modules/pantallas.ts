@@ -1,3 +1,4 @@
+import { MonitoreoEntregasPage } from './monitoreo-entregas/MonitoreoEntregasPage';
 import type { ComponentType } from 'react';
 import { ClientesPage } from './clientes/ClientesPage';
 import { OrdenesCompraPage } from './ordenes-compra/OrdenesCompraPage';
@@ -23,6 +24,7 @@ import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 
 export const pantallas: Record<string, ComponentType> = {
+  '46-monitoreo-entregas': MonitoreoEntregasPage,
   '01-clientes': ClientesPage,
   '02-segmentacion-clientes': SegmentacionClientesPage,
   '03-cotizaciones': CotizacionesPage,
