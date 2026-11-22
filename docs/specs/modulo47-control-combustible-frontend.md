@@ -24,9 +24,9 @@ A1 contratos HTTP exactos de ocho operaciones, filtros vacíos omitidos. A2 temp
 
 ## 6. Checklist
 - [ ] Revisión de Lukas.
-- [ ] API y datos locales por scripts.
-- [ ] Pantalla, cálculos y pruebas.
-- [ ] Estabilidad, gates y QA reales documentados.
+- [x] API y datos locales por scripts.
+- [x] Pantalla, cálculos y pruebas.
+- [x] Estabilidad, gates y QA reales documentados.
 
 ## 7. Registro
-2026-11-21: propuesta para continuación local. Sin verificaciones ni QA acreditados todavía; revisión de Lukas pendiente.
+2026-11-21: 64 pruebas propias; gate final con 607 pruebas frontend, doble seed y QA real a 375/1280 px en claro/oscuro correctos. Se corrigió la pérdida de foco tras rechazar la confirmación y se repitió el QA en cuatro escenarios. Sobre la corrección pasaron diez ejecuciones propias y veinte con build simultáneo; el gate completo final terminó con salida 0. Avisos globales de ESLint y tamaño de Vite documentados en `docs/evidencias/modulo47/README.md`; revisión de Lukas e integración pendientes.

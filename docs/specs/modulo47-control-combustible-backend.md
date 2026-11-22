@@ -81,10 +81,10 @@ A1 verify salida0, .NET sin warnings, formato/capas/reglas. A2 integración de c
 
 ## 6. Checklist
 - [ ] Revisión y aprobación de Lukas.
-- [ ] SQL/scaffold y API con pruebas.
-- [ ] Seed y smoke PostgreSQL.
-- [ ] Pantalla, cálculos y estabilidad.
-- [ ] Gates y QA con evidencia real.
+- [x] SQL/scaffold y API con pruebas.
+- [x] Seed y smoke PostgreSQL.
+- [x] Pantalla, cálculos y estabilidad final tras corrección de foco.
+- [x] Gates y QA con evidencia real.
 
 ## 7. Registro
-2026-11-21: propuesta local autorizada por Kelvin al continuar como los módulos anteriores. Asignación, orden y reservas comprobados. Sin pruebas acreditadas todavía; revisión de Lukas pendiente.
+2026-11-21: propuesta local autorizada por Kelvin al continuar como los módulos anteriores. Asignación, orden y reservas comprobados. SQL aplicado y scaffold coincidente; gate final con 1.133 pruebas backend y 607 frontend, smoke real SMOKE OK, doble seed con tres vales y QA real en cuatro escenarios. Se corrigió el foco tras rechazo de confirmación y se repitió el QA; diez ejecuciones propias y veinte con build simultáneo pasaron sobre la versión corregida. Gate completo final con salida 0, sin warnings .NET; persisten los avisos globales de ESLint y tamaño de Vite. Detalle en `docs/evidencias/modulo47/README.md`. Revisión de Lukas e integración pendientes.

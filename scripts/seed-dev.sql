@@ -623,4 +623,13 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 47: vales e intervalos manuales, sin importes agregados entre monedas.
+INSERT INTO "ValesCombustible" ("Codigo","Placa","Estacion","FechaCarga","TipoCombustible","Litros","PrecioLitro","Moneda","OdometroInicial","OdometroFinal","Estado","FechaConfirmacion","FechaAnulacion","MotivoAnulacion") VALUES
+('VAL-47001','ABC-470','Estación Norte','2026-11-22T10:30:12.345Z','Diesel',50,5.125,'PEN',12000,NULL,'Borrador',NULL,NULL,NULL),
+('VAL-47002','DEF-470','Estación Centro','2026-11-22T10:30:12.345Z','Diesel',50,5.125,'PEN',12000,12500,'Confirmado','2026-11-21T12:00:00Z',NULL,NULL),
+('VAL-47003','GHI-470','Estación Sur','2026-11-22T10:30:12.345Z','Gasolina',40,1.755,'USD',20000,20320,'Anulado','2026-11-21T11:00:00Z','2026-11-21T13:00:00Z','Cambio de programación.')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"ValesCombustible"','Id'),(SELECT MAX("Id") FROM "ValesCombustible"));
+
 COMMIT;

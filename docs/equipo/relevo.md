@@ -99,6 +99,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 014 | `014-consolidacion-carga.sql` | Kelvin | `kelvin/modulo44-consolidacion-carga` | creado y comprobado localmente en su rama |
 | 015 | `015-guias-remision.sql` | Kelvin | `kelvin/modulo45-guias-remision` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 | 016 | `016-monitoreo-entregas.sql` | Kelvin | `kelvin/modulo46-monitoreo-entregas` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
-| 017 | `017-control-combustible.sql` | Kelvin | `kelvin/modulo47-control-combustible` | reserva local; revisión de Lukas pendiente |
+| 017 | `017-control-combustible.sql` | Kelvin | `kelvin/modulo47-control-combustible` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
 Un script nuevo toma el siguiente número libre (018 en adelante). Las reservas010–017 son de ramas independientes de Kelvin; no implican integración en main.

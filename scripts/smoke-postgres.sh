@@ -151,6 +151,25 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    'm47-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm47-baja-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm47-list': lambda d: d['total'] == 3 and len(d['items']) == 3 and d['items'][0]['kmPorLitro'] is None and d['items'][1]['importe'] == '256.25' and d['items'][2]['importe'] == '70.20' and d['items'][2]['moneda'] == 'USD',
+    'm47-resumen': lambda d: d == {'total':3,'borradores':1,'confirmados':1,'anulados':1},
+    'm47-maximos': lambda d: d['litros'] == '9999999.999' and d['precioLitro'] == '9999999.999' and d['importe'] == '99999999980000.00' and d['kmPorLitro'] is None and d['fechaCarga'] == '2026-11-22T10:30:12.345Z' and d['placa'] == 'ABC-470' and d['moneda'] == 'PEN',
+    'm47-pendiente': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Registra el odómetro final antes de confirmar el vale.',
+    'm47-decimales': lambda d: d['StatusCode'] == 400 and d['Message'] == 'Los litros no pueden tener más de 3 decimales.',
+    'm47-confirmado': lambda d: d['estado'] == 'Confirmado' and d['fechaConfirmacion'].endswith('Z') and d['fechaAnulacion'] is None and d['importe'] == '256.25' and d['kilometrosRecorridos'] == 500 and d['kmPorLitro'] == '10.000' and d['litrosPor100Km'] == '10.000',
+    'm47-anulado': lambda d: d['estado'] == 'Anulado' and d['fechaConfirmacion'].endswith('Z') and d['fechaAnulacion'].endswith('Z') and d['motivoAnulacion'] == 'Cambio de plan' and d['importe'] == '256.25' and d['kmPorLitro'] == '10.000',
+    'm47-duplicado': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Ya existe un vale con el código smk47.',
+    'm47-edicion': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede editar un vale en borrador.',
+    'm47-baja': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede eliminar un vale en borrador.',
+    'm47-confirmacion': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede confirmar un vale en borrador.',
+    'm47-motivo': lambda d: d['StatusCode'] == 400 and d['Message'] == 'El motivo de anulación es obligatorio.',
+    'm47-repetida': lambda d: d['StatusCode'] == 409 and d['Message'] == 'El vale ya está anulado.',
+    'm47-filtro': lambda d: d['total'] == 1 and d['items'][0]['codigo'] == 'VAL-47003',
+    'm47-missing': lambda d: d['StatusCode'] == 404 and re.fullmatch(r'El vale de combustible [0-9]+ no existe\.',d['Message']) is not None,
+    'm47-openapi': lambda d: all(verb in d['paths']['/api/v1/control-combustible'+path] for path,verb in [('', 'get'),('', 'post'),('/{id}', 'get'),('/{id}', 'put'),('/{id}', 'delete'),('/{id}/confirmacion', 'post'),('/{id}/anulacion', 'post'),('/resumen', 'get')]),
+
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -588,6 +607,12 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m47-created" ]]; then
+        VALE_47_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m47-baja-created" ]]; then
+        BAJA_47_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -916,4 +941,57 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 47: vales, precisión, rendimiento y conservación de cierre.
+TOKEN_47_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M47 exige sesión' GET '/api/v1/control-combustible' 401 no-session
+TOKEN_ACTUAL="$TOKEN_47_ADMIN"
+request_check 'M47 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m47-openapi
+request_check 'M47 seed y monedas separadas' GET '/api/v1/control-combustible' 200 m47-list
+request_check 'M47 resumen sin sumas monetarias' GET '/api/v1/control-combustible/resumen' 200 m47-resumen
+request_check 'M47 máximos y UTC sin zona' POST '/api/v1/control-combustible' 200 m47-created '{"codigo":"SMK47","placa":" abc-470 ","estacion":"Estación smoke","fechaCarga":"2026-11-22T10:30:12.345","tipoCombustible":" diesel ","litros":9999999.999,"precioLitro":9999999.999,"moneda":" pen ","odometroInicial":12000,"odometroFinal":null}'
+request_check 'M47 precisión y final pendiente persistidos' GET "/api/v1/control-combustible/${VALE_47_ID}" 200 m47-maximos
+request_check 'M47 exige completar intervalo' POST "/api/v1/control-combustible/${VALE_47_ID}/confirmacion" 409 m47-pendiente
+request_check 'M47 duplicado normalizado' POST '/api/v1/control-combustible' 409 m47-duplicado '{"codigo":" smk47 ","placa":" abc-470 ","estacion":"Estación smoke","fechaCarga":"2026-11-22T10:30:12.345","tipoCombustible":" diesel ","litros":9999999.999,"precioLitro":9999999.999,"moneda":" pen ","odometroInicial":12000,"odometroFinal":null}'
+request_check 'M47 no redondea entradas' PUT "/api/v1/control-combustible/${VALE_47_ID}" 400 m47-decimales '{"codigo":"SMK47","placa":" abc-470 ","estacion":"Estación smoke","fechaCarga":"2026-11-22T10:30:12.345","tipoCombustible":" diesel ","litros":1.0001,"precioLitro":9999999.999,"moneda":" pen ","odometroInicial":12000,"odometroFinal":null}'
+request_check 'M47 inválido conserva máximos' GET "/api/v1/control-combustible/${VALE_47_ID}" 200 m47-maximos
+request_check 'M47 completar intervalo' PUT "/api/v1/control-combustible/${VALE_47_ID}" 200 created '{"codigo":"SMK47","placa":" abc-470 ","estacion":"Estación smoke","fechaCarga":"2026-11-22T10:30:12.345","tipoCombustible":" diesel ","litros":50,"precioLitro":5.125,"moneda":" pen ","odometroInicial":12000,"odometroFinal":12500}'
+request_check 'M47 confirmación sin cuerpo' POST "/api/v1/control-combustible/${VALE_47_ID}/confirmacion" 200 created
+request_check 'M47 rendimiento y confirmación UTC' GET "/api/v1/control-combustible/${VALE_47_ID}" 200 m47-confirmado
+request_check 'M47 no confirma dos veces' POST "/api/v1/control-combustible/${VALE_47_ID}/confirmacion" 409 m47-confirmacion
+request_check 'M47 no edita terminal' PUT "/api/v1/control-combustible/${VALE_47_ID}" 409 m47-edicion '{}'
+request_check 'M47 no elimina terminal' DELETE "/api/v1/control-combustible/${VALE_47_ID}" 409 m47-baja
+request_check 'M47 exige motivo' POST "/api/v1/control-combustible/${VALE_47_ID}/anulacion" 400 m47-motivo '{"motivo":" "}'
+request_check 'M47 anula preservando confirmación' POST "/api/v1/control-combustible/${VALE_47_ID}/anulacion" 200 created '{"motivo":" Cambio de plan "}'
+request_check 'M47 conserva cálculos y fechas' GET "/api/v1/control-combustible/${VALE_47_ID}" 200 m47-anulado
+request_check 'M47 no anula dos veces' POST "/api/v1/control-combustible/${VALE_47_ID}/anulacion" 409 m47-repetida '{"motivo":"Otra"}'
+request_check 'M47 filtra estado y combustible' GET '/api/v1/control-combustible?estado=anulado&tipoCombustible=gAsolina' 200 m47-filtro
+request_check 'M47 borrador para baja' POST '/api/v1/control-combustible' 200 m47-baja-created '{"codigo":"SMK47-B","placa":" abc-470 ","estacion":"Estación smoke","fechaCarga":"2026-11-22T10:30:12.345","tipoCombustible":" diesel ","litros":50,"precioLitro":5.125,"moneda":" pen ","odometroInicial":12000,"odometroFinal":12500}'
+request_check 'M47 baja de borrador' DELETE "/api/v1/control-combustible/${BAJA_47_ID}" 204 ''
+request_check 'M47 confirmar baja' GET "/api/v1/control-combustible/${BAJA_47_ID}" 404 m47-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        UPDATE "ValesCombustible" SET "Codigo" = 'smk47' WHERE "Codigo" = 'VAL-47001';
+        RAISE EXCEPTION 'M47: falta unicidad';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "ValesCombustible" SET "Litros" = 0 WHERE "Codigo" = 'VAL-47001';
+        RAISE EXCEPTION 'M47: falta límite de litros';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "ValesCombustible" SET "OdometroFinal" = "OdometroInicial" WHERE "Codigo" = 'VAL-47001';
+        RAISE EXCEPTION 'M47: falta intervalo positivo';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "ValesCombustible" SET "Estado" = 'Confirmado' WHERE "Codigo" = 'VAL-47001';
+        RAISE EXCEPTION 'M47: falta coherencia de confirmación';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
 printf 'SMOKE OK\n'
