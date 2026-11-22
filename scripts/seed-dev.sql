@@ -623,4 +623,15 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 50: referencias manuales, sin pagos ni asientos.
+INSERT INTO "SiniestrosFlota" ("Id", "Codigo", "Placa", "Lugar", "Descripcion", "Tipo", "FechaIncidente", "Estado", "NumeroPoliza", "Aseguradora", "NumeroReclamo", "Moneda", "MontoReclamado", "FechaReclamo", "Resultado", "MontoReconocido", "Resolucion", "FechaCierre", "MotivoAnulacion", "FechaAnulacion") VALUES
+    (1, 'SIN-50001', 'ABC-500', 'Patio Norte', 'Incidente de ejemplo', 'Accidente', '2026-11-23T10:30:12.345Z', 'Registrado', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (2, 'SIN-50002', 'ABC-500', 'Patio Norte', 'Incidente de ejemplo', 'Robo', '2026-11-23T10:30:12.345Z', 'EnReclamo', 'POL-50', 'Aseguradora Norte', 'REC-50002', 'PEN', 1250.50, '2026-11-22T12:00:00Z', NULL, NULL, NULL, NULL, NULL, NULL),
+    (3, 'SIN-50003', 'ABC-500', 'Patio Norte', 'Incidente de ejemplo', 'Accidente', '2026-11-23T10:30:12.345Z', 'Cerrado', 'POL-50', 'Aseguradora Norte', 'REC-50003', 'PEN', 1250.50, '2026-11-22T12:00:00Z', 'Aceptado', 1000.25, 'Referencia de resolución manual', '2026-11-22T13:00:00Z', NULL, NULL),
+    (4, 'SIN-50004', 'ABC-500', 'Patio Norte', 'Incidente de ejemplo', 'DanoMaterial', '2026-11-23T10:30:12.345Z', 'Cerrado', 'POL-50', 'Aseguradora Norte', 'REC-50004', 'USD', 1250.50, '2026-11-22T12:00:00Z', 'Rechazado', 0, 'Referencia de resolución manual', '2026-11-22T13:00:00Z', NULL, NULL),
+    (5, 'SIN-50005', 'ABC-500', 'Patio Norte', 'Incidente de ejemplo', 'Robo', '2026-11-23T10:30:12.345Z', 'Anulado', 'POL-50', 'Aseguradora Norte', 'REC-50005', 'USD', 1250.50, '2026-11-22T12:00:00Z', NULL, NULL, NULL, NULL, 'Registro anulado', '2026-11-22T14:00:00Z')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"SiniestrosFlota"', 'Id'), (SELECT MAX("Id") FROM "SiniestrosFlota"));
+
 COMMIT;

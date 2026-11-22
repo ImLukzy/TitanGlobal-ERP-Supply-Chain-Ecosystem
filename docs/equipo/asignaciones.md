@@ -78,7 +78,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 47 ControlCombustible | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 48 TransportistasTerceros | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 49 LogisticaInversa | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
-| 50 SiniestrosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | propuesta local en rama propia; revisión de Lukas pendiente | modulo50 backend/frontend |
+| 50 SiniestrosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | implementado y verificado localmente en rama propia; revisión de Lukas e integración pendientes | modulo50 backend/frontend |
 | 51 FacturacionElectronica | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 52 NotasCreditoDebito | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 53 CuentasPorCobrar | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |

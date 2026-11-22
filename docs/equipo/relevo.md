@@ -103,6 +103,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 
 | 018 | `018-logistica-inversa.sql` | Kelvin | `kelvin/modulo49-logistica-inversa` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
-| 019 | `019-siniestros-flota.sql` | Kelvin | `kelvin/modulo50-siniestros-flota` | reserva local; revisión de Lukas pendiente |
+| 019 | `019-siniestros-flota.sql` | Kelvin | `kelvin/modulo50-siniestros-flota` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
 Un script nuevo toma el siguiente número libre (020 en adelante). Las reservas010–019 son de ramas independientes de Kelvin; no implican integración en main.

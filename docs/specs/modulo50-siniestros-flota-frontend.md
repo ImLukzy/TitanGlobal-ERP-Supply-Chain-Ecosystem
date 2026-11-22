@@ -25,9 +25,9 @@ A1 contratos HTTP de nueve operaciones. A2 debounce con reloj falso, cargas cont
 
 ## 6. Checklist
 - [ ] Aprobación de Lukas.
-- [ ] Backend y datos locales por scripts.
-- [ ] Pantalla y pruebas.
-- [ ] Gate, estabilidad y QA con evidencia.
+- [x] Backend y datos locales por scripts.
+- [x] Pantalla y pruebas.
+- [x] Gate, estabilidad y QA con evidencia, con avisos globales documentados.
 
 ## 7. Registro
-2026-11-22: propuesta local autorizada; sin pruebas ni QA acreditados todavía. Revisión formal pendiente.
+2026-11-22: 62 pruebas propias y 605 globales correctas, gate completo salida 0, diez ejecuciones propias y veinte con build simultáneo sin ampliar timeouts. QA real a 375/1280 px en claro/oscuro, preservando UTC con milisegundos y comprobando reclamo, cierres aceptado/rechazado, anulación, baja y foco, incluido el envío pendiente mediante una petición real retenida y continuada sin simular respuesta. 24 capturas propias, dos referencias de Contratos y resultados en `docs/evidencias/modulo50/`. Avisos globales de ESLint/Vite documentados; aprobación de Lukas e integración pendientes.

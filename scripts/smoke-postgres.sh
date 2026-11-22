@@ -420,6 +420,31 @@ checks = {
     "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
 }
 
+checks.update({
+    'm50-created': lambda d: d["id"] > 0,
+    'm50-otro-created': lambda d: d["id"] > 0,
+    'm50-baja-created': lambda d: d["id"] > 0,
+    'm50-openapi': lambda d: sum(len(v) for k,v in d["paths"].items() if k.startswith("/api/v1/siniestros-flota")) == 9,
+    'm50-list': lambda d: d["total"] == 5 and {r["estado"] for r in d["items"]} == {"Registrado","EnReclamo","Cerrado","Anulado"},
+    'm50-resumen': lambda d: d == {"total":5,"registrados":1,"enReclamo":1,"cerrados":2,"anulados":1},
+    'm50-registrado': lambda d: d["estado"] == "Registrado" and d["placa"] == "ABC-500" and d["tipo"] == "Accidente" and d["fechaIncidente"] == "2026-11-23T10:30:12.345Z" and d["montoReclamado"] is None,
+    'm50-maximo': lambda d: d["estado"] == "EnReclamo" and d["montoReclamado"] == "9999999999.99" and d["moneda"] == "PEN" and d["numeroPoliza"] == "POL-50" and d["fechaReclamo"].endswith("Z") and d["montoReconocido"] is None,
+    'm50-cerrado': lambda d: d["estado"] == "Cerrado" and d["resultado"] == "Aceptado" and d["montoReclamado"] == "9999999999.99" and d["montoReconocido"] == "9999999999.99" and d["numeroPoliza"] == "POL-50" and d["fechaReclamo"].endswith("Z") and d["fechaCierre"].endswith("Z"),
+    'm50-anulado': lambda d: d["estado"] == "Anulado" and d["montoReclamado"] == "1250.50" and d["moneda"] == "PEN" and d["numeroPoliza"] == "POL-50" and d["motivoAnulacion"] == "Cambio smoke" and d["fechaReclamo"].endswith("Z") and d["fechaAnulacion"].endswith("Z") and d["montoReconocido"] is None,
+    'm50-rechazado': lambda d: d["estado"] == "Cerrado" and d["resultado"] == "Rechazado" and d["montoReclamado"] == "0.01" and d["montoReconocido"] == "0.00" and d["moneda"] == "USD",
+    'm50-filtro': lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "SIN-50004",
+    'm50-missing': lambda d: d["StatusCode"] == 404 and d["Message"].startswith("El siniestro ") and d["Message"].endswith(" no existe."),
+    'm50-duplicado': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Ya existe un siniestro con el código smk50.',
+    'm50-escala': lambda d: d["StatusCode"] == 400 and d["Message"] == 'El monto reclamado no puede tener más de 2 decimales.',
+    'm50-escala-cierre': lambda d: d["StatusCode"] == 400 and d["Message"] == 'El monto reconocido no puede tener más de 2 decimales.',
+    'm50-estado-reclamo': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede reclamar un siniestro registrado.',
+    'm50-cierre': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede cerrar un siniestro en reclamo.',
+    'm50-anulacion': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede anular un siniestro registrado o en reclamo.',
+    'm50-baja': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede eliminar un siniestro registrado.',
+    'm50-motivo': lambda d: d["StatusCode"] == 400 and d["Message"] == 'El motivo de anulación es obligatorio.',
+    'm50-aceptado-cero': lambda d: d["StatusCode"] == 400 and d["Message"] == 'Un reclamo aceptado debe reconocer un importe mayor que cero.',
+    'm50-rechazado-positivo': lambda d: d["StatusCode"] == 400 and d["Message"] == 'Un reclamo rechazado debe reconocer un importe de cero.',
+})
 if validation not in checks or not checks[validation](body):
     raise SystemExit(f"la respuesta no coincide con la validación {validation}")
 PY
@@ -602,6 +627,15 @@ request_check() {
     fi
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m50-created" ]]; then
+        SINIESTRO_50_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m50-otro-created" ]]; then
+        OTRO_50_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m50-baja-created" ]]; then
+        BAJA_50_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -916,4 +950,53 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 50: incidentes, reclamos y cierre manual sin pagos.
+TOKEN_50_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M50 exige sesión' GET '/api/v1/siniestros-flota' 401 no-session
+TOKEN_ACTUAL="$TOKEN_50_ADMIN"
+request_check 'M50 OpenAPI nueve operaciones' GET '/openapi/v1.json' 200 m50-openapi
+request_check 'M50 seed de estados' GET '/api/v1/siniestros-flota' 200 m50-list
+request_check 'M50 resumen sin dinero agregado' GET '/api/v1/siniestros-flota/resumen' 200 m50-resumen
+request_check 'M50 incidente sin zona' POST '/api/v1/siniestros-flota' 200 m50-created '{"codigo":"SMK50","placa":" abc-500 ","lugar":" Patio Norte ","descripcion":"Incidente smoke","tipo":" accidente ","fechaIncidente":"2026-11-23T10:30:12.345"}'
+request_check 'M50 placa y UTC persistidos' GET "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 200 m50-registrado
+request_check 'M50 duplicado normalizado' POST '/api/v1/siniestros-flota' 409 m50-duplicado '{"codigo":" smk50 ","placa":" abc-500 ","lugar":" Patio Norte ","descripcion":"Incidente smoke","tipo":" accidente ","fechaIncidente":"2026-11-23T10:30:12.345"}'
+request_check 'M50 cierre antes de reclamo' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/cierre" 409 m50-cierre '{}'
+request_check 'M50 rechaza escala de reclamo' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/reclamo" 400 m50-escala '{"numeroPoliza":" POL-50 ","aseguradora":" Aseguradora Norte ","numeroReclamo":" REC-SMK50 ","moneda":" pen ","montoReclamado":1.001}'
+request_check 'M50 error conserva registrado' GET "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 200 m50-registrado
+request_check 'M50 abrir reclamo máximo' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/reclamo" 200 created '{"numeroPoliza":" POL-50 ","aseguradora":" Aseguradora Norte ","numeroReclamo":" REC-SMK50 ","moneda":" pen ","montoReclamado":9999999999.99}'
+request_check 'M50 máximo exacto' GET "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 200 m50-maximo
+request_check 'M50 no repite reclamo' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/reclamo" 409 m50-estado-reclamo '{"numeroPoliza":" POL-50 ","aseguradora":" Aseguradora Norte ","numeroReclamo":" REC-SMK50 ","moneda":" pen ","montoReclamado":1250.5}'
+request_check 'M50 no redondea cierre' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/cierre" 400 m50-escala-cierre '{"resultado":"Aceptado","montoReconocido":1.001,"resolucion":"Referencia"}'
+request_check 'M50 aceptación positiva' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/cierre" 400 m50-aceptado-cero '{"resultado":"Aceptado","montoReconocido":0,"resolucion":"Referencia"}'
+request_check 'M50 error conserva reclamo' GET "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 200 m50-maximo
+request_check 'M50 cerrar máximo' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/cierre" 200 created '{"resultado":" aceptado ","montoReconocido":9999999999.99,"resolucion":" Referencia manual "}'
+request_check 'M50 cierre conserva póliza e importes' GET "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 200 m50-cerrado
+request_check 'M50 terminal no se anula' POST "/api/v1/siniestros-flota/${SINIESTRO_50_ID}/anulacion" 409 m50-anulacion '{"motivo":"Cambio"}'
+request_check 'M50 terminal no se elimina' DELETE "/api/v1/siniestros-flota/${SINIESTRO_50_ID}" 409 m50-baja
+request_check 'M50 otro incidente' POST '/api/v1/siniestros-flota' 200 m50-otro-created '{"codigo":"SMK50-A","placa":" abc-500 ","lugar":" Patio Norte ","descripcion":"Incidente smoke","tipo":" accidente ","fechaIncidente":"2026-11-23T10:30:12.345"}'
+request_check 'M50 reclamo para anular' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/reclamo" 200 created '{"numeroPoliza":" POL-50 ","aseguradora":" Aseguradora Norte ","numeroReclamo":" REC-SMK50 ","moneda":" pen ","montoReclamado":1250.5}'
+request_check 'M50 anulación exige motivo' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/anulacion" 400 m50-motivo '{"motivo":" "}'
+request_check 'M50 anular conservando reclamo' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/anulacion" 200 created '{"motivo":" Cambio smoke "}'
+request_check 'M50 reclamo conservado' GET "/api/v1/siniestros-flota/${OTRO_50_ID}" 200 m50-anulado
+request_check 'M50 rechazo en otra moneda' POST '/api/v1/siniestros-flota' 200 m50-otro-created '{"codigo":"SMK50-R","placa":" abc-500 ","lugar":" Patio Norte ","descripcion":"Incidente smoke","tipo":" accidente ","fechaIncidente":"2026-11-23T10:30:12.345"}'
+request_check 'M50 reclamo mínimo USD' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/reclamo" 200 created '{"numeroPoliza":" POL-50 ","aseguradora":" Aseguradora Norte ","numeroReclamo":" REC-SMK50 ","moneda":"usd","montoReclamado":0.01}'
+request_check 'M50 rechazo exige cero' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/cierre" 400 m50-rechazado-positivo '{"resultado":"Rechazado","montoReconocido":0.01,"resolucion":"Referencia"}'
+request_check 'M50 cerrar rechazado' POST "/api/v1/siniestros-flota/${OTRO_50_ID}/cierre" 200 created '{"resultado":"rechazado","montoReconocido":0,"resolucion":"Sin reconocimiento"}'
+request_check 'M50 cero exacto USD' GET "/api/v1/siniestros-flota/${OTRO_50_ID}" 200 m50-rechazado
+request_check 'M50 filtrar tipo y estado' GET '/api/v1/siniestros-flota?estado=cerrado&tipo=dAnOmAtErIaL' 200 m50-filtro
+request_check 'M50 registrado para baja' POST '/api/v1/siniestros-flota' 200 m50-baja-created '{"codigo":"SMK50-B","placa":" abc-500 ","lugar":" Patio Norte ","descripcion":"Incidente smoke","tipo":" accidente ","fechaIncidente":"2026-11-23T10:30:12.345"}'
+request_check 'M50 baja registrado' DELETE "/api/v1/siniestros-flota/${BAJA_50_ID}" 204 ''
+request_check 'M50 confirmar baja' GET "/api/v1/siniestros-flota/${BAJA_50_ID}" 404 m50-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$ BEGIN
+    BEGIN UPDATE "SiniestrosFlota" SET "Codigo" = 'smk50' WHERE "Id" = 1; RAISE EXCEPTION 'M50: falta unicidad'; EXCEPTION WHEN unique_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "MontoReclamado" = 0 WHERE "Id" = 2; RAISE EXCEPTION 'M50: falta monto positivo'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "MontoReconocido" = 1251 WHERE "Id" = 3; RAISE EXCEPTION 'M50: falta límite reconocido'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "MontoReconocido" = 0 WHERE "Id" = 3; RAISE EXCEPTION 'M50: falta aceptación positiva'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "MontoReconocido" = 1 WHERE "Id" = 4; RAISE EXCEPTION 'M50: falta rechazo sin importe'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "Estado" = 'EnReclamo' WHERE "Id" = 1; RAISE EXCEPTION 'M50: falta coherencia del estado'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "SiniestrosFlota" SET "NumeroPoliza" = NULL WHERE "Id" = 2; RAISE EXCEPTION 'M50: falta póliza'; EXCEPTION WHEN check_violation THEN NULL; END;
+END $$;
+SQL
 printf 'SMOKE OK\n'

@@ -1,0 +1,166 @@
+{
+  "fecha": "2026-11-22",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas; una petición real retenida para probar foco durante envío",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-23T10:30:12.345Z",
+      "placaNormalizada": true,
+      "reclamo": "1250.50 PEN",
+      "aceptado": "1000.25 PEN",
+      "rechazado": "0.00 USD",
+      "excesoRechazado": true,
+      "anulacionConservaReferenciasEImportes": true,
+      "bajaRegistrado": true,
+      "tabEscapeRetornoFoco": true,
+      "tabBloqueadoDurantePeticionReal": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".siniestros-flota-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".siniestros-flota-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".siniestros-flota-table small",
+          "contraste": 4.98103373080793
+        },
+        {
+          "selector": ".siniestros-flota-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-23T10:30:12.345Z",
+      "placaNormalizada": true,
+      "reclamo": "1250.50 PEN",
+      "aceptado": "1000.25 PEN",
+      "rechazado": "0.00 USD",
+      "excesoRechazado": true,
+      "anulacionConservaReferenciasEImportes": true,
+      "bajaRegistrado": true,
+      "tabEscapeRetornoFoco": true,
+      "tabBloqueadoDurantePeticionReal": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".siniestros-flota-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".siniestros-flota-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".siniestros-flota-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".siniestros-flota-badge",
+          "contraste": 10.353584267957707
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-23T10:30:12.345Z",
+      "placaNormalizada": true,
+      "reclamo": "1250.50 PEN",
+      "aceptado": "1000.25 PEN",
+      "rechazado": "0.00 USD",
+      "excesoRechazado": true,
+      "anulacionConservaReferenciasEImportes": true,
+      "bajaRegistrado": true,
+      "tabEscapeRetornoFoco": true,
+      "tabBloqueadoDurantePeticionReal": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".siniestros-flota-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".siniestros-flota-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".siniestros-flota-table small",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".siniestros-flota-badge",
+          "contraste": 14.129379950558286
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-23T10:30:12.345Z",
+      "placaNormalizada": true,
+      "reclamo": "1250.50 PEN",
+      "aceptado": "1000.25 PEN",
+      "rechazado": "0.00 USD",
+      "excesoRechazado": true,
+      "anulacionConservaReferenciasEImportes": true,
+      "bajaRegistrado": true,
+      "tabEscapeRetornoFoco": true,
+      "tabBloqueadoDurantePeticionReal": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".siniestros-flota-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".siniestros-flota-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".siniestros-flota-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".siniestros-flota-badge",
+          "contraste": 10.353584267957707
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    }
+  ]
+}

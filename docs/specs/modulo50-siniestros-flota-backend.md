@@ -45,10 +45,10 @@ A1 gate completo salida0, .NET sin warnings, formato/capas/reglas. A2 integraci�
 
 ## 6. Checklist
 - [ ] Aprobación de Lukas.
-- [ ] SQL/scaffold y backend con pruebas.
-- [ ] Seed y smoke real.
-- [ ] Pantalla, estabilidad y QA.
-- [ ] Gate y evidencia local.
+- [x] SQL/scaffold y backend con pruebas.
+- [x] Seed y smoke real.
+- [x] Pantalla, estabilidad y QA.
+- [x] Gate y evidencia local, con avisos globales documentados.
 
 ## 7. Registro
-2026-11-22: propuesta local autorizada. Asignación, orden y base comprobados; sin verificaciones acreditadas todavía. Aprobación formal pendiente.
+2026-11-22: implementación local autorizada, SQL aplicado y scaffold coincidente. Pasaron 49 pruebas propias de backend y 62 de frontend; gate completo con 1.133 backend y 605 frontend, salida 0 y .NET sin warnings. SMOKE OK real, doble seed con cinco siniestros, diez ejecuciones propias y veinte con build simultáneo, QA real en cuatro escenarios y comparación con Contratos. Se documentaron el saneado local de finales de línea y los avisos globales de ESLint/Vite. Evidencia en `docs/evidencias/modulo50/README.md`. Aprobación de Lukas e integración pendientes; sin push, PR ni cambios en main.
