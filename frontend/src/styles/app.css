@@ -1485,3 +1485,38 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+/* Módulo 47: control de combustible */
+.control-combustible-page { min-width: 0; }
+.control-combustible-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.control-combustible-summary article, .control-combustible-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.control-combustible-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.control-combustible-summary strong { color: var(--ink); font-size: 30px; }
+.control-combustible-toolbar, .control-combustible-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.control-combustible-toolbar { justify-content: space-between; }
+.control-combustible-filters { display: grid; grid-template-columns: minmax(0,2fr) repeat(2,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.control-combustible-filters label { display: grid; gap: 8px; }
+.control-combustible-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.control-combustible-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.control-combustible-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.control-combustible-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.control-combustible-page input, .control-combustible-page select, .control-combustible-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.control-combustible-table th, .control-combustible-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.control-combustible-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.control-combustible-table tbody .control-combustible-selected > th, .control-combustible-table tbody .control-combustible-selected > td { background: var(--accent-soft); }
+.control-combustible-details dt { color: var(--ink-soft); margin-top: 14px; }
+.control-combustible-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.control-combustible-dialog { max-height: 90vh; overflow-y: auto; }
+.control-combustible-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.control-combustible-confirmado { background: var(--good-soft); }
+.control-combustible-anulado { background: var(--bad-soft); }
+@media (max-width: 1100px) { .control-combustible-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .control-combustible-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .control-combustible-filters, .control-combustible-editor { grid-template-columns: minmax(0,1fr); }
+  .control-combustible-card, .control-combustible-summary article { padding: 16px; }
+  .control-combustible-toolbar { flex-direction: column; align-items: stretch; }
+}
+
+.control-combustible-preview { padding: 12px; border-radius: 8px; background: var(--surface-muted); color: var(--ink); font-variant-numeric: tabular-nums; }
+.control-combustible-details dd { font-variant-numeric: tabular-nums; }
