@@ -641,4 +641,51 @@ INSERT INTO "AsignacionesTurno" ("Id", "EmpleadoId", "TurnoId", "FechaInicio", "
 SELECT setval(pg_get_serial_sequence('"Turnos"', 'Id'), (SELECT MAX("Id") FROM "Turnos"));
 SELECT setval(pg_get_serial_sequence('"AsignacionesTurno"', 'Id'), (SELECT MAX("Id") FROM "AsignacionesTurno"));
 
+TRUNCATE TABLE "JornadasAsistencia", "Marcaciones" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Marcaciones" ("Id", "EmpleadoId", "Tipo", "Instante", "Origen", "Dispositivo", "NumeroRegistro", "Observacion") VALUES
+    (1, 1, 'Entrada', TIMESTAMPTZ '2026-11-02 13:05:00+00', 'Reloj', 'RELOJ-01', 'REG-0001', NULL),
+    (2, 1, 'Salida', TIMESTAMPTZ '2026-11-02 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0002', NULL),
+    (3, 1, 'Entrada', TIMESTAMPTZ '2026-11-03 13:25:00+00', 'Reloj', 'RELOJ-01', 'REG-0003', NULL),
+    (4, 1, 'Salida', TIMESTAMPTZ '2026-11-03 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0004', NULL),
+    (5, 1, 'Entrada', TIMESTAMPTZ '2026-11-04 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0005', NULL),
+    (6, 1, 'Salida', TIMESTAMPTZ '2026-11-04 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0006', NULL),
+    (7, 1, 'Entrada', TIMESTAMPTZ '2026-11-05 12:30:00+00', 'Reloj', 'RELOJ-01', 'REG-0007', NULL),
+    (8, 1, 'Salida', TIMESTAMPTZ '2026-11-06 00:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0008', NULL),
+    (9, 1, 'Entrada', TIMESTAMPTZ '2026-11-06 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0009', NULL),
+    (10, 1, 'Salida', TIMESTAMPTZ '2026-11-06 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0010', NULL),
+    (11, 2, 'Entrada', TIMESTAMPTZ '2026-11-02 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0011', NULL),
+    (12, 2, 'Salida', TIMESTAMPTZ '2026-11-03 00:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0012', NULL),
+    (13, 2, 'Entrada', TIMESTAMPTZ '2026-11-03 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0013', NULL),
+    (14, 2, 'Salida', TIMESTAMPTZ '2026-11-04 00:00:00+00', 'Manual', NULL, NULL, 'Salida omitida por el reloj; confirmada por el jefe de turno'),
+    (15, 2, 'Entrada', TIMESTAMPTZ '2026-11-04 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0014', NULL),
+    (16, 2, 'Salida', TIMESTAMPTZ '2026-11-05 01:30:00+00', 'Reloj', 'RELOJ-01', 'REG-0015', NULL),
+    (17, 3, 'Entrada', TIMESTAMPTZ '2026-11-02 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0016', NULL),
+    (18, 3, 'Salida', TIMESTAMPTZ '2026-11-02 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0017', NULL),
+    (19, 3, 'Entrada', TIMESTAMPTZ '2026-11-03 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0018', NULL),
+    (20, 3, 'Salida', TIMESTAMPTZ '2026-11-03 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0019', NULL),
+    (21, 3, 'Entrada', TIMESTAMPTZ '2026-11-04 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0020', NULL),
+    (22, 3, 'Entrada', TIMESTAMPTZ '2026-11-05 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0021', NULL),
+    (23, 3, 'Salida', TIMESTAMPTZ '2026-11-05 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0022', NULL),
+    (24, 3, 'Entrada', TIMESTAMPTZ '2026-11-06 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0023', NULL),
+    (25, 3, 'Salida', TIMESTAMPTZ '2026-11-06 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0024', NULL);
+
+INSERT INTO "JornadasAsistencia" ("Id", "EmpleadoId", "Fecha", "TurnoId", "HoraEntradaProgramada", "HoraSalidaProgramada", "ToleranciaMinutos", "Entrada", "Salida", "MinutosTrabajados", "MinutosTardanza", "MinutosExtra", "Estado", "EstadoHorasExtra", "DecididoPor", "FechaDecision", "MotivoRechazo") VALUES
+    (1, 1, DATE '2026-11-02', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-02 13:05:00+00', TIMESTAMPTZ '2026-11-02 22:00:00+00', 535, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (2, 1, DATE '2026-11-03', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-03 13:25:00+00', TIMESTAMPTZ '2026-11-03 22:00:00+00', 515, 15, 0, 'Tardanza', 'NoAplica', NULL, NULL, NULL),
+    (3, 1, DATE '2026-11-04', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-04 13:00:00+00', TIMESTAMPTZ '2026-11-04 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (4, 1, DATE '2026-11-05', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-05 12:30:00+00', TIMESTAMPTZ '2026-11-06 00:00:00+00', 690, 0, 150, 'Asistencia', 'Aprobada', 'admin', TIMESTAMPTZ '2026-11-09 15:00:00+00', NULL),
+    (5, 1, DATE '2026-11-06', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-06 13:00:00+00', TIMESTAMPTZ '2026-11-06 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (6, 2, DATE '2026-11-02', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-02 12:00:00+00', TIMESTAMPTZ '2026-11-03 00:00:00+00', 720, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (7, 2, DATE '2026-11-03', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-03 12:00:00+00', TIMESTAMPTZ '2026-11-04 00:00:00+00', 720, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (8, 2, DATE '2026-11-04', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-04 12:00:00+00', TIMESTAMPTZ '2026-11-05 01:30:00+00', 810, 0, 90, 'Asistencia', 'Pendiente', NULL, NULL, NULL),
+    (9, 3, DATE '2026-11-02', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-02 13:00:00+00', TIMESTAMPTZ '2026-11-02 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (10, 3, DATE '2026-11-03', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-03 13:00:00+00', TIMESTAMPTZ '2026-11-03 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (11, 3, DATE '2026-11-04', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-04 13:00:00+00', NULL, 0, 0, 0, 'SinMarcacion', 'NoAplica', NULL, NULL, NULL),
+    (12, 3, DATE '2026-11-05', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-05 13:00:00+00', TIMESTAMPTZ '2026-11-05 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (13, 3, DATE '2026-11-06', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-06 13:00:00+00', TIMESTAMPTZ '2026-11-06 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL);
+
+SELECT setval(pg_get_serial_sequence('"Marcaciones"', 'Id'), (SELECT MAX("Id") FROM "Marcaciones"));
+SELECT setval(pg_get_serial_sequence('"JornadasAsistencia"', 'Id'), (SELECT MAX("Id") FROM "JornadasAsistencia"));
+
 COMMIT;

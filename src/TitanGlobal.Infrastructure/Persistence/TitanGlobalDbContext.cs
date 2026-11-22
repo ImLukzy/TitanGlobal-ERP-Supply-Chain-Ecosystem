@@ -49,9 +49,13 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
 
+    public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
+
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
+
+    public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
 
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
@@ -408,6 +412,26 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<JornadaAsistencia>(entity =>
+        {
+            entity.HasIndex(e => new { e.EmpleadoId, e.Fecha }, "IX_JornadasAsistencia_EmpleadoId_Fecha").IsUnique();
+
+            entity.HasIndex(e => e.TurnoId, "IX_JornadasAsistencia_TurnoId");
+
+            entity.Property(e => e.DecididoPor).HasMaxLength(100);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.EstadoHorasExtra).HasMaxLength(20);
+            entity.Property(e => e.MotivoRechazo).HasMaxLength(300);
+
+            entity.HasOne(d => d.Empleado).WithMany(p => p.JornadasAsistencia)
+                .HasForeignKey(d => d.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Turno).WithMany(p => p.JornadasAsistencia)
+                .HasForeignKey(d => d.TurnoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<LiquidacionComision>(entity =>
         {
             entity.HasIndex(e => new { e.VendedorId, e.Anio, e.Mes }, "IX_LiquidacionesComisiones_VendedorId_Anio_Mes").IsUnique();
@@ -435,6 +459,23 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.SegmentoCliente).WithMany(p => p.ListasPrecios)
                 .HasForeignKey(d => d.SegmentoClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Marcacion>(entity =>
+        {
+            entity.HasIndex(e => new { e.Dispositivo, e.NumeroRegistro }, "IX_Marcaciones_Dispositivo_NumeroRegistro").IsUnique();
+
+            entity.HasIndex(e => new { e.EmpleadoId, e.Instante }, "IX_Marcaciones_EmpleadoId_Instante");
+
+            entity.Property(e => e.Dispositivo).HasMaxLength(50);
+            entity.Property(e => e.NumeroRegistro).HasMaxLength(50);
+            entity.Property(e => e.Observacion).HasMaxLength(200);
+            entity.Property(e => e.Origen).HasMaxLength(10);
+            entity.Property(e => e.Tipo).HasMaxLength(10);
+
+            entity.HasOne(d => d.Empleado).WithMany(p => p.Marcaciones)
+                .HasForeignKey(d => d.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

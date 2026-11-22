@@ -32,4 +32,6 @@ public partial class Turno
     public bool Activo { get; set; }
 
     public virtual ICollection<AsignacionTurno> AsignacionesTurno { get; set; } = new List<AsignacionTurno>();
+
+    public virtual ICollection<JornadaAsistencia> JornadasAsistencia { get; set; } = new List<JornadaAsistencia>();
 }
