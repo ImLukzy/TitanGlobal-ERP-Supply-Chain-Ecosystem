@@ -3,14 +3,14 @@
 ## 1. Objetivo
 Completar el pendiente de Kelvin en `docs/equipo/relevo.md` §1: impedir placas duplicadas sin distinguir mayúsculas en altas, modificaciones y escrituras concurrentes, conservando los mensajes del contrato y el formato de la placa.
 
-Responsable: Kelvin Pinto. Desarrollo local autorizado por Kelvin; aprobación de Lukas pendiente, sin declararla concedida.
+Responsable: Kelvin Pinto. Estado: propuesta, pendiente de aprobación de Lukas.
 
 ## 2. Fuera de alcance
 Conductores, otros módulos, entidades base, middleware, pipeline, scripts ya integrados y archivos generados editados a mano. No se aplica SQL a producción. No se borran ni fusionan automáticamente vehículos existentes.
 
 ## 3. Archivos afectados
-- `database/010-vehiculos-flota-placa-unica.sql`: índice único sobre `lower(btrim("Placa"))`, además del índice original que utiliza el seed.
-- `docs/equipo/relevo.md` §8: reserva del número 010.
+- `database/021-vehiculos-flota-placa-unica.sql`: índice único sobre `lower(btrim("Placa"))`, además del índice original que utiliza el seed.
+- `docs/equipo/relevo.md` §8: número oficial 021, renombrado desde 010 por indicación de Lukas; 010 corresponde a Acuerdos de abastecimiento.
 - `src/TitanGlobal.Application/UseCases/Modulo41_VehiculosFlota/CrearVehiculoFlotaUseCase.cs` y `ActualizarVehiculoFlotaUseCase.cs`: comparación normalizada antes de guardar.
 - `tests/TitanGlobal.Api.Tests/Modulo41_VehiculosFlota/VehiculosFlotaApiTests.cs`: pruebas de altas y modificaciones con variantes de mayúsculas.
 - `scripts/smoke-postgres.sh`: comprobaciones HTTP con sus validadores para POST/PUT duplicados y cambio de mayúsculas de la propia placa.

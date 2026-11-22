@@ -6,7 +6,7 @@
 
 Responsable: Kelvin Pinto. Contrato: `modulo41-vehiculos-flota-backend.md` §4. Guía: `../equipo/crear-pantalla.md`.
 
-**Estado:** pantalla implementada y verificada localmente con gate, smoke y PostgreSQL real por autorización de Kelvin. La aprobación de Lukas, revisión, integración y despliegue siguen pendientes.
+**Estado:** propuesta, pendiente de aprobación de Lukas. Pantalla implementada y verificada localmente con gate, smoke y PostgreSQL real; revisión, integración y despliegue pendientes.
 
 ## 2. Fuera de alcance
 - Cambios de API, tablas, entidades generadas, autenticación o dependencias.

@@ -24,7 +24,7 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12). Responsable: Kelvin Pinto.
 | `src/TitanGlobal.Domain/Models/VehiculoFlota.cs` | regenerar | entidad `partial` generada por `scripts/scaffold.sh`, sin edición manual |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | configuración generada desde PostgreSQL local |
 | `database/001-esquema-inicial.sql` | referencia | esquema integrado: no se modifica |
-| `database/010-vehiculos-flota-placa-unica.sql` | crear | índice único de placa sin distinguir mayúsculas; ampliación en `modulo41-vehiculos-flota-integridad.md` |
+| `database/021-vehiculos-flota-placa-unica.sql` | crear | índice único de placa sin distinguir mayúsculas; ampliación en `modulo41-vehiculos-flota-integridad.md`; número oficial tras renombrar 010 |
 | `src/TitanGlobal.Application/DTOs/Modulo41_VehiculosFlota/` | crear / mantener | DTOs del contrato |
 | `src/TitanGlobal.Application/UseCases/Modulo41_VehiculosFlota/` | crear / mantener | reglas y casos de uso, sin ASP.NET ni Npgsql |
 | `src/TitanGlobal.Api/Controllers/Modulo41_VehiculosFlota/` | crear / mantener | controlador delgado en `api/v1/vehiculos-flota` |
