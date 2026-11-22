@@ -14,6 +14,7 @@ public class PluralizadorEspanol : IPluralizer
         { "AlertasDescartadas", "AlertaDescartada" },
         { "Almacenes", "Almacen" },
         { "AsignacionesVentas", "AsignacionVenta" },
+        { "AsignacionesTurno", "AsignacionTurno" },
         { "CategoriasProducto", "CategoriaProducto" },
         { "CentrosTrabajo", "CentroTrabajo" },
         { "Clientes", "Cliente" },

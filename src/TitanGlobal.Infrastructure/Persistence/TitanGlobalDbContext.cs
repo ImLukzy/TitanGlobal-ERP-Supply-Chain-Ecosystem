@@ -13,6 +13,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Almacen> Almacenes { get; set; } = null!;
 
+    public virtual DbSet<AsignacionTurno> AsignacionesTurno { get; set; } = null!;
+
     public virtual DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
 
     public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
@@ -75,6 +77,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
 
+    public virtual DbSet<Turno> Turnos { get; set; } = null!;
+
     public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
 
     public virtual DbSet<UsuarioRol> UsuariosRoles { get; set; } = null!;
@@ -117,6 +121,21 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(200);
             entity.Property(e => e.Responsable).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<AsignacionTurno>(entity =>
+        {
+            entity.HasIndex(e => new { e.EmpleadoId, e.FechaInicio }, "IX_AsignacionesTurno_EmpleadoId_FechaInicio").IsUnique();
+
+            entity.HasIndex(e => e.TurnoId, "IX_AsignacionesTurno_TurnoId");
+
+            entity.HasOne(d => d.Empleado).WithMany(p => p.AsignacionesTurno)
+                .HasForeignKey(d => d.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Turno).WithMany(p => p.AsignacionesTurno)
+                .HasForeignKey(d => d.TurnoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<AsignacionVenta>(entity =>
@@ -588,6 +607,16 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Porcentaje).HasPrecision(18, 6);
 
             entity.HasOne(d => d.Impuesto).WithMany(p => p.Tasas).HasForeignKey(d => d.ImpuestoId);
+        });
+
+        modelBuilder.Entity<Turno>(entity =>
+        {
+            entity.HasIndex(e => e.Codigo, "IX_Turnos_Codigo").IsUnique();
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.DiasLaborables).HasMaxLength(13);
+            entity.Property(e => e.Nombre).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
         });
 
         modelBuilder.Entity<Usuario>(entity =>
