@@ -29,6 +29,11 @@ it('Escape no confirma y 409 conserva la ficha para completar intervalo', async 
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar intervalo' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Registra el odómetro final');
   expect(screen.getByRole('heading', { name: 'VAL-1' })).toBeInTheDocument();
+  const dialogo = screen.getByRole('dialog');
+  expect(dialogo).toHaveFocus();
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await waitFor(() => expect(b).toHaveFocus());
 });
 it('bloquea doble confirmación y muestra solo anulación', async () => {
   await seleccionar();
@@ -41,6 +46,9 @@ it('bloquea doble confirmación y muestra solo anulación', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar vale' }));
   const boton = screen.getByRole('button', { name: 'Confirmar intervalo' });
   fireEvent.click(boton);
+  expect(screen.getByRole('dialog')).toHaveFocus();
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
   fireEvent.click(boton);
   expect(api.confirmarVale).toHaveBeenCalledTimes(1);
   vi.mocked(api.obtenerVale).mockResolvedValue({ ...confirmado, id: 1, codigo: 'VAL-1' });

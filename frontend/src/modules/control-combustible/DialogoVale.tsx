@@ -22,11 +22,15 @@ export function DialogoVale({
       if (origen?.isConnected) origen.focus();
     };
   }, []);
+  useEffect(() => {
+    if (ocupado) ref.current?.focus();
+  }, [ocupado]);
   return (
     <div className="clientes-dialog-backdrop">
       <div
         ref={ref}
         role="dialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-labelledby={id}
         className="clientes-dialog control-combustible-dialog"
@@ -41,7 +45,10 @@ export function DialogoVale({
             );
             const primero = elementos?.[0],
               ultimo = elementos?.[elementos.length - 1];
-            if (e.shiftKey && document.activeElement === primero) {
+            if (
+              e.shiftKey &&
+              (document.activeElement === primero || document.activeElement === ref.current)
+            ) {
               e.preventDefault();
               ultimo?.focus();
             } else if (!e.shiftKey && document.activeElement === ultimo) {
