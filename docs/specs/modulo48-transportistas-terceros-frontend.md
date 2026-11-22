@@ -1,9 +1,11 @@
 # Especificación propuesta: módulo 48 — Transportistas terceros (frontend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 Sustituir la pantalla pendiente de `/modulos/48-transportistas-terceros` por un maestro de transportistas y un registro de fletes, siguiendo Proveedores, Centros de Trabajo y las guías del equipo.
 
-Responsable: Kelvin Pinto. **Implementación local autorizada por Kelvin; revisión de Lukas y aprobación del contrato backend pendientes** en `modulo48-transportistas-terceros-backend.md`. Evidencia de ejecución local en `docs/evidencias/modulo48/`.
+Responsable: Kelvin Pinto. **Propuesta, pendiente de aprobación de Lukas; revisión de Lukas y aprobación del contrato backend pendientes** en `modulo48-transportistas-terceros-backend.md`. Evidencia de ejecución local en `docs/evidencias/modulo48/`.
 
 ## 2. Fuera de alcance y decisiones
 No modificar pantallas ajenas, autenticación, middleware, pipeline ni dependencias. No calcular tarifas, impuestos o conversiones de moneda; no generar facturas ni pagos. El alcance de fletes manuales, la identificación fiscal por país y la moneda declarativa dependen de las decisiones de la spec backend §2.

@@ -1,10 +1,12 @@
 # Especificación propuesta: módulo 48 — Transportistas terceros (backend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 **Problema:** el enunciado define «TransportistasTerceros (3PL y fletes)», pero no hay tablas, API ni reglas aprobadas para el módulo. Es previo a RutasDespacho según `docs/equipo/asignaciones.md`.
 **Resultado propuesto:** mantener proveedores logísticos externos y registrar fletes manuales, con referencia, trayecto e importe declarado. El registro y su cancelación conservan el historial; no calculan tarifas ni generan documentos contables.
 
-Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, creada desde `origin/main`. **Estado: implementación local autorizada por Kelvin; revisión y aprobación de Lukas pendientes.**
+Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, creada desde `origin/main`. **Estado: Propuesta, pendiente de aprobación de Lukas; revisión y aprobación de Lukas pendientes.**
 
 ## 2. Fuera de alcance y decisiones pendientes
 - Rutas, conductores, vehículos, guías, facturas, pagos y demás módulos; ninguna FK hacia las cuatro entidades base.
@@ -12,7 +14,7 @@ Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, crea
 - Middleware, autenticación, pipeline, scripts fusionados y edición manual de archivos generados.
 - Aplicar SQL en producción o declarar el módulo integrado/desplegado.
 
-**Decisiones de producto propuestas, implementadas localmente por autorización expresa de Kelvin y pendientes de aprobación de Lukas para su integración:**
+**Decisiones de producto propuestas, implementadas localmente como propuesta, pendiente de aprobación de Lukas y pendientes de aprobación de Lukas para su integración:**
 1. Alcance propuesto: maestro de transportistas + registro/cancelación manual de fletes; no un motor de tarifas.
 2. Identificación fiscal por país y documento libre (no exigir RUC peruano a empresas extranjeras). La unicidad propuesta compara país y documento sin mayúsculas ni espacios exteriores; el país se mantiene como texto, siguiendo el maestro Proveedores. Revisar si se requiere un código de país normalizado.
 3. Moneda declarativa de tres letras, sin validar contra el módulo 74 todavía ni sumar importes de monedas diferentes.
@@ -134,4 +136,4 @@ Commits por avances funcionales con sus pruebas, no por archivo, usando la ident
 | Fecha | Estado | Evidencia |
 |---|---|---|
 | 2026-11-21 | Propuesta, sin aprobación ni implementación | Asignación y orden confirmados; alcance disponible en el enunciado limitado a «3PL y fletes»; rutas y capas contrastadas con el repositorio |
-| 2026-11-21 | Implementado y verificado localmente por autorización expresa de Kelvin; aprobación de Lukas pendiente | 53 pruebas propias del backend, diez operaciones OpenAPI, seed repetido sin duplicados, scaffold comprobado y smoke contra PostgreSQL; detalles en `docs/evidencias/modulo48/README.md` |
+| 2026-11-21 | Implementado y verificado localmente como propuesta, pendiente de aprobación de Lukas; aprobación de Lukas pendiente | 53 pruebas propias del backend, diez operaciones OpenAPI, seed repetido sin duplicados, scaffold comprobado y smoke contra PostgreSQL; detalles en `docs/evidencias/modulo48/README.md` |
