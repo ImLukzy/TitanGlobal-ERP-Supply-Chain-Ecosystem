@@ -108,5 +108,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 | 024 | `024-turnos-horarios.sql` | Alexander | `alexander/modulo64-turnos-horarios` | no |
 | 025 | `025-asistencia-biometrica.sql` | Alexander | `alexander/modulo63-asistencia-biometrica` | no |
+| 026 | `026-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | no |
 
 Un script nuevo toma el siguiente número libre de esta tabla (024 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).

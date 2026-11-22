@@ -688,4 +688,17 @@ INSERT INTO "JornadasAsistencia" ("Id", "EmpleadoId", "Fecha", "TurnoId", "HoraE
 SELECT setval(pg_get_serial_sequence('"Marcaciones"', 'Id'), (SELECT MAX("Id") FROM "Marcaciones"));
 SELECT setval(pg_get_serial_sequence('"JornadasAsistencia"', 'Id'), (SELECT MAX("Id") FROM "JornadasAsistencia"));
 
+TRUNCATE TABLE "Ausencias" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Ausencias" ("Id", "Numero", "EmpleadoId", "Tipo", "FechaInicio", "FechaFin", "Dias", "Motivo", "Estado", "FechaSolicitud", "DecididoPor", "FechaDecision", "MotivoRechazo", "FechaCancelacion") VALUES
+    (1, 'AUS-000001', 1, 'Vacaciones', DATE '2026-02-02', DATE '2026-02-13', 12, NULL, 'Aprobada', DATE '2026-01-12', 'admin', TIMESTAMPTZ '2026-01-13 15:00:00+00', NULL, NULL),
+    (2, 'AUS-000002', 1, 'Vacaciones', DATE '2027-01-04', DATE '2027-01-10', 7, NULL, 'Aprobada', DATE '2026-11-02', 'admin', TIMESTAMPTZ '2026-11-03 15:00:00+00', NULL, NULL),
+    (3, 'AUS-000003', 1, 'PermisoConGoce', DATE '2026-12-14', DATE '2026-12-15', 2, 'Tramite notarial', 'Pendiente', DATE '2026-11-16', NULL, NULL, NULL, NULL),
+    (4, 'AUS-000004', 2, 'DescansoMedico', DATE '2026-11-09', DATE '2026-11-13', 5, 'Cuadro gripal con certificado medico', 'Aprobada', DATE '2026-11-09', 'admin', TIMESTAMPTZ '2026-11-09 16:00:00+00', NULL, NULL),
+    (5, 'AUS-000005', 2, 'PermisoSinGoce', DATE '2026-11-16', DATE '2026-11-17', 2, 'Asunto familiar', 'Aprobada', DATE '2026-11-10', 'admin', TIMESTAMPTZ '2026-11-11 15:00:00+00', NULL, NULL),
+    (6, 'AUS-000006', 3, 'Vacaciones', DATE '2026-12-21', DATE '2026-12-31', 11, NULL, 'Rechazada', DATE '2026-11-05', 'admin', TIMESTAMPTZ '2026-11-06 15:00:00+00', 'Cierre de inventario anual', NULL),
+    (7, 'AUS-000007', 3, 'Vacaciones', DATE '2027-02-01', DATE '2027-02-05', 5, NULL, 'Cancelada', DATE '2026-11-05', NULL, NULL, NULL, DATE '2026-11-10');
+
+SELECT setval(pg_get_serial_sequence('"Ausencias"', 'Id'), (SELECT MAX("Id") FROM "Ausencias"));
+
 COMMIT;

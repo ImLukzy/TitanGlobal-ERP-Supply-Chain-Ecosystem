@@ -37,6 +37,8 @@ public partial class Empleado
 
     public virtual ICollection<AsignacionTurno> AsignacionesTurno { get; set; } = new List<AsignacionTurno>();
 
+    public virtual ICollection<Ausencia> Ausencias { get; set; } = new List<Ausencia>();
+
     public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
 
     public virtual ICollection<JornadaAsistencia> JornadasAsistencia { get; set; } = new List<JornadaAsistencia>();

@@ -17,6 +17,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
 
+    public virtual DbSet<Ausencia> Ausencias { get; set; } = null!;
+
     public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
 
     public virtual DbSet<CentroTrabajo> CentrosTrabajo { get; set; } = null!;
@@ -154,6 +156,24 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Vendedor).WithMany(p => p.AsignacionesVentas)
                 .HasForeignKey(d => d.VendedorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Ausencia>(entity =>
+        {
+            entity.HasIndex(e => new { e.EmpleadoId, e.FechaInicio }, "IX_Ausencias_EmpleadoId_FechaInicio");
+
+            entity.HasIndex(e => e.Numero, "IX_Ausencias_Numero").IsUnique();
+
+            entity.Property(e => e.DecididoPor).HasMaxLength(100);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Motivo).HasMaxLength(300);
+            entity.Property(e => e.MotivoRechazo).HasMaxLength(300);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Tipo).HasMaxLength(30);
+
+            entity.HasOne(d => d.Empleado).WithMany(p => p.Ausencias)
+                .HasForeignKey(d => d.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
