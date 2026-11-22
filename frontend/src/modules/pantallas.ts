@@ -23,6 +23,7 @@ import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
 import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
+import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiometricaPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -49,4 +50,5 @@ export const pantallas: Record<string, ComponentType> = {
   '33-centros-trabajo': CentrosTrabajoPage,
   '62-contratos-laborales': ContratosLaboralesPage,
   '64-turnos-horarios': TurnosHorariosPage,
+  '63-asistencia-biometrica': AsistenciaBiometricaPage,
 };
