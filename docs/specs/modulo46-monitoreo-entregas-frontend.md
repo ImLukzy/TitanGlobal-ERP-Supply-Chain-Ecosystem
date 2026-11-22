@@ -7,7 +7,7 @@ Pantalla de Kelvin `/modulos/46-monitoreo-entregas`, según contrato backend pro
 Aplican las decisiones backend: sin GPS, mapas, incidencias/reintentos, inventario, adjuntos ni certificación del POD. Mostrar `Seguimiento manual · Constancia de recepción textual`. No abrir referencias como enlaces. Sin cambios en componentes/pantallas ajenos ni nuevas dependencias.
 
 ## 3. Archivos
-Carpeta `frontend/src/modules/monitoreo-entregas/`: tipos.ts, api.ts/api.test.ts, validacion.ts/validacion.test.ts, presentacion.ts, useEntregasData.ts, MonitoreoEntregasPage.tsx, EntregasResumen.tsx, EntregasFiltros.tsx, EntregasTabla.tsx, EntregaDetallePanel.tsx, EntregaFormulario.tsx, DialogoPodEntrega.tsx, DialogoCancelarEntrega.tsx y DialogoSalidaEntrega.tsx. Pruebas temáticas EntregasConsultas, EntregasFormulario y EntregasEstados, utilidades entregas.testUtils.tsx. Añadir solo registro46 en pantallas.ts y bloque final `.monitoreo-entregas-` en app.css. Evidencia en docs/evidencias/modulo46/.
+Carpeta `frontend/src/modules/monitoreo-entregas/`: tipos.ts, api.ts/api.test.ts, validacion.ts/validacion.test.ts, presentacion.ts, useEntregasData.ts, MonitoreoEntregasPage.tsx, EntregasResumen.tsx, EntregasFiltros.tsx, EntregasTabla.tsx, EntregaDetallePanel.tsx, EntregaFormulario.tsx, DialogoEntrega.tsx (contenedor accesible propio), DialogoPodEntrega.tsx, DialogoCancelarEntrega.tsx y DialogoSalidaEntrega.tsx. Pruebas temáticas EntregasConsultas, EntregasFormulario y EntregasEstados, utilidades entregas.testUtils.tsx. Añadir solo registro46 en pantallas.ts y bloque final `.monitoreo-entregas-` en app.css. Evidencia en docs/evidencias/modulo46/.
 
 ## 4. Diseño y lógica
 - PaginaModulo, TablaPaginada, PanelDetalle, CampoConError y DialogoBaja compartidos. Tokens semánticos, métricas con cifra grande/etiqueta debajo, estados con texto y color, foco visible.
@@ -24,9 +24,9 @@ A1 cliente de nueve operaciones con URLs/payload/query exactos. A2 consultas, te
 
 ## 6. Checklist
 - [ ] Revisión de Lukas.
-- [ ] API y datos locales por scripts.
-- [ ] Pantalla y pruebas temáticas.
-- [ ] Estabilidad, gates y QA real documentados.
+- [x] API y datos locales por scripts.
+- [x] Pantalla y pruebas temáticas.
+- [x] Estabilidad, gates y QA real documentados, con salvedades globales.
 
 ## 7. Registro
-2026-11-21: propuesta local; revisión pendiente. No hay pruebas ni QA acreditados todavía.
+2026-11-21: implementación local; revisión de Lukas pendiente. 40 pruebas propias en cinco archivos, 583 globales, diez repeticiones más una bajo carga, gate salida0 y SMOKE OK. QA con API/PostgreSQL reales a375/1280claro/oscuro, 24 capturas propias y dos de referencia. [Evidencia y salvedades ESLint/Vite](../evidencias/modulo46/README.md). Sin integración ni despliegue.

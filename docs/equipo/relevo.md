@@ -98,6 +98,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | creado y comprobado localmente en su rama |
 | 014 | `014-consolidacion-carga.sql` | Kelvin | `kelvin/modulo44-consolidacion-carga` | creado y comprobado localmente en su rama |
 | 015 | `015-guias-remision.sql` | Kelvin | `kelvin/modulo45-guias-remision` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
-| 016 | `016-monitoreo-entregas.sql` | Kelvin | `kelvin/modulo46-monitoreo-entregas` | reserva para implementación local; revisión de Lukas pendiente |
+| 016 | `016-monitoreo-entregas.sql` | Kelvin | `kelvin/modulo46-monitoreo-entregas` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
 Un script nuevo toma el siguiente número libre (017 en adelante). Las reservas 010–016 son de ramas independientes de Kelvin, sin implicar integración en main.

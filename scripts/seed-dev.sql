@@ -623,4 +623,24 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 46: seguimiento manual y constancia textual de recepción.
+INSERT INTO "EntregasDespacho" ("Codigo","ReferenciaGuia","Destinatario","DireccionDestino","FechaProgramada","Estado","FechaSalida","FechaEntrega","FechaCancelacion","Receptor","DocumentoReceptor","ReferenciaConstancia","ObservacionesEntrega","MotivoCancelacion") VALUES
+('ENT-46001','GR-46001','Centro Norte','Avenida Norte 100','2026-11-22T10:30:12.345Z','Programada',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+('ENT-46002','GR-46002','Centro Sur','Avenida Sur 200','2026-11-22T10:30:12.345Z','EnRuta','2026-11-20T11:00:00Z',NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+('ENT-46003','GR-46003','Centro Este','Avenida Este 300','2026-11-22T10:30:12.345Z','Entregada','2026-11-20T11:00:00Z','2026-11-20T12:00:00Z',NULL,'Receptor local','DOC-46','POD-46003','Recepción manual del seed.',NULL),
+('ENT-46004','GR-46004','Centro Oeste','Avenida Oeste 400','2026-11-22T10:30:12.345Z','Cancelada','2026-11-20T11:00:00Z',NULL,'2026-11-20T12:00:00Z',NULL,NULL,NULL,NULL,'Cambio de programación.')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+INSERT INTO "EventosEntrega" ("EntregaDespachoId","Estado","Fecha","Descripcion")
+SELECT e."Id",v.estado,
+CASE v.estado WHEN 'Programada' THEN '2026-11-20T10:00:00Z'::timestamptz WHEN 'EnRuta' THEN e."FechaSalida" WHEN 'Entregada' THEN e."FechaEntrega" ELSE e."FechaCancelacion" END,
+CASE v.estado WHEN 'Programada' THEN 'Entrega programada.' WHEN 'EnRuta' THEN 'Salida a ruta registrada.' WHEN 'Entregada' THEN 'Recepción registrada mediante constancia manual.' ELSE e."MotivoCancelacion" END
+FROM "EntregasDespacho" e CROSS JOIN (VALUES ('Programada',1),('EnRuta',2),('Entregada',3),('Cancelada',3)) AS v(estado,posicion)
+WHERE e."Codigo" IN ('ENT-46001','ENT-46002','ENT-46003','ENT-46004')
+AND (v.estado = 'Programada' OR (v.estado = 'EnRuta' AND e."FechaSalida" IS NOT NULL) OR v.estado = e."Estado")
+AND NOT EXISTS (SELECT 1 FROM "EventosEntrega" h WHERE h."EntregaDespachoId" = e."Id" AND h."Estado" = v.estado)
+ORDER BY e."Codigo",v.posicion;
+SELECT setval(pg_get_serial_sequence('"EntregasDespacho"','Id'),(SELECT MAX("Id") FROM "EntregasDespacho"));
+SELECT setval(pg_get_serial_sequence('"EventosEntrega"','Id'),(SELECT MAX("Id") FROM "EventosEntrega"));
+
 COMMIT;

@@ -19,7 +19,7 @@ Kelvin autoriza continuar localmente con una propuesta similar a sus módulos an
 | `src/TitanGlobal.Domain/Models/EntregaDespacho.cs`, `EventoEntrega.cs` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar exclusivamente mediante scaffold |
 | `src/TitanGlobal.Api/Configuration/run/NombresNavegacion.cs` | Colección propia Eventos si es necesaria |
 | `src/TitanGlobal.Application/DTOs/Modulo46_MonitoreoEntregas/*.cs` | GuardarEntregaRequestDto, RegistrarPodRequestDto, CancelarEntregaRequestDto, EntregaListadoDto, EntregaDetalleDto, EventoEntregaDto, PaginaEntregasDto, ResumenEntregasDto |
-| `src/TitanGlobal.Application/UseCases/Modulo46_MonitoreoEntregas/*.cs` | Crear/Actualizar/Eliminar/Obtener/ListarEntrega(s)UseCase, IniciarEntregaUseCase, CompletarEntregaUseCase, CancelarEntregaUseCase, ResumenEntregasUseCase, ValidacionEntrega y PresentacionEntrega |
+| `src/TitanGlobal.Application/UseCases/Modulo46_MonitoreoEntregas/*.cs` | CrearEntregaUseCase, ActualizarEntregaUseCase, EliminarEntregaUseCase, ObtenerEntregaUseCase, ListarEntregasUseCase, IniciarEntregaUseCase, CompletarEntregaUseCase, CancelarEntregaUseCase, ResumenEntregasUseCase, ValidacionEntrega y PresentacionEntrega |
 | `src/TitanGlobal.Api/Controllers/Modulo46_MonitoreoEntregas/MonitoreoEntregasController.cs` | Controlador delgado |
 | `tests/TitanGlobal.Api.Tests/Modulo46_MonitoreoEntregas/` | Integración y traducción de restricciones |
 | `scripts/seed-dev.sql`, `scripts/smoke-postgres.sh` | Bloques propios, validadores y SQL real |
@@ -29,7 +29,7 @@ Kelvin autoriza continuar localmente con una propuesta similar a sus módulos an
 ### Datos
 EntregasDespacho: Id identity; Codigo varchar20; ReferenciaGuia varchar40; Destinatario varchar200; DireccionDestino varchar300; FechaProgramada timestamptz; Observaciones varchar500 nullable; Estado varchar15 default Programada; FechaSalida/FechaEntrega/FechaCancelacion timestamptz nullable; Receptor varchar100, DocumentoReceptor varchar20, ReferenciaConstancia varchar100, ObservacionesEntrega varchar500 y MotivoCancelacion varchar500, todos nullable según estado.
 
-EventosEntrega: Id identity, EntregaDespachoId FK con índice y cascada, Estado varchar15, Fecha timestamptz, Descripcion varchar500. Claves únicas de código mediante lower(btrim). Checks SQL: textos requeridos recortados/no vacíos, estados válidos y coherencia de fechas/POD/motivo. Programada sin cierre/salida/POD; EnRuta con salida sin cierre/POD; Entregada con salida/entrega y POD obligatorio; Cancelada con cancelación/motivo, conservando salida si existió y sin POD. SQL no transforma textos de escrituras directas.
+EventosEntrega: Id identity, EntregaDespachoId FK con índice y cascada, Estado varchar15, Fecha timestamptz, Descripcion varchar500. Claves únicas de código mediante lower(btrim). Checks SQL: cabecera requerida recortada/no vacía, estados válidos, POD/motivo no vacíos cuando corresponden y coherencia de fechas. Programada sin cierre/salida/POD; EnRuta con salida sin cierre/POD; Entregada con salida/entrega y POD obligatorio; Cancelada con cancelación/motivo, conservando salida si existió y sin POD. SQL no transforma textos de escrituras directas.
 
 Application recorta textos; opcionales vacíos a null. DTO FechaProgramada DateTime? para validar ausencia/default, normalizar con FechasUtc preservando el instante; entrada sin zona se interpreta UTC. Fechas de salida, POD, cancelación y eventos del servidor, normalizadas UTC. No imponer comparación con hoy ni modificar la programación al salir.
 
@@ -75,10 +75,11 @@ A1: verify completo salida0, .NET sin warnings, formato/capas/reglas. A2: integr
 
 ## 6. Checklist
 - [ ] Revisión y aprobación de Lukas.
-- [ ] SQL/scaffold local y API con pruebas.
-- [ ] Seed y smoke PostgreSQL.
-- [ ] Pantalla, estabilidad y QA.
-- [ ] Gates y evidencia reales; revisión de compañero antes de integrar.
+- [x] SQL/scaffold local y API con pruebas.
+- [x] Seed y smoke PostgreSQL.
+- [x] Pantalla, estabilidad y QA.
+- [x] Gates y evidencia reales, con advertencias globales documentadas.
+- [ ] Revisión de compañero antes de integrar.
 
 ## 7. Registro
-2026-11-21: asignación y orden comprobados; propuesta de implementación local autorizada por Kelvin al continuar como los módulos anteriores. Revisión de Lukas pendiente. No acreditar pruebas aún; sin push, PR ni cambios en main.
+2026-11-21: asignación y orden comprobados; implementación local autorizada por Kelvin al continuar como los módulos anteriores. 33 pruebas backend propias y 1116 globales; 40 frontend propias y 583 globales, gate salida0, SMOKE OK, doble seed (4 entregas/9 eventos), diez repeticiones más una bajo carga y QA real en cuatro escenarios. [Evidencia](../evidencias/modulo46/README.md). Revisión de Lukas pendiente y advertencias de ESLint/Vite registradas: no acredita cierre formal, integración ni despliegue. Sin push, PR ni cambios en main.

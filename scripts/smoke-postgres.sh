@@ -151,6 +151,28 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    'm46-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm46-cancel-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm46-baja-created': lambda d: isinstance(d.get('id'),int) and d['id'] > 0,
+    'm46-list': lambda d: d['total'] == 4 and [e['estado'] for e in d['items']] == ['Programada','EnRuta','Entregada','Cancelada'],
+    'm46-resumen': lambda d: d == {'total':4,'programadas':1,'enRuta':1,'entregadas':1,'canceladas':1},
+    'm46-programada': lambda d: d['estado'] == 'Programada' and d['fechaProgramada'] == '2026-11-22T10:30:12.345Z' and len(d['historial']) == 1 and d['historial'][0]['descripcion'] == 'Entrega programada.' and d['historial'][0]['fecha'].endswith('Z'),
+    'm46-ruta': lambda d: d['estado'] == 'EnRuta' and d['fechaSalida'].endswith('Z') and d['fechaEntrega'] is None and d['receptor'] is None and len(d['historial']) == 2 and d['historial'][1]['fecha'] == d['fechaSalida'],
+    'm46-pod': lambda d: d['estado'] == 'Entregada' and d['receptor'] == 'Receptor smoke' and d['documentoReceptor'] == 'DOC-46' and d['referenciaConstancia'] == 'POD-46' and d['observacionesEntrega'] == 'Recibido' and [e['estado'] for e in d['historial']] == ['Programada','EnRuta','Entregada'] and d['historial'][1]['fecha'] == d['fechaSalida'] and d['historial'][2]['fecha'] == d['fechaEntrega'] and d['fechaEntrega'].endswith('Z'),
+    'm46-cancelada': lambda d: d['estado'] == 'Cancelada' and d['fechaSalida'].endswith('Z') and d['fechaCancelacion'].endswith('Z') and d['fechaEntrega'] is None and d['receptor'] is None and d['motivoCancelacion'] == 'Cambio de plan' and [e['estado'] for e in d['historial']] == ['Programada','EnRuta','Cancelada'] and d['historial'][2]['descripcion'] == 'Cambio de plan',
+    'm46-duplicado': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Ya existe una entrega con el código smk46.',
+    'm46-edicion': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede editar una entrega programada.',
+    'm46-baja': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede eliminar una entrega programada.',
+    'm46-salida': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede iniciar una entrega programada.',
+    'm46-entrega': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede completar una entrega en ruta.',
+    'm46-no-cancelable': lambda d: d['StatusCode'] == 409 and d['Message'] == 'Solo se puede cancelar una entrega programada o en ruta.',
+    'm46-motivo': lambda d: d['StatusCode'] == 400 and d['Message'] == 'El motivo de cancelación es obligatorio.',
+    'm46-repetida': lambda d: d['StatusCode'] == 409 and d['Message'] == 'La entrega ya está cancelada.',
+    'm46-receptor': lambda d: d['StatusCode'] == 400 and d['Message'] == 'El campo receptor es obligatorio.',
+    'm46-filtro': lambda d: d['total'] == 2 and all(e['estado'] == 'Cancelada' for e in d['items']),
+    'm46-missing': lambda d: d['StatusCode'] == 404 and re.fullmatch(r'La entrega [0-9]+ no existe\.',d['Message']) is not None,
+    'm46-openapi': lambda d: all(verb in d['paths']['/api/v1/monitoreo-entregas'+path] for path,verb in [('', 'get'),('', 'post'),('/{id}', 'get'),('/{id}', 'put'),('/{id}', 'delete'),('/{id}/salida', 'post'),('/{id}/entrega', 'post'),('/{id}/cancelacion', 'post'),('/resumen', 'get')]),
+
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -588,6 +610,15 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m46-created" ]]; then
+        ENTREGA_46_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m46-cancel-created" ]]; then
+        CANCEL_46_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m46-baja-created" ]]; then
+        BAJA_46_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -916,4 +947,60 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 46: seguimiento manual, POD e historial real.
+TOKEN_46_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M46 exige sesión' GET '/api/v1/monitoreo-entregas' 401 no-session
+TOKEN_ACTUAL="$TOKEN_46_ADMIN"
+request_check 'M46 OpenAPI nueve operaciones' GET '/openapi/v1.json' 200 m46-openapi
+request_check 'M46 seed con cuatro estados' GET '/api/v1/monitoreo-entregas' 200 m46-list
+request_check 'M46 resumen' GET '/api/v1/monitoreo-entregas/resumen' 200 m46-resumen
+request_check 'M46 programar sin zona' POST '/api/v1/monitoreo-entregas' 200 m46-created '{"codigo":"SMK46","referenciaGuia":"GR-46","destinatario":"Centro smoke","direccionDestino":"Avenida smoke 100","fechaProgramada":"2026-11-22T10:30:12.345"}'
+request_check 'M46 fecha UTC e historial inicial' GET "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 m46-programada
+request_check 'M46 código duplicado' POST '/api/v1/monitoreo-entregas' 409 m46-duplicado '{"codigo":" smk46 ","referenciaGuia":"GR-46","destinatario":"Centro smoke","direccionDestino":"Avenida smoke 100","fechaProgramada":"2026-11-22T10:30:12.345"}'
+request_check 'M46 editar programación' PUT "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 created '{"codigo":"SMK46","referenciaGuia":"GR-46","destinatario":"Centro smoke","direccionDestino":"Avenida smoke 100","fechaProgramada":"2026-11-22T10:30:12.345","observaciones":"Editada"}'
+request_check 'M46 conserva único evento inicial' GET "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 m46-programada
+request_check 'M46 no completa sin salir' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/entrega" 409 m46-entrega '{"receptor":" Receptor smoke ","documentoReceptor":" DOC-46 ","referenciaConstancia":" POD-46 ","observaciones":" Recibido "}'
+request_check 'M46 salida sin cuerpo' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/salida" 200 created
+request_check 'M46 evento y fecha de salida' GET "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 m46-ruta
+request_check 'M46 no sale dos veces' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/salida" 409 m46-salida
+request_check 'M46 no edita en ruta' PUT "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 409 m46-edicion '{}'
+request_check 'M46 no elimina en ruta' DELETE "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 409 m46-baja
+request_check 'M46 receptor obligatorio' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/entrega" 400 m46-receptor '{}'
+request_check 'M46 POD inválido no añade evento' GET "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 m46-ruta
+request_check 'M46 completar con constancia textual' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/entrega" 200 created '{"receptor":" Receptor smoke ","documentoReceptor":" DOC-46 ","referenciaConstancia":" POD-46 ","observaciones":" Recibido "}'
+request_check 'M46 POD e historial terminal' GET "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}" 200 m46-pod
+request_check 'M46 POD repetido' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/entrega" 409 m46-entrega '{}'
+request_check 'M46 no cancela una recepción' POST "/api/v1/monitoreo-entregas/${ENTREGA_46_ID}/cancelacion" 409 m46-no-cancelable '{"motivo":"Cambio"}'
+request_check 'M46 programar para cancelar' POST '/api/v1/monitoreo-entregas' 200 m46-cancel-created '{"codigo":"SMK46-C","referenciaGuia":"GR-46","destinatario":"Centro smoke","direccionDestino":"Avenida smoke 100","fechaProgramada":"2026-11-22T10:30:12.345","observaciones":"Editada"}'
+request_check 'M46 salida antes de cancelar' POST "/api/v1/monitoreo-entregas/${CANCEL_46_ID}/salida" 200 created
+request_check 'M46 exige motivo' POST "/api/v1/monitoreo-entregas/${CANCEL_46_ID}/cancelacion" 400 m46-motivo '{"motivo":" "}'
+request_check 'M46 cancela conservando salida' POST "/api/v1/monitoreo-entregas/${CANCEL_46_ID}/cancelacion" 200 created '{"motivo":" Cambio de plan "}'
+request_check 'M46 historial cancelado' GET "/api/v1/monitoreo-entregas/${CANCEL_46_ID}" 200 m46-cancelada
+request_check 'M46 cancelación repetida' POST "/api/v1/monitoreo-entregas/${CANCEL_46_ID}/cancelacion" 409 m46-repetida '{"motivo":"Otra"}'
+request_check 'M46 filtra canceladas' GET '/api/v1/monitoreo-entregas?estado=cancelada' 200 m46-filtro
+request_check 'M46 programación para baja' POST '/api/v1/monitoreo-entregas' 200 m46-baja-created '{"codigo":"SMK46-B","referenciaGuia":"GR-46","destinatario":"Centro smoke","direccionDestino":"Avenida smoke 100","fechaProgramada":"2026-11-22T10:30:12.345","observaciones":"Editada"}'
+request_check 'M46 baja con cascada' DELETE "/api/v1/monitoreo-entregas/${BAJA_46_ID}" 204 ''
+request_check 'M46 confirma baja' GET "/api/v1/monitoreo-entregas/${BAJA_46_ID}" 404 m46-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "EventosEntrega" h LEFT JOIN "EntregasDespacho" e ON e."Id" = h."EntregaDespachoId" WHERE e."Id" IS NULL) THEN RAISE EXCEPTION 'M46: historial huérfano'; END IF;
+    BEGIN
+        UPDATE "EntregasDespacho" SET "Codigo" = 'smk46' WHERE "Codigo" = 'SMK46-C';
+        RAISE EXCEPTION 'M46: falta unicidad';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "EventosEntrega" ("EntregaDespachoId","Estado","Fecha","Descripcion") VALUES (2147483647,'Programada',now(),'FK');
+        RAISE EXCEPTION 'M46: falta FK';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "EntregasDespacho" SET "Estado" = 'Entregada' WHERE "Codigo" = 'ENT-46001';
+        RAISE EXCEPTION 'M46: falta coherencia de fechas y POD';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
 printf 'SMOKE OK\n'
