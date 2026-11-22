@@ -1485,3 +1485,43 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+.sucursales-page { min-width: 0; }
+.sucursales-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.sucursales-summary article, .sucursales-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.sucursales-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.sucursales-summary strong { color: var(--ink); font-size: 30px; }
+.sucursales-toolbar, .sucursales-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.sucursales-toolbar { justify-content: space-between; }
+.sucursales-filters { display: grid; grid-template-columns: minmax(0,2fr) repeat(3,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.sucursales-filters label { display: grid; gap: 8px; align-content: end; }
+.sucursales-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.sucursales-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.sucursales-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.sucursales-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.sucursales-page input, .sucursales-page select, .sucursales-page textarea, .sucursales-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.sucursales-table th, .sucursales-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sucursales-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.sucursales-table tbody .sucursales-selected > th, .sucursales-table tbody .sucursales-selected > td { background: var(--accent-soft); }
+.sucursales-details dt { color: var(--ink-soft); margin-top: 14px; }
+.sucursales-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.sucursales-dialog { max-height: 90vh; overflow-y: auto; }
+.sucursales-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.sucursales-activa { background: var(--good-soft); }
+.sucursales-inactiva { background: var(--bad-soft); }
+.sucursales-number { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sucursales-card h2 { overflow-wrap: anywhere; }
+.sucursales-dialog .sucursales-number { display: inline-block; vertical-align: bottom; }
+@media (max-width: 1100px) { .sucursales-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .sucursales-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .sucursales-filters, .sucursales-editor { grid-template-columns: minmax(0,1fr); }
+  .sucursales-card, .sucursales-summary article { padding: 16px; }
+  .sucursales-toolbar { flex-direction: column; align-items: stretch; }
+}
+
+.sucursales-preview { padding: 12px; border-radius: 8px; background: var(--surface-muted); color: var(--ink); font-variant-numeric: tabular-nums; }
+.sucursales-details dd { font-variant-numeric: tabular-nums; }
+
+.sucursales-dialog select { box-sizing: border-box; width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.sucursales-dialog select:disabled { opacity: 0.7; }
