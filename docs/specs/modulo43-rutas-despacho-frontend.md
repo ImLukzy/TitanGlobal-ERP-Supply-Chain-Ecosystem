@@ -1,10 +1,12 @@
 # Especificación propuesta: módulo 43 — Rutas de despacho (frontend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 
 Sustituir la pantalla pendiente de `/modulos/43-rutas-despacho` por el maestro de rutas: zonas, distancias y peajes estimados, con alta, consulta, edición, desactivación y baja. Responsable: Kelvin Pinto.
 
-**Estado: implementado y verificado localmente por autorización de Kelvin; revisión de Lukas y aprobación del contrato backend pendientes.** Se ejecutaron pruebas y QA real siguiendo `docs/equipo/crear-pantalla.md`; la evidencia registra el aviso previo de tamaño del paquete compartido de Vite.
+**Estado: implementado localmente como propuesta, pendiente de aprobación de Lukas; revisión de Lukas y aprobación del contrato backend pendientes.** Se ejecutaron pruebas y QA real siguiendo `docs/equipo/crear-pantalla.md`; la evidencia registra el aviso previo de tamaño del paquete compartido de Vite.
 
 ## 2. Fuera de alcance y decisiones pendientes
 

@@ -1,12 +1,14 @@
 # Especificación propuesta: módulo 43 — Rutas de despacho (backend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 
 El enunciado define `RutasDespacho (zonas, distancias, peajes)`. El módulo partía sin spec, tabla ni API; la implementación local proporciona un maestro de rutas consultable por los módulos posteriores de logística.
 
 Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Orden confirmado: 41 → 42 → 48 → **43** → 44 → 45 → 46 → 47 → 49 → 50 → 73. Rama propia: `kelvin/modulo43-rutas-despacho`, creada desde `origin/main` después de `git fetch origin`.
 
-**Estado: implementado y verificado localmente, por autorización de Kelvin al indicar «Prosigue» sobre esta propuesta. La revisión y aprobación de Lukas siguen pendientes.** Esta autorización de trabajo local no se presenta como revisión de Lukas ni permite integrar o desplegar. El gate termina con exit 0; Vite mantiene su aviso previo de tamaño del paquete compartido, documentado en la evidencia.
+**Estado: implementado localmente como propuesta, pendiente de aprobación de Lukas. La revisión y aprobación de Lukas siguen pendientes.** Esta autorización de trabajo local no se presenta como revisión de Lukas ni permite integrar o desplegar. El gate termina con exit 0; Vite mantiene su aviso previo de tamaño del paquete compartido, documentado en la evidencia.
 
 ## 2. Fuera de alcance y decisiones pendientes
 
@@ -16,7 +18,7 @@ No programar viajes, asignar vehículos/conductores/transportistas, optimizar re
 
 **Decisiones de producto propuestas que Lukas debe revisar antes de programar:**
 
-Kelvin autorizó expresamente la implementación local de estas decisiones; su revisión por Lukas sigue siendo un pendiente para integrar. No se marca la spec como aprobada.
+Estas decisiones son una propuesta, pendiente de aprobación de Lukas. No se marca la spec como aprobada.
 
 1. El módulo es un maestro reutilizable de rutas, no un despacho programado con fecha, vehículo o conductor. Los módulos posteriores podrán referenciarlo mediante cambios aprobados, sin anticipar sus tablas.
 2. `Zona` es una clasificación textual de la ruta; no se crea otro catálogo ni un polígono geográfico. `Origen` y `Destino` son descripciones, sin modificar Cliente ni Sucursales.
