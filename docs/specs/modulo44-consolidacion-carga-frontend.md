@@ -32,3 +32,11 @@ A1: cliente de ocho operaciones y validaciones con literales/límites. A2: consu
 
 ## 7. Registro
 2026-11-21: implementación y verificaciones locales en rama propia. Suite propia de 56 pruebas repetida diez veces; suite global de 599 correcta. QA con API/PostgreSQL reales en 375/1280 claro/oscuro, 16 capturas y mediciones en [evidencia](../evidencias/modulo44/README.md). Revisión de Lukas pendiente y advertencia global de tamaño del bundle registrada; sin integración ni despliegue.
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/014-consolidacion-carga.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1140 pruebas backend y 599 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
