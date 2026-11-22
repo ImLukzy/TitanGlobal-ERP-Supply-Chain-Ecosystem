@@ -39,6 +39,7 @@ public class PluralizadorEspanol : IPluralizer
         { "OrdenesAbastecimiento", "OrdenAbastecimiento" },
         { "OrdenesCompra", "OrdenCompra" },
         { "PermisosRoles", "PermisoRol" },
+        { "PlanillaDetalles", "PlanillaDetalle" },
         { "Prestamos", "Prestamo" },
         { "Productos", "Producto" },
         { "Promociones", "Promocion" },

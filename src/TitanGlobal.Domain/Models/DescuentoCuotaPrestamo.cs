@@ -14,4 +14,6 @@ public partial class DescuentoCuotaPrestamo
     public decimal Monto { get; set; }
 
     public virtual CuotaPrestamo CuotaPrestamo { get; set; } = null!;
+
+    public virtual Planilla Planilla { get; set; } = null!;
 }

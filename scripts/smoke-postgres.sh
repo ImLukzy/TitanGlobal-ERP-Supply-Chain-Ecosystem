@@ -450,6 +450,15 @@ checks = {
     "prestamo-created-4": lambda data: data["id"] == 4 and data["numero"] == "PRE-000004",
     "prestamo-con-descuentos": lambda data: data["StatusCode"] == 409 and data["Message"] == "El préstamo PRE-000001 ya tiene descuentos y no se puede anular." and "Detail" not in data,
     "prestamo-id-4": lambda data: data["id"] == 4,
+    "openapi-planillas": lambda data: all(path in data["paths"] for path in ["/api/v1/planillas", "/api/v1/planillas/resumen", "/api/v1/planillas/parametros", "/api/v1/planillas/{id}", "/api/v1/planillas/{id}/detalles", "/api/v1/planillas/boletas/{detalleId}", "/api/v1/planillas/{id}/calculo", "/api/v1/planillas/{id}/aprobacion", "/api/v1/planillas/{id}/pago", "/api/v1/bonos-planilla", "/api/v1/bonos-planilla/{id}", "/api/v1/afiliaciones-pension", "/api/v1/afiliaciones-pension/{empleadoId}"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/planillas", "get"), ("/api/v1/planillas", "post"), ("/api/v1/planillas/{id}/calculo", "post"), ("/api/v1/planillas/{id}/aprobacion", "post"), ("/api/v1/planillas/{id}/pago", "post"), ("/api/v1/bonos-planilla", "post"), ("/api/v1/bonos-planilla/{id}", "delete"), ("/api/v1/afiliaciones-pension/{empleadoId}", "put")]),
+    "planillas-parametros": lambda data: len(data["parametros"]) == 7 and len(data["pensiones"]) == 5 and [tramo["hastaUit"] for tramo in data["tramos"]] == [5, 20, 35, 45, None] and [parametro["valor"] for parametro in data["parametros"] if parametro["clave"] == "UIT"] == [5350],
+    "planilla-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la planilla Mensual del periodo 11/2026." and "Detail" not in data,
+    "planilla-calculada": lambda data: data["id"] == 2 and data["empleados"] == 2 and data["incidencias"] == 0,
+    "planilla-2-calculada": lambda data: data["numero"] == "PLA-202611-M" and data["estado"] == "Calculada" and data["totalIngresos"] == 13578.49 and data["totalDescuentos"] == 2701 and data["totalNeto"] == 10877.49 and data["totalAportesEmpleador"] == 1222.06 and data["calculadoPor"] == "admin",
+    "planilla-id-2": lambda data: data["id"] == 2,
+    "planilla-aprobada-no-modificable": lambda data: data["StatusCode"] == 409 and data["Message"] == "La planilla PLA-202611-M está aprobada y no se modifica." and "Detail" not in data,
+    "planilla-boleta": lambda data: data["empresa"] == "TitanGlobal" and data["numeroBoleta"] == "BOL-202611-M-000001" and data["empleadoId"] == 1 and data["neto"] == 7505.11,
+    "planilla-pagada": lambda data: data["id"] == 2,
     "ausencia-created-9":lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
     "ausencia-id-9": lambda data: data["id"] == 9,
 }
@@ -989,4 +998,13 @@ request_check 'POST adelanto que supera el tope' POST '/api/v1/prestamos' 409 pr
 request_check 'POST prestamo valido' POST '/api/v1/prestamos' 200 prestamo-created-4 '{"empleadoId":2,"tipo":"Prestamo","monto":300,"numeroCuotas":3,"fechaOtorgamiento":"2026-11-22","primerAnio":2026,"primerMes":12,"motivo":"Prestamo de smoke"}'
 request_check 'POST anular prestamo con descuentos' POST '/api/v1/prestamos/1/anulacion' 409 prestamo-con-descuentos '{"motivo":"Prueba de smoke"}'
 request_check 'POST anular prestamo sin descuentos' POST '/api/v1/prestamos/4/anulacion' 200 prestamo-id-4 '{"motivo":"Prueba de smoke"}'
+request_check 'OpenAPI de planillas' GET '/openapi/v1.json' 200 openapi-planillas
+request_check 'Parametros de planilla' GET '/api/v1/planillas/parametros' 200 planillas-parametros
+request_check 'POST planilla duplicada del seed' POST '/api/v1/planillas' 409 planilla-duplicada '{"anio":2026,"mes":11,"tipo":"Mensual"}'
+request_check 'POST calcular planilla 2026-11' POST '/api/v1/planillas/2/calculo' 200 planilla-calculada
+request_check 'Planilla 2026-11 calculada' GET '/api/v1/planillas/2' 200 planilla-2-calculada
+request_check 'POST aprobar planilla 2026-11' POST '/api/v1/planillas/2/aprobacion' 200 planilla-id-2
+request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calculo' 409 planilla-aprobada-no-modificable
+request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
+request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
 printf 'SMOKE OK\n'

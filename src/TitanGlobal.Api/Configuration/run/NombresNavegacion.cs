@@ -18,6 +18,7 @@ public class NombresNavegacion : CandidateNamingService
         { "ListaPrecios.ItemListaPrecios", "Items" },
         { "OrdenAbastecimiento.DetalleOrdenAbastecimiento", "Detalles" },
         { "OrdenCompra.DetalleOrdenCompra", "Detalles" },
+        { "Planilla.PlanillaDetalle", "Detalles" },
         { "SolicitudCompra.DetalleSolicitudCompra", "Detalles" },
         { "Usuario.UsuarioRol", "Roles" },
         { "Rol.UsuarioRol", "Usuarios" }
