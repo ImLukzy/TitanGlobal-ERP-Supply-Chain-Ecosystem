@@ -1529,3 +1529,52 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1023px) { .contratos-laborales-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
 @media (max-width: 760px) { .contratos-laborales-filters, .contratos-laborales-form, .contratos-laborales-dialog-form { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .contratos-laborales-summary { grid-template-columns: minmax(0, 1fr); } .contratos-laborales-detail-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Módulo 64 · Turnos y horarios */
+.turnos-horarios-tabs { margin-top: 14px; }
+.turnos-horarios-tab-panel { display: grid; gap: 15px; min-width: 0; }
+.turnos-horarios-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.turnos-horarios-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 0 15px; }
+.turnos-horarios-list-panel, .turnos-horarios-detail-panel { min-width: 0; }
+.turnos-horarios-filters { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr); }
+.turnos-horarios-table { min-width: 760px; }
+.turnos-horarios-table-asignaciones { min-width: 640px; }
+.turnos-horarios-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.turnos-horarios-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.turnos-horarios-estado.is-activo, .turnos-horarios-estado.is-vigente { background: var(--good-soft); color: var(--good); }
+.turnos-horarios-estado.is-inactivo { background: var(--bad-soft); color: var(--bad); }
+.turnos-horarios-estado.is-futura { background: var(--accent-soft); color: var(--accent-ink); }
+.turnos-horarios-dia { display: inline-flex; font-size: 10px; font-weight: 700; color: var(--ink-soft); }
+.turnos-horarios-dia.is-laborable { color: var(--good); }
+.turnos-horarios-tolerancia { color: var(--ink-faint); font-size: 9px; white-space: nowrap; }
+.turnos-horarios-detail-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.turnos-horarios-detail-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.turnos-horarios-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.turnos-horarios-detail-grid > div { min-width: 0; }
+.turnos-horarios-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.turnos-horarios-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.turnos-horarios-detail-wide { grid-column: 1 / -1; }
+.turnos-horarios-programacion-scroll { max-width: 100%; overflow-x: auto; }
+.turnos-horarios-programacion { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; }
+.turnos-horarios-programacion caption { padding: 0 0 6px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.turnos-horarios-programacion th { padding: 7px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.turnos-horarios-programacion td { padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: break-word; }
+.turnos-horarios-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.turnos-horarios-actions { flex-wrap: wrap; }
+.turnos-horarios-form, .turnos-horarios-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.turnos-horarios-dialog-form { margin-top: 14px; grid-template-columns: minmax(0, 1fr); }
+.turnos-horarios-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.turnos-horarios-form .form-field, .turnos-horarios-dialog-form .form-field { min-width: 0; gap: 6px; }
+.turnos-horarios-form .form-field select, .turnos-horarios-dialog-form .form-field select { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.turnos-horarios-form .form-field select[aria-invalid="true"] { border-color: var(--bad); }
+.turnos-horarios-form .form-field select:focus, .turnos-horarios-dialog-form .form-field select:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
+.turnos-horarios-fieldset { min-width: 0; margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.turnos-horarios-fieldset legend { padding: 0 6px; color: var(--ink-soft); font-size: 10px; font-weight: 650; }
+.turnos-horarios-opciones { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.turnos-horarios-opciones label, .turnos-horarios-casilla { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-size: 11px; }
+.turnos-horarios-opciones input, .turnos-horarios-casilla input { width: auto; min-height: 0; margin: 0; }
+.turnos-horarios-form-wide { grid-column: 1 / -1; }
+.turnos-horarios-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.turnos-horarios-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+@media (max-width: 1023px) { .turnos-horarios-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .turnos-horarios-filters, .turnos-horarios-form { grid-template-columns: minmax(0, 1fr); } .turnos-horarios-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+@media (max-width: 520px) { .turnos-horarios-detail-grid { grid-template-columns: minmax(0, 1fr); } .turnos-horarios-tabs { flex-wrap: wrap; } }
