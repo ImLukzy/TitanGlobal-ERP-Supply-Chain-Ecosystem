@@ -81,4 +81,7 @@ Los commits se agrupan por cambios funcionales revisables, con las pruebas corre
 | 2026-11-21 | PostgreSQL | Aprobado | PostgreSQL 16 en Docker, scripts 001/008/010 aplicados; scaffold ejecutado y `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-21 | A6 | Aprobado con datos reales | Sustituidas las capturas simuladas por las de API/PostgreSQL local: 375 y 1280 px, claro y oscuro, detalle, formulario con 409 literal y baja; sin desbordamiento ni errores JavaScript; Escape devuelve el foco. Alta, selección, edición y baja reales verificadas, sin dejar el vehículo de QA |
 
+| 2026-11-22 | Preparación de PR y A1–A5 | Aprobados tras actualizar main | Script renombrado a `021-vehiculos-flota-placa-unica.sql`, base local recreada, seed y scaffold ejecutados sin diferencias de contenido generadas. `verify.sh` salida0:1090backend y582frontend/73archivos. Primer intento con fallo de arranque de un trabajador de Vitest; reintento completo con un trabajador correcto, sin modificar tests ni timeouts. Detalle en evidencia local |
+| 2026-11-22 | PostgreSQL tras actualizar main | Aprobado | `smoke-postgres.sh` salida0: `SCAFFOLD AL DÍA` y `SMOKE OK`; script021 aplicado. Se conserva el QA visual real del21 porque este ajuste no cambia la pantalla |
+
 Los bloqueos del entorno registrados el 19 quedaron resueltos el 21. La implementación y verificación local están completas. Permanece abierta la aprobación de Lukas; no se declara integración ni despliegue.

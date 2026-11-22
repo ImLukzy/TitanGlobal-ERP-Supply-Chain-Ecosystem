@@ -23,4 +23,16 @@ Revisión del 2026-11-21 en Edge contra la API .NET y PostgreSQL 16 locales, con
 
 Se instaló Docker Desktop y se actualizó .NET a SDK 10.0.404/runtime 10.0.15. La instalación anterior de .NET tenía vacía la DLL de serialización que impedía compilar las pruebas. Se usó Git Bash con Python y Node 24 locales. Para la comprobación de puertos, Git Bash consultó las escuchas reales de Windows porque no incluye `ss`; no se omitió esa comprobación. El checkout local de arquitectura se normalizó a LF sin diferencias de contenido en Git y sin modificar pruebas ajenas.
 
-La implementación y las verificaciones locales están completas. La autorización de Kelvin no se presenta como aprobación de Lukas: quedan pendientes la revisión, el PR, la integración y el despliegue.
+La implementación y las verificaciones locales están completas. Estado de las ampliaciones: propuesta, pendiente de aprobación de Lukas; revisión, integración y despliegue pendientes.
+
+## Preparación para integración — 2026-11-22
+
+La rama se actualizó mediante `git pull origin main`. El único conflicto fue `relevo.md`: se conservó la tabla oficial y solo se actualizó la fila 021 y la línea de Kelvin. Se renombró el script, sin cambiar su contenido, a `database/021-vehiculos-flota-placa-unica.sql`. Las menciones a 010 en las verificaciones del 21 corresponden al nombre usado en esa fecha; el número vigente del módulo 41 es 021.
+
+La base local se recreó con `aplicar-bd.sh --reiniciar`, se cargó el seed y se regeneraron los modelos con `scaffold.sh`, sin edición manual ni diferencias de contenido en los archivos generados. No se cambió la pantalla ni se generaron nuevas capturas para este ajuste documental y de numeración.
+
+El primer gate posterior a la actualización pasó compilación, formato, reglas, 1.090 pruebas backend, lint y tipos. Vitest ejecutó correctamente 577 pruebas de 72 archivos, pero falló al arrancar el trabajador de `SolicitudesFormulario.test.tsx` por `Timeout waiting for worker to respond`; no se acreditó ese gate como correcto. Se repitió con `VITEST_MAX_WORKERS=1`, únicamente en el entorno temporal, sin ampliar timeouts ni modificar pruebas/configuración compartida.
+
+El reintento de `./scripts/verify.sh` terminó con salida 0: 1.090 pruebas backend y 582 frontend en 73 archivos, sin fallos ni omisiones. Formato, reglas/capas, lint y tipos correctos, compilación .NET con cero errores y advertencias. La suite frontend tardó 286.61s y terminó completa; build correcto con JavaScript710.18kB y CSS137.91kB antes de gzip. Persisten los avisos globales de ESLint9 obsoleto y bundle de Vite mayor de500kB; no se cambiaron dependencias ni umbrales.
+
+Después del gate se ejecutó `./scripts/smoke-postgres.sh`: salida 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, con los scripts001/008/021. Pasaron las comprobaciones reales del 41, incluidos duplicados normalizados en POST/PUT y modificación de la propia placa. El script cerró la API y eliminó la base temporal al finalizar. Main remoto seguía incorporado en la rama al comprobarlo antes de publicar; no se hizo push directo a main ni se integraron otras ramas de Kelvin.
