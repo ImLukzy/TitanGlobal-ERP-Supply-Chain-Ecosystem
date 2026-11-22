@@ -623,4 +623,16 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 73: maestro de sucursales, datos idempotentes de tres tipos y dos estados.
+INSERT INTO "Sucursales" ("Id","Codigo","Nombre","Tipo","Pais","Ciudad","Direccion","Contacto","Email","Telefono","FechaApertura","FechaRegistro","Activa","FechaCambioEstado") VALUES
+    (1, 'SUC-73001', 'Filial Lima', 'Filial', 'Peru', 'Lima', 'Avenida Lima 123', 'Ana', 'lima@example.com', '+51 555 0100', '2026-11-23T10:30:12.345Z', '2026-11-22T10:00:00Z', true, NULL),
+    (2, 'SUC-73002', 'Filial Arequipa', 'Filial', 'Peru', 'Arequipa', 'Avenida Arequipa 123', 'Ana', 'arequipa@example.com', '+51 555 0100', NULL, '2026-11-22T10:00:00Z', false, '2026-11-22T12:00:00Z'),
+    (3, 'SUC-73003', 'Planta Lima', 'Planta', 'Peru', 'Lima', 'Avenida Lima 123', 'Ana', 'lima@example.com', '+51 555 0100', '2026-11-23T10:30:12.345Z', '2026-11-22T10:00:00Z', true, NULL),
+    (4, 'SUC-73004', 'Planta Santiago', 'Planta', 'Chile', 'Santiago', 'Avenida Santiago 123', 'Ana', 'santiago@example.com', '+51 555 0100', NULL, '2026-11-22T10:00:00Z', true, NULL),
+    (5, 'SUC-73005', 'Oficina Santiago', 'Oficina', 'Chile', 'Santiago', 'Avenida Santiago 123', 'Ana', 'santiago@example.com', '+51 555 0100', NULL, '2026-11-22T10:00:00Z', false, '2026-11-22T12:00:00Z'),
+    (6, 'SUC-73006', 'Oficina Trujillo', 'Oficina', 'Peru', 'Trujillo', 'Avenida Trujillo 123', 'Ana', 'trujillo@example.com', '+51 555 0100', '2026-11-23T10:30:12.345Z', '2026-11-22T10:00:00Z', true, NULL)
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"Sucursales"', 'Id'), (SELECT MAX("Id") FROM "Sucursales"));
+
 COMMIT;

@@ -105,6 +105,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 
 | 019 | `019-siniestros-flota.sql` | Kelvin | `kelvin/modulo50-siniestros-flota` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
-| 020 | `020-sucursales.sql` | Kelvin | `kelvin/modulo73-sucursales` | reserva local; revisión de Lukas pendiente |
+| 020 | `020-sucursales.sql` | Kelvin | `kelvin/modulo73-sucursales` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
 Un script nuevo toma el siguiente número libre (021 en adelante). Las reservas010–020 son de ramas independientes de Kelvin; no implican integración en main.

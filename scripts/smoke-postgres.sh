@@ -420,6 +420,25 @@ checks = {
     "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
 }
 
+checks.update({
+    'm73-created': lambda d: d["id"] > 0,
+    'm73-baja-created': lambda d: d["id"] > 0,
+    'm73-openapi': lambda d: sum(len(v) for k,v in d["paths"].items() if k.startswith("/api/v1/sucursales")) == 8,
+    'm73-list': lambda d: d["total"] == 6 and {r["tipo"] for r in d["items"]} == {"Filial","Planta","Oficina"} and sum(not r["activa"] for r in d["items"]) == 2,
+    'm73-resumen': lambda d: d == {"total":6,"activas":4,"inactivas":2,"filiales":2,"plantas":2,"oficinas":2},
+    'm73-alta': lambda d: d["activa"] is True and d["nombre"] == "Sucursal smoke" and d["tipo"] == "Oficina" and d["pais"] == "Peru" and d["fechaApertura"] == "2026-11-23T10:30:12.345Z" and d["fechaRegistro"].endswith("Z") and d["fechaCambioEstado"] is None and all(d[c] is None for c in ["contacto","email","telefono","observaciones"]),
+    'm73-editada': lambda d: d["activa"] is True and d["nombre"] == "Editada" and d["fechaApertura"] is None and d["fechaRegistro"] != "2000-01-01T00:00:00Z" and d["fechaRegistro"].endswith("Z") and d["fechaCambioEstado"] is None,
+    'm73-desactivada': lambda d: d["activa"] is False and d["nombre"] == "Editada" and d["direccion"] == "Avenida Norte 123" and d["fechaApertura"] is None and d["fechaRegistro"].endswith("Z") and d["fechaCambioEstado"].endswith("Z"),
+    'm73-inactiva': lambda d: d["StatusCode"] == 409 and d["Message"] == 'La sucursal ya está inactiva.',
+    'm73-reactivada': lambda d: d["activa"] is True and d["nombre"] == "Editada" and d["direccion"] == "Avenida Norte 123" and d["fechaRegistro"].endswith("Z") and d["fechaCambioEstado"].endswith("Z"),
+    'm73-filtro': lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "SMK73" and d["items"][0]["activa"] is False,
+    'm73-missing': lambda d: d["StatusCode"] == 404 and d["Message"].startswith("La sucursal ") and d["Message"].endswith(" no existe."),
+    'm73-duplicado': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Ya existe una sucursal con el código smk73.',
+    'm73-email': lambda d: d["StatusCode"] == 400 and d["Message"] == 'El email no es válido.',
+    'm73-fecha': lambda d: d["StatusCode"] == 400 and d["Message"] == 'La fecha de apertura no es válida.',
+    'm73-baja-activa': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Desactiva la sucursal antes de eliminarla.',
+    'm73-activa': lambda d: d["StatusCode"] == 409 and d["Message"] == 'La sucursal ya está activa.',
+})
 if validation not in checks or not checks[validation](body):
     raise SystemExit(f"la respuesta no coincide con la validación {validation}")
 PY
@@ -602,6 +621,12 @@ request_check() {
     fi
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m73-created" ]]; then
+        SUCURSAL_73_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m73-baja-created" ]]; then
+        BAJA_73_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -916,4 +941,41 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 73: maestro, apertura opcional y cambios de estado sin cuerpo.
+TOKEN_73_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M73 exige sesión' GET '/api/v1/sucursales' 401 no-session
+TOKEN_ACTUAL="$TOKEN_73_ADMIN"
+request_check 'M73 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m73-openapi
+request_check 'M73 seed de tipos y estados' GET '/api/v1/sucursales' 200 m73-list
+request_check 'M73 resumen' GET '/api/v1/sucursales/resumen' 200 m73-resumen
+request_check 'M73 alta con apertura sin zona' POST '/api/v1/sucursales' 200 m73-created '{"codigo":"SMK73","nombre":" Sucursal smoke ","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":" ","telefono":" ","observaciones":" ","fechaApertura":"2026-11-23T10:30:12.345"}'
+request_check 'M73 UTC y opcionales persistidos' GET "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 m73-alta
+request_check 'M73 duplicado normalizado' POST '/api/v1/sucursales' 409 m73-duplicado '{"codigo":" smk73 ","nombre":" Sucursal smoke ","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":" ","telefono":" ","observaciones":" ","fechaApertura":"2026-11-23T10:30:12.345"}'
+request_check 'M73 no repite activa' POST "/api/v1/sucursales/${SUCURSAL_73_ID}/activacion" 409 m73-activa
+request_check 'M73 no elimina activa' DELETE "/api/v1/sucursales/${SUCURSAL_73_ID}" 409 m73-baja-activa
+request_check 'M73 email inválido' PUT "/api/v1/sucursales/${SUCURSAL_73_ID}" 400 m73-email '{"codigo":"SMK73","nombre":"Cambio inválido","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":"a@@b","telefono":" ","observaciones":" ","fechaApertura":"2026-11-23T10:30:12.345"}'
+request_check 'M73 fecha por defecto inválida' PUT "/api/v1/sucursales/${SUCURSAL_73_ID}" 400 m73-fecha '{"codigo":"SMK73","nombre":" Sucursal smoke ","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":" ","telefono":" ","observaciones":" ","fechaApertura":"0001-01-01T00:00:00"}'
+request_check 'M73 errores conservan datos' GET "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 m73-alta
+request_check 'M73 edición limpia apertura sin cambiar estado ni registro' PUT "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 created '{"codigo":"SMK73","nombre":"Editada","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":" ","telefono":" ","observaciones":" ","fechaApertura":null,"activa":false,"fechaRegistro":"2000-01-01T00:00:00Z","fechaCambioEstado":"2000-01-01T00:00:00Z"}'
+request_check 'M73 apertura null y campos protegidos' GET "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 m73-editada
+request_check 'M73 desactivar sin cuerpo' POST "/api/v1/sucursales/${SUCURSAL_73_ID}/desactivacion" 200 created
+request_check 'M73 datos conservados al desactivar' GET "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 m73-desactivada
+request_check 'M73 no repite inactiva' POST "/api/v1/sucursales/${SUCURSAL_73_ID}/desactivacion" 409 m73-inactiva
+request_check 'M73 filtrar false país y tipo' GET '/api/v1/sucursales?busqueda=SMK73&pais=pErU&tipo=oFiCiNa&activa=false' 200 m73-filtro
+request_check 'M73 reactivar sin cuerpo' POST "/api/v1/sucursales/${SUCURSAL_73_ID}/activacion" 200 created
+request_check 'M73 reactivación conserva datos' GET "/api/v1/sucursales/${SUCURSAL_73_ID}" 200 m73-reactivada
+request_check 'M73 alta sin fecha para baja' POST '/api/v1/sucursales' 200 m73-baja-created '{"codigo":"SMK73-B","nombre":" Sucursal smoke ","tipo":" oficina ","pais":" Peru ","ciudad":" Lima ","direccion":" Avenida Norte 123 ","contacto":" ","email":" ","telefono":" ","observaciones":" ","fechaApertura":null}'
+request_check 'M73 desactivar antes de baja' POST "/api/v1/sucursales/${BAJA_73_ID}/desactivacion" 200 created
+request_check 'M73 baja de inactiva' DELETE "/api/v1/sucursales/${BAJA_73_ID}" 204 ''
+request_check 'M73 confirmar baja' GET "/api/v1/sucursales/${BAJA_73_ID}" 404 m73-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$ BEGIN
+    BEGIN UPDATE "Sucursales" SET "Codigo" = 'smk73' WHERE "Id" = 1; RAISE EXCEPTION 'M73: falta unicidad'; EXCEPTION WHEN unique_violation THEN NULL; END;
+    BEGIN UPDATE "Sucursales" SET "Tipo" = 'Otro' WHERE "Id" = 1; RAISE EXCEPTION 'M73: falta tipo válido'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "Sucursales" SET "Nombre" = ' ' WHERE "Id" = 1; RAISE EXCEPTION 'M73: falta nombre'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "Sucursales" SET "FechaRegistro" = NULL WHERE "Id" = 1; RAISE EXCEPTION 'M73: falta registro'; EXCEPTION WHEN not_null_violation THEN NULL; END;
+    BEGIN UPDATE "Sucursales" SET "Contacto" = repeat('x',101) WHERE "Id" = 1; RAISE EXCEPTION 'M73: falta límite contacto'; EXCEPTION WHEN string_data_right_truncation THEN NULL; END;
+END $$;
+SQL
 printf 'SMOKE OK\n'

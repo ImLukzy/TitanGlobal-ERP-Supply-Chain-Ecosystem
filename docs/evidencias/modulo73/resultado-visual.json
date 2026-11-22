@@ -1,0 +1,150 @@
+{
+  "fecha": "2026-11-22",
+  "origen": "API y PostgreSQL locales reales; petición retenida continúa a la API, sin respuestas simuladas",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "zona": "America/Lima",
+      "contraste": [
+        {
+          "selector": ".sucursales-page h1",
+          "ratio": 14.378577104873306
+        },
+        {
+          "selector": ".sucursales-summary span",
+          "ratio": 5.544708298228794
+        },
+        {
+          "selector": ".sucursales-table small",
+          "ratio": 4.98103373080793
+        },
+        {
+          "selector": ".sucursales-badge",
+          "ratio": 14.129379950558286
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "ratio": 5.1247234989259125
+        }
+      ],
+      "codigoUnaLinea": true,
+      "seleccionUniforme": true,
+      "aperturaNullYUtc": true,
+      "registroInmutable": true,
+      "edicionInactiva": true,
+      "filtroFalsePaisTipo": true,
+      "activacionDesactivacionBaja": true,
+      "focoYTecladoInclusoDuranteEnvio": true,
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "zona": "America/Lima",
+      "contraste": [
+        {
+          "selector": ".sucursales-page h1",
+          "ratio": 15.994013094938792
+        },
+        {
+          "selector": ".sucursales-summary span",
+          "ratio": 7.388284656334749
+        },
+        {
+          "selector": ".sucursales-table small",
+          "ratio": 5.104174024344071
+        },
+        {
+          "selector": ".sucursales-badge",
+          "ratio": 10.353584267957707
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "ratio": 8.196063030164025
+        }
+      ],
+      "codigoUnaLinea": true,
+      "seleccionUniforme": true,
+      "aperturaNullYUtc": true,
+      "registroInmutable": true,
+      "edicionInactiva": true,
+      "filtroFalsePaisTipo": true,
+      "activacionDesactivacionBaja": true,
+      "focoYTecladoInclusoDuranteEnvio": true,
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "zona": "America/Lima",
+      "contraste": [
+        {
+          "selector": ".sucursales-page h1",
+          "ratio": 14.378577104873306
+        },
+        {
+          "selector": ".sucursales-summary span",
+          "ratio": 5.544708298228794
+        },
+        {
+          "selector": ".sucursales-table small",
+          "ratio": 4.98103373080793
+        },
+        {
+          "selector": ".sucursales-badge",
+          "ratio": 14.129379950558286
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "ratio": 5.1247234989259125
+        }
+      ],
+      "codigoUnaLinea": true,
+      "seleccionUniforme": true,
+      "aperturaNullYUtc": true,
+      "registroInmutable": true,
+      "edicionInactiva": true,
+      "filtroFalsePaisTipo": true,
+      "activacionDesactivacionBaja": true,
+      "focoYTecladoInclusoDuranteEnvio": true,
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "zona": "America/Lima",
+      "contraste": [
+        {
+          "selector": ".sucursales-page h1",
+          "ratio": 15.994013094938792
+        },
+        {
+          "selector": ".sucursales-summary span",
+          "ratio": 7.388284656334749
+        },
+        {
+          "selector": ".sucursales-table small",
+          "ratio": 5.104174024344071
+        },
+        {
+          "selector": ".sucursales-badge",
+          "ratio": 10.353584267957707
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "ratio": 8.196063030164025
+        }
+      ],
+      "codigoUnaLinea": true,
+      "seleccionUniforme": true,
+      "aperturaNullYUtc": true,
+      "registroInmutable": true,
+      "edicionInactiva": true,
+      "filtroFalsePaisTipo": true,
+      "activacionDesactivacionBaja": true,
+      "focoYTecladoInclusoDuranteEnvio": true,
+      "erroresJavaScript": []
+    }
+  ]
+}

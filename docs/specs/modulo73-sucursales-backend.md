@@ -39,10 +39,10 @@ A1 gate completo salida0, .NET sin warnings, formato/capas/reglas. A2 integraci�
 
 ## 6. Checklist
 - [ ] Aprobación de Lukas.
-- [ ] SQL/scaffold y backend con pruebas.
-- [ ] Seed y smoke real.
-- [ ] Pantalla, estabilidad y QA.
-- [ ] Gate y evidencia local.
+- [x] SQL/scaffold y backend con pruebas.
+- [x] Seed y smoke real.
+- [x] Pantalla, estabilidad y QA.
+- [x] Gate y evidencia local.
 
 ## 7. Registro
-2026-11-22: propuesta local autorizada. Asignación, orden y base comprobados; sin verificaciones acreditadas todavía. Revisión formal pendiente.
+2026-11-22: propuesta local autorizada. SQL020 aplicado y scaffold coincidente; 34 casos propios de backend más16 de pluralización correctos. Seed dos veces: seis registros; smoke PostgreSQL salida0 y SMOKE OK. Pantalla:48 pruebas, diez repeticiones y veinte con build simultáneo correctos. QA real375/1280claro/oscuro con apertura null/UTC, conservación de fechas y contactos, estados, filtros y baja. Gate completo salida0:1.118 pruebas backend y591frontend, .NET sin advertencias; avisos globales de ESLint9/Vite documentados. Detalle en docs/evidencias/modulo73/. Revisión formal de Lukas pendiente.

@@ -23,9 +23,9 @@ A1 contratos HTTP exactos de ocho operaciones, cambios de estado sin cuerpo, fil
 
 ## 6. Checklist
 - [ ] Aprobación de Lukas.
-- [ ] Backend y datos locales por scripts.
-- [ ] Pantalla y pruebas.
-- [ ] Gate, estabilidad y QA con evidencia.
+- [x] Backend y datos locales por scripts.
+- [x] Pantalla y pruebas.
+- [x] Gate, estabilidad y QA con evidencia.
 
 ## 7. Registro
-2026-11-22: propuesta local autorizada; sin pruebas ni QA acreditados todavía. Aprobación formal pendiente.
+2026-11-22:48 pruebas propias, lint/tipos/build correctos; diez repeticiones y veinte con build simultáneo correctos. QA con Edge/API/PostgreSQL reales a375/1280claro/oscuro: alta con apertura null, ediciónUTC con milisegundos, desactivación/activación, edición de inactiva, filtrosfalse/país/tipo y baja. Foco/teclado durante envío real retenido, sin respuestas simuladas; sin errores JavaScript ni desbordamiento, selección uniforme y códigos en una línea. Contraste mínimo4.98:1 de cinco selectores; veinte capturas propias y dos de Contratos. Gate completo salida0:1.118backend y591frontend/75archivos. Avisos globales y evidencia en docs/evidencias/modulo73/. Aprobación formal de Lukas pendiente.
