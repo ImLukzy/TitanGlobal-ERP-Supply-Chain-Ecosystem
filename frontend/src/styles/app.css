@@ -1672,3 +1672,50 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 760px) { .vacaciones-permisos-filters, .vacaciones-permisos-form { grid-template-columns: minmax(0, 1fr); } .vacaciones-permisos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .vacaciones-permisos-saldo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .vacaciones-permisos-detail-grid { grid-template-columns: minmax(0, 1fr); } }
 .vacaciones-permisos-detail-panel .vacaciones-permisos-saldo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.adelantos-prestamos-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.adelantos-prestamos-work-area { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, .9fr); align-items: start; gap: 0 15px; }
+.adelantos-prestamos-list-panel, .adelantos-prestamos-detail-panel { min-width: 0; }
+.adelantos-prestamos-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.adelantos-prestamos-table { min-width: 880px; }
+.adelantos-prestamos-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.adelantos-prestamos-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.adelantos-prestamos-estado.is-activo { background: var(--accent-soft); color: var(--accent-ink); }
+.adelantos-prestamos-estado.is-cancelado { background: var(--good-soft); color: var(--good); }
+.adelantos-prestamos-estado.is-anulado { background: var(--bad-soft); color: var(--bad); }
+.adelantos-prestamos-detail-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.adelantos-prestamos-detail-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.adelantos-prestamos-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.adelantos-prestamos-detail-grid > div { min-width: 0; }
+.adelantos-prestamos-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.adelantos-prestamos-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.adelantos-prestamos-detail-wide { grid-column: 1 / -1; }
+.adelantos-prestamos-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.adelantos-prestamos-actions { flex-wrap: wrap; }
+.adelantos-prestamos-cuotas-scroll { max-width: 100%; overflow-x: auto; }
+.adelantos-prestamos-cuotas { width: 100%; min-width: 420px; border-collapse: collapse; font-size: 11px; }
+.adelantos-prestamos-cuotas th, .adelantos-prestamos-cuotas td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.adelantos-prestamos-cuotas th { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.adelantos-prestamos-capacidad-panel h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 12px; }
+.adelantos-prestamos-capacidad-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.adelantos-prestamos-capacidad-grid > div { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.adelantos-prestamos-capacidad-grid dt { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.adelantos-prestamos-capacidad-grid dd { margin: 4px 0 0; color: var(--ink); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.adelantos-prestamos-alerta { margin: 10px 0 0; color: var(--bad); font-size: 10px; font-weight: 650; }
+.adelantos-prestamos-ok { margin: 10px 0 0; color: var(--good); font-size: 10px; font-weight: 650; }
+.adelantos-prestamos-form, .adelantos-prestamos-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.adelantos-prestamos-dialog-form { margin-top: 14px; grid-template-columns: minmax(0, 1fr); }
+.adelantos-prestamos-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.adelantos-prestamos-form .form-field, .adelantos-prestamos-dialog-form .form-field { min-width: 0; gap: 6px; }
+.adelantos-prestamos-form .form-field select, .adelantos-prestamos-form .form-field input, .adelantos-prestamos-form .form-field textarea, .adelantos-prestamos-dialog-form .form-field textarea { width: 100%; min-width: 0; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.adelantos-prestamos-form .form-field select, .adelantos-prestamos-form .form-field input { height: 38px; padding: 0 11px; }
+.adelantos-prestamos-form .form-field input:disabled { color: var(--ink-faint); }
+.adelantos-prestamos-form .form-field [aria-invalid="true"], .adelantos-prestamos-dialog-form .form-field [aria-invalid="true"] { border-color: var(--bad); }
+.adelantos-prestamos-form .form-field select:focus, .adelantos-prestamos-form .form-field input:focus, .adelantos-prestamos-form .form-field textarea:focus, .adelantos-prestamos-dialog-form .form-field textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
+.adelantos-prestamos-form-wide { grid-column: 1 / -1; min-width: 0; }
+.adelantos-prestamos-contador { margin: 4px 0 0; color: var(--ink-faint); font-size: 9px; text-align: right; font-variant-numeric: tabular-nums; }
+.adelantos-prestamos-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.adelantos-prestamos-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+@media (max-width: 1279px) { .adelantos-prestamos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1023px) { .adelantos-prestamos-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .adelantos-prestamos-filters, .adelantos-prestamos-form { grid-template-columns: minmax(0, 1fr); } .adelantos-prestamos-summary { gap: 8px; } .adelantos-prestamos-capacidad-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .adelantos-prestamos-detail-grid { grid-template-columns: minmax(0, 1fr); } }
