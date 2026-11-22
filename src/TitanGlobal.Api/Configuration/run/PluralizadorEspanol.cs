@@ -46,6 +46,7 @@ public class PluralizadorEspanol : IPluralizer
         { "TasasImpuestos", "TasaImpuesto" },
         { "Usuarios", "Usuario" },
         { "UsuariosRoles", "UsuarioRol" },
+        { "ValesCombustible", "ValeCombustible" },
         { "VehiculosFlota", "VehiculoFlota" },
         { "Vendedores", "Vendedor" },
         { "ZonasAlmacenaje", "ZonaAlmacenaje" },

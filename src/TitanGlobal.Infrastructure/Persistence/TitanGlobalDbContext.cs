@@ -79,6 +79,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<UsuarioRol> UsuariosRoles { get; set; } = null!;
 
+    public virtual DbSet<ValeCombustible> ValesCombustible { get; set; } = null!;
+
     public virtual DbSet<VehiculoFlota> VehiculosFlota { get; set; } = null!;
 
     public virtual DbSet<Vendedor> Vendedores { get; set; } = null!;
@@ -613,6 +615,24 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(d => d.Usuario).WithMany(p => p.Roles).HasForeignKey(d => d.UsuarioId);
+        });
+
+        modelBuilder.Entity<ValeCombustible>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("ValesCombustible_pkey");
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Estacion).HasMaxLength(150);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Borrador'::character varying");
+            entity.Property(e => e.Litros).HasPrecision(10, 3);
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Placa).HasMaxLength(20);
+            entity.Property(e => e.PrecioLitro).HasPrecision(10, 3);
+            entity.Property(e => e.TipoCombustible).HasMaxLength(15);
         });
 
         modelBuilder.Entity<VehiculoFlota>(entity =>

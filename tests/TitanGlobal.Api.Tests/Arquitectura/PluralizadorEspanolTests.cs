@@ -26,6 +26,7 @@ public class PluralizadorEspanolTests
     }
 
     [Theory]
+    [InlineData("ValesCombustible", "ValeCombustible")]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("UnidadesMedida", "UnidadMedida")]
     [InlineData("PerfilesUsuario", "PerfilUsuario")]

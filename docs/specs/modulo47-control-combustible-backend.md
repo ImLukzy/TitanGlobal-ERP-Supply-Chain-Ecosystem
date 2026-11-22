@@ -17,6 +17,7 @@ Kelvin autoriza continuar localmente como los módulos anteriores. **La revisió
 |---|---|
 | `database/017-control-combustible.sql` | Crear; reservas010–016 de ramas independientes contrastadas |
 | `src/TitanGlobal.Domain/Models/ValeCombustible.cs`, `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar solo mediante scaffold |
+| `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` y `tests/TitanGlobal.Api.Tests/Arquitectura/PluralizadorEspanolTests.cs` | Mapeo explícito ValesCombustible → ValeCombustible y prueba propia; no editar la entidad generada |
 | `src/TitanGlobal.Application/DTOs/Modulo47_ControlCombustible/*.cs` | GuardarValeRequestDto, AnularValeRequestDto, ValeListadoDto, ValeDetalleDto, PaginaValesDto, ResumenValesDto |
 | `src/TitanGlobal.Application/UseCases/Modulo47_ControlCombustible/*.cs` | CrearValeUseCase, ActualizarValeUseCase, EliminarValeUseCase, ObtenerValeUseCase, ListarValesUseCase, ConfirmarValeUseCase, AnularValeUseCase, ResumenValesUseCase, ValidacionVale y CalculoVale |
 | `src/TitanGlobal.Api/Controllers/Modulo47_ControlCombustible/ControlCombustibleController.cs` | Controlador delgado |
