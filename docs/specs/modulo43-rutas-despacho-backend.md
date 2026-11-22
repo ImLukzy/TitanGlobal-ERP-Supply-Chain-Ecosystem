@@ -143,3 +143,11 @@ Commits por avances funcionales con sus pruebas, identidad Git de Kelvin y sin a
 |---|---|---|
 | 2026-11-21 | Propuesta, pendiente de revisión | Asignación, orden y alcance mínimo contrastados con asignaciones/enunciado; ramas remotas actualizadas y búsqueda de specs previas sin resultados; sin código ni pruebas del 43 |
 | 2026-11-21 | Implementación local verificada; revisión pendiente | 46 pruebas propias; gate con 1.130 pruebas backend y 603 frontend, siete operaciones OpenAPI, seed repetido, scaffold coincidente y SMOKE OK; detalle y salvedad de Vite en `docs/evidencias/modulo43/README.md` |
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/013-rutas-despacho.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1130 pruebas backend y 603 frontend en 76 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.

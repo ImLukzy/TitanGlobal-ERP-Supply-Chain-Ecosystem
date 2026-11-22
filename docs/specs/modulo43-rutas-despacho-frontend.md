@@ -67,3 +67,11 @@ Las cifras de peaje son estimaciones manuales por recorrido y moneda; no se pres
 |---|---|---|
 | 2026-11-21 | Propuesta, implementación y QA pendientes | Contrato propuesto contrastado con el enunciado, plantilla de specs y guía de pantalla; sin evidencia de ejecución todavía |
 | 2026-11-21 | Implementación local y QA real verificados; revisión pendiente | 60 pruebas propias correctas durante diez repeticiones; cuatro escenarios 375/1280 claro/oscuro, contraste medido, fondo de selección uniforme y 12 capturas en `docs/evidencias/modulo43/` |
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/013-rutas-despacho.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1130 pruebas backend y 603 frontend en 76 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.

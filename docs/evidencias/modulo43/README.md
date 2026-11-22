@@ -54,3 +54,11 @@ Requisitos utilizados: Git Bash, .NET 10, Node 24.22.1, Python 3 y Docker con Po
 7. Para el QA, preparar de nuevo base y seed, iniciar API en 5080 y Vite en 5173, entrar con la cuenta administrativa del seed y abrir `/modulos/43-rutas-despacho`.
 
 El contenedor de este repositorio no conserva los datos al eliminarse; después del smoke hay que preparar otra vez el esquema y el seed. No se aplica SQL en producción, ni se hace push, PR o modificación de main como parte de esta entrega local.
+
+## Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/013-rutas-despacho.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1130 pruebas backend y 603 frontend en 76 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
