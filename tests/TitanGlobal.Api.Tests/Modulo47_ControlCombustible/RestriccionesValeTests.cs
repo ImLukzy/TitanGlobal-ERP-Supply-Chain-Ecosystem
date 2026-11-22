@@ -1,0 +1,79 @@
+using Microsoft.Extensions.DependencyInjection;
+using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
+using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Application.UseCases.Modulo47_ControlCombustible;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Domain.Repositories;
+using TitanGlobal.Infrastructure.Persistence;
+
+namespace TitanGlobal.Api.Tests.Modulo47_ControlCombustible;
+
+[Collection("Modulo04")]
+public class RestriccionesValeTests
+{
+    private readonly OrdenesCompraApiFactory _fabrica;
+
+    public RestriccionesValeTests(OrdenesCompraApiFactory fabrica)
+    {
+        _fabrica = fabrica;
+        fabrica.SeedDatabase();
+    }
+
+    [Theory]
+    [InlineData("crear", TipoViolacionRestriccion.Unicidad, "Ya existe un vale con el código VAL-47.")]
+    [InlineData("editar", TipoViolacionRestriccion.Unicidad, "Ya existe un vale con el código VAL-47.")]
+    [InlineData("eliminar", TipoViolacionRestriccion.ReferenciaForanea, "No se puede eliminar el vale porque está en uso.")]
+    public async Task TraduceRestriccionesAlGuardar(string accion, TipoViolacionRestriccion tipo, string mensaje)
+    {
+        using IServiceScope scope = _fabrica.Services.CreateScope();
+        TitanGlobalDbContext db = scope.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        db.RemoveRange(db.Set<ValeCombustible>());
+        db.SaveChanges();
+        db.Add(new ValeCombustible { Id = 1, Codigo = "ORIGINAL", Estado = "Borrador" });
+        db.SaveChanges();
+        IUnitOfWork unidad = new FallaAlGuardar(scope.ServiceProvider.GetRequiredService<IUnitOfWork>(), tipo);
+        ReglaNegocioException error = await Assert.ThrowsAsync<ReglaNegocioException>(async () =>
+        {
+            if (accion == "crear")
+            {
+                await new CrearValeUseCase(unidad).ExecuteAsync(ValesCombustibleApiTests.Valida());
+            }
+            else if (accion == "editar")
+            {
+                await new ActualizarValeUseCase(unidad).ExecuteAsync(1, ValesCombustibleApiTests.Valida());
+            }
+            else
+            {
+                await new EliminarValeUseCase(unidad).ExecuteAsync(1);
+            }
+        });
+        Assert.Equal(409, error.StatusCode);
+        Assert.Equal(mensaje, error.Message);
+    }
+
+    private sealed class FallaAlGuardar : IUnitOfWork
+    {
+        private readonly IUnitOfWork _real;
+        private readonly TipoViolacionRestriccion _tipo;
+
+        public FallaAlGuardar(IUnitOfWork real, TipoViolacionRestriccion tipo)
+        {
+            _real = real;
+            _tipo = tipo;
+        }
+
+        public IGenericRepository<T> Repository<T>() where T : class
+        {
+            return _real.Repository<T>();
+        }
+
+        public Task<int> CompleteAsync()
+        {
+            throw new ViolacionRestriccionException(_tipo, "restriccion", "Interno", new InvalidOperationException("SQL interno"));
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+}
