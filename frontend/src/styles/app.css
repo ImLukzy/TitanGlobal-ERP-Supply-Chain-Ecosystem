@@ -1485,3 +1485,39 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+.logistica-inversa-page { min-width: 0; }
+.logistica-inversa-summary { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.logistica-inversa-summary article, .logistica-inversa-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.logistica-inversa-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.logistica-inversa-summary strong { color: var(--ink); font-size: 30px; }
+.logistica-inversa-toolbar, .logistica-inversa-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.logistica-inversa-toolbar { justify-content: space-between; }
+.logistica-inversa-filters { display: grid; grid-template-columns: minmax(0,2fr) repeat(2,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.logistica-inversa-filters label { display: grid; gap: 8px; }
+.logistica-inversa-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.logistica-inversa-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.logistica-inversa-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.logistica-inversa-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.logistica-inversa-page input, .logistica-inversa-page select, .logistica-inversa-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.logistica-inversa-table th, .logistica-inversa-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.logistica-inversa-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.logistica-inversa-table tbody .logistica-inversa-selected > th, .logistica-inversa-table tbody .logistica-inversa-selected > td { background: var(--accent-soft); }
+.logistica-inversa-details dt { color: var(--ink-soft); margin-top: 14px; }
+.logistica-inversa-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.logistica-inversa-dialog { max-height: 90vh; overflow-y: auto; }
+.logistica-inversa-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.logistica-inversa-recibido { background: var(--good-soft); }
+.logistica-inversa-cancelado { background: var(--bad-soft); }
+.logistica-inversa-number { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.logistica-inversa-card h2 { overflow-wrap: anywhere; }
+@media (max-width: 1100px) { .logistica-inversa-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .logistica-inversa-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .logistica-inversa-filters, .logistica-inversa-editor { grid-template-columns: minmax(0,1fr); }
+  .logistica-inversa-card, .logistica-inversa-summary article { padding: 16px; }
+  .logistica-inversa-toolbar { flex-direction: column; align-items: stretch; }
+}
+
+.logistica-inversa-preview { padding: 12px; border-radius: 8px; background: var(--surface-muted); color: var(--ink); font-variant-numeric: tabular-nums; }
+.logistica-inversa-details dd { font-variant-numeric: tabular-nums; }
