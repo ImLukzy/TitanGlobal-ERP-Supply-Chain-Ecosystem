@@ -1,9 +1,11 @@
 # Especificación: módulo 42 — pantalla de Conductores
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 Completar `/modulos/42-conductores` con búsqueda, filtro administrativo de habilitación, paginación, detalle, alta, edición y baja, siguiendo Proveedores, Centros de Trabajo y `crear-pantalla.md`. Responsable: Kelvin Pinto.
 
-Desarrollo local autorizado por Kelvin; revisión de Lukas pendiente. Contrato: `modulo42-conductores-backend.md` §4.
+Propuesta, pendiente de aprobación de Lukas. Contrato: `modulo42-conductores-backend.md` §4.
 
 ## 2. Fuera de alcance
 Otros módulos, relación con vehículos, entidades base, middleware, pipeline, dependencias nuevas y cambios de permisos automáticos. No se añade un campo `PuedeConducir` al contrato ni se transforma el significado de `Habilitado` sin una decisión aprobada.
@@ -52,3 +54,7 @@ Otros módulos, relación con vehículos, entidades base, middleware, pipeline, 
 | 2026-11-21 | PostgreSQL | Aprobado | `SCAFFOLD AL DÍA` y `SMOKE OK`, sin cambios a pruebas ajenas ni archivos generados editados a mano |
 
 La implementación y verificación local están completas. Revisión de Lukas, PR, integración y despliegue pendientes; no se presentan como concedidos.
+
+## Numeración vigente
+
+El script actual es `database/022-conductores-licencia-unica.sql`. Las verificaciones históricas con011 corresponden al nombre anterior. Preparación local con main actual; propuesta, pendiente de aprobación de Lukas.

@@ -1,5 +1,7 @@
 # Especificación: 48 - Modulo42_Conductores (backend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 **Problema:** la flota (módulo 41) tiene vehículos, pero sin conductores no se puede saber quién conduce ni si la licencia está al día.
 **Resultado esperado:** una entidad nueva `Conductor` con su tabla y `Modules/Modulo42_Conductores/` en `api/v1/conductores`:
@@ -20,7 +22,7 @@ Sigue el patrón de `Modulo41_VehiculosFlota` (spec 47). Responsable: Kelvin Pin
 | `src/TitanGlobal.Domain/Models/Conductor.cs` | regenerar mediante scaffold, sin edición manual |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar mediante scaffold |
 | `database/001-esquema-inicial.sql` | referencia integrada: no se modifica |
-| `database/011-conductores-licencia-unica.sql` | índice único normalizado; ampliación en `modulo42-conductores-integridad.md` |
+| `database/022-conductores-licencia-unica.sql` | índice único normalizado; ampliación en `modulo42-conductores-integridad.md` |
 | `src/TitanGlobal.Application/DTOs/Modulo42_Conductores/` | DTOs |
 | `src/TitanGlobal.Application/UseCases/Modulo42_Conductores/` | reglas y casos de uso |
 | `src/TitanGlobal.Api/Controllers/Modulo42_Conductores/` | controlador delgado |
@@ -75,3 +77,7 @@ El backend original estaba integrado. La ampliación y la pantalla están verifi
 | 2026-11-21 | A4 | Aprobado | scripts 001/008/011 aplicados en PostgreSQL 16 local, `scaffold.sh` ejecutado y `SCAFFOLD AL DÍA`; sin cambios de modelo generados |
 | 2026-11-21 | A5 | Aprobado | `smoke-postgres.sh` → `SMOKE OK`; índice de licencias rechaza escritura directa duplicada con SQLSTATE 23505; seed probado tras cambiar mayúsculas en una transacción revertida, sin duplicar conductores |
 | 2026-11-21 | A6 | Aprobado | OpenAPI local: GET/POST de `/api/v1/conductores`, GET/PUT/DELETE de `/api/v1/conductores/{id}` |
+
+## Numeración vigente
+
+El script actual es `database/022-conductores-licencia-unica.sql`. Las verificaciones históricas con011 corresponden al nombre anterior. Preparación local con main actual; propuesta, pendiente de aprobación de Lukas.
