@@ -36,3 +36,11 @@ Usar Git Bash, .NET 10, Node 24 y Docker con PostgreSQL local. Ejecutar `./scrip
 Para revisión manual, preparar otra vez la base y el seed después del smoke: el contenedor de este repositorio no conserva datos al eliminarse. Iniciar API en 5080 y frontend en 5173, entrar con la cuenta administrativa del seed y abrir `/modulos/48-transportistas-terceros`. Repetir las operaciones anteriores en los cuatro escenarios de la tabla.
 
 Los importes recibidos se muestran como texto exacto con su moneda. El formulario rechaza cantidades que el navegador no pueda enviar con precisión; no convierte ni suma monedas diferentes. Vite conserva la advertencia existente de tamaño del paquete compartido; no se aumenta el umbral para ocultarla.
+
+## Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/012-transportistas-terceros.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1138 pruebas backend y 580 frontend en 73 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.

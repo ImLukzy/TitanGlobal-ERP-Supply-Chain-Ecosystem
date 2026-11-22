@@ -58,3 +58,11 @@ Las pruebas existentes se conservan. Las capturas simuladas, si se usan durante 
 |---|---|---|
 | 2026-11-21 | Propuesta; implementación y pruebas pendientes | Contrato backend redactado para revisión y patrón de componentes contrastado con las pantallas existentes |
 | 2026-11-21 | Implementación local y QA real ejecutados; revisión de Lukas pendiente | Pruebas de API, validaciones y pantalla; cuatro escenarios 375/1280 claro/oscuro y 16 capturas con PostgreSQL real en `docs/evidencias/modulo48/` |
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/012-transportistas-terceros.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1138 pruebas backend y 580 frontend en 73 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.

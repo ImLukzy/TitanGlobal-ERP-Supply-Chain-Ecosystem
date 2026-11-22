@@ -137,3 +137,11 @@ Commits por avances funcionales con sus pruebas, no por archivo, usando la ident
 |---|---|---|
 | 2026-11-21 | Propuesta, sin aprobación ni implementación | Asignación y orden confirmados; alcance disponible en el enunciado limitado a «3PL y fletes»; rutas y capas contrastadas con el repositorio |
 | 2026-11-21 | Implementado y verificado localmente como propuesta, pendiente de aprobación de Lukas; aprobación de Lukas pendiente | 53 pruebas propias del backend, diez operaciones OpenAPI, seed repetido sin duplicados, scaffold comprobado y smoke contra PostgreSQL; detalles en `docs/evidencias/modulo48/README.md` |
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/012-transportistas-terceros.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1138 pruebas backend y 580 frontend en 73 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
