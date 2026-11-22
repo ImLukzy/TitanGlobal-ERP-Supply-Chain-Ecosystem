@@ -53,3 +53,11 @@ Comparación con Contratos comerciales integrado: [1280 claro](1280-light-refere
 - El compose no conserva volúmenes: después de retirar el contenedor, aplicar nuevamente SQL y seed antes del QA. Solo se utilizó la base local.
 - Persiste la advertencia de Vite del bundle compartido superior a 500 kB (715.33 kB). No se ocultó ni se elevó el límite. No se acredita cero advertencias globales ni cierre formal mientras falten esa condición y la aprobación de Lukas.
 - Datos y cuentas de demostración locales; capturas sin tokens ni credenciales. Ayudantes temporales y registros de autenticación excluidos del commit. Sin push, PR, cambios en main ni en las otras ramas.
+
+## Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/015-guias-remision.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1143 pruebas backend y 604 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.

@@ -136,3 +136,11 @@ No marcar resultados previstos como ejecutados; documentar advertencias reales s
 
 
 2026-11-21: Kelvin autoriza expresamente continuar con esta propuesta como implementación local, igual que los módulos anteriores. Esta autorización permite desarrollar y probar en su rama; no sustituye la revisión de Lukas ni autoriza publicación, integración o despliegue.
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/015-guias-remision.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1143 pruebas backend y 604 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
