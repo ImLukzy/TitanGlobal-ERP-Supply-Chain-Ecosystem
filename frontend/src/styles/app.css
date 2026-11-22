@@ -1629,3 +1629,46 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1023px) { .asistencia-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
 @media (max-width: 760px) { .asistencia-filters, .asistencia-form { grid-template-columns: minmax(0, 1fr); } .asistencia-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .asistencia-detail-grid { grid-template-columns: minmax(0, 1fr); } .asistencia-tabs { flex-wrap: wrap; } .asistencia-heading-actions { width: 100%; } }
+.vacaciones-permisos-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.vacaciones-permisos-work-area { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, .9fr); align-items: start; gap: 0 15px; }
+.vacaciones-permisos-list-panel, .vacaciones-permisos-detail-panel { min-width: 0; }
+.vacaciones-permisos-filters { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.vacaciones-permisos-table { min-width: 780px; }
+.vacaciones-permisos-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vacaciones-permisos-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.vacaciones-permisos-estado.is-aprobada { background: var(--good-soft); color: var(--good); }
+.vacaciones-permisos-estado.is-pendiente { background: var(--accent-soft); color: var(--accent-ink); }
+.vacaciones-permisos-estado.is-rechazada { background: var(--bad-soft); color: var(--bad); }
+.vacaciones-permisos-detail-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.vacaciones-permisos-detail-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.vacaciones-permisos-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.vacaciones-permisos-detail-grid > div { min-width: 0; }
+.vacaciones-permisos-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.vacaciones-permisos-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.vacaciones-permisos-detail-wide { grid-column: 1 / -1; }
+.vacaciones-permisos-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.vacaciones-permisos-actions { flex-wrap: wrap; }
+.vacaciones-permisos-saldo { min-width: 0; }
+.vacaciones-permisos-saldo-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 8px 0 0; }
+.vacaciones-permisos-saldo-grid > div { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.vacaciones-permisos-saldo-grid dt { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.vacaciones-permisos-saldo-grid dd { margin: 4px 0 0; color: var(--ink); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.vacaciones-permisos-saldo-excedido { margin: 10px 0 0; color: var(--bad); font-size: 10px; font-weight: 650; }
+.vacaciones-permisos-dias { margin: 0; color: var(--ink-soft); font-size: 11px; font-weight: 650; }
+.vacaciones-permisos-form, .vacaciones-permisos-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vacaciones-permisos-dialog-form { margin-top: 14px; grid-template-columns: minmax(0, 1fr); }
+.vacaciones-permisos-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.vacaciones-permisos-form .form-field, .vacaciones-permisos-dialog-form .form-field { min-width: 0; gap: 6px; }
+.vacaciones-permisos-form .form-field select, .vacaciones-permisos-form .form-field textarea, .vacaciones-permisos-dialog-form .form-field textarea { width: 100%; min-width: 0; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.vacaciones-permisos-form .form-field select { height: 38px; padding: 0 11px; }
+.vacaciones-permisos-form .form-field select[aria-invalid="true"], .vacaciones-permisos-form .form-field textarea[aria-invalid="true"], .vacaciones-permisos-dialog-form .form-field textarea[aria-invalid="true"] { border-color: var(--bad); }
+.vacaciones-permisos-form .form-field select:focus, .vacaciones-permisos-form .form-field textarea:focus, .vacaciones-permisos-dialog-form .form-field textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
+.vacaciones-permisos-form-wide { grid-column: 1 / -1; min-width: 0; }
+.vacaciones-permisos-contador { margin: 4px 0 0; color: var(--ink-faint); font-size: 9px; text-align: right; font-variant-numeric: tabular-nums; }
+.vacaciones-permisos-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.vacaciones-permisos-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+@media (max-width: 1279px) { .vacaciones-permisos-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } .vacaciones-permisos-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1023px) { .vacaciones-permisos-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .vacaciones-permisos-filters, .vacaciones-permisos-form { grid-template-columns: minmax(0, 1fr); } .vacaciones-permisos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .vacaciones-permisos-saldo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .vacaciones-permisos-detail-grid { grid-template-columns: minmax(0, 1fr); } }
+.vacaciones-permisos-detail-panel .vacaciones-permisos-saldo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
