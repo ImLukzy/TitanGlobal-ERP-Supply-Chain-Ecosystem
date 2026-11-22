@@ -1,5 +1,7 @@
 # Especificación propuesta: módulo 44 — Consolidación de carga (frontend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 Página `/modulos/44-consolidacion-carga` de Kelvin: preparar líneas, registrar picking, configurar packing y consultar cubicaje/peso estimados. Implementación local autorizada al continuar el siguiente módulo; **revisión de Lukas y decisiones backend pendientes**.
 

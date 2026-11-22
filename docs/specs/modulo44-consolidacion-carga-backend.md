@@ -1,9 +1,11 @@
 # Especificación propuesta: módulo 44 — Consolidación de carga (backend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 Implementar `ConsolidacionCarga (picking, packing, cubicaje)` del enunciado. Responsable Kelvin Pinto; orden 41 → 42 → 48 → 43 → **44** → 45 → 46 → 47 → 49 → 50 → 73.
 
-Rama `kelvin/modulo44-consolidacion-carga`, independiente desde origin/main actualizado. Trabajo local autorizado por Kelvin al solicitar continuar con el siguiente módulo; **las decisiones propuestas y la aprobación de Lukas siguen pendientes**. No acredita integración ni despliegue.
+Rama `kelvin/modulo44-consolidacion-carga`, independiente desde origin/main actualizado. Propuesta, pendiente de aprobación de Lukas; **las decisiones propuestas y la aprobación de Lukas siguen pendientes**. No acredita integración ni despliegue.
 
 ## 2. Fuera de alcance y decisiones para revisión
 - Preparación manual de carga con SKU descriptivo, sin FK a Producto ni cambios en las cuatro entidades base. No reservar, descontar ni mover existencias, órdenes o inventarios de otros propietarios.
@@ -70,4 +72,4 @@ A1: build sin warnings/errores, formato/capas/reglas y verify exit0; registrar c
 - [x] Gates, estabilidad, smoke y QA reales documentados, con salvedades en la evidencia.
 
 ## 7. Registro
-2026-11-21: implementación local autorizada por Kelvin; revisión de Lukas pendiente. SQL aplicado y scaffold regenerado; 1140 pruebas backend (55 propias), 599 frontend (56 propias), verify con salida 0 y smoke con SMOKE OK. Estabilidad y QA documentados en [evidencia](../evidencias/modulo44/README.md). La advertencia de tamaño del bundle compartido de Vite impide acreditar cero advertencias globales. Commits por avances funcionales, identidad Git de Kelvin, sin push ni PR ni cambios en main. No acredita aprobación, integración ni despliegue.
+2026-11-21: Propuesta, pendiente de aprobación de Lukas; revisión de Lukas pendiente. SQL aplicado y scaffold regenerado; 1140 pruebas backend (55 propias), 599 frontend (56 propias), verify con salida 0 y smoke con SMOKE OK. Estabilidad y QA documentados en [evidencia](../evidencias/modulo44/README.md). La advertencia de tamaño del bundle compartido de Vite impide acreditar cero advertencias globales. Commits por avances funcionales, identidad Git de Kelvin, sin push ni PR ni cambios en main. No acredita aprobación, integración ni despliegue.
