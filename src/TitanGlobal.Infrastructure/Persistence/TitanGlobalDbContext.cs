@@ -73,6 +73,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
+    public virtual DbSet<Sucursal> Sucursales { get; set; } = null!;
+
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
 
     public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
@@ -578,6 +580,23 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.Proveedor).WithMany(p => p.SolicitudesCompra)
                 .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Sucursal>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Sucursales_pkey");
+
+            entity.Property(e => e.Activa).HasDefaultValue(true);
+            entity.Property(e => e.Ciudad).HasMaxLength(100);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Contacto).HasMaxLength(100);
+            entity.Property(e => e.Direccion).HasMaxLength(300);
+            entity.Property(e => e.Email).HasMaxLength(150);
+            entity.Property(e => e.Nombre).HasMaxLength(150);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Pais).HasMaxLength(100);
+            entity.Property(e => e.Telefono).HasMaxLength(30);
+            entity.Property(e => e.Tipo).HasMaxLength(10);
         });
 
         modelBuilder.Entity<TasaImpuesto>(entity =>

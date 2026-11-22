@@ -25,6 +25,7 @@ public class PluralizadorEspanolTests
         }
     }
 
+    [InlineData("Sucursales", "Sucursal")]
     [Theory]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("UnidadesMedida", "UnidadMedida")]

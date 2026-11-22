@@ -43,6 +43,7 @@ public class PluralizadorEspanol : IPluralizer
         { "Roles", "Rol" },
         { "SegmentosClientes", "SegmentoCliente" },
         { "SolicitudesCompra", "SolicitudCompra" },
+        { "Sucursales", "Sucursal" },
         { "TasasImpuestos", "TasaImpuesto" },
         { "Usuarios", "Usuario" },
         { "UsuariosRoles", "UsuarioRol" },
