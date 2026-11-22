@@ -1511,6 +1511,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .logistica-inversa-cancelado { background: var(--bad-soft); }
 .logistica-inversa-number { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .logistica-inversa-card h2 { overflow-wrap: anywhere; }
+.logistica-inversa-dialog .logistica-inversa-number { display: inline-block; vertical-align: bottom; }
 @media (max-width: 1100px) { .logistica-inversa-layout { grid-template-columns: minmax(0,1fr); } }
 @media (max-width: 600px) {
   .logistica-inversa-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }

@@ -420,6 +420,27 @@ checks = {
     "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
 }
 
+checks.update({
+    'm49-created': lambda d: d["id"] > 0,
+    'm49-baja-created': lambda d: d["id"] > 0,
+    'm49-openapi': lambda d: sum(len(v) for k,v in d["paths"].items() if k.startswith("/api/v1/logistica-inversa")) == 9,
+    'm49-list': lambda d: d["total"] == 4 and {r["estado"] for r in d["items"]} == {"Programado","Recogido","Recibido","Cancelado"} and {r["unidad"] for r in d["items"]} == {"unidad","kg"},
+    'm49-resumen': lambda d: d == {"total":4,"programados":1,"recogidos":1,"recibidos":1,"cancelados":1},
+    'm49-maximo': lambda d: d["cantidadProgramada"] == "999999999.999" and d["fechaProgramada"] == "2026-11-22T10:30:12.345Z" and d["tipo"] == "Pallet" and d["cantidadRecogida"] is None and d["noRecogida"] is None,
+    'm49-recogido': lambda d: d["estado"] == "Recogido" and d["cantidadRecogida"] == "9.125" and d["noRecogida"] == "1.000" and d["responsableRecogida"] == "Ana" and d["fechaRecogida"].endswith("Z") and d["cantidadRecibida"] is None,
+    'm49-recibido': lambda d: d["estado"] == "Recibido" and d["cantidadRecogida"] == "9.125" and d["cantidadRecibida"] == "8.001" and d["noRecibida"] == "1.124" and d["responsableRecepcion"] == "Luis" and d["fechaRecogida"].endswith("Z") and d["fechaRecepcion"].endswith("Z"),
+    'm49-cancelado': lambda d: d["estado"] == "Cancelado" and d["cantidadRecogida"] == "9.125" and d["fechaRecogida"] == "2026-11-21T12:00:00Z" and d["motivoCancelacion"] == "Cambio smoke" and d["fechaCancelacion"].endswith("Z"),
+    'm49-filtro': lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "RET-49004",
+    'm49-decimales': lambda d: d["StatusCode"] == 400 and d["Message"] == 'La cantidad programada no puede tener más de 3 decimales.',
+    'm49-duplicado': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Ya existe un retorno con el código smk49.',
+    'm49-exceso': lambda d: d["StatusCode"] == 400 and d["Message"] == 'La cantidad recogida no puede superar la programada.',
+    'm49-recepcion-exceso': lambda d: d["StatusCode"] == 400 and d["Message"] == 'La cantidad recibida no puede superar la recogida.',
+    'm49-estado': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede recoger un retorno programado.',
+    'm49-cancelacion': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede cancelar un retorno programado o recogido.',
+    'm49-motivo': lambda d: d["StatusCode"] == 400 and d["Message"] == 'El motivo de cancelación es obligatorio.',
+    'm49-baja': lambda d: d["StatusCode"] == 409 and d["Message"] == 'Solo se puede eliminar un retorno programado.',
+    'm49-missing': lambda d: d["StatusCode"] == 404 and d["Message"].startswith("El retorno ") and d["Message"].endswith(" no existe."),
+})
 if validation not in checks or not checks[validation](body):
     raise SystemExit(f"la respuesta no coincide con la validación {validation}")
 PY
@@ -602,6 +623,12 @@ request_check() {
     fi
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m49-created" ]]; then
+        RETORNO_49_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m49-baja-created" ]]; then
+        BAJA_49_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -916,4 +943,43 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 49: programación, recogida y recepción física manual.
+TOKEN_49_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M49 exige sesión' GET '/api/v1/logistica-inversa' 401 no-session
+TOKEN_ACTUAL="$TOKEN_49_ADMIN"
+request_check 'M49 OpenAPI nueve operaciones' GET '/openapi/v1.json' 200 m49-openapi
+request_check 'M49 seed con cuatro estados y unidades' GET '/api/v1/logistica-inversa' 200 m49-list
+request_check 'M49 resumen sin sumar unidades' GET '/api/v1/logistica-inversa/resumen' 200 m49-resumen
+request_check 'M49 máximo y UTC sin zona' POST '/api/v1/logistica-inversa' 200 m49-created '{"codigo":"SMK49","referenciaOrigen":" GUIA-49 ","contraparte":" Cliente Norte ","puntoRecogida":"Muelle Norte","puntoRecepcion":"Almacén Central","descripcion":"Pallet reutilizable","unidad":"unidad","tipo":" pallet ","fechaProgramada":"2026-11-22T10:30:12.345","cantidadProgramada":999999999.999}'
+request_check 'M49 precisión persistida' GET "/api/v1/logistica-inversa/${RETORNO_49_ID}" 200 m49-maximo
+request_check 'M49 duplicado normalizado' POST '/api/v1/logistica-inversa' 409 m49-duplicado '{"codigo":" smk49 ","referenciaOrigen":" GUIA-49 ","contraparte":" Cliente Norte ","puntoRecogida":"Muelle Norte","puntoRecepcion":"Almacén Central","descripcion":"Pallet reutilizable","unidad":"unidad","tipo":" pallet ","fechaProgramada":"2026-11-22T10:30:12.345","cantidadProgramada":999999999.999}'
+request_check 'M49 rechaza escala' PUT "/api/v1/logistica-inversa/${RETORNO_49_ID}" 400 m49-decimales '{"codigo":"SMK49","referenciaOrigen":" GUIA-49 ","contraparte":" Cliente Norte ","puntoRecogida":"Muelle Norte","puntoRecepcion":"Almacén Central","descripcion":"Pallet reutilizable","unidad":"unidad","tipo":" pallet ","fechaProgramada":"2026-11-22T10:30:12.345","cantidadProgramada":1.0001}'
+request_check 'M49 inválido no cambia datos' GET "/api/v1/logistica-inversa/${RETORNO_49_ID}" 200 m49-maximo
+request_check 'M49 editar programación' PUT "/api/v1/logistica-inversa/${RETORNO_49_ID}" 200 created '{"codigo":"SMK49","referenciaOrigen":" GUIA-49 ","contraparte":" Cliente Norte ","puntoRecogida":"Muelle Norte","puntoRecepcion":"Almacén Central","descripcion":"Pallet reutilizable","unidad":"unidad","tipo":" pallet ","fechaProgramada":"2026-11-22T10:30:12.345","cantidadProgramada":10.125}'
+request_check 'M49 rechaza recogida excesiva' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/recogida" 400 m49-exceso '{"cantidad":11,"responsable":"Ana"}'
+request_check 'M49 recoger con diferencia' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/recogida" 200 created '{"cantidad":9.125,"responsable":" Ana "}'
+request_check 'M49 recogida persistida UTC' GET "/api/v1/logistica-inversa/${RETORNO_49_ID}" 200 m49-recogido
+request_check 'M49 recogida única' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/recogida" 409 m49-estado '{"cantidad":9,"responsable":"Ana"}'
+request_check 'M49 rechaza recepción excesiva' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/recepcion" 400 m49-recepcion-exceso '{"cantidad":10,"responsable":"Luis"}'
+request_check 'M49 recibir con diferencia' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/recepcion" 200 created '{"cantidad":8.001,"responsable":" Luis "}'
+request_check 'M49 diferencias exactas y UTC' GET "/api/v1/logistica-inversa/${RETORNO_49_ID}" 200 m49-recibido
+request_check 'M49 terminal no se cancela' POST "/api/v1/logistica-inversa/${RETORNO_49_ID}/cancelacion" 409 m49-cancelacion '{"motivo":"Cambio"}'
+request_check 'M49 terminal no se elimina' DELETE "/api/v1/logistica-inversa/${RETORNO_49_ID}" 409 m49-baja
+request_check 'M49 cancelación exige motivo' POST '/api/v1/logistica-inversa/2/cancelacion' 400 m49-motivo '{"motivo":" "}'
+request_check 'M49 cancelar conserva recogida' POST '/api/v1/logistica-inversa/2/cancelacion' 200 created '{"motivo":" Cambio smoke "}'
+request_check 'M49 recogida conservada' GET '/api/v1/logistica-inversa/2' 200 m49-cancelado
+request_check 'M49 filtrar tipo y estado' GET '/api/v1/logistica-inversa?estado=cancelado&tipo=dEvOlUcIoNrUtA' 200 m49-filtro
+request_check 'M49 programado para baja' POST '/api/v1/logistica-inversa' 200 m49-baja-created '{"codigo":"SMK49-B","referenciaOrigen":" GUIA-49 ","contraparte":" Cliente Norte ","puntoRecogida":"Muelle Norte","puntoRecepcion":"Almacén Central","descripcion":"Pallet reutilizable","unidad":"unidad","tipo":" pallet ","fechaProgramada":"2026-11-22T10:30:12.345","cantidadProgramada":0.001}'
+request_check 'M49 baja programado' DELETE "/api/v1/logistica-inversa/${BAJA_49_ID}" 204 ''
+request_check 'M49 confirmar baja' GET "/api/v1/logistica-inversa/${BAJA_49_ID}" 404 m49-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$ BEGIN
+    BEGIN UPDATE "RetornosLogisticos" SET "Codigo" = 'smk49' WHERE "Id" = 1; RAISE EXCEPTION 'M49: falta unicidad'; EXCEPTION WHEN unique_violation THEN NULL; END;
+    BEGIN UPDATE "RetornosLogisticos" SET "CantidadProgramada" = 0 WHERE "Id" = 1; RAISE EXCEPTION 'M49: falta cantidad positiva'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "RetornosLogisticos" SET "CantidadRecogida" = 11 WHERE "Id" = 2; RAISE EXCEPTION 'M49: falta límite recogido'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "RetornosLogisticos" SET "CantidadRecibida" = 10 WHERE "Id" = 3; RAISE EXCEPTION 'M49: falta límite recibido'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN UPDATE "RetornosLogisticos" SET "Estado" = 'Recibido' WHERE "Id" = 1; RAISE EXCEPTION 'M49: falta coherencia del estado'; EXCEPTION WHEN check_violation THEN NULL; END;
+END $$;
+SQL
 printf 'SMOKE OK\n'

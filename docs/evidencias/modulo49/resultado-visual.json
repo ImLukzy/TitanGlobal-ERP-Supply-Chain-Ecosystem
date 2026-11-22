@@ -1,0 +1,162 @@
+{
+  "fecha": "2026-11-21",
+  "origen": "API y PostgreSQL locales sin respuestas simuladas",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-22T10:30:12.345Z",
+      "recogida": "9.125",
+      "recepcion": "8.001",
+      "noRecogida": "1.000",
+      "noRecibida": "1.124",
+      "excesoRechazado": true,
+      "cancelacionConservaRecogida": true,
+      "bajaProgramado": true,
+      "tabEscapeRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".logistica-inversa-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".logistica-inversa-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".logistica-inversa-table small",
+          "contraste": 4.98103373080793
+        },
+        {
+          "selector": ".logistica-inversa-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-22T10:30:12.345Z",
+      "recogida": "9.125",
+      "recepcion": "8.001",
+      "noRecogida": "1.000",
+      "noRecibida": "1.124",
+      "excesoRechazado": true,
+      "cancelacionConservaRecogida": true,
+      "bajaProgramado": true,
+      "tabEscapeRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".logistica-inversa-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".logistica-inversa-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".logistica-inversa-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".logistica-inversa-badge",
+          "contraste": 9.960419518951863
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-22T10:30:12.345Z",
+      "recogida": "9.125",
+      "recepcion": "8.001",
+      "noRecogida": "1.000",
+      "noRecibida": "1.124",
+      "excesoRechazado": true,
+      "cancelacionConservaRecogida": true,
+      "bajaProgramado": true,
+      "tabEscapeRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".logistica-inversa-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".logistica-inversa-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".logistica-inversa-table small",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".logistica-inversa-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "altaEdicionUtc": true,
+      "fechaPreservada": "2026-11-22T10:30:12.345Z",
+      "recogida": "9.125",
+      "recepcion": "8.001",
+      "noRecogida": "1.000",
+      "noRecibida": "1.124",
+      "excesoRechazado": true,
+      "cancelacionConservaRecogida": true,
+      "bajaProgramado": true,
+      "tabEscapeRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "codigosUnaLinea": true,
+      "contrastes": [
+        {
+          "selector": ".logistica-inversa-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".logistica-inversa-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".logistica-inversa-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".logistica-inversa-badge",
+          "contraste": 9.960419518951863
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    }
+  ]
+}

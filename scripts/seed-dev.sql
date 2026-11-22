@@ -623,4 +623,14 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+
+-- Módulo 49: ejemplos idempotentes, sin movimientos de inventario.
+INSERT INTO "RetornosLogisticos" ("Id", "Codigo", "ReferenciaOrigen", "Contraparte", "PuntoRecogida", "PuntoRecepcion", "Descripcion", "Unidad", "Tipo", "FechaProgramada", "CantidadProgramada", "Estado", "CantidadRecogida", "CantidadRecibida", "FechaRecogida", "FechaRecepcion", "FechaCancelacion", "ResponsableRecogida", "ResponsableRecepcion", "MotivoCancelacion") VALUES
+    (1, 'RET-49001', 'GUIA-49', 'Cliente Norte', 'Muelle Norte', 'Almacén Central', 'Pallet reutilizable', 'unidad', 'Pallet', '2026-11-22T10:30:12.345Z', 10.125, 'Programado', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (2, 'RET-49002', 'GUIA-49', 'Cliente Norte', 'Muelle Norte', 'Almacén Central', 'Pallet reutilizable', 'unidad', 'Pallet', '2026-11-22T10:30:12.345Z', 10.125, 'Recogido', 9.125, NULL, '2026-11-21T12:00:00Z', NULL, NULL, 'Ana', NULL, NULL),
+    (3, 'RET-49003', 'GUIA-49', 'Cliente Norte', 'Muelle Norte', 'Almacén Central', 'Embalaje retornado', 'kg', 'Retornable', '2026-11-22T10:30:12.345Z', 10.125, 'Recibido', 9.125, 8.001, '2026-11-21T12:00:00Z', '2026-11-21T13:00:00Z', NULL, 'Ana', 'Luis', NULL),
+    (4, 'RET-49004', 'GUIA-49', 'Cliente Norte', 'Muelle Norte', 'Almacén Central', 'Embalaje retornado', 'kg', 'DevolucionRuta', '2026-11-22T10:30:12.345Z', 10.125, 'Cancelado', 9.125, NULL, '2026-11-21T12:00:00Z', NULL, '2026-11-21T14:00:00Z', 'Ana', NULL, 'Cambio de ruta')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"RetornosLogisticos"', 'Id'), (SELECT MAX("Id") FROM "RetornosLogisticos"));
+
 COMMIT;

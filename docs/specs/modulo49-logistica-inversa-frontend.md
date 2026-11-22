@@ -25,9 +25,9 @@ A1 contratos HTTP exactos de nueve operaciones. A2 carga inicial controlada, deb
 
 ## 6. Checklist
 - [ ] Revisión de Lukas.
-- [ ] Backend/datos locales por scripts.
-- [ ] Pantalla y pruebas.
-- [ ] Gate, estabilidad y QA con evidencia.
+- [x] Backend/datos locales por scripts.
+- [x] Pantalla y pruebas.
+- [x] Gate, estabilidad y QA con evidencia, con avisos globales documentados.
 
 ## 7. Registro
-2026-11-21: propuesta local autorizada. Sin QA ni pruebas acreditados todavía; aprobación formal pendiente.
+2026-11-21: 48 pruebas propias y 591 globales correctas, gate completo salida 0, diez ejecuciones propias y veinte con build simultáneo sin ampliar timeouts. QA real repetido a 375/1280 px en claro/oscuro, preservando UTC con milisegundos y comprobando etapas, cantidades, cancelación, baja y foco. 24 capturas propias, dos referencias de Contratos y resultados en `docs/evidencias/modulo49/`. Avisos globales de ESLint/Vite documentados; aprobación de Lukas e integración pendientes.

@@ -101,6 +101,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 016 | `016-monitoreo-entregas.sql` | Kelvin | `kelvin/modulo46-monitoreo-entregas` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 | 017 | `017-control-combustible.sql` | Kelvin | `kelvin/modulo47-control-combustible` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
-| 018 | `018-logistica-inversa.sql` | Kelvin | `kelvin/modulo49-logistica-inversa` | reserva local; revisión de Lukas pendiente |
+| 018 | `018-logistica-inversa.sql` | Kelvin | `kelvin/modulo49-logistica-inversa` | aplicado, scaffold y smoke verificados localmente; revisión de Lukas pendiente; sin producción |
 
 Un script nuevo toma el siguiente número libre (019 en adelante). Las reservas010–018 son de ramas independientes de Kelvin; no implican integración en main.
