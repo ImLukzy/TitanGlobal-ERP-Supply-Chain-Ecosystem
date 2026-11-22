@@ -101,7 +101,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Alexander | pantalla integrada, falta QA visual | 43, 44 |
 | 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | backend terminado, pantalla parcial: falta matriz y editor | 41, 42 |
-| 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Kelvin Pinto | pendiente | — |
+| 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Kelvin Pinto | propuesta local en rama propia; revisión de Lukas pendiente | modulo73 backend/frontend |
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | backend integrado, pantalla pendiente | modulo75 |
 | 76 SeriesNumeracion | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
