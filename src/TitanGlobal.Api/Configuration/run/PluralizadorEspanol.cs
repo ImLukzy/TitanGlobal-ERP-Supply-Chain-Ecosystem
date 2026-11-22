@@ -40,6 +40,7 @@ public class PluralizadorEspanol : IPluralizer
         { "Proveedores", "Proveedor" },
         { "ReclamosPostventa", "ReclamoPostventa" },
         { "RegistrosAuditoria", "RegistroAuditoria" },
+        { "RetornosLogisticos", "RetornoLogistico" },
         { "Roles", "Rol" },
         { "SegmentosClientes", "SegmentoCliente" },
         { "SolicitudesCompra", "SolicitudCompra" },

@@ -67,6 +67,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; } = null!;
 
+    public virtual DbSet<RetornoLogistico> RetornosLogisticos { get; set; } = null!;
+
     public virtual DbSet<Rol> Roles { get; set; } = null!;
 
     public virtual DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
@@ -540,6 +542,30 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.EntidadId).HasMaxLength(50);
             entity.Property(e => e.Ruta).HasMaxLength(200);
             entity.Property(e => e.Usuario).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<RetornoLogistico>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("RetornosLogisticos_pkey");
+
+            entity.Property(e => e.CantidadProgramada).HasPrecision(12, 3);
+            entity.Property(e => e.CantidadRecibida).HasPrecision(12, 3);
+            entity.Property(e => e.CantidadRecogida).HasPrecision(12, 3);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Contraparte).HasMaxLength(200);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Programado'::character varying");
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PuntoRecepcion).HasMaxLength(200);
+            entity.Property(e => e.PuntoRecogida).HasMaxLength(200);
+            entity.Property(e => e.ReferenciaOrigen).HasMaxLength(40);
+            entity.Property(e => e.ResponsableRecepcion).HasMaxLength(100);
+            entity.Property(e => e.ResponsableRecogida).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
+            entity.Property(e => e.Unidad).HasMaxLength(20);
         });
 
         modelBuilder.Entity<Rol>(entity =>

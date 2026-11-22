@@ -25,6 +25,7 @@ public class PluralizadorEspanolTests
         }
     }
 
+    [InlineData("RetornosLogisticos", "RetornoLogistico")]
     [Theory]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("UnidadesMedida", "UnidadMedida")]
