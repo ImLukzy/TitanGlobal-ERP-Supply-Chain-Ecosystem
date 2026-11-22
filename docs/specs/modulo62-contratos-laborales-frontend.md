@@ -1,6 +1,6 @@
 # Especificación: modulo62-contratos-laborales-frontend — Pantalla de ContratosLaborales
 
-> Estado: **borrador**, pendiente de revisión por Lukas. Las decisiones de §2 necesitan su respuesta antes de programar.
+> Estado: **implementada con la opción A (recomendada) en las 3 decisiones de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
 
 ## 1. Objetivo
 **Problema:** el backend del módulo 62 está en `main` (PR #39, spec `modulo62-contratos-laborales-backend.md`), pero `/modulos/62-contratos-laborales` muestra «Pantalla pendiente»: `frontend/src/modules/pantallas.ts` no tiene la entrada `62-contratos-laborales`.
@@ -94,14 +94,23 @@ Verificado en el repositorio (rama desde `origin/main` `e48a190`): existen `pant
 | A9 | Visual | capturas a 375 y 1280 px, claro y oscuro: listado con detalle `Vigente` y `Anulado`, alta y los tres diálogos; comparación con Empleados; sin scroll horizontal de página ni palabras partidas | adjuntas al PR |
 
 ## 6. Checklist de ejecución
-- [ ] Decisiones 1 a 3 de §2 resueltas por Lukas y spec aprobada.
-- [ ] Tarea 1: `tipos.ts`, `api.ts` y `api.test.ts`.
-- [ ] Tarea 2: resumen, filtros, tabla, pastilla y detalle.
-- [ ] Tarea 3: formulario de alta y validación local.
-- [ ] Tarea 4: diálogos de renovación, adenda y anulación.
-- [ ] Tarea 5: registro en `pantallas.ts` y estilos en `app.css`.
+- [x] Decisiones 1 a 3 de §2 resueltas con la opción A (acuerdo con Lukas del 2026-11-22; revisión al final).
+- [x] Tarea 1: `tipos.ts`, `api.ts` y `api.test.ts`.
+- [x] Tarea 2: resumen, filtros, tabla, pastilla y detalle.
+- [x] Tarea 3: formulario de alta y validación local.
+- [x] Tarea 4: diálogos de renovación, adenda y anulación.
+- [x] Tarea 5: registro en `pantallas.ts` y estilos en `app.css`.
 - [ ] Tarea 6: tests, QA contra PostgreSQL, capturas y A1 a A9 en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-22 | A1 | Pasa en lo que afecta a esta spec: `npm --prefix frontend run verify` en verde (lint 0 warnings, typecheck, 600 tests, build). `./scripts/verify.sh` en Windows: build, `dotnet format`, reglas y fixtures en verde; backend 1082/1083, con un único fallo de entorno ajeno a esta rama: `RolesPermisosApiTests.CatalogoCoincideConLosOchentaModulosDeArquitectura` lee `docs/arquitectura.md` con CRLF (`core.autocrlf=true`) y compara nombres con `\r` final; en CI (Linux) no ocurre | `npm --prefix frontend run verify`: 74 archivos, 600 tests; `./scripts/verify.sh` |
+| 2026-11-22 | A2 | Pasa: las 6 funciones con URL, método, query y cuerpo exactos; filtros vacíos omitidos | `api.test.ts`, 7 tests |
+| 2026-11-22 | A3 | Pasa: filtros en la query, página 1 al filtrar, búsqueda tras 300 ms con una sola consulta, tres conteos (Vigentes 3, Vencidos 1, Total 8), pastillas con texto, adendas, contrato anterior y cierre en el detalle | `ContratosLaboralesPage.test.tsx` |
+| 2026-11-22 | A4 | Pasa: mensajes 1 a 12 sin petición, fecha de fin deshabilitada con `Indeterminado`, sueldo `0.001` y 12 dígitos rechazados sin petición, 409 conservando lo escrito | `ContratoLaboralFormulario.test.tsx` |
+| 2026-11-22 | A5 | Pasa: fecha de inicio derivada, validaciones locales sin petición, 409 y 400 del servidor dentro del diálogo, Escape y foco, botones según estado y modalidad | `DialogosContrato.test.tsx` y `ContratosLaboralesPage.test.tsx` |
+| 2026-11-22 | A6 | Pasa: con `CONSULTA` los cuatro botones deshabilitados con el texto asociado por `aria-describedby`; con `RRHH` o `ADMIN`, habilitados | `ContratosLaboralesPage.test.tsx` (sesión con `setSesion`) |
+| 2026-11-22 | A7 | Parcial: suite completa en verde (600 tests, incluida «Pantalla pendiente» de `App.test.tsx`); la carpeta del módulo se ejecutó 3 veces seguidas (57 tests cada vez). Las 10 repeticiones de la suite completa quedan pendientes | `npx vitest run src/modules/contratos-laborales` x3 |
+| 2026-11-22 | A8 | pendiente: QA contra PostgreSQL y capturas | — |
+| 2026-11-22 | A9 | pendiente: QA contra PostgreSQL y capturas | — |

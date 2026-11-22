@@ -1485,3 +1485,47 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+/* Módulo 62 · Contratos laborales */
+.contratos-laborales-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.contratos-laborales-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 0 15px; }
+.contratos-laborales-list-panel, .contratos-laborales-detail-panel { min-width: 0; }
+.contratos-laborales-filters { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr); }
+.contratos-laborales-table { min-width: 760px; }
+.contratos-laborales-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.contratos-laborales-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.contratos-laborales-estado.is-vigente { background: var(--good-soft); color: var(--good); }
+.contratos-laborales-estado.is-vencido, .contratos-laborales-estado.is-anulado { background: var(--bad-soft); color: var(--bad); }
+.contratos-laborales-estado.is-renovado { background: var(--accent-soft); color: var(--accent-ink); }
+.contratos-laborales-detail-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.contratos-laborales-detail-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.contratos-laborales-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.contratos-laborales-detail-grid > div { min-width: 0; }
+.contratos-laborales-detail-grid dt { margin-bottom: 5px; color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.contratos-laborales-detail-grid dd { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.contratos-laborales-detail-wide { grid-column: 1 / -1; }
+.contratos-laborales-adendas-scroll { max-width: 100%; overflow-x: auto; }
+.contratos-laborales-adendas { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; }
+.contratos-laborales-adendas caption { padding: 0 0 6px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.contratos-laborales-adendas th { padding: 7px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; }
+.contratos-laborales-adendas td { padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: break-word; }
+.contratos-laborales-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.contratos-laborales-actions { flex-wrap: wrap; }
+.contratos-laborales-form, .contratos-laborales-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.contratos-laborales-dialog-form { margin-top: 14px; }
+.contratos-laborales-dialog-form-simple { grid-template-columns: minmax(0, 1fr); }
+.contratos-laborales-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.contratos-laborales-form .form-field, .contratos-laborales-dialog-form .form-field { min-width: 0; gap: 6px; }
+.contratos-laborales-form .form-field select, .contratos-laborales-dialog-form .form-field select { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.contratos-laborales-form .form-field select[aria-invalid="true"], .contratos-laborales-dialog-form .form-field select[aria-invalid="true"], .contratos-laborales-dialog-form textarea[aria-invalid="true"] { border-color: var(--bad); }
+.contratos-laborales-form .form-field select:focus, .contratos-laborales-dialog-form .form-field select:focus, .contratos-laborales-dialog-form textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent), transparent 78%); }
+.contratos-laborales-form .form-field input:disabled { cursor: not-allowed; opacity: .6; }
+.contratos-laborales-dialog-form textarea { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; resize: vertical; }
+.contratos-laborales-form-wide { grid-column: 1 / -1; }
+.contratos-laborales-form-wide.clientes-dialog-actions { margin-top: 8px; }
+.contratos-laborales-cargo-campo { grid-column: 1 / -1; min-width: 0; }
+.contratos-laborales-contador { margin: 4px 0 0; color: var(--ink-faint); font-size: 9px; text-align: right; font-variant-numeric: tabular-nums; }
+.contratos-laborales-form-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.contratos-laborales-form-actions p { margin: 0; color: var(--bad); font-size: 10px; }
+@media (max-width: 1023px) { .contratos-laborales-work-area { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 760px) { .contratos-laborales-filters, .contratos-laborales-form, .contratos-laborales-dialog-form { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .contratos-laborales-summary { grid-template-columns: minmax(0, 1fr); } .contratos-laborales-detail-grid { grid-template-columns: minmax(0, 1fr); } }

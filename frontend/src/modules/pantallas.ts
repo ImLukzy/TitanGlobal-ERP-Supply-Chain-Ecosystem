@@ -21,6 +21,7 @@ import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
+import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -45,4 +46,5 @@ export const pantallas: Record<string, ComponentType> = {
   '71-usuarios': UsuariosPage,
   '61-empleados': EmpleadosPage,
   '33-centros-trabajo': CentrosTrabajoPage,
+  '62-contratos-laborales': ContratosLaboralesPage,
 };
