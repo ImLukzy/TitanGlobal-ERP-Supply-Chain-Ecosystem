@@ -1,10 +1,12 @@
 # Propuesta: módulo 45 — Guías de remisión (backend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 
 Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Siguiente módulo del orden 41 → 42 → 48 → 43 → 44 → **45** → 46 → 47 → 49 → 50 → 73.
 
-El enunciado solo define `GuiasRemision (documentos de transporte)`; no establece campos, reglas fiscales, numeración ni integración. Esta propuesta concreta un registro interno de documentos de transporte con cabecera, mercancías y estados. Kelvin autorizó expresamente su implementación local el 2026-11-21; la revisión de Lukas exigida por el flujo normal sigue pendiente. No se presenta como especificación aprobada ni habilita integración o despliegue.
+El enunciado solo define `GuiasRemision (documentos de transporte)`; no establece campos, reglas fiscales, numeración ni integración. Esta propuesta concreta un registro interno de documentos de transporte con cabecera, mercancías y estados. Propuesta, pendiente de aprobación de Lukas. No se presenta como especificación aprobada ni habilita integración o despliegue.
 
 Rama independiente: `kelvin/modulo45-guias-remision`, creada desde `origin/main` actualizado el 2026-11-21. Las ramas locales de los módulos anteriores se conservan; no se incorporan sus commits a esta rama ni se modifica main.
 

@@ -1,5 +1,7 @@
 # Propuesta: módulo 45 — Guías de remisión (frontend)
 
+**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+
 ## 1. Objetivo
 
 Pantalla de Kelvin Pinto en `/modulos/45-guias-remision` para crear documentos internos de transporte con mercancías, consultarlos, emitirlos internamente y anularlos conservando sus datos. Depende del contrato [backend](modulo45-guias-remision-backend.md), aún propuesto. Kelvin autoriza expresamente desarrollarlo y probarlo localmente el 2026-11-21; queda pendiente la revisión de Lukas del flujo normal de crear-pantalla.md §1.
