@@ -71,6 +71,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
+    public virtual DbSet<SiniestroFlota> SiniestrosFlota { get; set; } = null!;
+
     public virtual DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
@@ -561,6 +563,30 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(300);
             entity.Property(e => e.MontoMinimo).HasPrecision(18, 2);
             entity.Property(e => e.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<SiniestroFlota>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("SiniestrosFlota_pkey");
+
+            entity.Property(e => e.Aseguradora).HasMaxLength(150);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Registrado'::character varying");
+            entity.Property(e => e.Lugar).HasMaxLength(200);
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.MontoReclamado).HasPrecision(12, 2);
+            entity.Property(e => e.MontoReconocido).HasPrecision(12, 2);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.NumeroPoliza).HasMaxLength(40);
+            entity.Property(e => e.NumeroReclamo).HasMaxLength(40);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Placa).HasMaxLength(20);
+            entity.Property(e => e.Resolucion).HasMaxLength(500);
+            entity.Property(e => e.Resultado).HasMaxLength(15);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
         });
 
         modelBuilder.Entity<SolicitudCompra>(entity =>

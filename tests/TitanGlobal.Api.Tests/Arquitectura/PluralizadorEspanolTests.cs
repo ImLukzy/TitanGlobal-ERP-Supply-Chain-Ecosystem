@@ -25,6 +25,7 @@ public class PluralizadorEspanolTests
         }
     }
 
+    [InlineData("SiniestrosFlota", "SiniestroFlota")]
     [Theory]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("UnidadesMedida", "UnidadMedida")]

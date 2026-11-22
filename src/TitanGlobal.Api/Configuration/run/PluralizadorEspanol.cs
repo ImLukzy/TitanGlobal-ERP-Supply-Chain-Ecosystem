@@ -42,6 +42,7 @@ public class PluralizadorEspanol : IPluralizer
         { "RegistrosAuditoria", "RegistroAuditoria" },
         { "Roles", "Rol" },
         { "SegmentosClientes", "SegmentoCliente" },
+        { "SiniestrosFlota", "SiniestroFlota" },
         { "SolicitudesCompra", "SolicitudCompra" },
         { "TasasImpuestos", "TasaImpuesto" },
         { "Usuarios", "Usuario" },
