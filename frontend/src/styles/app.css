@@ -1485,3 +1485,43 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-filters, .centros-trabajo-form { grid-template-columns: minmax(0, 1fr); }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+.siniestros-flota-page { min-width: 0; }
+.siniestros-flota-summary { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.siniestros-flota-summary article, .siniestros-flota-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.siniestros-flota-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.siniestros-flota-summary strong { color: var(--ink); font-size: 30px; }
+.siniestros-flota-toolbar, .siniestros-flota-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.siniestros-flota-toolbar { justify-content: space-between; }
+.siniestros-flota-filters { display: grid; grid-template-columns: minmax(0,2fr) repeat(2,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.siniestros-flota-filters label { display: grid; gap: 8px; }
+.siniestros-flota-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.siniestros-flota-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.siniestros-flota-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.siniestros-flota-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.siniestros-flota-page input, .siniestros-flota-page select, .siniestros-flota-page textarea, .siniestros-flota-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.siniestros-flota-table th, .siniestros-flota-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.siniestros-flota-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.siniestros-flota-table tbody .siniestros-flota-selected > th, .siniestros-flota-table tbody .siniestros-flota-selected > td { background: var(--accent-soft); }
+.siniestros-flota-details dt { color: var(--ink-soft); margin-top: 14px; }
+.siniestros-flota-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.siniestros-flota-dialog { max-height: 90vh; overflow-y: auto; }
+.siniestros-flota-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.siniestros-flota-cerrado { background: var(--good-soft); }
+.siniestros-flota-anulado { background: var(--bad-soft); }
+.siniestros-flota-number { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.siniestros-flota-card h2 { overflow-wrap: anywhere; }
+.siniestros-flota-dialog .siniestros-flota-number { display: inline-block; vertical-align: bottom; }
+@media (max-width: 1100px) { .siniestros-flota-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .siniestros-flota-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .siniestros-flota-filters, .siniestros-flota-editor { grid-template-columns: minmax(0,1fr); }
+  .siniestros-flota-card, .siniestros-flota-summary article { padding: 16px; }
+  .siniestros-flota-toolbar { flex-direction: column; align-items: stretch; }
+}
+
+.siniestros-flota-preview { padding: 12px; border-radius: 8px; background: var(--surface-muted); color: var(--ink); font-variant-numeric: tabular-nums; }
+.siniestros-flota-details dd { font-variant-numeric: tabular-nums; }
+
+.siniestros-flota-dialog select { box-sizing: border-box; width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.siniestros-flota-dialog select:disabled { opacity: 0.7; }
