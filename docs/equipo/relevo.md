@@ -111,5 +111,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 026 | `026-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | no |
 | 027 | `027-adelantos-prestamos.sql` | Alexander | `alexander/modulo67-adelantos-prestamos` | no |
 | 028 | `028-planillas.sql` | Alexander | `alexander/modulo66-planillas` | no |
+| 029 | `029-evaluacion-desempeno.sql` | Alexander | `alexander/modulo68-evaluacion-desempeno` | no |
 
 Un script nuevo toma el siguiente número libre de esta tabla (024 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).

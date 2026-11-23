@@ -779,4 +779,43 @@ SELECT setval(pg_get_serial_sequence('"PlanillaDetalles"', 'Id'), (SELECT MAX("I
 SELECT setval(pg_get_serial_sequence('"BonosPlanilla"', 'Id'), (SELECT MAX("Id") FROM "BonosPlanilla"));
 SELECT setval(pg_get_serial_sequence('"DescuentosCuotaPrestamo"', 'Id'), (SELECT MAX("Id") FROM "DescuentosCuotaPrestamo"));
 
+-- Modulo 68 EvaluacionDesempeno. Ciclo 2026-S1 cerrado (evaluaciones de los empleados 1, 2 y 4, con contrato en el periodo)
+-- y ciclo 2026-S2 abierto (una evaluacion enviada y otra en borrador). PuntajeFinal = suma de peso / 100 x calificacion:
+-- S1 (30, 25, 30, 15): empleado 1 con 5,4,5,4 = 4.60; empleado 2 con 4,3,4,3 = 3.60; empleado 4 con 3,3,2,3 = 2.70.
+-- S2 (25, 25, 35, 15): empleado 1 con 4,5,4,3 = 4.10.
+TRUNCATE TABLE "CalificacionesEvaluacion", "Evaluaciones", "CompetenciasEvaluacion", "CiclosEvaluacion" RESTART IDENTITY CASCADE;
+
+INSERT INTO "CiclosEvaluacion" ("Id", "Codigo", "Nombre", "Periodo", "FechaInicioPeriodo", "FechaFinPeriodo", "FechaApertura", "FechaCierre", "Estado") VALUES
+    (1, '2026-S1', 'Evaluacion de desempeno 2026 - primer semestre', 'Semestral', DATE '2026-01-01', DATE '2026-06-30', DATE '2026-06-01', DATE '2026-07-15', 'Cerrado'),
+    (2, '2026-S2', 'Evaluacion de desempeno 2026 - segundo semestre', 'Semestral', DATE '2026-06-01', DATE '2026-11-30', DATE '2026-11-01', DATE '2026-12-31', 'Abierto');
+
+INSERT INTO "CompetenciasEvaluacion" ("Id", "CicloEvaluacionId", "Nombre", "Descripcion", "Peso") VALUES
+    (1, 1, 'Calidad del trabajo', 'Precision y cuidado en las tareas', 30.00),
+    (2, 1, 'Trabajo en equipo', 'Colaboracion con sus companeros', 25.00),
+    (3, 1, 'Cumplimiento de objetivos', 'Metas del semestre alcanzadas', 30.00),
+    (4, 1, 'Iniciativa', 'Propone mejoras sin que se lo pidan', 15.00),
+    (5, 2, 'Calidad del trabajo', 'Precision y cuidado en las tareas', 25.00),
+    (6, 2, 'Trabajo en equipo', 'Colaboracion con sus companeros', 25.00),
+    (7, 2, 'Cumplimiento de objetivos', 'Metas del semestre alcanzadas', 35.00),
+    (8, 2, 'Iniciativa', 'Propone mejoras sin que se lo pidan', 15.00);
+
+INSERT INTO "Evaluaciones" ("Id", "CicloEvaluacionId", "EmpleadoId", "EvaluadorId", "Estado", "Comentario", "PuntajeFinal", "FechaEnvio", "FechaCierre") VALUES
+    (1, 1, 1, 2, 'Cerrada', 'Desempeno sobresaliente', 4.60, TIMESTAMPTZ '2026-06-20 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (2, 1, 2, 1, 'Cerrada', 'Cumple lo esperado', 3.60, TIMESTAMPTZ '2026-06-21 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (3, 1, 4, 1, 'Cerrada', 'Debe mejorar el cumplimiento de metas', 2.70, TIMESTAMPTZ '2026-06-22 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (4, 2, 1, 2, 'Enviada', 'Buen semestre', 4.10, TIMESTAMPTZ '2026-11-10 15:00:00+00', NULL),
+    (5, 2, 2, 1, 'Borrador', NULL, NULL, NULL, NULL);
+
+INSERT INTO "CalificacionesEvaluacion" ("Id", "EvaluacionId", "CompetenciaEvaluacionId", "Calificacion") VALUES
+    (1, 1, 1, 5), (2, 1, 2, 4), (3, 1, 3, 5), (4, 1, 4, 4),
+    (5, 2, 1, 4), (6, 2, 2, 3), (7, 2, 3, 4), (8, 2, 4, 3),
+    (9, 3, 1, 3), (10, 3, 2, 3), (11, 3, 3, 2), (12, 3, 4, 3),
+    (13, 4, 5, 4), (14, 4, 6, 5), (15, 4, 7, 4), (16, 4, 8, 3),
+    (17, 5, 5, 3), (18, 5, 6, 4);
+
+SELECT setval(pg_get_serial_sequence('"CiclosEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CiclosEvaluacion"));
+SELECT setval(pg_get_serial_sequence('"CompetenciasEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CompetenciasEvaluacion"));
+SELECT setval(pg_get_serial_sequence('"Evaluaciones"', 'Id'), (SELECT MAX("Id") FROM "Evaluaciones"));
+SELECT setval(pg_get_serial_sequence('"CalificacionesEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CalificacionesEvaluacion"));
+
 COMMIT;
