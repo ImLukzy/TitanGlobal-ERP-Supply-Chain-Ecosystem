@@ -69,7 +69,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 38 MermasProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 39 MantenimientoPreventivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 40 MantenimientoCorrectivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
-| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo41 |
+| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado; pantalla y unicidad verificadas en rama de Kelvin, pendientes revisión/integración | modulo41 |
 | 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo42 |
 | 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 44 ConsolidacionCarga | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
