@@ -38,7 +38,7 @@ function crearHeaders(ruta: string): Headers {
   return headers;
 }
 
-async function solicitar<T>(ruta: string, init: RequestInit, decodificar: (body: string) => T = JSON.parse): Promise<T> {
+async function solicitar<T>(ruta: string, init: RequestInit): Promise<T> {
   const headers = crearHeaders(ruta);
   new Headers(init.headers).forEach((value, key) => headers.set(key, value));
   try {
@@ -65,7 +65,7 @@ async function solicitar<T>(ruta: string, init: RequestInit, decodificar: (body:
     if (body.trim() === '') {
       return undefined as T;
     }
-    return decodificar(body);
+    return JSON.parse(body) as T;
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       throw error;
@@ -77,24 +77,24 @@ async function solicitar<T>(ruta: string, init: RequestInit, decodificar: (body:
   }
 }
 
-export function apiGet<T>(ruta: string, decodificar?: (body: string) => T): Promise<T> {
-  return solicitar<T>(ruta, { method: 'GET' }, decodificar);
+export function apiGet<T>(ruta: string): Promise<T> {
+  return solicitar<T>(ruta, { method: 'GET' });
 }
 
-export function apiPost<T, Cuerpo = unknown>(ruta: string, cuerpo: Cuerpo, serializar: (valor: Cuerpo) => string = JSON.stringify): Promise<T> {
+export function apiPost<T>(ruta: string, cuerpo: unknown): Promise<T> {
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');
-  return solicitar<T>(ruta, { method: 'POST', headers, body: serializar(cuerpo) });
+  return solicitar<T>(ruta, { method: 'POST', headers, body: JSON.stringify(cuerpo) });
 }
 
 export function apiPostSinCuerpo<T>(ruta: string): Promise<T> {
   return solicitar<T>(ruta, { method: 'POST' });
 }
 
-export function apiPut<T, Cuerpo = unknown>(ruta: string, cuerpo: Cuerpo, serializar: (valor: Cuerpo) => string = JSON.stringify): Promise<T> {
+export function apiPut<T>(ruta: string, cuerpo: unknown): Promise<T> {
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');
-  return solicitar<T>(ruta, { method: 'PUT', headers, body: serializar(cuerpo) });
+  return solicitar<T>(ruta, { method: 'PUT', headers, body: JSON.stringify(cuerpo) });
 }
 
 export function apiDelete(ruta: string): Promise<void> {

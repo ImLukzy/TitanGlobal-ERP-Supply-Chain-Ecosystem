@@ -44,8 +44,7 @@ export interface FiltrosListasMateriales {
 
 export interface ComponenteListaRequest {
   componenteProductoId: number;
-  // Se conserva el decimal como texto en la interfaz y se envía como número JSON.
-  cantidad: string;
+  cantidad: number;
   unidadMedida: string;
 }
 

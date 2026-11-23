@@ -1,10 +1,13 @@
 const maximoVersion = 2147483647;
 
+// Un number de JavaScript conserva sin redondeo hasta 15 dígitos significativos.
+const maximoDigitosSignificativos = 15;
+
 export function versionValida(version: string): boolean {
   return /^\d+$/.test(version) && Number(version) >= 1 && Number(version) <= maximoVersion;
 }
 
-export function validarCantidad(entrada: string): { cantidad: string } | { error: string } {
+export function validarCantidad(entrada: string): { cantidad: number } | { error: string } {
   const formato = /^\+?(?:(\d+)(?:[.,](\d*))?|[.,](\d+))$/;
   const valor = formato.exec(entrada.trim());
   const errorRango = 'La cantidad debe ser mayor que 0 y no superar 999999999999.999999.';
@@ -19,5 +22,9 @@ export function validarCantidad(entrada: string): { cantidad: string } | { error
   if (decimales.length > 6) {
     return { error: 'La cantidad admite como máximo 6 decimales.' };
   }
-  return { cantidad: decimales === '' ? entero : `${entero}.${decimales}` };
+  const significativos = entero === '0' ? decimales.replace(/^0+/, '') : `${entero}${decimales}`;
+  if (significativos.length > maximoDigitosSignificativos) {
+    return { error: 'La cantidad admite como máximo 15 dígitos significativos.' };
+  }
+  return { cantidad: Number(decimales === '' ? entero : `${entero}.${decimales}`) };
 }

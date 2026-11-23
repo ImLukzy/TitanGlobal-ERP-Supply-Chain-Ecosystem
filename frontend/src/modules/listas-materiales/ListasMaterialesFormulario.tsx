@@ -31,7 +31,7 @@ export function ListasMaterialesFormulario({ lista, cancelar, guardado, consulta
   const [lineas, setLineas] = useState<Linea[]>(() => lista?.componentes.map((componente, clave) => ({
     clave,
     producto: { id: componente.componenteProductoId, nombre: componente.componenteProductoNombre },
-    cantidad: componente.cantidad,
+    cantidad: String(componente.cantidad),
     unidadMedida: componente.unidadMedida,
   })) ?? [lineaVacia(0)]);
   const siguienteClave = useRef(lineas.length);
