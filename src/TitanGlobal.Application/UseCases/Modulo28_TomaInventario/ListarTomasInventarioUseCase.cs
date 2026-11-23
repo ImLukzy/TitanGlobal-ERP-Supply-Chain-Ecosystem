@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo28_TomaInventario;
+using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
@@ -24,9 +25,26 @@ public class ListarTomasInventarioUseCase
         int pagina,
         int tamanoPagina)
     {
+        if (pagina < 1)
+        {
+            throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "La página debe ser mayor o igual a 1.");
+        }
+
+        if (tamanoPagina < 1 || tamanoPagina > 100)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "El tamaño de página debe estar entre 1 y 100.");
+        }
+
+        if (fechaDesde.HasValue && fechaHasta.HasValue && fechaDesde.Value.Date > fechaHasta.Value.Date)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status400BadRequest,
+                "La fecha inicial no puede ser posterior a la final.");
+        }
+
         string? estadoNormalizado = ValidacionTomaInventario.NormalizarFiltroEstado(estado);
-        int paginaNormalizada = pagina < 1 ? 1 : pagina;
-        int tamanoNormalizado = tamanoPagina < 1 ? 20 : tamanoPagina > 100 ? 100 : tamanoPagina;
 
         IQueryable<TomaInventario> consulta = _unitOfWork.Repository<TomaInventario>()
             .AsQueryable()
@@ -52,23 +70,26 @@ public class ListarTomasInventarioUseCase
 
         if (fechaDesde.HasValue)
         {
-            DateTime desde = FechasUtc.Normalizar(fechaDesde.Value);
+            DateTime desde = FechasUtc.Normalizar(DateTime.SpecifyKind(fechaDesde.Value.Date, DateTimeKind.Utc));
             consulta = consulta.Where(registro => registro.FechaToma >= desde);
         }
 
         if (fechaHasta.HasValue)
         {
-            DateTime hasta = FechasUtc.Normalizar(fechaHasta.Value);
-            consulta = consulta.Where(registro => registro.FechaToma <= hasta);
+            DateTime hastaExclusivo = FechasUtc.Normalizar(
+                DateTime.SpecifyKind(fechaHasta.Value.Date.AddDays(1), DateTimeKind.Utc));
+            consulta = consulta.Where(registro => registro.FechaToma < hastaExclusivo);
         }
 
         int total = await consulta.CountAsync();
+        long inicio = ((long)pagina - 1) * tamanoPagina;
+        int saltar = inicio > int.MaxValue ? int.MaxValue : (int)inicio;
 
         List<TomaInventarioListadoDto> items = await consulta
             .OrderByDescending(registro => registro.FechaToma)
             .ThenByDescending(registro => registro.Id)
-            .Skip((paginaNormalizada - 1) * tamanoNormalizado)
-            .Take(tamanoNormalizado)
+            .Skip(saltar)
+            .Take(tamanoPagina)
             .Select(registro => new TomaInventarioListadoDto
             {
                 Id = registro.Id,
@@ -88,8 +109,8 @@ public class ListarTomasInventarioUseCase
         {
             Items = items,
             Total = total,
-            Pagina = paginaNormalizada,
-            TamanoPagina = tamanoNormalizado
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
         };
     }
 }
