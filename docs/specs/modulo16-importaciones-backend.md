@@ -34,8 +34,8 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas) y
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/024-importaciones.sql` | crear | `CREATE TABLE "ExpedientesImportacion"`; número `024` reservado para este módulo en `docs/equipo/relevo.md` §8 |
-| `docs/equipo/relevo.md` | modificar | solo añadir la fila 024 de este módulo en §8, sin reescribir la tabla |
+| `database/027-importaciones.sql` | crear | `CREATE TABLE "ExpedientesImportacion"`; número `027` reservado para este módulo en `docs/equipo/relevo.md` §8 |
+| `docs/equipo/relevo.md` | modificar | solo añadir la fila 027 de este módulo en §8, sin reescribir la tabla |
 | `src/TitanGlobal.Domain/Models/ExpedienteImportacion.cs`, `OrdenAbastecimiento.cs` | regenerar | entidades `partial` generadas por `./scripts/scaffold.sh`, sin editarlas a mano |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `DbSet<ExpedienteImportacion>`, generado |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold nombra mal la entidad (debe quedar `ExpedienteImportacion` / `ExpedientesImportacion`) |
