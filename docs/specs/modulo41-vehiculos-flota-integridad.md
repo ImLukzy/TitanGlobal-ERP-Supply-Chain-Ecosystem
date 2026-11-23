@@ -3,7 +3,7 @@
 ## 1. Objetivo
 Completar el pendiente de Kelvin en `docs/equipo/relevo.md` §1: impedir placas duplicadas sin distinguir mayúsculas en altas, modificaciones y escrituras concurrentes, conservando los mensajes del contrato y el formato de la placa.
 
-Responsable: Kelvin Pinto. Estado: propuesta, pendiente de aprobación de Lukas.
+Responsable: Kelvin Pinto. Estado: aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #51 y aplicada en la demo.
 
 ## 2. Fuera de alcance
 Conductores, otros módulos, entidades base, middleware, pipeline, scripts ya integrados y archivos generados editados a mano. No se aplica SQL a producción. No se borran ni fusionan automáticamente vehículos existentes.
@@ -51,5 +51,6 @@ Conductores, otros módulos, entidades base, middleware, pipeline, scripts ya in
 
 | 2026-11-22 | Numeración oficial, A4 y gate de A5 | Aprobados | `git pull origin main`; renombrado sin cambiar SQL a `021-vehiculos-flota-placa-unica.sql`, base local recreada, seed y scaffold sin diferencias de contenido. `verify.sh` salida0:1090backend y582frontend/73archivos; un fallo inicial al arrancar trabajador de Vitest se resolvió repitiendo el gate completo con un trabajador, sin cambiar pruebas/timeouts |
 | 2026-11-22 | Smoke de A5 | Aprobado | `smoke-postgres.sh` salida0, `SCAFFOLD AL DÍA` y `SMOKE OK` tras aplicar001/008/021; duplicados normalizados POST/PUT y cambio de la propia placa correctos |
+| 2026-11-23 | Integración y producción | Aprobado | Spec aprobada por Lukas. `021` aplicado en la demo con copia y ensayo (3 scripts registrados, filas de las 40 tablas sin cambios). PR #51 fusionado con merge commit (`350c09f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/vehiculos-flota` responde 200 y la pantalla está publicada |
 
-El problema del entorno de .NET se resolvió instalando SDK 10.0.404 y runtime 10.0.15: la DLL de serialización de la instalación anterior tenía cero bytes. La prueba del catálogo requirió el checkout local de `docs/arquitectura.md` con LF, idéntico al contenido Git; no se cambió ninguna prueba de otro módulo. Docker Desktop y PostgreSQL 16 se instalaron/iniciaron localmente. No se aplica nada a producción ni se declara integración/despliegue.
+El problema del entorno de .NET se resolvió instalando SDK 10.0.404 y runtime 10.0.15: la DLL de serialización de la instalación anterior tenía cero bytes. La prueba del catálogo requirió el checkout local de `docs/arquitectura.md` con LF, idéntico al contenido Git; no se cambió ninguna prueba de otro módulo. Docker Desktop y PostgreSQL 16 se instalaron/iniciaron localmente. La aplicación en producción y la integración están en la última fila.

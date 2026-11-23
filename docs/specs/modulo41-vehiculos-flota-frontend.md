@@ -6,7 +6,7 @@
 
 Responsable: Kelvin Pinto. Contrato: `modulo41-vehiculos-flota-backend.md` §4. Guía: `../equipo/crear-pantalla.md`.
 
-**Estado:** propuesta, pendiente de aprobación de Lukas. Pantalla implementada y verificada localmente con gate, smoke y PostgreSQL real; revisión, integración y despliegue pendientes.
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #51 y desplegada en la demo.
 
 ## 2. Fuera de alcance
 - Cambios de API, tablas, entidades generadas, autenticación o dependencias.
@@ -84,5 +84,6 @@ Los commits se agrupan por cambios funcionales revisables, con las pruebas corre
 | 2026-11-22 | Preparación de PR y A1–A5 | Aprobados tras actualizar main | Script renombrado a `021-vehiculos-flota-placa-unica.sql`, base local recreada, seed y scaffold ejecutados sin diferencias de contenido generadas. `verify.sh` salida0:1090backend y582frontend/73archivos. Primer intento con fallo de arranque de un trabajador de Vitest; reintento completo con un trabajador correcto, sin modificar tests ni timeouts. Detalle en evidencia local |
 | 2026-11-22 | PostgreSQL tras actualizar main | Aprobado | `smoke-postgres.sh` salida0: `SCAFFOLD AL DÍA` y `SMOKE OK`; script021 aplicado. Se conserva el QA visual real del21 porque este ajuste no cambia la pantalla |
 | 2026-11-23 | Resolución del conflicto de estilos del PR #51 | Verificado localmente | `git pull origin main`: conservados íntegros los bloques de Vehículos de flota y Roles/Matriz de permisos; frente a main solo se añaden las48 líneas propias. Tras regenerar por scaffold para corregir finales de línea locales, `verify.sh` salida0:1090backend y619frontend en77archivos; .NET sin errores/advertencias, formato/reglas/lint/tipos/build correctos. `smoke-postgres.sh` salida0, `SCAFFOLD AL DÍA` y `SMOKE OK`. Sin editar modelos generados a mano ni cambiar pruebas/timeouts; detalles en evidencia local |
+| 2026-11-23 | Integración y producción | Aprobado | Spec aprobada por Lukas. `021` aplicado en la demo con copia y ensayo (3 scripts registrados, filas de las 40 tablas sin cambios). PR #51 fusionado con merge commit (`350c09f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/vehiculos-flota` responde 200 y la pantalla está publicada |
 
-Los bloqueos del entorno registrados el 19 quedaron resueltos el 21. La implementación y verificación local están completas. Permanece abierta la aprobación de Lukas; no se declara integración ni despliegue.
+Los bloqueos del entorno registrados el 19 quedaron resueltos el 21. La implementación y verificación local están completas. La integración y el despliegue están en la última fila.
