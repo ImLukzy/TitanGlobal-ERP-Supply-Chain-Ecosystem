@@ -399,6 +399,9 @@ checks = {
     "conductor-detail": lambda data: data["id"] == 1 and data["nombre"] == "Carlos Ruiz" and data["documentoLicencia"] == "PLT-0001" and data["habilitado"] is True,
     "conductor-created": lambda data: data["id"] > 0,
     "conductor-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un conductor con el documento de licencia PLT-0001." and "Detail" not in data,
+    "conductor-duplicate-minuscula": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un conductor con el documento de licencia plt-0001." and "Detail" not in data,
+    "conductor-licencia-propia-updated": lambda data: data["id"] > 0,
+    "conductor-licencia-propia-detail": lambda data: data["documentoLicencia"] == "plt-smk-1" and data["vencimientoLicencia"] == "2027-12-31T00:00:00Z",
     "conductor-missing": lambda data: data["StatusCode"] == 404 and data["Message"] == "El conductor 9999 no existe." and "Detail" not in data,
     "openapi-empleados": lambda data: all(path in data["paths"] for path in ["/api/v1/empleados", "/api/v1/empleados/{id}", "/api/v1/empleados/{id}/cese"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/empleados", "get"), ("/api/v1/empleados", "post"), ("/api/v1/empleados/{id}", "get"), ("/api/v1/empleados/{id}", "put"), ("/api/v1/empleados/{id}/cese", "post")]) and "delete" not in data["paths"]["/api/v1/empleados/{id}"],
     "empleados-cesados": lambda data: data["total"] == 1 and data["items"][0]["legajo"] == "EMP-000004",
@@ -909,6 +912,20 @@ request_check 'Conductores del seed' GET '/api/v1/conductores' 200 conductores-l
 request_check 'Detalle del conductor 1' GET '/api/v1/conductores/1' 200 conductor-detail
 request_check 'Crear conductor smoke' POST '/api/v1/conductores' 200 conductor-created '{"nombre":"Conductor Smoke","documentoLicencia":"PLT-SMK-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true,"observaciones":"Alta de smoke"}'
 request_check 'Conductor con documento duplicado' POST '/api/v1/conductores' 409 conductor-duplicate '{"nombre":"Conductor Duplicado","documentoLicencia":"PLT-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'POST conductor con licencia del seed en minúsculas' POST '/api/v1/conductores' 409 conductor-duplicate-minuscula '{"nombre":"Conductor Duplicado","documentoLicencia":"  plt-0001  ","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'PUT conductor con licencia ajena en minúsculas' PUT "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 409 conductor-duplicate-minuscula '{"nombre":"Conductor Smoke","documentoLicencia":"plt-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'PUT conductor cambia mayúsculas de su propia licencia' PUT "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 200 conductor-licencia-propia-updated '{"nombre":"Conductor Smoke","documentoLicencia":"plt-smk-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'GET conductor conserva documento y fecha UTC' GET "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 200 conductor-licencia-propia-detail
+if error_licencia_duplicada="$(docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -c \
+    "INSERT INTO \"Conductores\" (\"Nombre\", \"DocumentoLicencia\", \"VencimientoLicencia\", \"Habilitado\", \"Activo\") SELECT \"Nombre\", upper(\"DocumentoLicencia\"), \"VencimientoLicencia\", \"Habilitado\", \"Activo\" FROM \"Conductores\" WHERE \"Id\" = ${CONDUCTOR_CREADO_ID};" 2>&1)"; then
+    printf 'ERROR: PostgreSQL admitió una licencia duplicada con otras mayúsculas\n' >&2
+    exit 1
+fi
+if [[ "$error_licencia_duplicada" != *23505* || "$error_licencia_duplicada" != *UX_Conductores_DocumentoLicenciaNormalizado* ]]; then
+    printf 'ERROR: la escritura directa no falló por el índice esperado de licencias\n%s\n' "$error_licencia_duplicada" >&2
+    exit 1
+fi
+printf 'OK: índice de licencias rechaza duplicados sin distinguir mayúsculas\n'
 request_check 'Crear conductor con fecha sin Z' POST '/api/v1/conductores' 200 conductor-sin-zona-created '{"nombre":"Conductor Sin Zona","documentoLicencia":"PLT-SMK-2","vencimientoLicencia":"2027-12-31","habilitado":true,"activo":true}'
 request_check 'Detalle del conductor con fecha sin Z' GET "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 200 conductor-sin-zona-detail
 request_check 'Eliminar conductor con fecha sin Z' DELETE "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 204 ''
