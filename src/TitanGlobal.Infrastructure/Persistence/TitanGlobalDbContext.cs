@@ -39,6 +39,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = null!;
 
+    public virtual DbSet<DetalleTomaInventario> DetallesTomaInventario { get; set; } = null!;
+
     public virtual DbSet<DevolucionComercial> DevolucionesComerciales { get; set; } = null!;
 
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
@@ -78,6 +80,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
+
+    public virtual DbSet<TomaInventario> TomasInventario { get; set; } = null!;
 
     public virtual DbSet<TransferenciaAlmacen> TransferenciasAlmacen { get; set; } = null!;
 
@@ -321,6 +325,21 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(d => d.SolicitudCompra).WithMany(p => p.Detalles).HasForeignKey(d => d.SolicitudCompraId);
+        });
+
+        modelBuilder.Entity<DetalleTomaInventario>(entity =>
+        {
+            entity.HasIndex(e => e.ProductoId, "IX_DetallesTomaInventario_ProductoId");
+
+            entity.HasIndex(e => new { e.TomaInventarioId, e.ProductoId }, "IX_DetallesTomaInventario_TomaInventarioId_ProductoId").IsUnique();
+
+            entity.Property(e => e.Observacion).HasMaxLength(250);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.DetallesTomaInventario)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.TomaInventario).WithMany(p => p.DetallesTomaInventario).HasForeignKey(d => d.TomaInventarioId);
         });
 
         modelBuilder.Entity<DevolucionComercial>(entity =>
@@ -639,6 +658,24 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Porcentaje).HasPrecision(18, 6);
 
             entity.HasOne(d => d.Impuesto).WithMany(p => p.Tasas).HasForeignKey(d => d.ImpuestoId);
+        });
+
+        modelBuilder.Entity<TomaInventario>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenId, "IX_TomasInventario_AlmacenId");
+
+            entity.HasIndex(e => e.Codigo, "IX_TomasInventario_Codigo").IsUnique();
+
+            entity.HasIndex(e => e.Estado, "IX_TomasInventario_Estado");
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Responsable).HasMaxLength(100);
+
+            entity.HasOne(d => d.Almacen).WithMany(p => p.TomasInventario)
+                .HasForeignKey(d => d.AlmacenId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<TransferenciaAlmacen>(entity =>
