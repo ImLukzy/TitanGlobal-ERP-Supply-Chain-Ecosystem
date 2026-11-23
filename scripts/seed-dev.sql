@@ -587,7 +587,7 @@ INSERT INTO "Conductores" ("Id", "Nombre", "DocumentoLicencia", "VencimientoLice
     (1, 'Carlos Ruiz', 'PLT-0001', TIMESTAMPTZ '2027-12-31 00:00:00+00', TRUE, TRUE, NULL),
     (2, 'Maria Quispe', 'PLT-0002', TIMESTAMPTZ '2026-06-30 00:00:00+00', TRUE, TRUE, NULL),
     (3, 'Jose Flores', 'PLT-0003', TIMESTAMPTZ '2028-01-15 00:00:00+00', FALSE, TRUE, 'Sin habilitacion')
-ON CONFLICT ("DocumentoLicencia") DO UPDATE SET
+ON CONFLICT (lower(btrim("DocumentoLicencia"))) DO UPDATE SET
     "Nombre" = EXCLUDED."Nombre",
     "VencimientoLicencia" = EXCLUDED."VencimientoLicencia",
     "Habilitado" = EXCLUDED."Habilitado",
@@ -649,4 +649,16 @@ INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "LoteId", "Fecha", "
     (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '20 days', 'Entrada', 50, 12.0000, 'SEED-KARDEX-02'),
     (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '10 days', 'Salida', 80, NULL, 'SEED-KARDEX-03'),
     (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '15 days', 'Entrada', 40, 25.5000, 'SEED-KARDEX-04');
+TRUNCATE TABLE "EvaluacionesProveedor" RESTART IDENTITY;
+
+INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCumplimiento", "PuntajeCalidad", "PuntajePlazos", "PuntajeFinal", "Calificacion", "Observaciones", "FechaRegistro") VALUES
+    (1, 1, '2026-09', 90, 85, 80, 85.50, 'Bueno', 'Entregas completas, un retraso menor.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (2, 1, '2026-10', 95, 92, 90, 92.60, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (3, 2, '2026-10', 70, 65, 60, 65.50, 'Regular', 'Varios lotes fuera de especificación.', TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (4, 4, '2026-09', 55, 60, 50, 55.00, 'Deficiente', 'Incumplió plazos acordados.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (5, 4, '2026-10', 80, 78, 76, 78.20, 'Bueno', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (6, 6, '2026-10', 100, 90, 95, 95.50, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
+
 COMMIT;

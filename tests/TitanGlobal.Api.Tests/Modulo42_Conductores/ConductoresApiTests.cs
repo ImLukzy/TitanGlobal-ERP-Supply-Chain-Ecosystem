@@ -343,6 +343,46 @@ public class ConductoresApiTests
         Assert.Equal("Nota", (await ObtenerGuardadoAsync(1)).Observaciones);
     }
 
+    [Theory]
+    [InlineData("plt-0001")]
+    [InlineData("pLt-0001")]
+    [InlineData("  PLT-0001  ")]
+    public async Task CreateRejectsLicenseWithoutDistinguishingCase(string documento)
+    {
+        GuardarConductorRequestDto solicitud = CrearSolicitud();
+        solicitud.DocumentoLicencia = documento;
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync("/api/v1/conductores", solicitud);
+
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.Conflict, 409,
+            $"Ya existe un conductor con el documento de licencia {documento.Trim()}.");
+    }
+
+    [Theory]
+    [InlineData("plt-0001")]
+    [InlineData("PlT-0001")]
+    [InlineData("  plt-0001  ")]
+    public async Task UpdateRejectsAnotherDriversLicenseWithoutDistinguishingCase(string documento)
+    {
+        GuardarConductorRequestDto solicitud = CrearSolicitud();
+        solicitud.DocumentoLicencia = documento;
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync("/api/v1/conductores/2", solicitud);
+
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.Conflict, 409,
+            $"Ya existe un conductor con el documento de licencia {documento.Trim()}.");
+        Assert.Equal("PLT-0002", (await ObtenerGuardadoAsync(2)).DocumentoLicencia);
+    }
+
+    [Fact]
+    public async Task UpdateMayChangeCaseOfItsOwnLicenseDocument()
+    {
+        GuardarConductorRequestDto solicitud = CrearSolicitud();
+        solicitud.DocumentoLicencia = "  plt-0001  ";
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync("/api/v1/conductores/1", solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal("plt-0001", (await ObtenerGuardadoAsync(1)).DocumentoLicencia);
+    }
+
     [Fact]
     public async Task DuplicateLicenseDocumentReturnsConflictWithLiteralMessage()
     {
