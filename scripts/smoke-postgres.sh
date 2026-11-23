@@ -376,6 +376,9 @@ checks = {
     "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Moto", 1, 1), ("Otro", 1, 1)],
     "vehiculo-created": lambda data: data["id"] > 0,
     "vehiculo-placa-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa ABC-123.",
+    "vehiculo-placa-minuscula-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa abc-123." and "Detail" not in data,
+    "vehiculo-placa-propia-updated": lambda data: data["id"] > 0,
+    "vehiculo-placa-propia-minuscula": lambda data: data["placa"] == "smk-001" and data["observaciones"] == "Alta de smoke",
     "vehiculo-capacidad-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad no puede superar 9999999999999999.99." and "Detail" not in data,
     "vehiculo-observaciones-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las observaciones no pueden superar 500 caracteres." and "Detail" not in data,
     "conductor-sin-zona-created": lambda data: data["id"] > 0,
@@ -869,6 +872,21 @@ request_check 'Tipos de vehículo' GET '/api/v1/vehiculos-flota/tipos' 200 vehic
 request_check 'Resumen de vehículos' GET '/api/v1/vehiculos-flota/resumen' 200 vehiculos-resumen
 request_check 'POST vehículo válido' POST '/api/v1/vehiculos-flota' 200 vehiculo-created '{"placa":"SMK-001","marca":"Marca Smoke","modelo":"Modelo Smoke","anio":2024,"tipo":"Camion","capacidadKg":1234.5,"activo":true,"observaciones":"Alta de smoke"}'
 request_check 'POST vehículo con placa del seed' POST '/api/v1/vehiculos-flota' 409 vehiculo-placa-duplicate '{"placa":"ABC-123","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'POST vehículo con placa del seed en minúsculas' POST '/api/v1/vehiculos-flota' 409 vehiculo-placa-minuscula-duplicate '{"placa":"  abc-123  ","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'PUT vehículo con placa ajena en minúsculas' PUT "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 409 vehiculo-placa-minuscula-duplicate '{"placa":"abc-123","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'PUT vehículo con su propia placa en minúsculas' PUT "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 200 vehiculo-placa-propia-updated '{"placa":"smk-001","marca":"Marca Smoke","modelo":"Modelo Smoke","anio":2024,"tipo":"Camion","capacidadKg":1234.5,"activo":true,"observaciones":"Alta de smoke"}'
+request_check 'GET vehículo conserva su placa en minúsculas' GET "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 200 vehiculo-placa-propia-minuscula
+# La escritura directa evita la validación de Application y comprueba el índice real.
+if error_placa_duplicada="$(docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -c \
+    "INSERT INTO \"VehiculosFlota\" (\"Placa\", \"Marca\", \"Modelo\", \"Anio\", \"Tipo\", \"CapacidadKg\", \"Activo\") SELECT upper(\"Placa\"), \"Marca\", \"Modelo\", \"Anio\", \"Tipo\", \"CapacidadKg\", \"Activo\" FROM \"VehiculosFlota\" WHERE \"Id\" = ${VEHICULO_CREADO_ID};" 2>&1)"; then
+    printf 'ERROR: PostgreSQL admitió una placa duplicada con otras mayúsculas\n' >&2
+    exit 1
+fi
+if [[ "$error_placa_duplicada" != *23505* || "$error_placa_duplicada" != *UX_VehiculosFlota_PlacaNormalizada* ]]; then
+    printf 'ERROR: la escritura directa no falló por el índice esperado de placas\n%s\n' "$error_placa_duplicada" >&2
+    exit 1
+fi
+printf 'OK: índice de placas rechaza duplicados sin distinguir mayúsculas\n'
 request_check 'POST vehículo con capacidad fuera de decimal(18,2)' POST '/api/v1/vehiculos-flota' 400 vehiculo-capacidad-invalid '{"placa":"SMK-002","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":100000000000000000,"activo":true}'
 request_check 'POST vehículo con observaciones de 501 caracteres' POST '/api/v1/vehiculos-flota' 400 vehiculo-observaciones-invalid "{\"placa\":\"SMK-003\",\"marca\":\"Marca\",\"modelo\":\"Modelo\",\"anio\":2024,\"tipo\":\"Camion\",\"capacidadKg\":1000,\"activo\":true,\"observaciones\":\"${OBSERVACIONES_LARGAS}\"}"
 request_check 'DELETE vehículo recién creado' DELETE "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 204 ''

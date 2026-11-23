@@ -69,7 +69,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 38 MermasProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 39 MantenimientoPreventivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 40 MantenimientoCorrectivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
-| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo41 |
+| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (pantalla y placa única por el PR #51, 2026-11-23) | modulo41 |
 | 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado; pantalla, unicidad y vigencia verificadas en rama de Kelvin, pendientes revisión/integración | modulo42 |
 | 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 44 ConsolidacionCarga | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
@@ -90,7 +90,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 59 CentrosCosto | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 60 ActivosFijos | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 61 Empleados | Capital Humano y Nóminas (HCM) | Alexander | backend y pantalla integrados, falta QA visual | modulo61 |
-| 62 ContratosLaborales | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
+| 62 ContratosLaborales | Capital Humano y Nóminas (HCM) | Alexander | backend integrado (PR #39), pantalla pendiente | modulo62 |
 | 63 AsistenciaBiometrica | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 64 TurnosHorarios | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 65 VacacionesPermisos | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
@@ -100,7 +100,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 69 Capacitaciones | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
 | 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Alexander | pantalla integrada, falta QA visual | 43, 44 |
-| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | backend terminado, pantalla parcial: falta matriz y editor | 41, 42 |
+| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | terminado (matriz y editor por el PR #42, 2026-11-23) | 41, 42 |
 | 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Kelvin Pinto | pendiente | — |
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | backend integrado, pantalla pendiente | modulo75 |
