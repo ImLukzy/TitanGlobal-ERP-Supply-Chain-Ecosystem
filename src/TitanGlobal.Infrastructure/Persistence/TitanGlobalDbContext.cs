@@ -7,6 +7,8 @@ namespace TitanGlobal.Infrastructure.Persistence;
 
 public partial class TitanGlobalDbContext : DbContext
 {
+    public virtual DbSet<AcuerdoAbastecimiento> AcuerdosAbastecimiento { get; set; } = null!;
+
     public virtual DbSet<AdendaContrato> AdendasContrato { get; set; } = null!;
 
     public virtual DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
@@ -89,6 +91,22 @@ public partial class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AcuerdoAbastecimiento>(entity =>
+        {
+            entity.HasIndex(e => e.Numero, "IX_AcuerdosAbastecimiento_Numero").IsUnique();
+
+            entity.HasIndex(e => e.ProveedorId, "IX_AcuerdosAbastecimiento_ProveedorId");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.MontoMaximo).HasPrecision(18, 2);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.AcuerdosAbastecimiento)
+                .HasForeignKey(d => d.ProveedorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<AdendaContrato>(entity =>
         {
             entity.HasIndex(e => new { e.ContratoLaboralId, e.FechaVigencia }, "IX_AdendasContrato_ContratoLaboralId_FechaVigencia").IsUnique();
