@@ -58,6 +58,6 @@ describe('indicador de alertas en la cabecera', () => {
     renderCabecera();
     expect(await screen.findByRole('heading', { name: 'Contenido disponible' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Rol de prueba' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('link', { name: /alerta/ })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('link', { name: /alertas? altas?/ })).not.toBeInTheDocument());
   });
 });

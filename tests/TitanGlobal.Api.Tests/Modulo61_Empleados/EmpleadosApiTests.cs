@@ -363,6 +363,74 @@ public class EmpleadosApiTests
     }
 
     [Fact]
+    public async Task CeseCierraLosContratosVigentesYRespetaLosVencidosYOtrosEstados()
+    {
+        await InsertarContratosAsync(
+            CrearContrato(1, 2, "Vigente", new DateOnly(2026, 1, 1), new DateOnly(2027, 1, 1)),
+            CrearContrato(2, 2, "Vigente", new DateOnly(2025, 1, 1), null),
+            CrearContrato(3, 2, "Vigente", new DateOnly(2024, 1, 1), new DateOnly(2026, 10, 31)),
+            CrearContrato(4, 2, "Vigente", new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31)),
+            CrearContrato(5, 2, "Renovado", new DateOnly(2022, 1, 1), new DateOnly(2022, 12, 31)),
+            CrearContrato(6, 3, "Vigente", new DateOnly(2024, 2, 1), null));
+        HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            "/api/v1/empleados/2/cese",
+            CrearCese(new DateOnly(2026, 10, 31), "Renuncia voluntaria"));
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        foreach (int idCerrado in new[] { 1, 2, 3 })
+        {
+            ContratoLaboral cerrado = await ObtenerContratoAsync(idCerrado);
+            Assert.Equal("Cerrado", cerrado.Estado);
+            Assert.Equal(new DateOnly(2026, 10, 31), cerrado.FechaCierre);
+            Assert.Equal("Cese del empleado", cerrado.MotivoCierre);
+        }
+
+        ContratoLaboral conFin = await ObtenerContratoAsync(1);
+        Assert.Equal(new DateOnly(2027, 1, 1), conFin.FechaFin);
+        ContratoLaboral vencido = await ObtenerContratoAsync(4);
+        Assert.Equal("Vigente", vencido.Estado);
+        Assert.Null(vencido.FechaCierre);
+        Assert.Null(vencido.MotivoCierre);
+        ContratoLaboral renovado = await ObtenerContratoAsync(5);
+        Assert.Equal("Renovado", renovado.Estado);
+        Assert.Null(renovado.FechaCierre);
+        ContratoLaboral deOtroEmpleado = await ObtenerContratoAsync(6);
+        Assert.Equal("Vigente", deOtroEmpleado.Estado);
+        Assert.Null(deOtroEmpleado.FechaCierre);
+    }
+
+    [Fact]
+    public async Task CeseConContratoVigenteQueEmpiezaDespuesDevuelveConflictoSinCambiarFilas()
+    {
+        await InsertarContratosAsync(
+            CrearContrato(1, 2, "Vigente", new DateOnly(2026, 11, 15), new DateOnly(2027, 11, 14)));
+        string[] antes = await LeerEmpleadosAsync();
+        HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            "/api/v1/empleados/2/cese",
+            CrearCese(new DateOnly(2026, 10, 31), "Renuncia voluntaria"));
+        await AssertErrorAsync(
+            respuesta,
+            409,
+            "No se puede cesar al empleado 2: el contrato CTR-000001 empieza después de la fecha de cese.");
+        Assert.Equal(antes, await LeerEmpleadosAsync());
+        ContratoLaboral contrato = await ObtenerContratoAsync(1);
+        Assert.Equal("Vigente", contrato.Estado);
+        Assert.Null(contrato.FechaCierre);
+        Assert.Null(contrato.MotivoCierre);
+    }
+
+    [Fact]
+    public async Task CeseSinContratosSigueSiendoValido()
+    {
+        HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            "/api/v1/empleados/2/cese",
+            CrearCese(new DateOnly(2026, 10, 31), "Renuncia voluntaria"));
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Empleado? empleado = await ObtenerEmpleadoAsync(2);
+        Assert.NotNull(empleado);
+        Assert.Equal("Cesado", empleado.Estado);
+    }
+
+    [Fact]
     public async Task CeseDeEmpleadoInexistenteDevuelveLiteral()
     {
         string[] antes = await LeerEmpleadosAsync();
@@ -538,6 +606,37 @@ public class EmpleadosApiTests
         return empleados.Select(FirmaEmpleado).ToArray();
     }
 
+    private static ContratoLaboral CrearContrato(int id, int empleadoId, string estado, DateOnly inicio, DateOnly? fin)
+    {
+        return new ContratoLaboral
+        {
+            Id = id,
+            Numero = $"CTR-{id:D6}",
+            EmpleadoId = empleadoId,
+            Modalidad = "PlazoFijo",
+            FechaInicio = inicio,
+            FechaFin = fin,
+            SueldoBasico = 2500m,
+            Cargo = "Analista",
+            Estado = estado
+        };
+    }
+
+    private async Task InsertarContratosAsync(params ContratoLaboral[] contratos)
+    {
+        using IServiceScope alcance = _fabrica.Services.CreateScope();
+        TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.ContratosLaborales.AddRange(contratos);
+        await contexto.SaveChangesAsync();
+    }
+
+    private async Task<ContratoLaboral> ObtenerContratoAsync(int id)
+    {
+        using IServiceScope alcance = _fabrica.Services.CreateScope();
+        TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        return await contexto.ContratosLaborales.AsNoTracking().SingleAsync(contrato => contrato.Id == id);
+    }
+
     private async Task<Empleado?> ObtenerEmpleadoAsync(int id)
     {
         using IServiceScope alcance = _fabrica.Services.CreateScope();
@@ -560,6 +659,7 @@ public class EmpleadosApiTests
     {
         using IServiceScope alcance = _fabrica.Services.CreateScope();
         TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.ContratosLaborales.RemoveRange(contexto.ContratosLaborales.ToList());
         contexto.Empleados.RemoveRange(contexto.Empleados.ToList());
         contexto.SaveChanges();
         BorrarAuditoriaDeEmpleados(contexto);
