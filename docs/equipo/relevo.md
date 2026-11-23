@@ -107,5 +107,11 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | sí, desde 011 |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 | 027 | `027-importaciones.sql` | Sergio | `sergio/modulo16-importaciones` (PR #56) | no |
+| 028 | `028-agentes-aduaneros.sql` | Sergio | `sergio/modulo17-agentes-aduaneros` | no |
+| 029 | `029-costeo-importacion.sql` | Sergio | `sergio/modulo18-costeo-importacion` | no |
+| 030 | `030-recepcion-mercaderia.sql` | Sergio | `sergio/modulo19-recepcion-mercaderia` | no |
+| 031 | `031-monedas-tipos-cambio.sql` | Sergio | `sergio/modulo74-monedas-tipos-cambio` | no |
+| 032 | `032-series-numeracion.sql` | Sergio | `sergio/modulo76-series-numeracion` | no |
+| 033 | `033-cierres-periodo.sql` | Sergio | `sergio/modulo80-cierres-periodo` | no |
 
 Un script nuevo toma el siguiente número libre de esta tabla (024 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
