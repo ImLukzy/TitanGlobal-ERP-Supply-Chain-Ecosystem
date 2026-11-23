@@ -4,7 +4,7 @@
 
 Definir cómo se fabrica un producto mediante una secuencia de operaciones. Cada operación identifica su centro de trabajo y sus tiempos estándar de preparación y ejecución. El usuario puede consultar el historial, preparar una versión en borrador, activarla y retirarla.
 
-**Responsable:** Antony Huayhua. **Estado:** aprobación de Lukas confirmada por Antony.
+**Responsable:** Antony Huayhua. **Estado:** pendiente de aprobación de Lukas.
 
 ## 2. Alcance y decisiones para revisión
 
@@ -114,7 +114,7 @@ El `DELETE /api/v1/centros-trabajo/{id:int}` del módulo 33 devuelve 409 con «N
 
 ## 6. Checklist de ejecución
 
-- [x] Obtener la aprobación de Lukas sobre el alcance y el contrato.
+- [ ] Obtener la aprobación de Lukas sobre el alcance y el contrato.
 - [x] Aplicar el script local y regenerar entidades y contexto.
 - [x] Implementar persistencia, casos de uso y endpoints.
 - [x] Incorporar pruebas de integración, seed y smoke.
