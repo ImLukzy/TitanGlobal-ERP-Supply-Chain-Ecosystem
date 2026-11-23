@@ -40,6 +40,18 @@ function montar({ vacio = false, error = false, conflictoAlta = false } = {}) {
   return fetchMock;
 }
 
+function llamadasListado(fetchMock: ReturnType<typeof montar>): unknown[][] {
+  return fetchMock.mock.calls.filter((call) => String(call[0]).startsWith(`${ruta}?`));
+}
+
+// Espera a que termine la carga inicial: la tabla muestra la versión y el listado se pidió una sola vez.
+async function esperarCargaInicialListas(fetchMock: ReturnType<typeof montar>): Promise<void> {
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: `Ver ${producto}, versión 2` })).toBeInTheDocument();
+    expect(llamadasListado(fetchMock)).toHaveLength(1);
+  });
+}
+
 async function elegirProducto(etiqueta: string, nombre: string): Promise<void> {
   fireEvent.click(screen.getByLabelText(etiqueta));
   fireEvent.click(await screen.findByRole('button', { name: nombre }));
@@ -55,6 +67,7 @@ describe('pantalla de listas de materiales', () => {
     const fetchMock = montar();
     expect(screen.getByRole('heading', { name: '31 · Listas de materiales' })).toBeInTheDocument();
     expect(screen.getByText('Cargando listas de materiales…')).toBeInTheDocument();
+    await esperarCargaInicialListas(fetchMock);
     await abrirDetalle();
     expect(screen.getByText('Tornillo M8')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
@@ -79,6 +92,7 @@ describe('pantalla de listas de materiales', () => {
 
   it('valida el alta y conserva los datos ante un 409', async () => {
     const fetchMock = montar({ conflictoAlta: true });
+    await esperarCargaInicialListas(fetchMock);
     fireEvent.click(screen.getByRole('button', { name: 'Nueva lista' }));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
     expect(screen.getByText('El identificador del producto debe ser mayor que 0.')).toBeInTheDocument();
@@ -95,8 +109,25 @@ describe('pantalla de listas de materiales', () => {
     expect(fetchMock).toHaveBeenCalledWith(ruta, expect.objectContaining({ method: 'POST' }));
   });
 
+  it('rechaza localmente una cantidad de más de 15 dígitos sin llamar a la API', async () => {
+    const fetchMock = montar();
+    await esperarCargaInicialListas(fetchMock);
+    fireEvent.click(screen.getByRole('button', { name: 'Nueva lista' }));
+    await elegirProducto('Producto fabricado', `${producto} · #31`);
+    await elegirProducto('Componente 1', 'Tornillo M8 · #32');
+    fireEvent.change(screen.getByLabelText('Versión'), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('Cantidad'), { target: { value: '1234567890.123456' } });
+    fireEvent.change(screen.getByLabelText('Unidad de medida'), { target: { value: 'un' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+    expect(screen.getByText('La cantidad admite como máximo 15 dígitos significativos.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cantidad')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Cantidad')).toHaveValue('1234567890.123456');
+    expect(fetchMock).not.toHaveBeenCalledWith(ruta, expect.objectContaining({ method: 'POST' }));
+  });
+
   it('edita un borrador y envía todas las líneas sin producto ni versión', async () => {
     const fetchMock = montar();
+    await esperarCargaInicialListas(fetchMock);
     await abrirDetalle();
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
     expect(screen.queryByLabelText('Versión')).not.toBeInTheDocument();
@@ -107,16 +138,26 @@ describe('pantalla de listas de materiales', () => {
     expect(fetchMock).toHaveBeenCalledWith(`${ruta}/7`, expect.objectContaining({ method: 'PUT', body: '{"componentes":[{"componenteProductoId":32,"cantidad":2,"unidadMedida":"un"}]}' }));
   });
 
-  it('devuelve el foco al cancelar y permite activar y retirar conservando el historial', async () => {
-    montar();
+  it('cancela con Escape sin enviar la transición y devuelve el foco al botón', async () => {
+    const fetchMock = montar();
+    await esperarCargaInicialListas(fetchMock);
     await abrirDetalle();
     const activar = screen.getByRole('button', { name: 'Activar' });
     fireEvent.click(activar);
     const dialogo = screen.getByRole('dialog', { name: 'Activar versión 2' });
+    expect(dialogo).toHaveAttribute('aria-modal', 'true');
     expect(within(dialogo).getByRole('button', { name: 'Cancelar' })).toHaveFocus();
     fireEvent.keyDown(dialogo, { key: 'Escape' });
-    expect(activar).toHaveFocus();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(activar).toHaveFocus());
+    expect(fetchMock).not.toHaveBeenCalledWith(`${ruta}/7/activar`, expect.anything());
+  });
 
+  it('activa y retira conservando el historial', async () => {
+    const fetchMock = montar();
+    await esperarCargaInicialListas(fetchMock);
+    await abrirDetalle();
+    const activar = screen.getByRole('button', { name: 'Activar' });
     fireEvent.click(activar);
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar activación' }));
     expect(await screen.findByText('Versión activada.')).toBeInTheDocument();
