@@ -751,6 +751,14 @@ request_check 'POST salida sin stock suficiente' POST '/api/v1/kardex-valorizado
 request_check 'POST salida con costo unitario' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-salida-costo '{"productoId":1,"almacenId":1,"tipo":"Salida","cantidad":1,"costoUnitario":5}'
 request_check 'POST movimiento en almacén inexistente' POST '/api/v1/kardex-valorizado/movimientos' 400 movimiento-almacen '{"productoId":1,"almacenId":9999,"tipo":"Entrada","cantidad":1,"costoUnitario":5}'
 request_check 'Kardex con método inválido' GET '/api/v1/kardex-valorizado/kardex?productoId=1&almacenId=1&metodo=lifo' 400 kardex-metodo
+request_check 'Listado de ajustes de inventario' GET '/api/v1/ajustes-inventario?almacenId=1' 200 ajustes-list
+request_check 'Detalle del ajuste 1' GET '/api/v1/ajustes-inventario/1' 200 ajuste-detail
+request_check 'Detalle de ajuste inexistente' GET '/api/v1/ajustes-inventario/9999' 404 ajuste-notfound
+request_check 'Resumen de ajustes de inventario' GET '/api/v1/ajustes-inventario/resumen' 200 ajustes-resumen
+request_check 'Valores iniciales de ajustes de inventario' GET '/api/v1/ajustes-inventario/valores-iniciales' 200 ajustes-valores-iniciales
+request_check 'POST ajuste incremento válido' POST '/api/v1/ajustes-inventario' 201 ajuste-created "{"codigo":"AJU-SMK-${RUN_ID}","almacenId":1,"productoId":2,"tipo":"Incremento","motivo":"ConteoFisico","cantidad":2,"costoUnitario":25.5,"responsable":"Smoke QA"}"
+request_check 'POST ajuste con código duplicado' POST '/api/v1/ajustes-inventario' 409 ajuste-duplicate '{"codigo":"aju-2026-001","almacenId":1,"productoId":2,"tipo":"Incremento","motivo":"ConteoFisico","cantidad":1,"costoUnitario":25.5,"responsable":"Smoke QA"}'
+request_check 'POST ajuste decremento sin stock suficiente' POST '/api/v1/ajustes-inventario' 409 ajuste-stock '{"codigo":"AJU-SMK-ERR","almacenId":1,"productoId":2,"tipo":"Decremento","motivo":"Merma","cantidad":9999,"responsable":"Smoke QA"}'
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive

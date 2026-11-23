@@ -662,4 +662,14 @@ INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCum
 
 SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
 
+INSERT INTO "AjustesInventario" ("Id", "Codigo", "AlmacenId", "ProductoId", "Tipo", "Motivo", "Cantidad", "CostoUnitario", "Fecha", "Responsable", "Observaciones") VALUES
+    (1, 'AJU-2026-001', (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 2, 'Incremento', 'ConteoFisico', 10, 26.0000, now() - interval '12 days', 'Carlos Mendoza', 'Sobrante detectado en conteo cíclico'),
+    (2, 'AJU-2026-002', (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 2, 'Decremento', 'Merma', 5, 25.6000, now() - interval '6 days', 'Lucía Paredes', 'Merma por manipulación en almacén');
+
+SELECT setval(pg_get_serial_sequence('"AjustesInventario"', 'Id'), (SELECT MAX("Id") FROM "AjustesInventario"));
+
+INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "LoteId", "Fecha", "Tipo", "Cantidad", "CostoUnitario", "Referencia", "AjusteInventarioId") VALUES
+    (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '12 days', 'Entrada', 10, 26.0000, 'AJUSTE AJU-2026-001', 1),
+    (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '6 days', 'Salida', 5, NULL, 'AJUSTE AJU-2026-002', 2);
+
 COMMIT;
