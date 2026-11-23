@@ -24,7 +24,7 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
 | Kelvin | 41 VehiculosFlota y 42 Conductores: backend, pruebas, seed y smoke | Pantallas, unicidad sin distinguir mayúsculas y relación entre `Habilitado` y vencimiento |
-| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: puede empezar el 62 con su spec |
+| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: backend del 62 integrado (PR #39) y `008` aplicado en la demo el 2026-11-19; sigue la pantalla del 62 con su spec |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
 
@@ -90,8 +90,21 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 005 | `005-evaluaciones-proveedor.sql` | Sergio | `sergio/modulo12-evaluacion-proveedores` | sí, desde 004 |
 | 006 | `006-licitaciones.sql` | Sergio | `sergio/modulo14-licitaciones` | sí, desde 005 |
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
-| 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales` | — |
+| 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales-backend` | no (en `main` por el PR #39 y aplicado en la demo) |
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
-| 010 | `010-acuerdos-abastecimiento.sql` | Sergio | `sergio/modulo20-acuerdos-abastecimiento` | no |
+| 010 | `010-acuerdos-abastecimiento.sql` | Sergio | `sergio/modulo20-acuerdos-abastecimiento` (PR #45) | no |
+| 011 | `011-rutas-produccion.sql` | Antony | `antony/modulo32-rutas-produccion` (PR #49) | no |
+| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | no |
+| 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | no |
+| 014 | `014-consolidacion-carga.sql` | Kelvin | `kelvin/modulo44-consolidacion-carga` | no |
+| 015 | `015-guias-remision.sql` | Kelvin | `kelvin/modulo45-guias-remision` | no |
+| 016 | `016-monitoreo-entregas.sql` | Kelvin | `kelvin/modulo46-monitoreo-entregas` (aún sin subir) | no |
+| 017 | `017-control-combustible.sql` | Kelvin | `kelvin/modulo47-control-combustible` | no |
+| 018 | `018-logistica-inversa.sql` | Kelvin | `kelvin/modulo49-logistica-inversa` | no |
+| 019 | `019-siniestros-flota.sql` | Kelvin | `kelvin/modulo50-siniestros-flota` | no |
+| 020 | `020-sucursales.sql` | Kelvin | `kelvin/modulo73-sucursales` | no |
+| 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | sí, desde 010 |
+| 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | sí, desde 011 |
+| 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 
-Un script nuevo toma el siguiente número libre de esta tabla (010 en adelante) y se añade aquí en el mismo PR.
+Un script nuevo toma el siguiente número libre de esta tabla (024 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).

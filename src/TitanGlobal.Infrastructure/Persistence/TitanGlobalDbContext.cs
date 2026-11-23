@@ -7,7 +7,7 @@ namespace TitanGlobal.Infrastructure.Persistence;
 
 public partial class TitanGlobalDbContext : DbContext
 {
-    public virtual DbSet<AcuerdoAbastecimiento> AcuerdosAbastecimiento { get; set; } = null!;
+    public virtual DbSet<AdendaContrato> AdendasContrato { get; set; } = null!;
 
     public virtual DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
 
@@ -24,6 +24,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<Conductor> Conductores { get; set; } = null!;
 
     public virtual DbSet<ContratoComercial> ContratosComerciales { get; set; } = null!;
+
+    public virtual DbSet<ContratoLaboral> ContratosLaborales { get; set; } = null!;
 
     public virtual DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
 
@@ -87,19 +89,15 @@ public partial class TitanGlobalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AcuerdoAbastecimiento>(entity =>
+        modelBuilder.Entity<AdendaContrato>(entity =>
         {
-            entity.HasIndex(e => e.Numero, "IX_AcuerdosAbastecimiento_Numero").IsUnique();
+            entity.HasIndex(e => new { e.ContratoLaboralId, e.FechaVigencia }, "IX_AdendasContrato_ContratoLaboralId_FechaVigencia").IsUnique();
 
-            entity.HasIndex(e => e.ProveedorId, "IX_AcuerdosAbastecimiento_ProveedorId");
+            entity.Property(e => e.Cargo).HasMaxLength(100);
+            entity.Property(e => e.SueldoBasico).HasPrecision(12, 2);
 
-            entity.Property(e => e.Descripcion).HasMaxLength(500);
-            entity.Property(e => e.Estado).HasMaxLength(20);
-            entity.Property(e => e.MontoMaximo).HasPrecision(18, 2);
-            entity.Property(e => e.Numero).HasMaxLength(20);
-
-            entity.HasOne(d => d.Proveedor).WithMany(p => p.AcuerdosAbastecimiento)
-                .HasForeignKey(d => d.ProveedorId)
+            entity.HasOne(d => d.ContratoLaboral).WithMany(p => p.AdendasContrato)
+                .HasForeignKey(d => d.ContratoLaboralId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -190,6 +188,34 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Cliente).WithMany(p => p.ContratosComerciales)
                 .HasForeignKey(d => d.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ContratoLaboral>(entity =>
+        {
+            entity.HasIndex(e => e.ContratoAnteriorId, "IX_ContratosLaborales_ContratoAnteriorId");
+
+            entity.HasIndex(e => e.EmpleadoId, "IX_ContratosLaborales_EmpleadoId");
+
+            entity.HasIndex(e => new { e.EmpleadoId, e.Estado }, "IX_ContratosLaborales_EmpleadoId_Vigente")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text = 'Vigente'::text)");
+
+            entity.HasIndex(e => e.Numero, "IX_ContratosLaborales_Numero").IsUnique();
+
+            entity.Property(e => e.Cargo).HasMaxLength(100);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Modalidad).HasMaxLength(20);
+            entity.Property(e => e.MotivoCierre).HasMaxLength(300);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.SueldoBasico).HasPrecision(12, 2);
+
+            entity.HasOne(d => d.ContratoAnterior).WithMany(p => p.InverseContratoAnterior)
+                .HasForeignKey(d => d.ContratoAnteriorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Empleado).WithMany(p => p.ContratosLaborales)
+                .HasForeignKey(d => d.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
