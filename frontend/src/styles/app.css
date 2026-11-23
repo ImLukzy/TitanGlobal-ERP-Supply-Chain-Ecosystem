@@ -1802,3 +1802,64 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   body.planillas-imprimiendo .planillas-boleta, body.planillas-imprimiendo .planillas-boleta * { background: #fff; color: #000; }
   body.planillas-imprimiendo .planillas-boleta { border: 1px solid #000; }
 }
+.evaluacion-desempeno-tabs { margin-top: 14px; }
+.evaluacion-desempeno-tab-panel { display: grid; gap: 15px; min-width: 0; }
+.evaluacion-desempeno-list-panel, .evaluacion-desempeno-detail-panel, .evaluacion-desempeno-form-panel { min-width: 0; margin-top: 0; }
+.evaluacion-desempeno-filters { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.evaluacion-desempeno-filters-tres { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+.evaluacion-desempeno-table { min-width: 640px; }
+.evaluacion-desempeno-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.evaluacion-desempeno-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.evaluacion-desempeno-estado.is-abierto, .evaluacion-desempeno-estado.is-enviada { background: var(--accent-soft); color: var(--accent-ink); }
+.evaluacion-desempeno-estado.is-cerrado, .evaluacion-desempeno-estado.is-cerrada { background: var(--good-soft); color: var(--good); }
+.evaluacion-desempeno-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.evaluacion-desempeno-ok { margin: 10px 0 0; color: var(--good); font-size: 10px; font-weight: 650; }
+.evaluacion-desempeno-actions { flex-wrap: wrap; align-items: center; }
+.evaluacion-desempeno-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; }
+.evaluacion-desempeno-datos > div { min-width: 0; }
+.evaluacion-desempeno-datos dt, .evaluacion-desempeno-resumen dt { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.evaluacion-desempeno-datos dd { margin: 4px 0 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.evaluacion-desempeno-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.evaluacion-desempeno-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.evaluacion-desempeno-section h4 { margin: 14px 0 8px; color: var(--ink-soft); font-size: 11px; }
+.evaluacion-desempeno-suma { margin: 0 0 10px; color: var(--bad); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.evaluacion-desempeno-suma.is-completa { color: var(--good); }
+.evaluacion-desempeno-scroll { max-width: 100%; overflow-x: auto; }
+.evaluacion-desempeno-mini-tabla { width: 100%; min-width: 360px; border-collapse: collapse; text-align: left; font-size: 10px; }
+.evaluacion-desempeno-mini-tabla caption { padding: 0 0 6px; color: var(--ink-faint); text-align: left; font-size: 10px; font-weight: 650; }
+.evaluacion-desempeno-mini-tabla th { padding: 7px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.evaluacion-desempeno-mini-tabla td { padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: break-word; }
+.evaluacion-desempeno-descripcion { display: block; margin-top: 3px; color: var(--ink-soft); }
+.evaluacion-desempeno-fila-acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.evaluacion-desempeno-fila-boton { min-height: 0; padding: 5px 9px; font-size: 10px; white-space: nowrap; }
+.evaluacion-desempeno-resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 6px; }
+.evaluacion-desempeno-resumen > div { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.evaluacion-desempeno-resumen dd { margin: 4px 0 0; color: var(--ink); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.evaluacion-desempeno-barras { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.evaluacion-desempeno-barra { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 2fr) 44px; align-items: center; gap: 10px; font-size: 10px; }
+.evaluacion-desempeno-barra-etiqueta { min-width: 0; color: var(--ink); overflow-wrap: break-word; }
+.evaluacion-desempeno-barra-pista { display: block; height: 10px; border-radius: 999px; background: var(--surface-raised); overflow: hidden; }
+.evaluacion-desempeno-barra-relleno { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+.evaluacion-desempeno-barra-valor { color: var(--ink); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.evaluacion-desempeno-form, .evaluacion-desempeno-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.evaluacion-desempeno-competencia-form { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.evaluacion-desempeno-dialog-form { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
+.evaluacion-desempeno-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.evaluacion-desempeno-form .form-field, .evaluacion-desempeno-dialog-form .form-field { min-width: 0; gap: 6px; }
+.evaluacion-desempeno-form .form-field select, .evaluacion-desempeno-form .form-field input, .evaluacion-desempeno-dialog-form .form-field select, .evaluacion-desempeno-comentario textarea { width: 100%; min-width: 0; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.evaluacion-desempeno-form .form-field select, .evaluacion-desempeno-form .form-field input, .evaluacion-desempeno-dialog-form .form-field select { height: 38px; }
+.evaluacion-desempeno-comentario textarea { padding: 9px 11px; resize: vertical; }
+.evaluacion-desempeno-form .form-field [aria-invalid="true"], .evaluacion-desempeno-dialog-form .form-field [aria-invalid="true"], .evaluacion-desempeno-comentario [aria-invalid="true"] { border-color: var(--bad); }
+.evaluacion-desempeno-form-wide { grid-column: 1 / -1; min-width: 0; }
+.evaluacion-desempeno-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.evaluacion-desempeno-form-actions p { flex: 1 1 100%; margin: 0; font-size: 10px; }
+.evaluacion-desempeno-calificacion { min-width: 0; margin: 0 0 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.evaluacion-desempeno-calificacion legend { padding: 0 6px; color: var(--ink); font-size: 11px; font-weight: 700; }
+.evaluacion-desempeno-opciones { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.evaluacion-desempeno-opcion { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 10px; font-weight: 650; cursor: pointer; }
+.evaluacion-desempeno-opcion input { width: auto; min-width: 0; min-height: 0; accent-color: var(--accent); }
+.evaluacion-desempeno-comentario { margin-top: 12px; }
+.evaluacion-desempeno-comentario-lectura { margin: 12px 0 0; color: var(--ink-soft); font-size: 11px; overflow-wrap: break-word; }
+.evaluacion-desempeno-puntaje { margin: 12px 0 0; color: var(--ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .evaluacion-desempeno-filters, .evaluacion-desempeno-filters-tres, .evaluacion-desempeno-form, .evaluacion-desempeno-datos, .evaluacion-desempeno-resumen { grid-template-columns: minmax(0, 1fr); } .evaluacion-desempeno-barra { grid-template-columns: minmax(0, 1fr) 44px; } .evaluacion-desempeno-barra-pista { grid-column: 1 / -1; grid-row: 2; } }
+@media (max-width: 520px) { .evaluacion-desempeno-tabs { flex-wrap: wrap; } .evaluacion-desempeno-opciones { flex-direction: column; } }
