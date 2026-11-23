@@ -1589,3 +1589,41 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .vehiculos-flota-filters, .vehiculos-flota-form { grid-template-columns: minmax(0, 1fr); }
   .vehiculos-flota-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+/* Módulo 42: Conductores */
+.conductores-page { padding-bottom: 42px; }
+.conductores-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.conductores-list-panel, .conductores-detail-panel { min-width: 0; }
+.conductores-detail-panel h2, .conductores-page .clientes-dialog { overflow-wrap: anywhere; }
+.conductores-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.conductores-filters > div { display: grid; min-width: 0; gap: 6px; }
+.conductores-filters label { font-size: 11px; color: var(--ink-soft); }
+.conductores-filters input, .conductores-filters select, .conductores-form input:not([type="checkbox"]), .conductores-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 12px; }
+.conductores-form textarea { resize: vertical; }
+.conductores-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.conductores-table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 10px; text-align: left; }
+.conductores-table th { padding: 9px 5px; background: var(--surface-muted); color: var(--ink-soft); white-space: nowrap; }
+.conductores-table td { padding: 10px 5px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.conductores-table tr.is-selected { background: var(--accent-soft); }
+.conductores-code-button { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.conductores-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.conductores-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0; }
+.conductores-detail-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; }
+.conductores-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.conductores-detail-panel .clientes-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.conductores-detail-panel .clientes-detail-actions button { white-space: normal; }
+.conductores-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.conductores-active-field { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; }
+.conductores-form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.conductores-form-actions p { color: var(--bad); }
+.conductores-help { margin: 10px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+.conductores-form > .conductores-help { grid-column: 1 / -1; }
+.conductores-warning { margin: 16px 0; padding: 12px; border: 1px solid var(--bad); border-radius: 8px; color: var(--bad); background: var(--surface); font-size: 12px; line-height: 1.5; }
+@media (min-width: 1024px) {
+  .conductores-work-area { grid-template-columns: minmax(0, 1fr) 260px; }
+  .conductores-table { min-width: 0; }
+}
+@media (max-width: 719px) {
+  .conductores-filters, .conductores-form { grid-template-columns: minmax(0, 1fr); }
+  .conductores-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
+}
