@@ -44,7 +44,7 @@ La implementación consume el [contrato del backend del módulo 31](modulo31-lis
 
 ### Contrato HTTP
 
-El cliente compartido gestiona la autenticación. Las transiciones usan `apiPostSinCuerpo`.
+El cliente compartido (`frontend/src/api/client.ts`) gestiona la autenticación y se usa sin cambios: `apiGet`, `apiPost` y `apiPut` serializan con `JSON.stringify`. Las transiciones usan `apiPostSinCuerpo`.
 
 | Operación | Petición bajo `/api/v1` | Datos |
 |---|---|---|
@@ -69,10 +69,11 @@ Cada línea enviada contiene `componenteProductoId`, `cantidad` numérica y `uni
 | Componente repetido | El componente {componenteProductoId} está repetido. |
 | Cantidad fuera del rango permitido | La cantidad debe ser mayor que 0 y no superar 999999999999.999999. |
 | Cantidad con más de seis decimales significativos | La cantidad admite como máximo 6 decimales. |
+| Cantidad con más de 15 dígitos significativos (solo validación local) | La cantidad admite como máximo 15 dígitos significativos. |
 | Unidad de medida en blanco | La unidad de medida es obligatoria. |
 | Unidad de medida de más de 20 caracteres tras recortar espacios | La unidad de medida no puede superar 20 caracteres. |
 
-Validar la cantidad sobre el texto ingresado y preservar su valor decimal al enviarla como número JSON. Cubrir el límite superior y las seis posiciones decimales en las pruebas del cliente. Mostrar los mensajes literales del backend para referencias inexistentes, versiones duplicadas y conflictos de estado.
+Validar la cantidad sobre el texto ingresado y enviarla como número JSON. Un `number` de JavaScript conserva sin redondeo hasta 15 dígitos significativos, por eso la pantalla limita la cantidad a 15 dígitos aunque el backend admita hasta 18 (`numeric(18,6)`). Así el valor enviado es exactamente el escrito y no hace falta modificar el cliente compartido. Una cantidad de más de 15 dígitos registrada por otra vía se muestra redondeada en el detalle. Cubrir en las pruebas del cliente el envío exacto de 15 dígitos, el rechazo local de 16 y las seis posiciones decimales. Mostrar los mensajes literales del backend para referencias inexistentes, versiones duplicadas y conflictos de estado.
 
 ## 5. Criterios de aceptación
 
