@@ -45,9 +45,15 @@ public partial class Empleado
 
     public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
 
+    public virtual ICollection<EntregaEpp> EntregasEpp { get; set; } = new List<EntregaEpp>();
+
     public virtual ICollection<Evaluacion> EvaluacionesEmpleado { get; set; } = new List<Evaluacion>();
 
     public virtual ICollection<Evaluacion> EvaluacionesEvaluador { get; set; } = new List<Evaluacion>();
+
+    public virtual ICollection<ExamenMedico> ExamenesMedicos { get; set; } = new List<ExamenMedico>();
+
+    public virtual ICollection<IncidenteSst> IncidentesSst { get; set; } = new List<IncidenteSst>();
 
     public virtual ICollection<InscripcionCurso> InscripcionesCurso { get; set; } = new List<InscripcionCurso>();
 
