@@ -1541,3 +1541,51 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 /* Módulo 72 · Etiquetas de tipo legibles sobre la fila seleccionada. */
 .roles-table tbody tr.is-selected .rol-tipo { background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
 .roles-table tbody tr.is-selected .rol-tipo.is-sistema { border-color: var(--accent-ink); color: var(--accent-ink); }
+
+/* Módulo 41: Vehículos de flota */
+
+.vehiculos-flota-page { padding-bottom: 42px; }
+.vehiculos-flota-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.vehiculos-flota-summary > .cliente-stat { grid-column: auto; min-width: 0; }
+
+.vehiculos-flota-summary small { color: var(--ink-soft); font-size: 11px; }
+.vehiculos-flota-summary-panel { grid-column: 1 / -1; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.vehiculos-flota-summary-panel h2 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.vehiculos-flota-summary-panel table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--ink); }
+.vehiculos-flota-summary-panel th, .vehiculos-flota-summary-panel td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.vehiculos-flota-summary-panel thead th { white-space: nowrap; color: var(--ink-soft); }
+.vehiculos-flota-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.vehiculos-flota-list-panel, .vehiculos-flota-detail-panel { min-width: 0; }
+.vehiculos-flota-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.vehiculos-flota-filters > div { display: grid; min-width: 0; gap: 6px; }
+.vehiculos-flota-filters label { font-size: 11px; color: var(--ink-soft); }
+.vehiculos-flota-filters input, .vehiculos-flota-filters select, .vehiculos-flota-form input:not([type="checkbox"]), .vehiculos-flota-form select, .vehiculos-flota-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 12px; }
+.vehiculos-flota-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.vehiculos-flota-table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 10px; text-align: left; }
+.vehiculos-flota-table th { padding: 9px 5px; background: var(--surface-muted); color: var(--ink-soft); font-size: 10px; white-space: nowrap; }
+.vehiculos-flota-table td { padding: 10px 5px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.vehiculos-flota-table tr.is-selected { background: var(--accent-soft); }
+.vehiculos-flota-table td:first-child { white-space: nowrap; }
+.vehiculos-flota-code-button { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.vehiculos-flota-number { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vehiculos-flota-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0; }
+.vehiculos-flota-detail-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; }
+.vehiculos-flota-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.vehiculos-flota-detail-panel .clientes-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.vehiculos-flota-detail-panel .clientes-detail-actions button { white-space: normal; }
+.vehiculos-flota-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vehiculos-flota-active-field { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; }
+.vehiculos-flota-form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.vehiculos-flota-form-actions p { color: var(--bad); }
+@media (min-width: 1024px) {
+  .vehiculos-flota-work-area { grid-template-columns: minmax(0, 1fr) 260px; }
+  .vehiculos-flota-table { min-width: 0; }
+}
+@media (max-width: 719px) {
+  .vehiculos-flota-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .vehiculos-flota-summary > .cliente-stat { grid-column: auto; }
+  .vehiculos-flota-summary > .cliente-stat:nth-child(4), .vehiculos-flota-summary > .cliente-stat:nth-child(5) { grid-column: auto; }
+  .vehiculos-flota-summary-panel { grid-column: 1 / -1; }
+  .vehiculos-flota-filters, .vehiculos-flota-form { grid-template-columns: minmax(0, 1fr); }
+  .vehiculos-flota-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
+}
