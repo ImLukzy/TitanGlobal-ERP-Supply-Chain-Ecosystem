@@ -290,7 +290,8 @@ INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema") VALUE
     (2, 'VENTAS', 'Ventas', 'Gestión comercial', FALSE),
     (3, 'COMPRAS', 'Compras', 'Gestión de abastecimiento', FALSE),
     (4, 'ALMACEN', 'Almacén', 'Gestión de inventarios', FALSE),
-    (5, 'CONSULTA', 'Consulta', 'Solo lectura', FALSE);
+    (5, 'CONSULTA', 'Consulta', 'Solo lectura', FALSE),
+    (6, 'RRHH', 'Recursos Humanos', 'Gestión de capital humano', FALSE);
 
 -- Contraseñas solo de desarrollo (hash BCrypt): admin → Admin2026!, invitado → Demo2026! (cuenta de demostración).
 INSERT INTO "Usuarios" ("Id", "NombreUsuario", "NombreCompleto", "Email", "Activo", "FechaAlta", "ContrasenaHash") VALUES
@@ -515,7 +516,9 @@ INSERT INTO "PermisosRoles" ("RolId", "ModuloNumero", "PuedeLeer", "PuedeEscribi
     (5, 77, TRUE, FALSE),
     (5, 78, TRUE, FALSE),
     (5, 79, TRUE, FALSE),
-    (5, 80, TRUE, FALSE);
+    (5, 80, TRUE, FALSE),
+    (6, 61, TRUE, TRUE),
+    (6, 62, TRUE, TRUE);
 
 SELECT setval(pg_get_serial_sequence('"Roles"', 'Id'), (SELECT MAX("Id") FROM "Roles"));
 SELECT setval(pg_get_serial_sequence('"PermisosRoles"', 'Id'), (SELECT MAX("Id") FROM "PermisosRoles"));
@@ -602,6 +605,23 @@ INSERT INTO "Empleados" ("Id", "Legajo", "TipoDocumento", "NumeroDocumento", "No
     (4, 'EMP-000004', 'Pasaporte', 'P1234567', 'Carlos', 'Diaz Soto', DATE '1982-07-30', DATE '2018-05-02', 'Auxiliar de Logistica', 'Logistica', NULL, NULL, 'Cesado', DATE '2026-09-30', 'Renuncia voluntaria');
 
 SELECT setval(pg_get_serial_sequence('"Empleados"', 'Id'), (SELECT MAX("Id") FROM "Empleados"));
+
+TRUNCATE TABLE "AdendasContrato", "ContratosLaborales" RESTART IDENTITY CASCADE;
+
+INSERT INTO "ContratosLaborales" ("Id", "Numero", "EmpleadoId", "Modalidad", "FechaInicio", "FechaFin", "SueldoBasico", "Cargo", "Estado", "ContratoAnteriorId", "FechaCierre", "MotivoCierre") VALUES
+    (1, 'CTR-000001', 1, 'Indeterminado', DATE '2021-03-01', NULL, 8500.00, 'Gerente de Ventas', 'Vigente', NULL, NULL, NULL),
+    (2, 'CTR-000002', 2, 'PlazoFijo', DATE '2019-08-16', DATE '2020-08-15', 3200.00, 'Analista de Compras', 'Renovado', NULL, NULL, NULL),
+    (3, 'CTR-000003', 2, 'PlazoFijo', DATE '2020-08-16', DATE '2021-08-15', 3400.00, 'Analista de Compras', 'Renovado', 2, NULL, NULL),
+    (4, 'CTR-000004', 2, 'Indeterminado', DATE '2021-08-16', NULL, 4200.00, 'Analista de Compras', 'Vigente', 3, NULL, NULL),
+    (5, 'CTR-000005', 3, 'Formativo', DATE '2024-01-08', DATE '2024-12-31', 1500.00, 'Almacenero', 'Vigente', NULL, NULL, NULL),
+    (6, 'CTR-000006', 4, 'PlazoFijo', DATE '2024-05-02', DATE '2027-05-01', 2600.00, 'Auxiliar de Logistica', 'Cerrado', NULL, DATE '2026-09-30', 'Cese del empleado'),
+    (7, 'CTR-000007', 1, 'PlazoFijo', DATE '2026-01-01', DATE '2026-12-31', 8500.00, 'Gerente de Ventas', 'Anulado', NULL, DATE '2026-01-05', 'Registro duplicado por error');
+
+INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Cargo", "SueldoBasico") VALUES
+    (1, 1, DATE '2024-01-01', 'Gerente Comercial', 9500.00);
+
+SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
+SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
 TRUNCATE TABLE "OfertasLicitacion", "Licitaciones" RESTART IDENTITY;
 
