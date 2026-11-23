@@ -623,4 +623,37 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+-- Módulo 52: comprobantes y notas internas de desarrollo. El origen se resuelve por su clave natural.
+INSERT INTO "Facturas" (
+    "ClienteId", "TipoComprobante", "Serie", "Numero", "FechaEmision",
+    "Moneda", "Estado", "Subtotal", "TotalDescuento", "TotalImpuesto", "Total"
+)
+SELECT 1, 'Factura', 'F52-DEV', numero, '2026-10-01 00:00:00+00'::timestamptz,
+       'PEN', 'Emitida', 100.00, 0, 0, 100.00
+FROM generate_series(1, 3) AS numeros(numero)
+ON CONFLICT ("TipoComprobante", "Serie", "Numero") DO NOTHING;
+
+INSERT INTO "DetallesFactura" (
+    "FacturaId", "ProductoId", "Descripcion", "Cantidad", "PrecioUnitario",
+    "Subtotal", "BaseImponible", "Total"
+)
+SELECT factura."Id", 1, 'Producto de ejemplo para notas', 1, 100.00, 100.00, 100.00, 100.00
+FROM "Facturas" AS factura
+WHERE factura."TipoComprobante" = 'Factura' AND factura."Serie" = 'F52-DEV'
+  AND factura."Numero" BETWEEN 1 AND 3
+  AND NOT EXISTS (SELECT 1 FROM "DetallesFactura" AS detalle WHERE detalle."FacturaId" = factura."Id");
+
+INSERT INTO "NotasCreditoDebito" (
+    "FacturaId", "Tipo", "Serie", "Numero", "Motivo", "Total", "Estado", "FechaCreacion", "FechaEmision"
+)
+SELECT factura."Id", nota.tipo, nota.serie, 1, nota.motivo, nota.total,
+       nota.estado, '2026-10-02 00:00:00+00'::timestamptz, nota.emision
+FROM (VALUES
+    (1, 'Credito', 'NC52-DEV', 'Nota de crédito de ejemplo', 10.00, 'Emitida', '2026-10-03 00:00:00+00'::timestamptz),
+    (2, 'Debito', 'ND52-DEV', 'Nota de débito en preparación', 5.00, 'Borrador', NULL)
+) AS nota(numero_factura, tipo, serie, motivo, total, estado, emision)
+JOIN "Facturas" AS factura ON factura."TipoComprobante" = 'Factura'
+    AND factura."Serie" = 'F52-DEV' AND factura."Numero" = nota.numero_factura
+ON CONFLICT ("Tipo", "Serie", "Numero") DO NOTHING;
+
 COMMIT;

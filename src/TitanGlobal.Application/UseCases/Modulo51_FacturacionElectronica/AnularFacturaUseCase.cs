@@ -8,16 +8,26 @@ namespace TitanGlobal.Application.UseCases.Modulo51_FacturacionElectronica;
 
 public class AnularFacturaUseCase
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWorkFacturas _unitOfWork;
 
-    public AnularFacturaUseCase(IUnitOfWork unitOfWork)
+    public AnularFacturaUseCase(IUnitOfWorkFacturas unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<FacturaDetalleDto> ExecuteAsync(
+    public Task<FacturaDetalleDto> ExecuteAsync(
         int id,
         AnularFacturaRequestDto request)
+    {
+        return _unitOfWork.ConFacturaBloqueadaAsync(id, AnularBajoBloqueoAsync);
+
+        Task<FacturaDetalleDto> AnularBajoBloqueoAsync()
+        {
+            return AnularAsync(id, request);
+        }
+    }
+
+    private async Task<FacturaDetalleDto> AnularAsync(int id, AnularFacturaRequestDto request)
     {
         IGenericRepository<Factura> repositorio =
             _unitOfWork.Repository<Factura>();
@@ -51,6 +61,16 @@ public class AnularFacturaUseCase
         string motivo =
             ValidacionFactura.NormalizarMotivoAnulacion(
                 request.Motivo);
+
+        bool tieneNotasEmitidas = await _unitOfWork.Repository<NotaCreditoDebito>()
+            .AsQueryable()
+            .AnyAsync(nota => nota.FacturaId == id && nota.Estado == NotaCreditoDebito.EstadoEmitida);
+        if (tieneNotasEmitidas)
+        {
+            throw new ReglaNegocioException(
+                CodigosEstado.Status409Conflict,
+                "No se puede anular un comprobante con notas emitidas.");
+        }
 
         factura.Estado = ValidacionFactura.EstadoAnulada;
 

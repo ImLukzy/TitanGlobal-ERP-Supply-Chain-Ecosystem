@@ -1,4 +1,6 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
@@ -6,7 +8,7 @@ using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Infrastructure.Repositories.Implementation;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : IUnitOfWorkFacturas
 {
     private readonly TitanGlobalDbContext _context;
 
@@ -45,6 +47,23 @@ public class UnitOfWork : IUnitOfWork
                 excepcion.Message,
                 excepcion);
         }
+    }
+
+    public async Task<TResult> ConFacturaBloqueadaAsync<TResult>(int facturaId, Func<Task<TResult>> operacion)
+    {
+        if (!_context.Database.IsRelational())
+        {
+            return await operacion();
+        }
+
+        await using IDbContextTransaction transaccion =
+            await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT \"Id\" FROM \"Facturas\" WHERE \"Id\" = {facturaId} FOR UPDATE");
+
+        TResult resultado = await operacion();
+        await transaccion.CommitAsync();
+        return resultado;
     }
 
     private static bool EsViolacionConocida(PostgresException excepcion)
