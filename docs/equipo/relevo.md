@@ -107,4 +107,4 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | sí, desde 011 |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 
-Un script nuevo toma el siguiente número libre de esta tabla (024 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
+Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
