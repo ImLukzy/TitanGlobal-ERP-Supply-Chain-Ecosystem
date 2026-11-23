@@ -19,7 +19,7 @@ Responsable: Antony Huayhua. Estado: aprobación de Lukas confirmada por Antony.
 
 | Archivo | Acción |
 |---|---|
-| `database/002-listas-materiales.sql` | Crear las tablas `ListasMateriales` y `DetallesListaMaterial` con el siguiente número libre al implementar (`002` al redactar). |
+| `database/023-listas-materiales.sql` | Crear las tablas `ListasMateriales` y `DetallesListaMaterial` con el número reservado en `docs/equipo/relevo.md` §8. |
 | `src/TitanGlobal.Domain/Models/ListaMateriales.cs` y `DetalleListaMaterial.cs` | Generar con scaffold. Las navegaciones resultantes de las claves foráneas a `Producto` también salen del scaffold. |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Regenerar con scaffold. |
 | `src/TitanGlobal.Infrastructure/config/TitanGlobalDbContext.ListasMateriales.cs` | Configurar la navegación de varias versiones por producto. |
