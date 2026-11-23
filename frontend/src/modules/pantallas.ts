@@ -28,6 +28,7 @@ import { VacacionesPermisosPage } from './vacaciones-permisos/VacacionesPermisos
 import { AdelantosPrestamosPage } from './adelantos-prestamos/AdelantosPrestamosPage';
 import { PlanillasPage } from './planillas/PlanillasPage';
 import { EvaluacionDesempenoPage } from './evaluacion-desempeno/EvaluacionDesempenoPage';
+import { CapacitacionesPage } from './capacitaciones/CapacitacionesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -59,4 +60,5 @@ export const pantallas: Record<string, ComponentType> = {
   '67-adelantos-prestamos': AdelantosPrestamosPage,
   '66-planillas': PlanillasPage,
   '68-evaluacion-desempeno': EvaluacionDesempenoPage,
+  '69-capacitaciones': CapacitacionesPage,
 };
