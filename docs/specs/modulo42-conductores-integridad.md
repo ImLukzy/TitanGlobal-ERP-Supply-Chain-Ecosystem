@@ -1,6 +1,6 @@
 # Especificación: módulo 42 — unicidad de licencias
 
-**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #59 y desplegada en la demo.
 
 ## 1. Objetivo
 Impedir documentos de licencia duplicados sin distinguir mayúsculas en alta, edición y escritura directa/concurrente en PostgreSQL, conservando el formato solicitado tras Trim. Responsable: Kelvin Pinto. Propuesta, pendiente de aprobación de Lukas.
@@ -36,6 +36,7 @@ POST/PUT con variantes de mayúsculas → 409 literal; cambio de mayúsculas del
 | 2026-11-21 | Seed | bloque real del seed ejecutado con el documento existente en minúsculas: conserva tres conductores y el documento normalizado sin duplicación; comprobación dentro de transacción revertida |
 | 2026-11-21 | Gate | `verify.sh` aprobado: 1090 pruebas backend, 582 frontend, cero errores/advertencias de compilación .NET; aviso existente de Vite sobre bundle superior a 500 kB |
 | 2026-11-21 | Pantalla real | 375/1280 px claro/oscuro, licencia vencida visible, conflicto 409, CRUD y conservación exacta del instante vencido al desactivar/reactivar; evidencia en `../evidencias/modulo42/` |
+| 2026-11-23 | Integración y producción | Aprobado. Spec aprobada por Lukas. `022` aplicado en la demo con copia y ensayo (5 scripts registrados, filas de las 41 tablas sin cambios). PR #59 fusionado con merge commit (`0b0324f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/conductores` responde 200 |
 
 La aprobación de Lukas, revisión e integración siguen pendientes. No se aplicó SQL a producción.
 
