@@ -45,5 +45,7 @@ public partial class Factura
 
     public virtual ICollection<DetalleFactura> DetallesFactura { get; set; } = new List<DetalleFactura>();
 
+    public virtual ICollection<NotaCreditoDebito> NotasCreditoDebito { get; set; } = new List<NotaCreditoDebito>();
+
     public virtual OrdenCompra? OrdenCompra { get; set; }
 }

@@ -55,6 +55,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<NotaCreditoDebito> NotasCreditoDebito { get; set; } = null!;
+
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -487,6 +489,26 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.SegmentoCliente).WithMany(p => p.ListasPrecios)
                 .HasForeignKey(d => d.SegmentoClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotaCreditoDebito>(entity =>
+        {
+            entity.HasIndex(e => new { e.FacturaId, e.Estado }, "IX_NotasCreditoDebito_FacturaId_Estado");
+
+            entity.HasIndex(e => e.FechaCreacion, "IX_NotasCreditoDebito_FechaCreacion");
+
+            entity.HasIndex(e => new { e.Tipo, e.Serie, e.Numero }, "IX_NotasCreditoDebito_Tipo_Serie_Numero").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Motivo).HasMaxLength(500);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.Serie).HasMaxLength(10);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.Factura).WithMany(p => p.NotasCreditoDebito)
+                .HasForeignKey(d => d.FacturaId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
