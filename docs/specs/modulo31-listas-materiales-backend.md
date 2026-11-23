@@ -4,7 +4,7 @@
 
 El dominio de Manufactura necesita registrar qué componentes se requieren para fabricar un producto. El módulo permite consultar listas de materiales (BOM), preparar una versión en borrador, activarla y retirar la versión activa conservando su historial.
 
-Responsable: Antony Huayhua. Estado: aprobación de Lukas confirmada por Antony.
+Responsable: Antony Huayhua. Estado: pendiente de aprobación de Lukas.
 
 ## 2. Fuera de alcance
 
@@ -104,7 +104,7 @@ En las escrituras por ID se verifica primero la existencia y luego el estado. En
 
 ## 6. Checklist de ejecución
 
-- [x] Aprobación de Lukas sobre el alcance y el contrato.
+- [ ] Aprobación de Lukas sobre el alcance y el contrato.
 - [ ] Primer commit de implementación: script SQL y scaffold.
 - [ ] Segundo commit de implementación: DTOs, validaciones y casos de uso.
 - [ ] Tercer commit de implementación: controlador, pruebas, seed y smoke.
