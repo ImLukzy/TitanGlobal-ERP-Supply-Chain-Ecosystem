@@ -23,6 +23,8 @@ public partial class Almacen
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<AjusteInventario> AjustesInventario { get; set; } = new List<AjusteInventario>();
+
     public virtual ICollection<MovimientoKardex> MovimientosKardex { get; set; } = new List<MovimientoKardex>();
 
     public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();

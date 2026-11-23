@@ -23,6 +23,10 @@ public partial class MovimientoKardex
 
     public string? Referencia { get; set; }
 
+    public int? AjusteInventarioId { get; set; }
+
+    public virtual AjusteInventario? AjusteInventario { get; set; }
+
     public virtual Almacen Almacen { get; set; } = null!;
 
     public virtual Lote? Lote { get; set; }
