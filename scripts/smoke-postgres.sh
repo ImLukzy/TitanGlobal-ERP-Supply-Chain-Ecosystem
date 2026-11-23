@@ -36,6 +36,7 @@ EMPLEADO_CREADO_ID=""
 CONTRATO_LABORAL_EMPLEADO_ID=""
 CONTRATO_LABORAL_CREADO_ID=""
 CONTRATO_LABORAL_RENOVADO_ID=""
+EVALUACION_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -190,6 +191,12 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "evaluaciones-proveedor-1": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 1] and all(item["proveedorId"] == 1 for item in data["items"]),
+    "evaluaciones-excelente": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 6] and all(item["calificacion"] == "Excelente" for item in data["items"]),
+    "evaluacion-detalle": lambda data: data["id"] == 2 and data["proveedorId"] == 1 and data["periodo"] == "2026-10" and data["puntajeFinal"] == 92.6 and data["calificacion"] == "Excelente",
+    "evaluaciones-resumen": lambda data: data["totalEvaluaciones"] == 6 and data["proveedoresEvaluados"] == 4 and data["promedioGeneral"] == 78.72 and [(item["calificacion"], item["total"]) for item in data["porCalificacion"]] == [("Excelente", 2), ("Bueno", 2), ("Regular", 1), ("Deficiente", 1)] and [(item["proveedorId"], item["promedio"]) for item in data["ranking"]] == [(6, 95.5), (1, 89.05), (4, 66.6), (2, 65.5)],
+    "evaluacion-created": lambda data: data["id"] > 0,
+    "evaluacion-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "El proveedor 1 ya tiene una evaluación del periodo 2026-10.",
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
     "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
     "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
@@ -520,6 +527,10 @@ request_check() {
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "evaluacion-created" ]]; then
+        EVALUACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -668,6 +679,13 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Evaluaciones del proveedor 1' GET '/api/v1/evaluaciones-proveedores?proveedorId=1' 200 evaluaciones-proveedor-1
+request_check 'Evaluaciones calificación excelente' GET '/api/v1/evaluaciones-proveedores?calificacion=excelente' 200 evaluaciones-excelente
+request_check 'Detalle de la evaluación 2' GET '/api/v1/evaluaciones-proveedores/2' 200 evaluacion-detalle
+request_check 'Resumen de evaluaciones' GET '/api/v1/evaluaciones-proveedores/resumen' 200 evaluaciones-resumen
+request_check 'POST evaluación válida' POST '/api/v1/evaluaciones-proveedores' 200 evaluacion-created '{"proveedorId":1,"periodo":"2026-08","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80,"observaciones":"Evaluación smoke"}'
+request_check 'POST evaluación del periodo repetido' POST '/api/v1/evaluaciones-proveedores' 409 evaluacion-duplicate '{"proveedorId":1,"periodo":"2026-10","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80}'
+request_check 'DELETE evaluación recién creada' DELETE "/api/v1/evaluaciones-proveedores/${EVALUACION_CREADA_ID}" 204 ''
 request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
 request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
 request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary
