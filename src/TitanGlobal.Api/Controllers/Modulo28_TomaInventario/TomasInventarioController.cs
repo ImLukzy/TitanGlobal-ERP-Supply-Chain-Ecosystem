@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo28_TomaInventario;
 using TitanGlobal.Application.UseCases.Modulo28_TomaInventario;
 
@@ -95,6 +96,7 @@ public class TomasInventarioController : ControllerBase
     }
 
     [HttpPost("{id:int}/cerrar")]
+    [PermitirCuerpoVacio]
     public async Task<IActionResult> Cerrar(int id)
     {
         TomaInventarioDetalleDto resultado = await _cerrarTomaInventarioUseCase.ExecuteAsync(id);
@@ -103,6 +105,7 @@ public class TomasInventarioController : ControllerBase
     }
 
     [HttpPost("{id:int}/anular")]
+    [PermitirCuerpoVacio]
     public async Task<IActionResult> Anular(int id)
     {
         TomaInventarioDetalleDto resultado = await _anularTomaInventarioUseCase.ExecuteAsync(id);
