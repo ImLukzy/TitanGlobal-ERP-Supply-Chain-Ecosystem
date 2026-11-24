@@ -37,7 +37,7 @@
 | A3 | Incidentes | tests: alta con validación, acciones, cierre bloqueado y permitido | pasan |
 | A4 | EPP y exámenes | tests: entregas con vencimiento, campos condicionales de exámenes | pasan |
 | A5 | Roles, resumen y pestañas | tests | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo70/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests.
@@ -54,3 +54,4 @@
 | 2026-11-22 | A4 EPP y exámenes | Pasan | `EppVista.test.tsx` (vencimiento calculado, catálogo) y `ExamenesVista.test.tsx` (restricciones y vencimiento condicionales) |
 | 2026-11-22 | A5 Roles, resumen y pestañas | Pasan | `SeguridadSaludOcupacionalPage.test.tsx`; el módulo, 3 ejecuciones seguidas con 60 pruebas superadas cada una |
 | 2026-11-22 | A6 Visual | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro |
+| 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo70/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
