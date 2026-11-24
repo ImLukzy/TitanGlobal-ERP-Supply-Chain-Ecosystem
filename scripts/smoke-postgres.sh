@@ -468,6 +468,15 @@ checks = {
     "asistencia-calculo": lambda data: data["calculadas"] == 12 and data["conservadas"] == 1 and data["eliminadas"] == 0,
     "jornada-id-8": lambda data: data["id"] == 8,
     "jornada-sin-horas-extra-pendientes": lambda data: data["StatusCode"] == 409 and data["Message"] == "La jornada 8 no tiene horas extra pendientes." and "Detail" not in data,
+    "openapi-ausencias": lambda data: all(path in data["paths"] for path in ["/api/v1/ausencias", "/api/v1/ausencias/resumen", "/api/v1/ausencias/{id}", "/api/v1/ausencias/saldo-vacacional/{empleadoId}", "/api/v1/ausencias/{id}/aprobacion", "/api/v1/ausencias/{id}/rechazo", "/api/v1/ausencias/{id}/cancelacion"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/ausencias", "get"), ("/api/v1/ausencias", "post"), ("/api/v1/ausencias/resumen", "get"), ("/api/v1/ausencias/{id}", "get"), ("/api/v1/ausencias/saldo-vacacional/{empleadoId}", "get"), ("/api/v1/ausencias/{id}/aprobacion", "post"), ("/api/v1/ausencias/{id}/rechazo", "post"), ("/api/v1/ausencias/{id}/cancelacion", "post")]),
+    "ausencias-resumen": lambda data: all(isinstance(data[clave], int) for clave in ["pendientes", "ausentesHoy", "vacacionesHoy", "descansosMedicosHoy", "aprobadasMes"]) and data["pendientes"] == 1,
+    "saldo-empleado-1": lambda data: data["empleadoId"] == 1 and data["mesesServicio"] == 68 and data["diasDevengados"] == 170 and data["diasGozados"] == 12 and data["diasProgramados"] == 7 and data["saldo"] == 151,
+    "ausencia-saldo-insuficiente": lambda data: data["StatusCode"] == 409 and data["Message"] == "El saldo vacacional es de 180.0 días y la solicitud pide 358." and "Detail" not in data,
+    "ausencia-created-8": lambda data: data["id"] == 8 and data["numero"] == "AUS-000008",
+    "ausencia-id-8": lambda data: data["id"] == 8,
+    "ausencia-no-pendiente": lambda data: data["StatusCode"] == 409 and data["Message"] == "La ausencia AUS-000008 no está pendiente." and "Detail" not in data,
+    "ausencia-created-9": lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
+    "ausencia-id-9": lambda data: data["id"] == 9,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1090,4 +1099,13 @@ request_check 'POST marcación manual del empleado cesado' POST '/api/v1/marcaci
 request_check 'POST cálculo de jornadas del 2 al 6 de noviembre' POST '/api/v1/jornadas-asistencia/calculo' 200 asistencia-calculo '{"desde":"2026-11-02","hasta":"2026-11-06"}'
 request_check 'POST aprobar horas extra pendientes' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 200 jornada-id-8
 request_check 'POST aprobar horas extra repetido' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 409 jornada-sin-horas-extra-pendientes
+request_check 'OpenAPI de ausencias' GET '/openapi/v1.json' 200 openapi-ausencias
+request_check 'Resumen de ausencias' GET '/api/v1/ausencias/resumen' 200 ausencias-resumen
+request_check 'Saldo vacacional del empleado 1' GET '/api/v1/ausencias/saldo-vacacional/1?fecha=2026-11-22' 200 saldo-empleado-1
+request_check 'POST vacaciones que superan el saldo' POST '/api/v1/ausencias' 409 ausencia-saldo-insuficiente '{"empleadoId":3,"tipo":"Vacaciones","fechaInicio":"2030-01-08","fechaFin":"2030-12-31"}'
+request_check 'POST permiso con goce' POST '/api/v1/ausencias' 200 ausencia-created-8 '{"empleadoId":2,"tipo":"PermisoConGoce","fechaInicio":"2030-02-04","fechaFin":"2030-02-05","motivo":"Tramite de smoke"}'
+request_check 'POST aprobar ausencia' POST '/api/v1/ausencias/8/aprobacion' 200 ausencia-id-8
+request_check 'POST aprobar ausencia repetido' POST '/api/v1/ausencias/8/aprobacion' 409 ausencia-no-pendiente
+request_check 'POST segundo permiso con goce' POST '/api/v1/ausencias' 200 ausencia-created-9 '{"empleadoId":2,"tipo":"PermisoConGoce","fechaInicio":"2030-03-04","fechaFin":"2030-03-05","motivo":"Tramite de smoke"}'
+request_check 'POST cancelar ausencia futura' POST '/api/v1/ausencias/9/cancelacion' 200 ausencia-id-9
 printf 'SMOKE OK\n'
