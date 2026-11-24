@@ -54,7 +54,7 @@ Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas
 | `CantidadProducida` | `integer` nulo, `CHECK >= 0`. Se informa al terminar. |
 | `FechaInicioPlanificada` y `FechaFinPlanificada` | `date`. `CHECK` fin ≥ inicio. |
 | `FechaInicioReal` y `FechaFinReal` | `timestamptz` nulo. Se asignan en UTC al iniciar y al terminar. |
-| `Estado` | `varchar(10)`, `CHECK` en `Planificada`, `Liberada`, `EnProceso`, `Terminada` y `Cancelada`. Índice. |
+| `Estado` | `varchar(12)` (el valor más largo, `Planificada`, tiene 11 letras), `CHECK` en `Planificada`, `Liberada`, `EnProceso`, `Terminada` y `Cancelada`. Índice. |
 | `MotivoCancelacion` | `varchar(250)` nulo. |
 
 ### Contrato HTTP
@@ -68,8 +68,8 @@ Base `api/v1/ordenes-produccion`. JWT obligatorio. JSON en camelCase. Errores `{
 | `GET /{id:int}` | — | 200 `OrdenProduccionDetalleDto` o 404. |
 | `POST /` | `CrearOrdenProduccionRequestDto` | 201 `{ id, numero }` con `Location`, 400 o 409. |
 | `PUT /{id:int}` | `EditarOrdenProduccionRequestDto` | 200 `{ id }`, 400, 404 o 409. |
-| `POST /{id:int}/liberar` | sin cuerpo | 200 `{ id }`, 404 o 409. |
-| `POST /{id:int}/iniciar` | sin cuerpo | 200 `{ id }`, 404 o 409. |
+| `POST /{id:int}/liberar` | sin cuerpo, con `[PermitirCuerpoVacio]` | 200 `{ id }`, 404 o 409. |
+| `POST /{id:int}/iniciar` | sin cuerpo, con `[PermitirCuerpoVacio]` | 200 `{ id }`, 404 o 409. |
 | `POST /{id:int}/terminar` | `TerminarOrdenProduccionRequestDto` | 200 `{ id }`, 400, 404 o 409. |
 | `POST /{id:int}/cancelar` | `CancelarOrdenProduccionRequestDto` | 200 `{ id }`, 400, 404 o 409. |
 
@@ -83,7 +83,7 @@ Base `api/v1/ordenes-produccion`. JWT obligatorio. JSON en camelCase. Errores `{
 - `EditarOrdenProduccionRequestDto { cantidadPlanificada, fechaInicioPlanificada, fechaFinPlanificada }`
 - `TerminarOrdenProduccionRequestDto { cantidadProducida }` y `CancelarOrdenProduccionRequestDto { motivo }`
 
-El listado ordena por `FechaInicioPlanificada` descendente y luego por `Id` descendente. La búsqueda por número no distingue mayúsculas. El filtro de estado acepta los cinco valores sin distinguir mayúsculas. Las fechas se reciben como día (`2026-12-01`) y se normalizan con `FechasUtc`.
+El listado ordena por `FechaInicioPlanificada` descendente y luego por `Id` descendente. La búsqueda por número no distingue mayúsculas. El filtro de estado acepta los cinco valores sin distinguir mayúsculas. Las fechas planificadas y los filtros `desde` y `hasta` se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada, así que no cambian de día por la zona horaria y no pasan por `FechasUtc`. `FechaInicioReal` y `FechaFinReal` se asignan con `DateTime.UtcNow`.
 
 ### Reglas y mensajes literales
 
@@ -126,7 +126,7 @@ Los módulos 31 y 32 no cambian su contrato. Una lista de materiales o ruta usad
 | A3 | Tests | `dotnet test --filter Modulo34_OrdenesProduccion` | Cada mensaje de §4, las cinco transiciones y la paginación. |
 | A4 | Contrato API | `/openapi/v1.json` | Las nueve operaciones presentes y autenticadas. |
 | A5 | Comportamiento | Pruebas de integración | El detalle calcula los materiales (lista × cantidad) y el tiempo estimado. La orden conserva su versión de lista y ruta aunque después se retiren. El resumen agrega por estado. |
-| A6 | PostgreSQL | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` y `./scripts/smoke-postgres.sh` | `SMOKE OK`, incluidas las fechas sin `Z` normalizadas y dos transiciones concurrentes de la misma orden que dejan un único cambio de estado. |
+| A6 | PostgreSQL | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` y `./scripts/smoke-postgres.sh` | `SMOKE OK`, incluidas fechas planificadas enviadas como día que se devuelven sin cambiar de día y dos transiciones concurrentes de la misma orden que dejan un único cambio de estado. |
 | A7 | Seed | `scripts/seed-dev.sql` dos veces | Tres órdenes del producto 1 (`Planificada`, `EnProceso` y `Terminada`) sin duplicar filas. |
 
 ## 6. Checklist de ejecución
