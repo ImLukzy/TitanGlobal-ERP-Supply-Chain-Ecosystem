@@ -20,6 +20,7 @@ public class NombresNavegacion : CandidateNamingService
         { "OrdenCompra.DetalleOrdenCompra", "Detalles" },
         { "Planilla.PlanillaDetalle", "Detalles" },
         { "SolicitudCompra.DetalleSolicitudCompra", "Detalles" },
+        { "TransportistaTercero.FleteTercero", "Fletes" },
         { "Usuario.UsuarioRol", "Roles" },
         { "Rol.UsuarioRol", "Usuarios" }
     };

@@ -106,6 +106,7 @@ Los mensajes 23 y 24 (añadidos en la implementación) se comprueban después de
 | 2026-11-22 | A2 y A3 L1–L4, roles y auditoría | 27 pruebas de `PrestamosApiTests` en verde | `dotnet test --filter Modulo67` |
 | 2026-11-22 | A4 PostgreSQL | `aplicar-bd.sh` aplica 037, `scaffold.sh --comprobar` al día, `SMOKE OK` | `smoke-postgres.sh` |
 | 2026-11-23 | Actualización | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 037: gate y smoke en verde. `dotnet test` 1389 de 1390 (único fallo el CRLF conocido), 0 advertencias, reglas OK, frontend 1027 pruebas en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `verify` |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1444 pruebas backend y 1064 frontend |
 
 **Decisiones de implementación (detalles abiertos):**
 - Mensajes 23 y 24 añadidos a la tabla para el motivo de anulación.
