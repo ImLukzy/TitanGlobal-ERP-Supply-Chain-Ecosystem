@@ -86,7 +86,7 @@ Base `api/v1/inspecciones-producto-terminado`. JWT obligatorio. JSON en camelCas
 - `DictaminarInspeccionProductoTerminadoRequestDto { resultado, cantidadNoConforme, observaciones? }`: `resultado` es `Aprobada` o `Rechazada`.
 - `AnularInspeccionProductoTerminadoRequestDto { motivo }`
 
-El listado ordena por `FechaInspeccion` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. Los filtros de estado y el resultado aceptan sus valores sin distinguir mayúsculas. `FechaInspeccion` y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada. `FechaDictamen` se asigna con `DateTime.UtcNow`. Los textos opcionales en blanco se guardan como `null`.
+El listado ordena por `FechaInspeccion` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. Los filtros de estado y el resultado aceptan sus valores sin distinguir mayúsculas. `FechaInspeccion` y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada. `FechaDictamen` se asigna con `DateTime.UtcNow`. «Hoy» es el día en hora de Lima: `DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5))` (Perú es UTC−5 y no tiene horario de verano; es la misma regla que `CalculadoraJornada.HoyLocal()` del módulo 63). Con UTC, a partir de las 19:00 de Lima ya sería el día siguiente y se aceptaría una fecha de inspección de mañana. Los textos opcionales en blanco se guardan como `null`.
 
 ### Reglas y mensajes literales
 
@@ -102,7 +102,7 @@ Orden de validación: el listado valida página, tamaño, búsqueda, orden, prod
 | Estado de filtro inválido | 400 | El estado de la inspección de producto terminado no es válido. |
 | `desde` posterior a `hasta` | 400 | La fecha desde no puede ser posterior a la fecha hasta. |
 | Fecha de inspección ausente | 400 | La fecha de inspección es obligatoria. |
-| Fecha de inspección posterior a hoy (UTC) | 400 | La fecha de inspección no puede ser posterior a hoy. |
+| Fecha de inspección posterior a hoy (hora de Lima) | 400 | La fecha de inspección no puede ser posterior a hoy. |
 | Cantidad inspeccionada fuera de 1–1000000 | 400 | La cantidad inspeccionada debe estar entre 1 y 1000000. |
 | Tolerancia fuera de 0–100 | 400 | La tolerancia de no conformes debe estar entre 0 y 100. |
 | Tolerancia con más de 2 decimales | 400 | La tolerancia de no conformes admite como máximo 2 decimales. |
