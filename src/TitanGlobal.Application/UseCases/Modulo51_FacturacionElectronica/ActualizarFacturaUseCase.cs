@@ -8,16 +8,26 @@ namespace TitanGlobal.Application.UseCases.Modulo51_FacturacionElectronica;
 
 public class ActualizarFacturaUseCase
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWorkFacturas _unitOfWork;
 
-    public ActualizarFacturaUseCase(IUnitOfWork unitOfWork)
+    public ActualizarFacturaUseCase(IUnitOfWorkFacturas unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<FacturaDetalleDto> ExecuteAsync(
+    public Task<FacturaDetalleDto> ExecuteAsync(
         int id,
         GuardarFacturaRequestDto request)
+    {
+        return _unitOfWork.ConFacturaBloqueadaAsync(id, ActualizarBajoBloqueoAsync);
+
+        Task<FacturaDetalleDto> ActualizarBajoBloqueoAsync()
+        {
+            return ActualizarAsync(id, request);
+        }
+    }
+
+    private async Task<FacturaDetalleDto> ActualizarAsync(int id, GuardarFacturaRequestDto request)
     {
         IGenericRepository<Factura> repositorioFacturas =
             _unitOfWork.Repository<Factura>();
