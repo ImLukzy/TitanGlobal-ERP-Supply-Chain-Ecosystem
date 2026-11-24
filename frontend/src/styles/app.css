@@ -1627,6 +1627,41 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .conductores-filters, .conductores-form { grid-template-columns: minmax(0, 1fr); }
   .conductores-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
+
+/* Módulo 48: transportistas terceros */
+.transportistas-terceros-page { min-width: 0; }
+.transportistas-terceros-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--line); margin: 20px 0; }
+.transportistas-terceros-tabs a { color: var(--ink-soft); padding: 12px 16px; text-decoration: none; border-bottom: 3px solid transparent; }
+.transportistas-terceros-tabs .transportistas-terceros-tab-active { color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+.transportistas-terceros-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.transportistas-terceros-summary > .transportistas-terceros-card { grid-column: 1 / -1; }
+.transportistas-terceros-stat, .transportistas-terceros-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+.transportistas-terceros-stat { display: grid; gap: 12px; color: var(--ink-soft); }
+.transportistas-terceros-stat strong { color: var(--ink); font-size: 28px; }
+.transportistas-terceros-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 16px; }
+.transportistas-terceros-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.transportistas-terceros-filters label { display: grid; gap: 8px; }
+.transportistas-terceros-page input:not([type=checkbox]), .transportistas-terceros-page select, .transportistas-terceros-page textarea, .transportistas-terceros-dialog textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.transportistas-terceros-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+.transportistas-terceros-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+.transportistas-terceros-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.transportistas-terceros-details div { border-bottom: 1px solid var(--line); padding: 10px 0; overflow-wrap: anywhere; }
+.transportistas-terceros-details dt { color: var(--ink-soft); font-size: 13px; }
+.transportistas-terceros-details dd { margin: 6px 0 0; }
+.transportistas-terceros-muted { display: block; color: var(--ink-soft); margin-top: 6px; font-weight: 400; }
+.transportistas-terceros-badge { display: inline-flex; padding: 5px 9px; border-radius: 6px; color: var(--good); background: var(--good-soft); }
+.transportistas-terceros-inactivo { color: var(--ink-soft); background: var(--surface-muted); }
+.transportistas-terceros-money { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.transportistas-terceros-selector { border: 1px solid var(--line); padding: 16px; margin: 0 0 20px; min-width: 0; border-radius: 10px; display: grid; gap: 8px; }
+.transportistas-terceros-dialog { max-height: 90vh; overflow-y: auto; }
+@media (max-width: 1100px) { .transportistas-terceros-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .transportistas-terceros-summary, .transportistas-terceros-filters { grid-template-columns: minmax(0, 1fr); }
+  .transportistas-terceros-toolbar { align-items: stretch; flex-direction: column; }
+  .transportistas-terceros-card, .transportistas-terceros-stat { padding: 16px; }
+  .transportistas-terceros-actions > button { flex: 1 1 auto; }
+}
+
 /* Módulo 62 · Contratos laborales */
 .contratos-laborales-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .contratos-laborales-work-area { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: start; gap: 0 15px; }

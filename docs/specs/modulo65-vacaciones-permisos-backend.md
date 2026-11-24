@@ -110,6 +110,7 @@ En el mensaje 14 el saldo se escribe con un decimal y punto (`12.5`).
 | 2026-11-22 | A2, A3, A4 | 47 pruebas del módulo 65 en verde (mensajes 1 a 23, calculadora con fin de mes, roles, auditoría) | `dotnet test --filter FullyQualifiedName~Modulo65` |
 | 2026-11-22 | A5 | `SMOKE OK` con `036` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
 | 2026-11-23 | Actualización con main | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 036: gate y smoke en verde (compilación con 0 advertencias, `dotnet test` con 1362 superadas y solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` por CRLF local, `check-rules.sh` limpio, scaffold al día, `npm run verify` con 961 pruebas); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `dotnet build -warnaserror`, `dotnet test`, `./scripts/check-rules.sh`, `npm --prefix frontend run verify` |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1417 pruebas backend y 998 frontend |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `AprobadasMes`: ausencias `Aprobada` cuya `FechaInicio` cae en el mes calendario actual (UTC). `AusentesHoy` cuenta ausencias (no hay solapes entre aprobadas), no empleados.
