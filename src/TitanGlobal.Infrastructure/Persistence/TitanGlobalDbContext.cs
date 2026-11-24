@@ -77,6 +77,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ExamenMedico> ExamenesMedicos { get; set; } = null!;
 
+    public virtual DbSet<FleteTercero> FletesTerceros { get; set; } = null!;
+
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
     public virtual DbSet<IncidenteSst> IncidentesSst { get; set; } = null!;
@@ -130,6 +132,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
 
     public virtual DbSet<TramoQuintaCategoria> TramosQuintaCategoria { get; set; } = null!;
+
+    public virtual DbSet<TransportistaTercero> TransportistasTerceros { get; set; } = null!;
 
     public virtual DbSet<Turno> Turnos { get; set; } = null!;
 
@@ -675,6 +679,29 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<FleteTercero>(entity =>
+        {
+            entity.HasIndex(e => new { e.Fecha, e.Id }, "IX_FletesTerceros_FechaId").IsDescending();
+
+            entity.HasIndex(e => e.TransportistaTerceroId, "IX_FletesTerceros_TransportistaTerceroId");
+
+            entity.Property(e => e.Destino).HasMaxLength(120);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Registrado'::character varying");
+            entity.Property(e => e.Importe).HasPrecision(18, 2);
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Origen).HasMaxLength(120);
+            entity.Property(e => e.Referencia).HasMaxLength(30);
+
+            entity.HasOne(d => d.TransportistaTercero).WithMany(p => p.Fletes)
+                .HasForeignKey(d => d.TransportistaTerceroId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_FletesTerceros_TransportistasTerceros");
+        });
+
         modelBuilder.Entity<Impuesto>(entity =>
         {
             entity.HasIndex(e => e.Codigo, "IX_Impuestos_Codigo").IsUnique();
@@ -1093,6 +1120,19 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.Property(e => e.HastaUit).HasPrecision(8, 2);
             entity.Property(e => e.Tasa).HasPrecision(6, 4);
+        });
+
+        modelBuilder.Entity<TransportistaTercero>(entity =>
+        {
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Contacto).HasMaxLength(100);
+            entity.Property(e => e.DocumentoFiscal).HasMaxLength(30);
+            entity.Property(e => e.Email).HasMaxLength(150);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Pais).HasMaxLength(100);
+            entity.Property(e => e.RazonSocial).HasMaxLength(200);
+            entity.Property(e => e.Telefono).HasMaxLength(20);
+            entity.Property(e => e.TipoServicio).HasMaxLength(10);
         });
 
         modelBuilder.Entity<Turno>(entity =>

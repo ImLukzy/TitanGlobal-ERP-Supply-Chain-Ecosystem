@@ -113,6 +113,7 @@ En el 14, la suma con 2 decimales y punto. Fechas en los mensajes `yyyy-MM-dd`.
 | 2026-11-22 | A2, A3 | cumple | 39 pruebas del módulo 68 (`CiclosEvaluacionApiTests`, `EvaluacionesApiTests`): un caso por mensaje, puntaje con pesos no redondos (33,33/33,33/33,34 → 4,00; 45,5/54,5 con 3 y 4 → 3,55 por redondeo hacia arriba), límites de etiqueta, D5, flujo completo, cierre del ciclo, resultados, roles y auditoría |
 | 2026-11-22 | A4 | cumple | `./scripts/aplicar-bd.sh` aplica 039; `./scripts/scaffold.sh --comprobar` → `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 039: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1464 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1158 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1519 pruebas backend y 1195 frontend |
 
 ### Opciones tomadas donde la spec no decía nada
 - **Mensaje 34** (nuevo): la descripción de la competencia supera 300 caracteres. El orden de validación de una competencia es nombre (2), descripción (34), peso (11); después ciclo (9), estado (10) y duplicado (12).
