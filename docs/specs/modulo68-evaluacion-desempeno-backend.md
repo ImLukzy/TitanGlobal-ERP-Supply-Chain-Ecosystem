@@ -21,7 +21,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/029-evaluacion-desempeno.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/039-evaluacion-desempeno.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades y navegaciones regeneradas, `TitanGlobalDbContext.cs`, `PluralizadorEspanol.cs` si hace falta | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo68_EvaluacionDesempeno/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo68_EvaluacionDesempeno/AdministrarCiclosEvaluacionUseCase.cs`, `AdministrarEvaluacionesUseCase.cs`, `ValidacionEvaluacion.cs` | crear |
@@ -102,7 +102,7 @@ En el 14, la suma con 2 decimales y punto. Fechas en los mensajes `yyyy-MM-dd`.
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 029, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 039, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, casos de uso y controladores.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A4 en §7.
 
@@ -111,7 +111,8 @@ En el 14, la suma con 2 decimales y punto. Fechas en los mensajes `yyyy-MM-dd`.
 |---|---|---|---|
 | 2026-11-22 | A1 | cumple | `./scripts/verify.sh`: compila con 0 advertencias y 0 errores; `dotnet test`: 1411 superadas y 1 fallo, el CRLF conocido `CatalogoCoincideConLosOchentaModulosDeArquitectura`; `npm --prefix frontend run verify` en verde |
 | 2026-11-22 | A2, A3 | cumple | 39 pruebas del módulo 68 (`CiclosEvaluacionApiTests`, `EvaluacionesApiTests`): un caso por mensaje, puntaje con pesos no redondos (33,33/33,33/33,34 → 4,00; 45,5/54,5 con 3 y 4 → 3,55 por redondeo hacia arriba), límites de etiqueta, D5, flujo completo, cierre del ciclo, resultados, roles y auditoría |
-| 2026-11-22 | A4 | cumple | `./scripts/aplicar-bd.sh` aplica 029; `./scripts/scaffold.sh --comprobar` → `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-22 | A4 | cumple | `./scripts/aplicar-bd.sh` aplica 039; `./scripts/scaffold.sh --comprobar` → `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
+| 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 039: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1464 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1158 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
 
 ### Opciones tomadas donde la spec no decía nada
 - **Mensaje 34** (nuevo): la descripción de la competencia supera 300 caracteres. El orden de validación de una competencia es nombre (2), descripción (34), peso (11); después ciclo (9), estado (10) y duplicado (12).

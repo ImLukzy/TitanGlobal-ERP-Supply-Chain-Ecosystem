@@ -23,7 +23,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/027-adelantos-prestamos.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/037-adelantos-prestamos.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades `Prestamo`, `CuotaPrestamo`, `DescuentoCuotaPrestamo`, navegación en `Empleado`, `TitanGlobalDbContext.cs` (y `PluralizadorEspanol.cs`: `CuotasPrestamo` → `CuotaPrestamo`) | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo67_AdelantosPrestamos/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo67_AdelantosPrestamos/AdministrarPrestamosUseCase.cs`, `ValidacionPrestamo.cs`, `CronogramaPrestamo.cs` | crear |
@@ -95,7 +95,7 @@ Los mensajes 23 y 24 (añadidos en la implementación) se comprueban después de
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 027, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 037, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, cronograma, caso de uso con descuento y controlador.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A4 en §7.
 
@@ -104,7 +104,8 @@ Los mensajes 23 y 24 (añadidos en la implementación) se comprueban después de
 |---|---|---|---|
 | 2026-11-22 | A1 Gate | `./scripts/verify.sh`: build 0 advertencias, reglas OK, 1336 de 1337 pruebas; único fallo el CRLF conocido (`CatalogoCoincideConLosOchentaModulosDeArquitectura`). `npm --prefix frontend run verify` OK | `verify.sh`, `npm run verify` |
 | 2026-11-22 | A2 y A3 L1–L4, roles y auditoría | 27 pruebas de `PrestamosApiTests` en verde | `dotnet test --filter Modulo67` |
-| 2026-11-22 | A4 PostgreSQL | `aplicar-bd.sh` aplica 027, `scaffold.sh --comprobar` al día, `SMOKE OK` | `smoke-postgres.sh` |
+| 2026-11-22 | A4 PostgreSQL | `aplicar-bd.sh` aplica 037, `scaffold.sh --comprobar` al día, `SMOKE OK` | `smoke-postgres.sh` |
+| 2026-11-23 | Actualización | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 037: gate y smoke en verde. `dotnet test` 1389 de 1390 (único fallo el CRLF conocido), 0 advertencias, reglas OK, frontend 1027 pruebas en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `verify` |
 
 **Decisiones de implementación (detalles abiertos):**
 - Mensajes 23 y 24 añadidos a la tabla para el motivo de anulación.

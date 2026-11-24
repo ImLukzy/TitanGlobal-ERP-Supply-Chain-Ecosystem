@@ -30,8 +30,8 @@ Reglas aplicadas: A1 a A7, T2, T3, T5 y T6. Lo que las reglas no fijan se marca 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/025-asistencia-biometrica.sql` | crear | `Marcaciones` y `JornadasAsistencia`; fila 025 en `docs/equipo/relevo.md` §8 |
-| `docs/equipo/relevo.md` | modificar | solo la fila 025 |
+| `database/035-asistencia-biometrica.sql` | crear | `Marcaciones` y `JornadasAsistencia`; fila 035 en `docs/equipo/relevo.md` §8 |
+| `docs/equipo/relevo.md` | modificar | solo la fila 035 |
 | entidades `Marcacion`, `JornadaAsistencia` y navegaciones en `Empleado` y `Turno`; `TitanGlobalDbContext.cs` | regenerar | `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si hace falta (`Marcaciones` → `Marcacion`, `JornadasAsistencia` → `JornadaAsistencia`) |
 | `src/TitanGlobal.Application/DTOs/Modulo63_AsistenciaBiometrica/*.cs` | crear | |
@@ -116,7 +116,7 @@ Los mensajes 26 y 27 rechazan un registro de la importación sin detener el rest
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 025, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 035, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, calculadora, casos de uso y controladores.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A6 en §7.
 
@@ -128,4 +128,5 @@ Los mensajes 26 y 27 rechazan un registro de la importación sin detener el rest
 | 2026-11-22 | A3 Cálculo (A4–A6, T3) | Cumple: `CalculadoraJornadaTests` (puntual, tardanza con y sin tolerancia, nocturno, tope 240, `SinMarcacion`, `Falta`, `DescansoTrabajado`, rotativo en descanso) y recálculo que conserva las decididas | `dotnet test --filter "FullyQualifiedName~Modulo63_AsistenciaBiometrica"`: `CalculadoraJornadaTests`, `JornadasAsistenciaApiTests` |
 | 2026-11-22 | A4 Horas extra (A7) | Cumple: aprobación y rechazo con `DecididoPor` del token, mensajes 19 a 22 y sin cambios ante error | `JornadasAsistenciaApiTests` |
 | 2026-11-22 | A5 Roles y auditoría | Cumple: 401 sin token, 403 sin cambios con `CONSULTA`, 2xx con `RRHH` y `ADMIN`, auditoría de alta, baja y decisión | `MarcacionesApiTests`, `JornadasAsistenciaApiTests` |
-| 2026-11-22 | A6 PostgreSQL | Cumple: `025` aplicado, scaffold al día y `SMOKE OK` con los conteos del seed (13 jornadas, 11 asistencias, 1 tardanza, 1 sin marcación, 15 min de tardanza, 90 pendientes, 150 aprobados; cálculo 12/1/0) | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` (SCAFFOLD AL DÍA), `./scripts/smoke-postgres.sh` (SMOKE OK) |
+| 2026-11-22 | A6 PostgreSQL | Cumple: `035` aplicado, scaffold al día y `SMOKE OK` con los conteos del seed (13 jornadas, 11 asistencias, 1 tardanza, 1 sin marcación, 15 min de tardanza, 90 pendientes, 150 aprobados; cálculo 12/1/0) | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` (SCAFFOLD AL DÍA), `./scripts/smoke-postgres.sh` (SMOKE OK) |
+| 2026-11-23 | Actualización con main | Cumple: actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 035; compilación con 0 advertencias, `dotnet test` con 1315 superadas y solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` (CRLF local), `check-rules.sh` limpio, scaffold al día y `npm run verify` en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `dotnet build -warnaserror`, `dotnet test`, `./scripts/check-rules.sh`, `npm --prefix frontend run verify` |
