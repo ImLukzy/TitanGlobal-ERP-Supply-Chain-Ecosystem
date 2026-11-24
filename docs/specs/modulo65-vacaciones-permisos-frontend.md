@@ -39,7 +39,7 @@
 | A3 | Listado, resumen y detalle | tests | pasan |
 | A4 | Formulario y saldo | tests: validación local sin petición, días en vivo, saldo al elegir vacaciones, 409 conservando lo escrito | pasan |
 | A5 | Flujo y roles | tests: aprobar, rechazar, cancelar según estado y fecha; botones según rol | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo65/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests.
@@ -56,3 +56,4 @@
 | 2026-11-22 | A4 | Formulario: validación local sin petición, días en vivo, saldo al elegir vacaciones, 409 conservando lo escrito | `AusenciaFormulario.test.tsx`, `validacionAusencia.test.ts`, `presentacion.test.ts` |
 | 2026-11-22 | A5 | Aprobar, rechazar y cancelar según estado, fecha y rol | `VacacionesPermisosPage.test.tsx` (70 pruebas del módulo, 3 ejecuciones seguidas en verde) |
 | 2026-11-22 | A6 | pendiente: capturas a 375 y 1280 px, claro y oscuro | — |
+| 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo65/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |

@@ -37,7 +37,7 @@
 | A3 | Jornadas | tests: resumen, filtros, formato de horas UTC−5, aprobar, rechazar con validación, cálculo | pasan |
 | A4 | Marcaciones | tests: registro manual con validación y conversión a UTC, importación con resultado, eliminar solo manuales | pasan |
 | A5 | Roles y pestañas | tests | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo63/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api, CSV y tests.
@@ -54,3 +54,4 @@
 | 2026-11-22 | A4 Marcaciones | Cumple: registro manual con mensajes 1 a 5 y conversión a UTC, importación con vista previa y resultado (rechazados incluidos), eliminar solo manuales | `MarcacionesVista.test.tsx` |
 | 2026-11-22 | A5 Roles y pestañas | Cumple: sin `RRHH` ni `ADMIN` quedan deshabilitados los seis botones de escritura con el aviso; `?vista=`, clic y flechas | `AsistenciaBiometricaPage.test.tsx`, `JornadasVista.test.tsx`, `MarcacionesVista.test.tsx` (81 pruebas, 3 ejecuciones seguidas sin fallos) |
 | 2026-11-22 | A6 Visual | pendiente: capturas | — |
+| 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo63/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
