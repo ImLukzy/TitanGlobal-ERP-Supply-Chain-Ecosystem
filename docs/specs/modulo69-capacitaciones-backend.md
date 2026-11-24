@@ -112,6 +112,7 @@ En el 9, `{estado}` es «activo» o «inactivo».
 | 2026-11-22 | A3 Roles y auditoría | Pasan | `EscriturasExigenRolRrhhOAdmin...`, `RolesRrhhYAdmin...` y las pruebas de auditoría de cada controlador |
 | 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (040 aplicado), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA»), `./scripts/smoke-postgres.sh` termina en `SMOKE OK`; base local restaurada después |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 040: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1495 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1217 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1550 pruebas backend y 1254 frontend |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `PUT` de curso permite editar siempre (también con programaciones); el código se guarda en mayúsculas y se valida como en el alta.
