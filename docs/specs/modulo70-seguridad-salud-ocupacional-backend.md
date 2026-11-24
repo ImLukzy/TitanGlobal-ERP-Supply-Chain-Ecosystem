@@ -108,6 +108,7 @@
 | 2026-11-22 | A2 S1–S5, A3 roles y auditoría | Pasan | 35 pruebas nuevas en `tests/TitanGlobal.Api.Tests/Modulo70_SeguridadSaludOcupacional/` |
 | 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (script 041), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA») y `./scripts/smoke-postgres.sh` |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 041: gate y smoke en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1530 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1277 pruebas en verde; `./scripts/smoke-postgres.sh` → `SMOKE OK`) |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1585 pruebas backend y 1314 frontend y SMOKE OK |
 
 **Opciones tomadas donde la spec no precisaba (2026-11-22):**
 - `equipoId` ausente en una entrega se trata como 0 y devuelve el mensaje 5 con el id 0; el orden de validación de la entrega es 8, 11, 12, 5, 7, 9, 10.
