@@ -1,6 +1,6 @@
 # Especificación: modulo63-asistencia-biometrica-backend — AsistenciaBiometrica (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #66 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no se registra la asistencia. Planillas (66) necesita días laborados y horas extra aprobadas (P3).
@@ -131,3 +131,4 @@ Los mensajes 26 y 27 rechazan un registro de la importación sin detener el rest
 | 2026-11-22 | A6 PostgreSQL | Cumple: `035` aplicado, scaffold al día y `SMOKE OK` con los conteos del seed (13 jornadas, 11 asistencias, 1 tardanza, 1 sin marcación, 15 min de tardanza, 90 pendientes, 150 aprobados; cálculo 12/1/0) | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` (SCAFFOLD AL DÍA), `./scripts/smoke-postgres.sh` (SMOKE OK) |
 | 2026-11-23 | Actualización con main | Cumple: actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 035; compilación con 0 advertencias, `dotnet test` con 1315 superadas y solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` (CRLF local), `check-rules.sh` limpio, scaffold al día y `npm run verify` en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `dotnet build -warnaserror`, `dotnet test`, `./scripts/check-rules.sh`, `npm --prefix frontend run verify` |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1370 pruebas backend y 928 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `035` aplicado en la demo con copia y ensayo (8 scripts registrados, filas de las 45 tablas existentes sin cambios). PR #66 fusionado con merge commit (`b597c20`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/marcaciones` y `/api/v1/jornadas-asistencia` responden 200 |

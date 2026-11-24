@@ -1,6 +1,6 @@
 # Especificación: modulo70-seguridad-salud-ocupacional-frontend — Pantalla de SeguridadSaludOcupacional
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #72 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** `/modulos/70-seguridad-salud-ocupacional` muestra «Pantalla pendiente».
@@ -55,3 +55,4 @@
 | 2026-11-22 | A5 Roles, resumen y pestañas | Pasan | `SeguridadSaludOcupacionalPage.test.tsx`; el módulo, 3 ejecuciones seguidas con 60 pruebas superadas cada una |
 | 2026-11-22 | A6 Visual | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro |
 | 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo70/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `041` aplicado en la demo con copia y ensayo (14 scripts registrados, filas de las 66 tablas existentes sin cambios). PR #72 fusionado con merge commit (`7f2b898`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/equipos-proteccion`, `/api/v1/entregas-epp`, `/api/v1/examenes-medicos` y `/api/v1/incidentes-sst` responden 200 |

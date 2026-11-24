@@ -1,6 +1,6 @@
 # Especificación: modulo66-planillas-backend — Planillas (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #69 y desplegada en la demo.
 > Depende de 62 (contratos y adendas), 63 (jornadas), 65 (ausencias) y 67 (cuotas), ya implementados en las ramas anteriores.
 
 ## 1. Objetivo
@@ -136,6 +136,7 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 | 2026-11-22 | A5 | `SMOKE OK` con `038` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1480 pruebas backend y 1133 frontend |
 | 2026-11-24 | Catálogos en el script (pedido de Lukas) | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | `ParametrosPlanilla`, `ParametrosPension` y `TramosQuintaCategoria` al final de `038-planillas.sql` con `ON CONFLICT DO NOTHING` y fuera del seed: con solo los scripts quedan 7/5/5 filas, 038 se reaplica sin errores, el seed corre dos veces sin duplicar, la secuencia sigue en 6; build sin warnings, 1480 pruebas backend, `SCAFFOLD AL DÍA` y `SMOKE OK` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `038` aplicado en la demo con copia y ensayo (11 scripts registrados, filas de las 51 tablas existentes sin cambios). PR #69 fusionado con merge commit (`bc93887`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/planillas` responde 200 y `/api/v1/planillas/parametros` devuelve los 7 parámetros, los 5 sistemas de pensiones y los 5 tramos cargados por el script |
 
 ### Decisiones de detalle tomadas al implementar (la spec no las fijaba)
 - **Totales y contadores.** `Empleados`, `TotalIngresos`, `TotalDescuentos`, `TotalNeto` y `TotalAportesEmpleador` cuentan solo los empleados incluidos; `Incidencias` cuenta los excluidos (sin afiliación o neto negativo). Un excluido se guarda con días y sueldo informativos pero importes en 0.

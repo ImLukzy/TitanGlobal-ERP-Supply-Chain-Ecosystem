@@ -1,6 +1,6 @@
 # Especificación: modulo69-capacitaciones-backend — Capacitaciones (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #71 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no se gestionan los cursos ni la formación del personal.
@@ -113,6 +113,7 @@ En el 9, `{estado}` es «activo» o «inactivo».
 | 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (040 aplicado), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA»), `./scripts/smoke-postgres.sh` termina en `SMOKE OK`; base local restaurada después |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 040: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1495 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1217 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1550 pruebas backend y 1254 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `040` aplicado en la demo con copia y ensayo (13 scripts registrados, filas de las 62 tablas existentes sin cambios). PR #71 fusionado con merge commit (`c8e197d`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/cursos`, `/api/v1/programaciones-curso` y `/api/v1/capacitaciones/resumen` responden 200 |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `PUT` de curso permite editar siempre (también con programaciones); el código se guarda en mayúsculas y se valida como en el alta.

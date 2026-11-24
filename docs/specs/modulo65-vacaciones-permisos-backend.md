@@ -1,6 +1,6 @@
 # Especificación: modulo65-vacaciones-permisos-backend — VacacionesPermisos (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #67 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no se registran vacaciones, permisos ni licencias. Planillas (66) necesita los días sin goce aprobados (V6, P4).
@@ -111,6 +111,7 @@ En el mensaje 14 el saldo se escribe con un decimal y punto (`12.5`).
 | 2026-11-22 | A5 | `SMOKE OK` con `036` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
 | 2026-11-23 | Actualización con main | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 036: gate y smoke en verde (compilación con 0 advertencias, `dotnet test` con 1362 superadas y solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` por CRLF local, `check-rules.sh` limpio, scaffold al día, `npm run verify` con 961 pruebas); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `dotnet build -warnaserror`, `dotnet test`, `./scripts/check-rules.sh`, `npm --prefix frontend run verify` |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1417 pruebas backend y 998 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `036` aplicado en la demo con copia y ensayo (9 scripts registrados). PR #67 fusionado con merge commit (`5aafff7`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/ausencias` responde 200 |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `AprobadasMes`: ausencias `Aprobada` cuya `FechaInicio` cae en el mes calendario actual (UTC). `AusentesHoy` cuenta ausencias (no hay solapes entre aprobadas), no empleados.

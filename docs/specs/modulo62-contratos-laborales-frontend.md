@@ -1,6 +1,6 @@
 # Especificación: modulo62-contratos-laborales-frontend — Pantalla de ContratosLaborales
 
-> Estado: **implementada con la opción A (recomendada) en las 3 decisiones de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #64 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** el backend del módulo 62 está en `main` (PR #39, spec `modulo62-contratos-laborales-backend.md`), pero `/modulos/62-contratos-laborales` muestra «Pantalla pendiente»: `frontend/src/modules/pantallas.ts` no tiene la entrada `62-contratos-laborales`.
@@ -116,3 +116,4 @@ Verificado en el repositorio (rama desde `origin/main` `e48a190`): existen `pant
 | 2026-11-22 | A9 | pendiente: QA contra PostgreSQL y capturas | — |
 | 2026-11-24 | A8 | Parcial: en pantalla contra PostgreSQL local, CTR-000005 se ve `Vencido` y CTR-000001 muestra «Gerente Comercial» y S/ 9,500.00 vigentes; alta, renovación, adenda y anulación se abrieron sin enviar (el seed no cambia). Los flujos de escritura contra PostgreSQL los cubre `./scripts/smoke-postgres.sh` (SMOKE OK en la rama final) | `docs/evidencias/modulo62/` |
 | 2026-11-24 | A9 | OK | 32 capturas (8 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo62/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. Sin script. PR #64 fusionado con merge commit (`e46632f`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/contratos-laborales` responde 200 |

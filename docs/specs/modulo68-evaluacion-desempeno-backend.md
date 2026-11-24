@@ -1,6 +1,6 @@
 # Especificación: modulo68-evaluacion-desempeno-backend — EvaluacionDesempeno (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #70 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no hay evaluación de desempeño.
@@ -114,6 +114,7 @@ En el 14, la suma con 2 decimales y punto. Fechas en los mensajes `yyyy-MM-dd`.
 | 2026-11-22 | A4 | cumple | `./scripts/aplicar-bd.sh` aplica 039; `./scripts/scaffold.sh --comprobar` → `SCAFFOLD AL DÍA`; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 039: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1464 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1158 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1519 pruebas backend y 1195 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `039` aplicado en la demo con copia y ensayo (12 scripts registrados, filas de las 58 tablas existentes sin cambios). PR #70 fusionado con merge commit (`ce01b12`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/ciclos-evaluacion` y `/api/v1/evaluaciones` responden 200 |
 
 ### Opciones tomadas donde la spec no decía nada
 - **Mensaje 34** (nuevo): la descripción de la competencia supera 300 caracteres. El orden de validación de una competencia es nombre (2), descripción (34), peso (11); después ciclo (9), estado (10) y duplicado (12).

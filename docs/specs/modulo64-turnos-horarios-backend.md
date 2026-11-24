@@ -1,6 +1,6 @@
 # Especificación: modulo64-turnos-horarios-backend — TurnosHorarios (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #65 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no existen turnos ni horarios. El módulo 63 (asistencia) necesita saber, para cada empleado y fecha, si le toca trabajar, a qué hora entra y sale y con cuánta tolerancia (A4, A5, A6 de `docs/hcm-reglas-negocio.md`).
@@ -190,6 +190,7 @@ Reglas aplicadas: H1 a H5, T2, T5 y T6. Lo que las reglas no fijan se marca **[e
 | 2026-11-22 | A8 | OK | `git diff` y `git status`: solo archivos de §3 (más `Empleado.cs` y `ValoresIniciales.cs`, ver nota) |
 | 2026-11-23 | A9 | OK | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 034: gate y smoke en verde (build 0 warnings; dotnet test 1249 superadas y 1 fallo ambiental conocido; frontend 810 pruebas; `SMOKE OK`) |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1304 pruebas backend y 847 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `034` aplicado en la demo con copia y ensayo (7 scripts registrados, filas de las 43 tablas existentes sin cambios). PR #65 fusionado con merge commit (`5b729b1`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/turnos` y `/api/v1/asignaciones-turno` responden 200 |
 
 Notas de la ejecución:
 - `ValoresIniciales.cs` (Domain) gana la clase parcial `Turno` con `Activo = true`, como indica el criterio de la tabla `Turnos`.

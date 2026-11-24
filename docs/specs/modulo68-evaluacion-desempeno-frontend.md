@@ -1,6 +1,6 @@
 # Especificación: modulo68-evaluacion-desempeno-frontend — Pantalla de EvaluacionDesempeno
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #70 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** `/modulos/68-evaluacion-desempeno` muestra «Pantalla pendiente».
@@ -54,6 +54,7 @@
 | 2026-11-22 | A5 | cumple | `EvaluacionDesempenoPage.test.tsx` (5): pestañas por `?vista=`, flechas y `tabIndex`, y roles RRHH/ADMIN frente a otros; `npx vitest run src/modules/evaluacion-desempeno` ×3: 5 archivos y 62 pruebas superadas cada vez |
 | 2026-11-22 | A6 | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro, aún sin tomar |
 | 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo68/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `039` aplicado en la demo con copia y ensayo (12 scripts registrados, filas de las 58 tablas existentes sin cambios). PR #70 fusionado con merge commit (`ce01b12`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/ciclos-evaluacion` y `/api/v1/evaluaciones` responden 200 |
 
 ### Opciones tomadas donde la spec no decía nada
 - **Columna «Evaluaciones» de la tabla de ciclos:** el listado del backend no trae el conteo (solo el detalle), así que la tabla muestra Código, Nombre, Periodo, Fechas y Estado, y los conteos por estado van en el detalle.

@@ -1,6 +1,6 @@
 # Especificación: modulo69-capacitaciones-frontend — Pantalla de Capacitaciones
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #71 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** `/modulos/69-capacitaciones` muestra «Pantalla pendiente».
@@ -55,3 +55,4 @@
 | 2026-11-22 | A5 Roles y pestañas | Pasan | `CapacitacionesPage.test.tsx` (7): `?vista=`, flechas, selector de año, resumen y escrituras deshabilitadas sin RRHH ni ADMIN; `npx vitest run src/modules/capacitaciones` ×3 (59 pruebas cada vez) |
 | 2026-11-22 | A6 Visual | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro, por adjuntar al PR |
 | 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo69/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `040` aplicado en la demo con copia y ensayo (13 scripts registrados, filas de las 62 tablas existentes sin cambios). PR #71 fusionado con merge commit (`c8e197d`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/cursos`, `/api/v1/programaciones-curso` y `/api/v1/capacitaciones/resumen` responden 200 |
