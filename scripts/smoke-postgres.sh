@@ -475,7 +475,14 @@ checks = {
     "ausencia-created-8": lambda data: data["id"] == 8 and data["numero"] == "AUS-000008",
     "ausencia-id-8": lambda data: data["id"] == 8,
     "ausencia-no-pendiente": lambda data: data["StatusCode"] == 409 and data["Message"] == "La ausencia AUS-000008 no está pendiente." and "Detail" not in data,
-    "ausencia-created-9": lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
+    "openapi-prestamos": lambda data: all(path in data["paths"] for path in ["/api/v1/prestamos", "/api/v1/prestamos/resumen", "/api/v1/prestamos/{id}", "/api/v1/prestamos/capacidad/{empleadoId}", "/api/v1/prestamos/{id}/anulacion"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/prestamos", "get"), ("/api/v1/prestamos", "post"), ("/api/v1/prestamos/resumen", "get"), ("/api/v1/prestamos/{id}", "get"), ("/api/v1/prestamos/capacidad/{empleadoId}", "get"), ("/api/v1/prestamos/{id}/anulacion", "post")]),
+    "prestamos-resumen": lambda data: data["activos"] == 1 and data["saldoPendienteTotal"] == 400 and isinstance(data["otorgadoMes"], (int, float)) and isinstance(data["cuotasDelMes"], (int, float)),
+    "prestamos-capacidad-1": lambda data: data["sueldoVigente"] == 9500 and data["netoEstimado"] == 8265 and data["cuotaMaxima"] == 2479.5 and [(fila["anio"], fila["mes"], fila["monto"]) for fila in data["cuotasComprometidasPorMes"]] == [(2026, 11, 100), (2026, 12, 100), (2027, 1, 100), (2027, 2, 100)],
+    "prestamo-supera-tope": lambda data: data["StatusCode"] == 409 and data["Message"] == "La cuota de 11/2026 sería 2500.00 y supera el máximo de 2479.50 (30 % del neto estimado)." and "Detail" not in data,
+    "prestamo-created-4": lambda data: data["id"] == 4 and data["numero"] == "PRE-000004",
+    "prestamo-con-descuentos": lambda data: data["StatusCode"] == 409 and data["Message"] == "El préstamo PRE-000001 ya tiene descuentos y no se puede anular." and "Detail" not in data,
+    "prestamo-id-4": lambda data: data["id"] == 4,
+    "ausencia-created-9":lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
     "ausencia-id-9": lambda data: data["id"] == 9,
 }
 
@@ -1108,4 +1115,11 @@ request_check 'POST aprobar ausencia' POST '/api/v1/ausencias/8/aprobacion' 200 
 request_check 'POST aprobar ausencia repetido' POST '/api/v1/ausencias/8/aprobacion' 409 ausencia-no-pendiente
 request_check 'POST segundo permiso con goce' POST '/api/v1/ausencias' 200 ausencia-created-9 '{"empleadoId":2,"tipo":"PermisoConGoce","fechaInicio":"2030-03-04","fechaFin":"2030-03-05","motivo":"Tramite de smoke"}'
 request_check 'POST cancelar ausencia futura' POST '/api/v1/ausencias/9/cancelacion' 200 ausencia-id-9
+request_check 'OpenAPI de prestamos' GET '/openapi/v1.json' 200 openapi-prestamos
+request_check 'Resumen de prestamos' GET '/api/v1/prestamos/resumen' 200 prestamos-resumen
+request_check 'Capacidad del empleado 1' GET '/api/v1/prestamos/capacidad/1?fecha=2026-11-22' 200 prestamos-capacidad-1
+request_check 'POST adelanto que supera el tope' POST '/api/v1/prestamos' 409 prestamo-supera-tope '{"empleadoId":1,"tipo":"Adelanto","monto":2400,"fechaOtorgamiento":"2026-11-22","primerAnio":2026,"primerMes":11,"motivo":"Adelanto de smoke"}'
+request_check 'POST prestamo valido' POST '/api/v1/prestamos' 200 prestamo-created-4 '{"empleadoId":2,"tipo":"Prestamo","monto":300,"numeroCuotas":3,"fechaOtorgamiento":"2026-11-22","primerAnio":2026,"primerMes":12,"motivo":"Prestamo de smoke"}'
+request_check 'POST anular prestamo con descuentos' POST '/api/v1/prestamos/1/anulacion' 409 prestamo-con-descuentos '{"motivo":"Prueba de smoke"}'
+request_check 'POST anular prestamo sin descuentos' POST '/api/v1/prestamos/4/anulacion' 200 prestamo-id-4 '{"motivo":"Prueba de smoke"}'
 printf 'SMOKE OK\n'

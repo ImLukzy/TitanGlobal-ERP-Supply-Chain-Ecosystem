@@ -44,4 +44,6 @@ public partial class Empleado
     public virtual ICollection<JornadaAsistencia> JornadasAsistencia { get; set; } = new List<JornadaAsistencia>();
 
     public virtual ICollection<Marcacion> Marcaciones { get; set; } = new List<Marcacion>();
+
+    public virtual ICollection<Prestamo> Prestamos { get; set; } = new List<Prestamo>();
 }

@@ -735,4 +735,26 @@ INSERT INTO "Ausencias" ("Id", "Numero", "EmpleadoId", "Tipo", "FechaInicio", "F
 
 SELECT setval(pg_get_serial_sequence('"Ausencias"', 'Id'), (SELECT MAX("Id") FROM "Ausencias"));
 
+TRUNCATE TABLE "DescuentosCuotaPrestamo", "CuotasPrestamo", "Prestamos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Prestamos" ("Id", "Numero", "EmpleadoId", "Tipo", "Monto", "NumeroCuotas", "FechaOtorgamiento", "PrimerAnio", "PrimerMes", "Motivo", "Estado", "Saldo", "FechaAnulacion", "MotivoAnulacion") VALUES
+    (1, 'PRE-000001', 1, 'Prestamo', 600.00, 6, DATE '2026-09-01', 2026, 9, 'Compra de equipo de computo', 'Activo', 400.00, NULL, NULL),
+    (2, 'PRE-000002', 2, 'Adelanto', 500.00, 1, DATE '2026-10-05', 2026, 10, 'Gastos medicos', 'Cancelado', 0.00, NULL, NULL),
+    (3, 'PRE-000003', 3, 'Prestamo', 300.00, 3, DATE '2026-10-20', 2026, 11, 'Curso de capacitacion', 'Anulado', 0.00, DATE '2026-10-22', 'Registrado por error');
+
+INSERT INTO "CuotasPrestamo" ("Id", "PrestamoId", "NumeroCuota", "Anio", "Mes", "Monto", "MontoDescontado", "Estado") VALUES
+    (1, 1, 1, 2026, 9, 100.00, 100.00, 'Descontada'),
+    (2, 1, 2, 2026, 10, 100.00, 100.00, 'Descontada'),
+    (3, 1, 3, 2026, 11, 100.00, 0.00, 'Pendiente'),
+    (4, 1, 4, 2026, 12, 100.00, 0.00, 'Pendiente'),
+    (5, 1, 5, 2027, 1, 100.00, 0.00, 'Pendiente'),
+    (6, 1, 6, 2027, 2, 100.00, 0.00, 'Pendiente'),
+    (7, 2, 1, 2026, 10, 500.00, 500.00, 'Descontada'),
+    (8, 3, 1, 2026, 11, 100.00, 0.00, 'Pendiente'),
+    (9, 3, 2, 2026, 12, 100.00, 0.00, 'Pendiente'),
+    (10, 3, 3, 2027, 1, 100.00, 0.00, 'Pendiente');
+
+SELECT setval(pg_get_serial_sequence('"Prestamos"', 'Id'), (SELECT MAX("Id") FROM "Prestamos"));
+SELECT setval(pg_get_serial_sequence('"CuotasPrestamo"', 'Id'), (SELECT MAX("Id") FROM "CuotasPrestamo"));
+
 COMMIT;

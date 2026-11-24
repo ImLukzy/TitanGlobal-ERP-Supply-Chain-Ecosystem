@@ -109,5 +109,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 034 | `034-turnos-horarios.sql` | Alexander | `alexander/modulo64-turnos-horarios` | sí, desde 024 |
 | 035 | `035-asistencia-biometrica.sql` | Alexander | `alexander/modulo63-asistencia-biometrica` | sí, desde 025 |
 | 036 | `036-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | sí, desde 026 |
+| 037 | `037-adelantos-prestamos.sql` | Alexander | `alexander/modulo67-adelantos-prestamos` | sí, desde 027 |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
