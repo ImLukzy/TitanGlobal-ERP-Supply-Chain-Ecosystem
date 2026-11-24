@@ -25,6 +25,7 @@ import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
 import { ConductoresPage } from './conductores/ConductoresPage';
 import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
 import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
+import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -53,4 +54,5 @@ export const pantallas: Record<string, ComponentType> = {
   '42-conductores': ConductoresPage,
   '48-transportistas-terceros': TransportistasTercerosPage,
   '62-contratos-laborales': ContratosLaboralesPage,
+  '64-turnos-horarios': TurnosHorariosPage,
 };

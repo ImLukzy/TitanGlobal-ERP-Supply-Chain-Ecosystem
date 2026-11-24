@@ -37,6 +37,8 @@ CONTRATO_LABORAL_EMPLEADO_ID=""
 CONTRATO_LABORAL_CREADO_ID=""
 CONTRATO_LABORAL_RENOVADO_ID=""
 EVALUACION_CREADA_ID=""
+TURNO_CREADO_ID=""
+ASIGNACION_TURNO_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -450,6 +452,14 @@ checks = {
     "contrato-laboral-renovacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede renovar\.", data["Message"]) is not None and "Detail" not in data,
     "contrato-laboral-anulacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede anular\.", data["Message"]) is not None and "Detail" not in data,
     "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
+    "openapi-turnos": lambda data: all(path in data["paths"] for path in ["/api/v1/turnos", "/api/v1/turnos/resumen", "/api/v1/turnos/{id}", "/api/v1/turnos/{id}/desactivacion", "/api/v1/turnos/{id}/activacion", "/api/v1/asignaciones-turno", "/api/v1/asignaciones-turno/programacion", "/api/v1/asignaciones-turno/{id}/finalizacion", "/api/v1/asignaciones-turno/{id}"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/turnos", "get"), ("/api/v1/turnos", "post"), ("/api/v1/turnos/resumen", "get"), ("/api/v1/turnos/{id}", "get"), ("/api/v1/turnos/{id}", "put"), ("/api/v1/turnos/{id}/desactivacion", "post"), ("/api/v1/turnos/{id}/activacion", "post"), ("/api/v1/asignaciones-turno", "get"), ("/api/v1/asignaciones-turno", "post"), ("/api/v1/asignaciones-turno/programacion", "get"), ("/api/v1/asignaciones-turno/{id}/finalizacion", "post"), ("/api/v1/asignaciones-turno/{id}", "delete")]),
+    "turnos-rotativos": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "ROT4X2" and data["items"][0]["diasTrabajo"] == 4 and data["items"][0]["diasDescanso"] == 2,
+    "turnos-resumen": lambda data: data["totalTurnos"] == 4 and data["activos"] == 3 and data["fijos"] == 3 and data["rotativos"] == 1,
+    "programacion-empleado-2": lambda data: len(data) == 6 and all(dia["laborable"] and dia["observacion"] is None for dia in data[:4]) and all((not dia["laborable"]) and dia["observacion"] == "Descanso" for dia in data[4:]) and data[0]["fecha"] == "2026-01-05" and data[0]["horaEntrada"] == "07:00:00",
+    "turno-codigo-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un turno con el código DIA." and "Detail" not in data,
+    "turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "asignacion-turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "asignacion-turno-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado y no admite turnos." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -644,6 +654,12 @@ request_check() {
     fi
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "turno-created" ]]; then
+        TURNO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "asignacion-turno-created" ]]; then
+        ASIGNACION_TURNO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1049,4 +1065,13 @@ END $$;
 DELETE FROM "FletesTerceros" WHERE "Referencia" = 'SMOKE-48';
 DELETE FROM "TransportistasTerceros" WHERE "DocumentoFiscal" = 'SMOKE-48';
 SQL
+request_check 'OpenAPI de turnos y asignaciones' GET '/openapi/v1.json' 200 openapi-turnos
+request_check 'Turnos rotativos' GET '/api/v1/turnos?tipo=Rotativo' 200 turnos-rotativos
+request_check 'Resumen de turnos' GET '/api/v1/turnos/resumen' 200 turnos-resumen
+request_check 'Programación del empleado 2' GET '/api/v1/asignaciones-turno/programacion?empleadoId=2&desde=2026-01-05&hasta=2026-01-10' 200 programacion-empleado-2
+request_check 'POST turno con código repetido' POST '/api/v1/turnos' 409 turno-codigo-duplicado '{"codigo":"DIA","nombre":"Duplicado","tipo":"Fijo","horaEntrada":"08:00:00","horaSalida":"17:00:00","cruzaMedianoche":false,"toleranciaMinutos":10,"diasLaborables":[1,2,3,4,5]}'
+request_check 'POST turno válido' POST '/api/v1/turnos' 200 turno-created '{"codigo":"SMOKE","nombre":"Turno de smoke","tipo":"Fijo","horaEntrada":"09:00:00","horaSalida":"18:00:00","cruzaMedianoche":false,"toleranciaMinutos":5,"diasLaborables":[1,2,3,4,5]}'
+request_check 'POST asignación futura del empleado 3' POST '/api/v1/asignaciones-turno' 200 asignacion-turno-created '{"empleadoId":3,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
+request_check 'DELETE asignación futura' DELETE "/api/v1/asignaciones-turno/${ASIGNACION_TURNO_CREADA_ID}" 204 ''
+request_check 'POST asignación al empleado cesado' POST '/api/v1/asignaciones-turno' 409 asignacion-turno-empleado-cesado '{"empleadoId":4,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
 printf 'SMOKE OK\n'

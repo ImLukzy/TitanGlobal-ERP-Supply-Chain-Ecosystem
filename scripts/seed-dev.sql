@@ -657,5 +657,22 @@ JOIN "TransportistasTerceros" t ON lower(btrim(t."DocumentoFiscal")) = lower(v.d
 ON CONFLICT ("TransportistaTerceroId", lower(btrim("Referencia"))) DO NOTHING;
 SELECT setval(pg_get_serial_sequence('"TransportistasTerceros"', 'Id'), (SELECT MAX("Id") FROM "TransportistasTerceros"));
 SELECT setval(pg_get_serial_sequence('"FletesTerceros"', 'Id'), (SELECT MAX("Id") FROM "FletesTerceros"));
+TRUNCATE TABLE "AsignacionesTurno", "Turnos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Turnos" ("Id", "Codigo", "Nombre", "Tipo", "HoraEntrada", "HoraSalida", "CruzaMedianoche", "ToleranciaMinutos", "DiasLaborables", "DiasTrabajo", "DiasDescanso", "FechaInicioCiclo", "Activo") VALUES
+    (1, 'DIA', 'Turno dia', 'Fijo', TIME '08:00', TIME '17:00', false, 10, '1,2,3,4,5', NULL, NULL, NULL, true),
+    (2, 'NOCHE', 'Turno noche', 'Fijo', TIME '22:00', TIME '06:00', true, 5, '1,2,3,4,5,6', NULL, NULL, NULL, true),
+    (3, 'ROT4X2', 'Rotativo 4x2', 'Rotativo', TIME '07:00', TIME '19:00', false, 15, NULL, 4, 2, DATE '2026-01-05', true),
+    (4, 'SABADO', 'Sabado medio dia', 'Fijo', TIME '08:00', TIME '13:00', false, 10, '6', NULL, NULL, NULL, false);
+
+INSERT INTO "AsignacionesTurno" ("Id", "EmpleadoId", "TurnoId", "FechaInicio", "FechaFin") VALUES
+    (1, 1, 1, DATE '2021-03-01', NULL),
+    (2, 2, 2, DATE '2019-08-16', DATE '2025-12-31'),
+    (3, 2, 3, DATE '2026-01-01', NULL),
+    (4, 3, 1, DATE '2024-01-08', NULL),
+    (5, 4, 1, DATE '2018-05-02', NULL);
+
+SELECT setval(pg_get_serial_sequence('"Turnos"', 'Id'), (SELECT MAX("Id") FROM "Turnos"));
+SELECT setval(pg_get_serial_sequence('"AsignacionesTurno"', 'Id'), (SELECT MAX("Id") FROM "AsignacionesTurno"));
 
 COMMIT;
