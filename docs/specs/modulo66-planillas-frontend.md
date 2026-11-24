@@ -38,7 +38,7 @@
 | A3 | Planillas | tests: crear, calcular, aprobar con confirmación, pago, acciones según estado, detalle de empleados con incidencias, boleta e impresión | pasan |
 | A4 | Bonos y afiliaciones | tests: validación local, alta, eliminación, CUSPP solo en AFP | pasan |
 | A5 | Roles y pestañas | tests | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro, incluida la boleta | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro, incluida la boleta | en `docs/evidencias/modulo66/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests.
@@ -55,3 +55,4 @@
 | 2026-11-22 | A4 | pruebas de validación local (mensajes 16, 1, 2, 3, 18, 19, 22, 24, 25), alta, eliminación con `DialogoBaja` y CUSPP solo en AFP (no se envía en ONP) | `BonosVista.test.tsx`, `AfiliacionesVista.test.tsx`, `validacionPlanilla.test.ts` |
 | 2026-11-22 | A5 | pestañas `?vista=` (clic, flechas, valor desconocido) y roles RRHH, ADMIN, otro rol y sin roles | `PlanillasPage.test.tsx` |
 | 2026-11-22 | A6 | pendiente: capturas | a 375 y 1280 px, claro y oscuro, incluida la boleta |
+| 2026-11-24 | A6 | OK | 16 capturas (4 escenarios, incluida la boleta, a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo66/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |

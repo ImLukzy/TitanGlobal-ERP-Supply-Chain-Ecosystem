@@ -36,7 +36,7 @@
 | A1 | Gate | `npm --prefix frontend run verify` | en verde, 0 warnings |
 | A2 | API y cronograma | tests: las 6 funciones; `cronograma.ts` con redondeo y última cuota | pasan |
 | A3 | Pantalla | tests: resumen, filtros, detalle con cuotas, alta con aviso de tope, anulación según estado, roles | pasan |
-| A4 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A4 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo67/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api, cronograma y tests.
@@ -50,3 +50,4 @@
 | 2026-11-22 | A2 API y cronograma | 6 funciones de `api.ts` y `cronograma.ts` (casos 1000/3, 100/6 y 0.10/4 del backend, cambio de año, suma = monto, tope por mes) | `npx vitest run src/modules/adelantos-prestamos`: 66 de 66, tres ejecuciones seguidas |
 | 2026-11-22 | A3 Pantalla | resumen, filtros, detalle con cuotas, alta con aviso de tope, anulación según estado y roles | mismos 66 tests (`AdelantosPrestamosPage.test.tsx`, `PrestamoFormulario.test.tsx`) |
 | 2026-11-22 | A4 Visual | pendiente: capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR |
+| 2026-11-24 | A4 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo67/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
