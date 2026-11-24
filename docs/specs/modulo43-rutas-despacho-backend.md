@@ -12,7 +12,7 @@ Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Orden confirmad
 
 ## 2. Fuera de alcance y decisiones pendientes
 
-No modificar las cuatro entidades base, autenticación, middlewares, pipeline, dependencias ni módulos de otras personas. No incorporar los commits de implementación del 41, 42 o 48 a esta rama independiente.
+No modificar las cuatro entidades base, autenticación, middlewares, pipeline, dependencias ni módulos de otras personas. Conservar los módulos 41, 42 y 48 ya integrados en main, sin copiar implementaciones desde ramas pendientes.
 
 No programar viajes, asignar vehículos/conductores/transportistas, optimizar recorridos, integrar mapas, gestionar entregas ni calcular combustible. Estas funcionalidades no están definidas para el 43 en el enunciado y requerirían su propia aprobación.
 
@@ -29,7 +29,7 @@ Estas decisiones son una propuesta, pendiente de aprobación de Lukas. No se mar
 
 | Archivo | Acción después de aprobar | Nota |
 |---|---|---|
-| `database/013-rutas-despacho.sql` | crear | número provisional después de las reservas locales 010/011/012 de Kelvin; confirmar contra relevo actualizado antes de crear SQL |
+| `database/013-rutas-despacho.sql` | creado y aplicado localmente | reserva oficial del 43 en relevo §8; los scripts 021, 022 y 012 del 41, 42 y 48 ya están integrados en main |
 | `src/TitanGlobal.Domain/Models/RutaDespacho.cs` | generar | exclusivamente mediante `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | no editar manualmente |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar si hace falta | únicamente el nombre español del modelo nuevo |
@@ -151,3 +151,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1130 pruebas backend y 603 frontend en 76 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Actualización para revisión — 2026-11-23
+
+- Rama actualizada con `origin/main` (b95dfc787089978e1c5434f6c4d005bfd04713a0) después de integrar el PR #63 del módulo 48.
+- `relevo.md` idéntico a main. Se conservaron las pantallas y los estilos del 41/42/48, el seed y las comprobaciones de smoke existentes; únicamente se añadieron los bloques del 43. Persistencia regenerada con el scaffold oficial desde la base combinada.
+- Base local reiniciada, seed cargado y script propio aplicado: `013-rutas-despacho.sql`. Su aplicación en la demo corresponde a Lukas.
+- `./scripts/verify.sh`: exit 0; 1238 pruebas backend, 755 pruebas frontend en 90 archivos; .NET con cero warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del módulo 43 y los módulos existentes.
+- `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint 9 y tamaño del bundle de Vite.
+- Se conserva la evidencia visual del 2026-11-21 y el bloque visual del 43. Propuesta, pendiente de aprobación de Lukas; la aprobación del 48 no sustituye la del 43. No se ejecutó SQL contra producción.
