@@ -2040,3 +2040,52 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 .evaluacion-desempeno-puntaje { margin: 12px 0 0; color: var(--ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) { .evaluacion-desempeno-filters, .evaluacion-desempeno-filters-tres, .evaluacion-desempeno-form, .evaluacion-desempeno-datos, .evaluacion-desempeno-resumen { grid-template-columns: minmax(0, 1fr); } .evaluacion-desempeno-barra { grid-template-columns: minmax(0, 1fr) 44px; } .evaluacion-desempeno-barra-pista { grid-column: 1 / -1; grid-row: 2; } }
 @media (max-width: 520px) { .evaluacion-desempeno-tabs { flex-wrap: wrap; } .evaluacion-desempeno-opciones { flex-direction: column; } }
+.capacitaciones-tabs { margin-top: 14px; }
+.capacitaciones-tab-panel { display: grid; gap: 15px; min-width: 0; }
+.capacitaciones-anio { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.capacitaciones-anio label { color: var(--ink-soft); font-size: 11px; font-weight: 650; }
+.capacitaciones-anio select { height: 36px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.capacitaciones-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.capacitaciones-list-panel, .capacitaciones-detail-panel, .capacitaciones-form-panel { min-width: 0; margin-top: 0; }
+.capacitaciones-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.capacitaciones-filters-tres { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+.capacitaciones-table { min-width: 640px; }
+.capacitaciones-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.capacitaciones-estado { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.capacitaciones-estado.is-programada, .capacitaciones-estado.is-activo { background: var(--accent-soft); color: var(--accent-ink); }
+.capacitaciones-estado.is-realizada, .capacitaciones-estado.is-vigente { background: var(--good-soft); color: var(--good); }
+.capacitaciones-estado.is-vencida { background: var(--bad-soft); color: var(--bad); }
+.capacitaciones-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.capacitaciones-aviso-celda { color: var(--ink-soft); font-size: 10px; }
+.capacitaciones-ok { margin: 10px 0 0; color: var(--good); font-size: 10px; font-weight: 650; }
+.capacitaciones-actions { flex-wrap: wrap; align-items: center; }
+.capacitaciones-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; }
+.capacitaciones-datos > div { min-width: 0; }
+.capacitaciones-datos dt { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.capacitaciones-datos dd { margin: 4px 0 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.capacitaciones-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.capacitaciones-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.capacitaciones-puntaje { margin: 12px 0 0; color: var(--ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.capacitaciones-scroll { max-width: 100%; overflow-x: auto; }
+.capacitaciones-mini-tabla { width: 100%; min-width: 420px; border-collapse: collapse; text-align: left; font-size: 10px; }
+.capacitaciones-mini-tabla caption { padding: 0 0 6px; color: var(--ink-faint); text-align: left; font-size: 10px; font-weight: 650; }
+.capacitaciones-mini-tabla th { padding: 7px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.capacitaciones-mini-tabla td { padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: break-word; vertical-align: top; }
+.capacitaciones-descripcion { display: block; margin: 3px 0; color: var(--ink-soft); }
+.capacitaciones-fila-acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.capacitaciones-fila-boton { min-height: 0; padding: 5px 9px; font-size: 10px; white-space: nowrap; }
+.capacitaciones-celda-control { width: 100%; min-width: 0; height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.capacitaciones-nota { min-width: 64px; }
+.capacitaciones-celda-control[aria-invalid="true"] { border-color: var(--bad); }
+.capacitaciones-form, .capacitaciones-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.capacitaciones-dialog-form { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
+.capacitaciones-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.capacitaciones-form .form-field, .capacitaciones-dialog-form .form-field { min-width: 0; gap: 6px; }
+.capacitaciones-form .form-field select, .capacitaciones-form .form-field input, .capacitaciones-dialog-form .form-field select, .capacitaciones-dialog-form .form-field input { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.capacitaciones-form .form-field [aria-invalid="true"], .capacitaciones-dialog-form .form-field [aria-invalid="true"] { border-color: var(--bad); }
+.capacitaciones-form-wide { grid-column: 1 / -1; min-width: 0; }
+.capacitaciones-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.capacitaciones-form-actions p { flex: 1 1 100%; margin: 0; font-size: 10px; }
+@media (max-width: 1279px) { .capacitaciones-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .capacitaciones-filters, .capacitaciones-filters-tres, .capacitaciones-form, .capacitaciones-datos { grid-template-columns: minmax(0, 1fr); } .capacitaciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+@media (max-width: 520px) { .capacitaciones-tabs { flex-wrap: wrap; } }

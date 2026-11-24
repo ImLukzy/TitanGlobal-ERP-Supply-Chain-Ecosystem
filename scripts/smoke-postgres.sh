@@ -506,6 +506,27 @@ checks = {
     "evaluacion-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 1 ya tiene una evaluación en el ciclo SMK-2026." and "Detail" not in data,
     "evaluacion-6-enviada": lambda data: data["estado"] == "Enviada" and data["puntajeFinal"] == 4.4 and data["etiqueta"] == "Destacado",
     "evaluacion-resultados-smk": lambda data: data["evaluadas"] == 1 and data["puntajePromedio"] == 4.4,
+    "openapi-capacitaciones": lambda data: all(path in data["paths"] for path in ["/api/v1/cursos", "/api/v1/cursos/{id}", "/api/v1/cursos/{id}/desactivacion", "/api/v1/cursos/{id}/activacion", "/api/v1/programaciones-curso", "/api/v1/programaciones-curso/{id}", "/api/v1/programaciones-curso/{id}/inscripciones", "/api/v1/programaciones-curso/{id}/inscripciones/{inscripcionId}/retiro", "/api/v1/programaciones-curso/{id}/inscripciones/{inscripcionId}/certificacion", "/api/v1/programaciones-curso/{id}/realizacion", "/api/v1/programaciones-curso/{id}/cancelacion", "/api/v1/programaciones-curso/{id}/resultados", "/api/v1/capacitaciones/horas", "/api/v1/capacitaciones/empleados/{empleadoId}", "/api/v1/capacitaciones/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/cursos", "post"), ("/api/v1/cursos/{id}", "put"), ("/api/v1/programaciones-curso", "post"), ("/api/v1/programaciones-curso/{id}/inscripciones", "post"), ("/api/v1/capacitaciones/resumen", "get")]),
+    "capacitaciones-resumen-2026": lambda data: data["anio"] == 2026 and data["cursosActivos"] == 3 and data["programadas"] == 0 and data["realizadas"] == 1 and data["inscritos"] == 4 and data["horasTotales"] == 24 and data["certificacionesVencidas"] == 1,
+    "capacitaciones-resumen-2027": lambda data: data["anio"] == 2027 and data["programadas"] == 1 and data["realizadas"] == 0 and data["inscritos"] == 2 and data["horasTotales"] == 0,
+    "capacitaciones-horas-2026": lambda data: data["anio"] == 2026 and {fila["empleadoId"]: fila["horas"] for fila in data["items"] if fila["empleadoId"] in (1, 2, 3)} == {1: 8, 2: 8, 3: 0} and all(fila["empleadoId"] != 4 for fila in data["items"]),
+    "capacitaciones-empleado-2": lambda data: data["empleadoId"] == 2 and data["horas"] == 8 and [fila["cursoCodigo"] for fila in data["cursos"]] == ["SEG-001"] and [(fila["codigo"], fila["vencida"]) for fila in data["certificaciones"]] == [("CERT-SEG-0002", True)],
+    "curso-created-5": lambda data: data["id"] == 5,
+    "curso-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un curso con el código SMK-001." and "Detail" not in data,
+    "curso-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El curso ISO-900 está inactivo y no admite programaciones." and "Detail" not in data,
+    "programacion-created-4": lambda data: data["id"] == 4,
+    "programacion-id-4": lambda data: data["id"] == 4,
+    "programacion-id-1": lambda data: data["id"] == 1,
+    "inscripcion-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado y no se puede inscribir." and "Detail" not in data,
+    "inscripcion-created-8": lambda data: data["id"] == 8,
+    "inscripcion-id-8": lambda data: data["id"] == 8,
+    "inscripcion-created-9": lambda data: data["id"] == 9,
+    "inscripcion-sin-cupo": lambda data: data["StatusCode"] == 409 and data["Message"] == "La programación 4 no tiene cupo libre." and "Detail" not in data,
+    "programacion-no-realizable": lambda data: data["StatusCode"] == 409 and data["Message"] == "La programación 4 termina el 2099-06-02 y aún no se puede marcar como realizada." and "Detail" not in data,
+    "certificacion-no-aprobada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inscripción 5 no está aprobada y no admite certificación." and "Detail" not in data,
+    "certificacion-created-3": lambda data: data["id"] == 3,
+    "certificacion-repetida": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inscripción 4 ya tiene certificación." and "Detail" not in data,
+    "programacion-1-detalle": lambda data: data["estado"] == "Realizada" and data["inscritos"] == 4 and data["cupoLibre"] == 6 and [fila["estado"] for fila in data["inscripciones"]] == ["Aprobado", "Aprobado", "Aprobado", "Aprobado"] and [fila["nota"] for fila in data["inscripciones"]] == [17, 15.5, 12.5, 14] and [(fila["certificacion"]["codigo"], fila["certificacion"]["vencida"]) if fila["certificacion"] else None for fila in data["inscripciones"]] == [("CERT-SEG-0001", False), ("CERT-SEG-0002", True), None, ("SMK-0001", False)],
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1173,4 +1194,26 @@ request_check 'POST enviar evaluacion' POST '/api/v1/evaluaciones/6/envio' 200 e
 request_check 'Evaluacion enviada con puntaje' GET '/api/v1/evaluaciones/6' 200 evaluacion-6-enviada
 request_check 'POST cerrar ciclo de humo' POST '/api/v1/ciclos-evaluacion/3/cierre' 200 ciclo-evaluacion-id-3
 request_check 'Resultados del ciclo de humo' GET '/api/v1/ciclos-evaluacion/3/resultados' 200 evaluacion-resultados-smk
+# Modulo 69: las programaciones de humo usan fechas de 2099 para que no dependan del calendario.
+request_check 'OpenAPI de capacitaciones' GET '/openapi/v1.json' 200 openapi-capacitaciones
+request_check 'Resumen de capacitaciones 2026' GET '/api/v1/capacitaciones/resumen?anio=2026' 200 capacitaciones-resumen-2026
+request_check 'Resumen de capacitaciones 2027' GET '/api/v1/capacitaciones/resumen?anio=2027' 200 capacitaciones-resumen-2027
+request_check 'Horas de capacitacion 2026' GET '/api/v1/capacitaciones/horas?anio=2026' 200 capacitaciones-horas-2026
+request_check 'Capacitacion del empleado 2' GET '/api/v1/capacitaciones/empleados/2?anio=2026' 200 capacitaciones-empleado-2
+request_check 'POST curso' POST '/api/v1/cursos' 200 curso-created-5 '{"codigo":"smk-001","nombre":"Curso de smoke","horas":4.5,"tipo":"Interno"}'
+request_check 'POST curso con codigo repetido' POST '/api/v1/cursos' 409 curso-duplicado '{"codigo":"SMK-001","nombre":"Otro curso","horas":4.5,"tipo":"Virtual"}'
+request_check 'POST programacion de un curso inactivo' POST '/api/v1/programaciones-curso' 409 curso-inactivo '{"cursoId":4,"fechaInicio":"2099-06-01","fechaFin":"2099-06-02","cupo":1}'
+request_check 'POST programacion con cupo 1' POST '/api/v1/programaciones-curso' 200 programacion-created-4 '{"cursoId":5,"fechaInicio":"2099-06-01","fechaFin":"2099-06-02","cupo":1,"lugar":"Sala de smoke"}'
+request_check 'POST inscripcion de un empleado cesado' POST '/api/v1/programaciones-curso/4/inscripciones' 409 inscripcion-cesado '{"empleadoId":4}'
+request_check 'POST primera inscripcion' POST '/api/v1/programaciones-curso/4/inscripciones' 200 inscripcion-created-8 '{"empleadoId":1}'
+request_check 'POST inscripcion que supera el cupo' POST '/api/v1/programaciones-curso/4/inscripciones' 409 inscripcion-sin-cupo '{"empleadoId":2}'
+request_check 'POST realizar una programacion futura' POST '/api/v1/programaciones-curso/4/realizacion' 409 programacion-no-realizable
+request_check 'POST retiro de la inscripcion' POST '/api/v1/programaciones-curso/4/inscripciones/8/retiro' 200 inscripcion-id-8
+request_check 'POST inscripcion tras el retiro' POST '/api/v1/programaciones-curso/4/inscripciones' 200 inscripcion-created-9 '{"empleadoId":2}'
+request_check 'POST cancelar programacion' POST '/api/v1/programaciones-curso/4/cancelacion' 200 programacion-id-4
+request_check 'POST resultados de la programacion 1' POST '/api/v1/programaciones-curso/1/resultados' 200 programacion-id-1 '{"resultados":[{"inscripcionId":3,"aprobado":true,"nota":12.5}]}'
+request_check 'POST certificacion de inscripcion no aprobada' POST '/api/v1/programaciones-curso/2/inscripciones/5/certificacion' 409 certificacion-no-aprobada '{"codigo":"SMK-0001","fechaEmision":"2026-03-11"}'
+request_check 'POST certificacion' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 200 certificacion-created-3 '{"codigo":"smk-0001","fechaEmision":"2026-03-11","fechaVencimiento":null}'
+request_check 'POST certificacion repetida' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 409 certificacion-repetida '{"codigo":"SMK-0002","fechaEmision":"2026-03-11"}'
+request_check 'Programacion 1 con inscritos y certificaciones' GET '/api/v1/programaciones-curso/1' 200 programacion-1-detalle
 printf 'SMOKE OK\n'

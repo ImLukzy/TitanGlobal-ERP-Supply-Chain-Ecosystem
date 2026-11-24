@@ -828,4 +828,38 @@ SELECT setval(pg_get_serial_sequence('"CompetenciasEvaluacion"', 'Id'), (SELECT 
 SELECT setval(pg_get_serial_sequence('"Evaluaciones"', 'Id'), (SELECT MAX("Id") FROM "Evaluaciones"));
 SELECT setval(pg_get_serial_sequence('"CalificacionesEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CalificacionesEvaluacion"));
 
+-- Modulo 69 Capacitaciones. 4 cursos (ISO-900 inactivo) y 3 programaciones: la 1 realizada en 2026 con resultados y
+-- certificaciones (la CERT-SEG-0002 vencida), la 2 programada en 2027 (cupo 3 con 2 inscritos, siempre futura) y la 3
+-- cancelada. Anio = anio de FechaInicio. K5 de 2026: los empleados 1, 2 y 4 aprobaron el curso 1 (8 h); el 3 desaprobo.
+TRUNCATE TABLE "CertificacionesCurso", "InscripcionesCurso", "ProgramacionesCurso", "Cursos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Cursos" ("Id", "Codigo", "Nombre", "Horas", "Tipo", "Proveedor", "Activo") VALUES
+    (1, 'SEG-001', 'Seguridad y salud en el trabajo', 8.0, 'Interno', NULL, true),
+    (2, 'EXC-201', 'Excel avanzado para analistas', 16.0, 'Virtual', 'Aula Digital SAC', true),
+    (3, 'LID-301', 'Liderazgo de equipos', 24.0, 'Externo', 'Instituto Andino de Gestion', true),
+    (4, 'ISO-900', 'Auditor interno ISO 9001', 20.5, 'Externo', 'Calidad Total SA', false);
+
+INSERT INTO "ProgramacionesCurso" ("Id", "CursoId", "Anio", "FechaInicio", "FechaFin", "Cupo", "Lugar", "Estado") VALUES
+    (1, 1, 2026, DATE '2026-03-10', DATE '2026-03-11', 10, 'Sala de capacitacion', 'Realizada'),
+    (2, 2, 2027, DATE '2027-03-15', DATE '2027-03-16', 3, 'Aula virtual', 'Programada'),
+    (3, 3, 2026, DATE '2026-05-18', DATE '2026-05-20', 12, 'Auditorio central', 'Cancelada');
+
+INSERT INTO "InscripcionesCurso" ("Id", "ProgramacionCursoId", "EmpleadoId", "Estado", "Nota", "FechaInscripcion") VALUES
+    (1, 1, 1, 'Aprobado', 17.0, DATE '2026-02-20'),
+    (2, 1, 2, 'Aprobado', 15.5, DATE '2026-02-20'),
+    (3, 1, 3, 'Desaprobado', 9.0, DATE '2026-02-21'),
+    (4, 1, 4, 'Aprobado', 14.0, DATE '2026-02-21'),
+    (5, 2, 2, 'Inscrito', NULL, DATE '2026-11-10'),
+    (6, 2, 3, 'Inscrito', NULL, DATE '2026-11-10'),
+    (7, 3, 1, 'Retirado', NULL, DATE '2026-04-20');
+
+INSERT INTO "CertificacionesCurso" ("Id", "InscripcionCursoId", "Codigo", "FechaEmision", "FechaVencimiento") VALUES
+    (1, 1, 'CERT-SEG-0001', DATE '2026-03-15', NULL),
+    (2, 2, 'CERT-SEG-0002', DATE '2026-03-15', DATE '2026-09-15');
+
+SELECT setval(pg_get_serial_sequence('"Cursos"', 'Id'), (SELECT MAX("Id") FROM "Cursos"));
+SELECT setval(pg_get_serial_sequence('"ProgramacionesCurso"', 'Id'), (SELECT MAX("Id") FROM "ProgramacionesCurso"));
+SELECT setval(pg_get_serial_sequence('"InscripcionesCurso"', 'Id'), (SELECT MAX("Id") FROM "InscripcionesCurso"));
+SELECT setval(pg_get_serial_sequence('"CertificacionesCurso"', 'Id'), (SELECT MAX("Id") FROM "CertificacionesCurso"));
+
 COMMIT;
