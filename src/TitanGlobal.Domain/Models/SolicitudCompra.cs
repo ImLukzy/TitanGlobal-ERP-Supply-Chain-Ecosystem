@@ -25,6 +25,8 @@ public partial class SolicitudCompra
 
     public virtual ICollection<DetalleSolicitudCompra> Detalles { get; set; } = new List<DetalleSolicitudCompra>();
 
+    public virtual ICollection<EjecucionReabastecimiento> EjecucionesReabastecimiento { get; set; } = new List<EjecucionReabastecimiento>();
+
     public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 
     public virtual Proveedor? Proveedor { get; set; }

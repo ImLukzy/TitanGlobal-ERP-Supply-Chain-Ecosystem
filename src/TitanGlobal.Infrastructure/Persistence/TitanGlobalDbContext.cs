@@ -41,6 +41,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<DevolucionComercial> DevolucionesComerciales { get; set; } = null!;
 
+    public virtual DbSet<EjecucionReabastecimiento> EjecucionesReabastecimiento { get; set; } = null!;
+
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
 
     public virtual DbSet<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = null!;
@@ -68,6 +70,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<ReclamoPostventa> ReclamosPostventa { get; set; } = null!;
 
     public virtual DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; } = null!;
+
+    public virtual DbSet<ReglaReabastecimiento> ReglasReabastecimiento { get; set; } = null!;
 
     public virtual DbSet<Rol> Roles { get; set; } = null!;
 
@@ -346,6 +350,30 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<EjecucionReabastecimiento>(entity =>
+        {
+            entity.HasIndex(e => e.Estado, "IX_EjecucionesReabastecimiento_Estado");
+
+            entity.HasIndex(e => e.FechaEjecucion, "IX_EjecucionesReabastecimiento_FechaEjecucion");
+
+            entity.HasIndex(e => e.ReglaReabastecimientoId, "IX_EjecucionesReabastecimiento_ReglaReabastecimientoId");
+
+            entity.HasIndex(e => e.SolicitudCompraId, "IX_EjecucionesReabastecimiento_SolicitudCompraId");
+
+            entity.Property(e => e.Estado).HasMaxLength(25);
+            entity.Property(e => e.Observacion).HasMaxLength(300);
+
+            entity.HasOne(d => d.ReglaReabastecimiento).WithMany(p => p.EjecucionesReabastecimiento)
+                .HasForeignKey(d => d.ReglaReabastecimientoId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_EjecucionesReabastecimiento_Reglas_ReglaReabastecimientoId");
+
+            entity.HasOne(d => d.SolicitudCompra).WithMany(p => p.EjecucionesReabastecimiento)
+                .HasForeignKey(d => d.SolicitudCompraId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_EjecucionesReabastecimiento_Solicitudes_SolicitudCompraId");
+        });
+
         modelBuilder.Entity<Empleado>(entity =>
         {
             entity.HasIndex(e => e.Legajo, "IX_Empleados_Legajo").IsUnique();
@@ -556,6 +584,34 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.EntidadId).HasMaxLength(50);
             entity.Property(e => e.Ruta).HasMaxLength(200);
             entity.Property(e => e.Usuario).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<ReglaReabastecimiento>(entity =>
+        {
+            entity.HasIndex(e => e.Activa, "IX_ReglasReabastecimiento_Activa");
+
+            entity.HasIndex(e => e.AlmacenId, "IX_ReglasReabastecimiento_AlmacenId");
+
+            entity.HasIndex(e => e.Codigo, "IX_ReglasReabastecimiento_Codigo").IsUnique();
+
+            entity.HasIndex(e => new { e.ProductoId, e.AlmacenId }, "IX_ReglasReabastecimiento_ProductoId_AlmacenId").IsUnique();
+
+            entity.HasIndex(e => e.ProveedorPreferidoId, "IX_ReglasReabastecimiento_ProveedorPreferidoId");
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.Almacen).WithMany(p => p.ReglasReabastecimiento)
+                .HasForeignKey(d => d.AlmacenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.ReglasReabastecimiento)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.ProveedorPreferido).WithMany(p => p.ReglasReabastecimiento)
+                .HasForeignKey(d => d.ProveedorPreferidoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Rol>(entity =>

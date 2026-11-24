@@ -969,4 +969,14 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 30: Reabastecimiento Automático
+request_check 'GET reglas de reabastecimiento' GET '/api/v1/reabastecimiento-automatico/reglas' 200 reabastecimiento-reglas
+request_check 'GET resumen de reabastecimiento' GET '/api/v1/reabastecimiento-automatico/resumen' 200 reabastecimiento-resumen
+request_check 'POST crear regla de reabastecimiento' POST '/api/v1/reabastecimiento-automatico/reglas' 201 reabastecimiento-regla-creada '{"codigo":"REB-SMK-01","productoId":4,"almacenId":1,"proveedorPreferidoId":1,"stockActual":8,"stockMinimo":5,"puntoReorden":15,"stockMaximo":40,"cantidadLoteCompra":10,"activa":true,"observaciones":"Regla smoke"}'
+request_check 'POST regla duplicada' POST '/api/v1/reabastecimiento-automatico/reglas' 409 reabastecimiento-regla-duplicada '{"codigo":"REB-SMK-01","productoId":5,"almacenId":1,"stockActual":8,"stockMinimo":5,"puntoReorden":15,"stockMaximo":40,"cantidadLoteCompra":10,"activa":true}'
+request_check 'POST evaluar reabastecimiento' POST '/api/v1/reabastecimiento-automatico/evaluar' 200 reabastecimiento-evaluar '{}'
+request_check 'GET sugerencias pendientes' GET '/api/v1/reabastecimiento-automatico/sugerencias?estado=Pendiente' 200 reabastecimiento-sugerencias
+request_check 'POST generar solicitud desde sugerencia 1' POST '/api/v1/reabastecimiento-automatico/sugerencias/1/generar-solicitud' 200 reabastecimiento-generar-solicitud
+request_check 'POST generar solicitud repetida' POST '/api/v1/reabastecimiento-automatico/sugerencias/1/generar-solicitud' 409 reabastecimiento-generar-repetida
+
 printf 'SMOKE OK\n'

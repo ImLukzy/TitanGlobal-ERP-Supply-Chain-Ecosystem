@@ -23,5 +23,7 @@ public partial class Proveedor
 
     public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 
+    public virtual ICollection<ReglaReabastecimiento> ReglasReabastecimiento { get; set; } = new List<ReglaReabastecimiento>();
+
     public virtual ICollection<SolicitudCompra> SolicitudesCompra { get; set; } = new List<SolicitudCompra>();
 }

@@ -634,5 +634,17 @@ INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCum
     (6, 6, '2026-10', 100, 90, 95, 95.50, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00');
 
 SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
+TRUNCATE TABLE "EjecucionesReabastecimiento", "ReglasReabastecimiento" RESTART IDENTITY CASCADE;
+
+INSERT INTO "ReglasReabastecimiento" ("Id", "Codigo", "ProductoId", "AlmacenId", "ProveedorPreferidoId", "StockActual", "StockMinimo", "PuntoReorden", "StockMaximo", "CantidadLoteCompra", "Activa", "UltimaEvaluacion", "Observaciones") VALUES
+    (1, 'REB-001', 3, 1, 1, 15, 10, 25, 50, 10, TRUE, TIMESTAMPTZ '2026-11-20 10:00:00+00', 'Mouse óptico bajo punto de reorden en Central Lima'),
+    (2, 'REB-002', 6, 1, 2, 80, 20, 40, 120, 20, TRUE, TIMESTAMPTZ '2026-11-20 10:00:00+00', 'Cable HDMI con nivel óptimo'),
+    (3, 'REB-003', 1, 2, 1, 2, 5, 10, 25, 5, FALSE, NULL, 'Regla pausada en Regional Lima');
+
+INSERT INTO "EjecucionesReabastecimiento" ("Id", "ReglaReabastecimientoId", "FechaEjecucion", "StockActual", "CantidadSugerida", "Estado", "SolicitudCompraId", "Observacion") VALUES
+    (1, 1, TIMESTAMPTZ '2026-11-20 10:00:00+00', 15, 40, 'Pendiente', NULL, 'Stock actual (15) por debajo del punto de reorden (25).');
+
+SELECT setval(pg_get_serial_sequence('"ReglasReabastecimiento"', 'Id'), (SELECT MAX("Id") FROM "ReglasReabastecimiento"));
+SELECT setval(pg_get_serial_sequence('"EjecucionesReabastecimiento"', 'Id'), (SELECT MAX("Id") FROM "EjecucionesReabastecimiento"));
 
 COMMIT;

@@ -23,5 +23,7 @@ public partial class Almacen
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<ReglaReabastecimiento> ReglasReabastecimiento { get; set; } = new List<ReglaReabastecimiento>();
+
     public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();
 }
