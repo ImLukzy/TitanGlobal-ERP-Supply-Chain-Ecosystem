@@ -1,6 +1,6 @@
 # Especificación: modulo67-adelantos-prestamos-backend — AdelantosPrestamos (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #68 y desplegada en la demo.
 > **Orden:** se implementa antes que el 66 Planillas, porque la planilla descuenta sus cuotas (P4); así el 66 se construye ya integrado.
 
 ## 1. Objetivo
@@ -107,6 +107,7 @@ Los mensajes 23 y 24 (añadidos en la implementación) se comprueban después de
 | 2026-11-22 | A4 PostgreSQL | `aplicar-bd.sh` aplica 037, `scaffold.sh --comprobar` al día, `SMOKE OK` | `smoke-postgres.sh` |
 | 2026-11-23 | Actualización | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 037: gate y smoke en verde. `dotnet test` 1389 de 1390 (único fallo el CRLF conocido), 0 advertencias, reglas OK, frontend 1027 pruebas en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `verify` |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1444 pruebas backend y 1064 frontend |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `037` aplicado en la demo con copia y ensayo (10 scripts registrados, filas de las 48 tablas existentes sin cambios). PR #68 fusionado con merge commit (`43581cf`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/prestamos` responde 200 |
 
 **Decisiones de implementación (detalles abiertos):**
 - Mensajes 23 y 24 añadidos a la tabla para el motivo de anulación.

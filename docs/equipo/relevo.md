@@ -23,8 +23,8 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 | Leonel | 75 ImpuestosTasas: backend, pruebas, seed y smoke | Cierre o edición de tasas (hoy una tasa abierta impide registrar otra), tasa de 0 %, `Total` según el tipo de impuesto, paginación, resumen y pantalla |
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
-| Kelvin | 41 VehiculosFlota: backend y pantalla con placa única (PR #51, `021` aplicado en la demo el 2026-11-23). 42 Conductores: backend y pantalla con licencia única y vigencia (PR #59, `022` aplicado en la demo el 2026-11-23) | Nada del 41 ni del 42. Siguen 48, 43, 44, 45, 46, 47, 49, 50 y 73, de uno en uno |
-| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: backend del 62 integrado (PR #39) y `008` aplicado en la demo el 2026-11-19; sigue la pantalla del 62 con su spec |
+| Kelvin | 41 VehiculosFlota: backend y pantalla con placa única (PR #51, `021` aplicado en la demo el 2026-11-23). 42 Conductores: backend y pantalla con licencia única y vigencia (PR #59, `022` aplicado en la demo el 2026-11-23). 48 TransportistasTerceros: backend y pantalla (PR #63, `012` aplicado en la demo el 2026-11-23) | Nada del 41, el 42 ni el 48. Siguen 43 (PR #73), 44, 45, 46, 47, 49, 50 y 73, de uno en uno |
+| Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas. 62 a 70 (Capital Humano completo): backend y pantalla de cada uno (PR #39 y #64 a #72, `008` y `034` a `041` aplicados en la demo; los 9 PR integrados el 2026-11-24) | QA visual del 61 y el 71 integrado (PR #20). Nada del 62 al 70 |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
 
@@ -94,7 +94,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 009 | `009-reglas-integridad.sql` | Lukas | `lukas/bd-fase2` (PR #24) | ya renombrado |
 | 010 | `010-acuerdos-abastecimiento.sql` | Sergio | `sergio/modulo20-acuerdos-abastecimiento` (PR #45) | no |
 | 011 | `011-rutas-produccion.sql` | Antony | `antony/modulo32-rutas-produccion` (PR #49) | no |
-| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | no |
+| 012 | `012-transportistas-terceros.sql` | Kelvin | `kelvin/modulo48-transportistas-terceros` | no (en `main` por el PR #63 y aplicado en la demo) |
 | 013 | `013-rutas-despacho.sql` | Kelvin | `kelvin/modulo43-rutas-despacho` | no |
 | 014 | `014-consolidacion-carga.sql` | Kelvin | `kelvin/modulo44-consolidacion-carga` | no |
 | 015 | `015-guias-remision.sql` | Kelvin | `kelvin/modulo45-guias-remision` | no |
@@ -106,13 +106,13 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | no (en `main` por el PR #51 y aplicado en la demo) |
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | no (en `main` por el PR #59 y aplicado en la demo) |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
-| 034 | `034-turnos-horarios.sql` | Alexander | `alexander/modulo64-turnos-horarios` | sí, desde 024 |
-| 035 | `035-asistencia-biometrica.sql` | Alexander | `alexander/modulo63-asistencia-biometrica` | sí, desde 025 |
-| 036 | `036-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | sí, desde 026 |
-| 037 | `037-adelantos-prestamos.sql` | Alexander | `alexander/modulo67-adelantos-prestamos` | sí, desde 027 |
-| 038 | `038-planillas.sql` | Alexander | `alexander/modulo66-planillas` | sí, desde 028 |
-| 039 | `039-evaluacion-desempeno.sql` | Alexander | `alexander/modulo68-evaluacion-desempeno` | sí, desde 029 |
-| 040 | `040-capacitaciones.sql` | Alexander | `alexander/modulo69-capacitaciones` | sí, desde 030 |
-| 041 | `041-seguridad-salud-ocupacional.sql` | Alexander | `alexander/modulo70-seguridad-salud-ocupacional` | sí, desde 031 |
+| 034 | `034-turnos-horarios.sql` | Alexander | `alexander/modulo64-turnos-horarios` | no (en `main` por el PR #65 y aplicado en la demo) |
+| 035 | `035-asistencia-biometrica.sql` | Alexander | `alexander/modulo63-asistencia-biometrica` | no (en `main` por el PR #66 y aplicado en la demo) |
+| 036 | `036-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | no (en `main` por el PR #67 y aplicado en la demo) |
+| 037 | `037-adelantos-prestamos.sql` | Alexander | `alexander/modulo67-adelantos-prestamos` | no (en `main` por el PR #68 y aplicado en la demo) |
+| 038 | `038-planillas.sql` | Alexander | `alexander/modulo66-planillas` | no (en `main` por el PR #69 y aplicado en la demo) |
+| 039 | `039-evaluacion-desempeno.sql` | Alexander | `alexander/modulo68-evaluacion-desempeno` | no (en `main` por el PR #70 y aplicado en la demo) |
+| 040 | `040-capacitaciones.sql` | Alexander | `alexander/modulo69-capacitaciones` | no (en `main` por el PR #71 y aplicado en la demo) |
+| 041 | `041-seguridad-salud-ocupacional.sql` | Alexander | `alexander/modulo70-seguridad-salud-ocupacional` | no (en `main` por el PR #72 y aplicado en la demo) |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).

@@ -1,6 +1,6 @@
 # Especificación: modulo70-seguridad-salud-ocupacional-backend — SeguridadSaludOcupacional (backend)
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22 de implementar los módulos 62 a 70 en secuencia y revisarlos al final. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #72 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** no se registran EPP, exámenes médicos ni incidentes de seguridad.
@@ -109,6 +109,7 @@
 | 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (script 041), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA») y `./scripts/smoke-postgres.sh` |
 | 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 041: gate y smoke en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1530 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1277 pruebas en verde; `./scripts/smoke-postgres.sh` → `SMOKE OK`) |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1585 pruebas backend y 1314 frontend y SMOKE OK |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `041` aplicado en la demo con copia y ensayo (14 scripts registrados, filas de las 66 tablas existentes sin cambios). PR #72 fusionado con merge commit (`7f2b898`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/equipos-proteccion`, `/api/v1/entregas-epp`, `/api/v1/examenes-medicos` y `/api/v1/incidentes-sst` responden 200 |
 
 **Opciones tomadas donde la spec no precisaba (2026-11-22):**
 - `equipoId` ausente en una entrega se trata como 0 y devuelve el mensaje 5 con el id 0; el orden de validación de la entrega es 8, 11, 12, 5, 7, 9, 10.

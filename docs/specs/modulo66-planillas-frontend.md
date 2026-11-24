@@ -1,6 +1,6 @@
 # Especificación: modulo66-planillas-frontend — Pantalla de Planillas
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #69 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** `/modulos/66-planillas` muestra «Pantalla pendiente».
@@ -56,3 +56,4 @@
 | 2026-11-22 | A5 | pestañas `?vista=` (clic, flechas, valor desconocido) y roles RRHH, ADMIN, otro rol y sin roles | `PlanillasPage.test.tsx` |
 | 2026-11-22 | A6 | pendiente: capturas | a 375 y 1280 px, claro y oscuro, incluida la boleta |
 | 2026-11-24 | A6 | OK | 16 capturas (4 escenarios, incluida la boleta, a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo66/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `038` aplicado en la demo con copia y ensayo (11 scripts registrados, filas de las 51 tablas existentes sin cambios). PR #69 fusionado con merge commit (`bc93887`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/planillas` responde 200 y `/api/v1/planillas/parametros` devuelve los 7 parámetros, los 5 sistemas de pensiones y los 5 tramos cargados por el script |

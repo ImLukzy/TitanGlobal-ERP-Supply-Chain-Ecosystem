@@ -1,6 +1,6 @@
 # Especificación: modulo67-adelantos-prestamos-frontend — Pantalla de AdelantosPrestamos
 
-> Estado: **implementada con las opciones recomendadas de §2**, por acuerdo con Lukas del 2026-11-22. Pendiente de revisión final por Lukas.
+> Estado: **aprobada** por Lukas el 2026-11-24 en la revisión final, con las opciones recomendadas de §2; integrada en `main` por el PR #68 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** `/modulos/67-adelantos-prestamos` muestra «Pantalla pendiente».
@@ -51,3 +51,4 @@
 | 2026-11-22 | A3 Pantalla | resumen, filtros, detalle con cuotas, alta con aviso de tope, anulación según estado y roles | mismos 66 tests (`AdelantosPrestamosPage.test.tsx`, `PrestamoFormulario.test.tsx`) |
 | 2026-11-22 | A4 Visual | pendiente: capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR |
 | 2026-11-24 | A4 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo67/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
+| 2026-11-24 | Integración y producción | Aprobado | Revisión final de Lukas. `037` aplicado en la demo con copia y ensayo (10 scripts registrados, filas de las 48 tablas existentes sin cambios). PR #68 fusionado con merge commit (`43581cf`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/prestamos` responde 200 |
