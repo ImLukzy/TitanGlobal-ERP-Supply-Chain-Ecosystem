@@ -460,6 +460,14 @@ checks = {
     "turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
     "asignacion-turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
     "asignacion-turno-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado y no admite turnos." and "Detail" not in data,
+    "openapi-asistencia": lambda data: all(path in data["paths"] for path in ["/api/v1/marcaciones", "/api/v1/marcaciones/importacion", "/api/v1/marcaciones/{id}", "/api/v1/jornadas-asistencia", "/api/v1/jornadas-asistencia/resumen", "/api/v1/jornadas-asistencia/calculo", "/api/v1/jornadas-asistencia/{id}/horas-extra/aprobacion", "/api/v1/jornadas-asistencia/{id}/horas-extra/rechazo"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/marcaciones", "get"), ("/api/v1/marcaciones", "post"), ("/api/v1/marcaciones/importacion", "post"), ("/api/v1/marcaciones/{id}", "delete"), ("/api/v1/jornadas-asistencia", "get"), ("/api/v1/jornadas-asistencia/resumen", "get"), ("/api/v1/jornadas-asistencia/calculo", "post"), ("/api/v1/jornadas-asistencia/{id}/horas-extra/aprobacion", "post"), ("/api/v1/jornadas-asistencia/{id}/horas-extra/rechazo", "post")]),
+    "asistencia-resumen": lambda data: data["jornadas"] == 13 and data["asistencias"] == 11 and data["tardanzas"] == 1 and data["sinMarcacion"] == 1 and data["faltas"] == 0 and data["minutosTardanza"] == 15 and data["minutosExtraPendientes"] == 90 and data["minutosExtraAprobados"] == 150,
+    "marcaciones-importadas": lambda data: data["recibidos"] == 2 and data["importados"] == 2 and data["yaImportados"] == 0 and data["duplicados"] == 0 and data["rechazados"] == [],
+    "marcaciones-ya-importadas": lambda data: data["recibidos"] == 2 and data["importados"] == 0 and data["yaImportados"] == 2 and data["duplicados"] == 0 and data["rechazados"] == [],
+    "marcacion-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 no está activo en esa fecha." and "Detail" not in data,
+    "asistencia-calculo": lambda data: data["calculadas"] == 12 and data["conservadas"] == 1 and data["eliminadas"] == 0,
+    "jornada-id-8": lambda data: data["id"] == 8,
+    "jornada-sin-horas-extra-pendientes": lambda data: data["StatusCode"] == 409 and data["Message"] == "La jornada 8 no tiene horas extra pendientes." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1074,4 +1082,12 @@ request_check 'POST turno válido' POST '/api/v1/turnos' 200 turno-created '{"co
 request_check 'POST asignación futura del empleado 3' POST '/api/v1/asignaciones-turno' 200 asignacion-turno-created '{"empleadoId":3,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
 request_check 'DELETE asignación futura' DELETE "/api/v1/asignaciones-turno/${ASIGNACION_TURNO_CREADA_ID}" 204 ''
 request_check 'POST asignación al empleado cesado' POST '/api/v1/asignaciones-turno' 409 asignacion-turno-empleado-cesado '{"empleadoId":4,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
+request_check 'OpenAPI de marcaciones y jornadas de asistencia' GET '/openapi/v1.json' 200 openapi-asistencia
+request_check 'Resumen de asistencia del 2 al 6 de noviembre' GET '/api/v1/jornadas-asistencia/resumen?desde=2026-11-02&hasta=2026-11-06' 200 asistencia-resumen
+request_check 'POST importación de dos marcaciones del reloj' POST '/api/v1/marcaciones/importacion' 200 marcaciones-importadas '{"dispositivo":"RELOJ-01","registros":[{"numeroRegistro":"SMOKE-0001","legajo":"EMP-000001","tipo":"Entrada","instante":"2026-11-09T13:00:00Z"},{"numeroRegistro":"SMOKE-0002","legajo":"EMP-000001","tipo":"Salida","instante":"2026-11-09T22:00:00Z"}]}'
+request_check 'POST importación repetida' POST '/api/v1/marcaciones/importacion' 200 marcaciones-ya-importadas '{"dispositivo":"RELOJ-01","registros":[{"numeroRegistro":"SMOKE-0001","legajo":"EMP-000001","tipo":"Entrada","instante":"2026-11-09T13:00:00Z"},{"numeroRegistro":"SMOKE-0002","legajo":"EMP-000001","tipo":"Salida","instante":"2026-11-09T22:00:00Z"}]}'
+request_check 'POST marcación manual del empleado cesado' POST '/api/v1/marcaciones' 409 marcacion-empleado-cesado '{"empleadoId":4,"tipo":"Entrada","instante":"2026-11-10T13:00:00Z","observacion":"Marcación de smoke"}'
+request_check 'POST cálculo de jornadas del 2 al 6 de noviembre' POST '/api/v1/jornadas-asistencia/calculo' 200 asistencia-calculo '{"desde":"2026-11-02","hasta":"2026-11-06"}'
+request_check 'POST aprobar horas extra pendientes' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 200 jornada-id-8
+request_check 'POST aprobar horas extra repetido' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 409 jornada-sin-horas-extra-pendientes
 printf 'SMOKE OK\n'
