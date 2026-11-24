@@ -20,7 +20,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/031-seguridad-salud-ocupacional.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/041-seguridad-salud-ocupacional.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades y navegaciones regeneradas, `TitanGlobalDbContext.cs`, `PluralizadorEspanol.cs` si hace falta | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo70_SeguridadSaludOcupacional/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo70_SeguridadSaludOcupacional/AdministrarEquiposProteccionUseCase.cs`, `AdministrarExamenesMedicosUseCase.cs`, `AdministrarIncidentesSstUseCase.cs`, `ResumenSstUseCase.cs`, `ValidacionSst.cs` | crear |
@@ -97,7 +97,7 @@
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 031, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 041, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, casos de uso y controladores.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A4 en §7.
 
@@ -106,7 +106,8 @@
 |---|---|---|---|
 | 2026-11-22 | A1 Gate | Verde salvo el fallo CRLF conocido | `./scripts/verify.sh`: compilación sin warnings, formato y `check-rules.sh` correctos; `dotnet test`: 1477 superadas y 1 fallo conocido (`CatalogoCoincideConLosOchentaModulosDeArquitectura`); `npm --prefix frontend run verify` correcto |
 | 2026-11-22 | A2 S1–S5, A3 roles y auditoría | Pasan | 35 pruebas nuevas en `tests/TitanGlobal.Api.Tests/Modulo70_SeguridadSaludOcupacional/` |
-| 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (script 031), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA») y `./scripts/smoke-postgres.sh` |
+| 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (script 041), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA») y `./scripts/smoke-postgres.sh` |
+| 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 041: gate y smoke en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1530 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1277 pruebas en verde; `./scripts/smoke-postgres.sh` → `SMOKE OK`) |
 
 **Opciones tomadas donde la spec no precisaba (2026-11-22):**
 - `equipoId` ausente en una entrega se trata como 0 y devuelve el mensaje 5 con el id 0; el orden de validación de la entrega es 8, 11, 12, 5, 7, 9, 10.
