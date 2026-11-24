@@ -1,0 +1,50 @@
+[
+  {
+    "fecha": "2026-11-21",
+    "width": 375,
+    "colorScheme": "light",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API y PostgreSQL 16 locales, seed-dev.sql; sin simulación",
+    "conflictoLicenciaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "Seed conservado; conflicto y cancelación comprobados",
+    "conservacionFechaVencida": "Comprobada en 1280 px claro"
+  },
+  {
+    "fecha": "2026-11-21",
+    "width": 375,
+    "colorScheme": "dark",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API y PostgreSQL 16 locales, seed-dev.sql; sin simulación",
+    "conflictoLicenciaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "Seed conservado; conflicto y cancelación comprobados",
+    "conservacionFechaVencida": "Comprobada en 1280 px claro"
+  },
+  {
+    "fecha": "2026-11-21",
+    "width": 1280,
+    "colorScheme": "light",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API y PostgreSQL 16 locales, seed-dev.sql; sin simulación",
+    "conflictoLicenciaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "Alta, selección, edición, cambio de mayúsculas del documento propio y baja aprobados; conductor temporal eliminado",
+    "conservacionFechaVencida": "Desactivación y reactivación reales correctas; instante UTC y habilitación manual conservados"
+  },
+  {
+    "fecha": "2026-11-21",
+    "width": 1280,
+    "colorScheme": "dark",
+    "desbordamiento": false,
+    "errores": [],
+    "datos": "API y PostgreSQL 16 locales, seed-dev.sql; sin simulación",
+    "conflictoLicenciaMinuscula": 409,
+    "focoTrasEscape": true,
+    "flujoCrud": "Seed conservado; conflicto y cancelación comprobados",
+    "conservacionFechaVencida": "Comprobada en 1280 px claro"
+  }
+]

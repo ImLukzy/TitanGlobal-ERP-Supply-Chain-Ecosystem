@@ -25,9 +25,10 @@ public class CrearVehiculoFlotaUseCase
         decimal capacidadKg = ValidacionVehiculoFlota.ValidarCapacidadKg(solicitud.CapacidadKg);
         string? observaciones = ValidacionVehiculoFlota.NormalizarObservaciones(solicitud.Observaciones);
 
+        string placaNormalizada = placa.ToLowerInvariant();
         bool placaExiste = await _unitOfWork.Repository<VehiculoFlota>()
             .AsQueryable()
-            .AnyAsync(vehiculo => vehiculo.Placa == placa);
+            .AnyAsync(vehiculo => vehiculo.Placa.Trim().ToLower() == placaNormalizada);
 
         if (placaExiste)
         {
