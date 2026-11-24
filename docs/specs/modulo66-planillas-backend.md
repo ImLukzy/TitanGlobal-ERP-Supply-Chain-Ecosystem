@@ -134,6 +134,7 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 | 2026-11-22 | A1 | `verify.sh` llega al `dotnet test`: 1372 de 1373 pruebas en verde; solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` (CRLF del entorno, ajeno al módulo); formato, reglas y compilación sin warnings | `PATH=shim ./scripts/verify.sh`; `npm --prefix frontend run verify` en verde |
 | 2026-11-22 | A2, A3, A4 | 13 pruebas de `CalculadoraRemuneracion` con importes a mano y 23 de API del módulo 66 en verde (mensajes 1 a 28, flujo con recálculo sin duplicar préstamos, aprobación inmutable, boletas únicas, complementaria, roles, auditoría) | `dotnet test --filter FullyQualifiedName~Modulo66` |
 | 2026-11-22 | A5 | `SMOKE OK` con `038` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
+| 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1480 pruebas backend y 1133 frontend |
 
 ### Decisiones de detalle tomadas al implementar (la spec no las fijaba)
 - **Totales y contadores.** `Empleados`, `TotalIngresos`, `TotalDescuentos`, `TotalNeto` y `TotalAportesEmpleador` cuentan solo los empleados incluidos; `Incidencias` cuenta los excluidos (sin afiliación o neto negativo). Un excluido se guarda con días y sueldo informativos pero importes en 0.
