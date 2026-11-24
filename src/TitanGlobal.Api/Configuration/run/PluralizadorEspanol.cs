@@ -11,6 +11,7 @@ public class PluralizadorEspanol : IPluralizer
     private static readonly Dictionary<string, string> EntidadPorTabla = new Dictionary<string, string>
     {
         { "AdendasContrato", "AdendaContrato" },
+        { "AccionesCorrectivasSst", "AccionCorrectivaSst" },
         { "AlertasDescartadas", "AlertaDescartada" },
         { "Almacenes", "Almacen" },
         { "AsignacionesVentas", "AsignacionVenta" },
@@ -34,10 +35,14 @@ public class PluralizadorEspanol : IPluralizer
         { "DetallesSolicitudCompra", "DetalleSolicitudCompra" },
         { "DevolucionesComerciales", "DevolucionComercial" },
         { "Empleados", "Empleado" },
+        { "EntregasEpp", "EntregaEpp" },
+        { "EquiposProteccion", "EquipoProteccion" },
         { "Evaluaciones", "Evaluacion" },
+        { "ExamenesMedicos", "ExamenMedico" },
         { "FletesTerceros", "FleteTercero" },
         { "Impuestos", "Impuesto" },
         { "InscripcionesCurso", "InscripcionCurso" },
+        { "IncidentesSst", "IncidenteSst" },
         { "ItemsListaPrecios", "ItemListaPrecios" },
         { "JornadasAsistencia", "JornadaAsistencia" },
         { "LiquidacionesComisiones", "LiquidacionComision" },

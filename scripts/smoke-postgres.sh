@@ -527,6 +527,23 @@ checks = {
     "certificacion-created-3": lambda data: data["id"] == 3,
     "certificacion-repetida": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inscripción 4 ya tiene certificación." and "Detail" not in data,
     "programacion-1-detalle": lambda data: data["estado"] == "Realizada" and data["inscritos"] == 4 and data["cupoLibre"] == 6 and [fila["estado"] for fila in data["inscripciones"]] == ["Aprobado", "Aprobado", "Aprobado", "Aprobado"] and [fila["nota"] for fila in data["inscripciones"]] == [17, 15.5, 12.5, 14] and [(fila["certificacion"]["codigo"], fila["certificacion"]["vencida"]) if fila["certificacion"] else None for fila in data["inscripciones"]] == [("CERT-SEG-0001", False), ("CERT-SEG-0002", True), None, ("SMK-0001", False)],
+    "openapi-sst": lambda data: all(path in data["paths"] for path in ["/api/v1/equipos-proteccion", "/api/v1/equipos-proteccion/{id}", "/api/v1/equipos-proteccion/{id}/desactivacion", "/api/v1/equipos-proteccion/{id}/activacion", "/api/v1/entregas-epp", "/api/v1/examenes-medicos", "/api/v1/incidentes-sst", "/api/v1/incidentes-sst/{id}", "/api/v1/incidentes-sst/resumen", "/api/v1/incidentes-sst/{id}/acciones", "/api/v1/incidentes-sst/{id}/acciones/{accionId}/completar", "/api/v1/incidentes-sst/{id}/cierre"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/equipos-proteccion", "post"), ("/api/v1/equipos-proteccion/{id}", "put"), ("/api/v1/entregas-epp", "post"), ("/api/v1/examenes-medicos", "post"), ("/api/v1/incidentes-sst", "post"), ("/api/v1/incidentes-sst/resumen", "get")]),
+    "sst-resumen-2026": lambda data: data["anio"] == 2026 and data["incidentesAbiertos"] == 1 and data["incidentesAnio"] == 2 and data["accidentesConBaja"] == 1 and data["diasBajaAnio"] == 5 and data["entregasEppVencidas"] == 1 and data["examenesVencidos"] == 1 and data["empleadosNoAptos"] == 0,
+    "sst-incidente-2-abierto": lambda data: data["numero"] == "INC-000002" and data["estado"] == "Abierto" and data["fechaCierre"] is None and [(accion["id"], accion["completada"]) for accion in data["acciones"]] == [(2, False)],
+    "equipo-proteccion-created-5": lambda data: data["id"] == 5,
+    "equipo-proteccion-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un equipo de protección con el código SMK-EPP." and "Detail" not in data,
+    "epp-equipo-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El equipo de protección ARN-004 está inactivo y no se entrega." and "Detail" not in data,
+    "epp-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado." and "Detail" not in data,
+    "entrega-epp-created-4": lambda data: data["id"] == 4,
+    "examen-retiro-fuera-de-plazo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El examen de retiro se registra hasta 30 días después del cese del empleado 4." and "Detail" not in data,
+    "examen-medico-created-5": lambda data: data["id"] == 5,
+    "incidente-sst-created-3": lambda data: data["id"] == 3 and data["numero"] == "INC-000003",
+    "accion-correctiva-created-3": lambda data: data["id"] == 3,
+    "incidente-cierre-pendientes": lambda data: data["StatusCode"] == 409 and data["Message"] == "El incidente INC-000002 tiene 1 acciones correctivas sin completar." and "Detail" not in data,
+    "accion-correctiva-id-2": lambda data: data["id"] == 2,
+    "incidente-sst-id-2": lambda data: data["id"] == 2,
+    "incidente-cerrado-sin-cambios": lambda data: data["StatusCode"] == 409 and data["Message"] == "El incidente INC-000002 está cerrado y no admite cambios." and "Detail" not in data,
+    "sst-incidente-2-cerrado": lambda data: data["estado"] == "Cerrado" and data["fechaCierre"] is not None and [accion["completada"] for accion in data["acciones"]] == [True],
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1216,4 +1233,23 @@ request_check 'POST certificacion de inscripcion no aprobada' POST '/api/v1/prog
 request_check 'POST certificacion' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 200 certificacion-created-3 '{"codigo":"smk-0001","fechaEmision":"2026-03-11","fechaVencimiento":null}'
 request_check 'POST certificacion repetida' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 409 certificacion-repetida '{"codigo":"SMK-0002","fechaEmision":"2026-03-11"}'
 request_check 'Programacion 1 con inscritos y certificaciones' GET '/api/v1/programaciones-curso/1' 200 programacion-1-detalle
+# Modulo 70: las fechas de humo salen de hoy para que no dependan del calendario.
+SMOKE_HOY="$(date -u +%Y-%m-%d)"
+request_check 'OpenAPI de seguridad y salud ocupacional' GET '/openapi/v1.json' 200 openapi-sst
+request_check 'Resumen SST 2026' GET '/api/v1/incidentes-sst/resumen?anio=2026' 200 sst-resumen-2026
+request_check 'Incidente 2 abierto con una accion pendiente' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-abierto
+request_check 'POST equipo de proteccion' POST '/api/v1/equipos-proteccion' 200 equipo-proteccion-created-5 '{"codigo":"smk-epp","nombre":"Equipo de smoke","vidaUtilDias":30}'
+request_check 'POST equipo con codigo repetido' POST '/api/v1/equipos-proteccion' 409 equipo-proteccion-duplicado '{"codigo":"SMK-EPP","nombre":"Otro equipo","vidaUtilDias":30}'
+request_check 'POST entrega de un equipo inactivo' POST '/api/v1/entregas-epp' 409 epp-equipo-inactivo "{\"equipoId\":4,\"empleadoId\":1,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":1}"
+request_check 'POST entrega a un empleado cesado' POST '/api/v1/entregas-epp' 409 epp-empleado-cesado "{\"equipoId\":5,\"empleadoId\":4,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":1}"
+request_check 'POST entrega de EPP' POST '/api/v1/entregas-epp' 200 entrega-epp-created-4 "{\"equipoId\":5,\"empleadoId\":1,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":2}"
+request_check 'POST examen de retiro fuera de plazo' POST '/api/v1/examenes-medicos' 409 examen-retiro-fuera-de-plazo "{\"empleadoId\":4,\"tipo\":\"Retiro\",\"fecha\":\"${SMOKE_HOY}\",\"resultado\":\"Apto\"}"
+request_check 'POST examen periodico' POST '/api/v1/examenes-medicos' 200 examen-medico-created-5 "{\"empleadoId\":1,\"tipo\":\"Periodico\",\"fecha\":\"${SMOKE_HOY}\",\"resultado\":\"Apto\",\"fechaVencimiento\":\"2099-12-31\",\"clinica\":\"Clinica de smoke\"}"
+request_check 'POST incidente' POST '/api/v1/incidentes-sst' 200 incidente-sst-created-3 "{\"empleadoId\":1,\"tipo\":\"IncidenteSinLesion\",\"severidad\":\"Leve\",\"fecha\":\"${SMOKE_HOY}\",\"lugar\":\"Planta de smoke\",\"descripcion\":\"Incidente de smoke\"}"
+request_check 'POST accion correctiva' POST '/api/v1/incidentes-sst/3/acciones' 200 accion-correctiva-created-3 '{"descripcion":"Revisar la zona","responsable":"Jefe de smoke","fechaCompromiso":"2099-12-31"}'
+request_check 'POST cierre con una accion pendiente' POST '/api/v1/incidentes-sst/2/cierre' 409 incidente-cierre-pendientes
+request_check 'POST completar la accion pendiente' POST '/api/v1/incidentes-sst/2/acciones/2/completar' 200 accion-correctiva-id-2 "{\"fechaCompletada\":\"${SMOKE_HOY}\"}"
+request_check 'POST cierre del incidente 2' POST '/api/v1/incidentes-sst/2/cierre' 200 incidente-sst-id-2
+request_check 'POST accion en un incidente cerrado' POST '/api/v1/incidentes-sst/2/acciones' 409 incidente-cerrado-sin-cambios '{"descripcion":"Otra accion","responsable":"Jefe","fechaCompromiso":"2099-12-31"}'
+request_check 'Incidente 2 cerrado' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-cerrado
 printf 'SMOKE OK\n'

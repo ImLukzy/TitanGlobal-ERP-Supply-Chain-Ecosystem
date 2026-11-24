@@ -862,4 +862,42 @@ SELECT setval(pg_get_serial_sequence('"ProgramacionesCurso"', 'Id'), (SELECT MAX
 SELECT setval(pg_get_serial_sequence('"InscripcionesCurso"', 'Id'), (SELECT MAX("Id") FROM "InscripcionesCurso"));
 SELECT setval(pg_get_serial_sequence('"CertificacionesCurso"', 'Id'), (SELECT MAX("Id") FROM "CertificacionesCurso"));
 
+-- Modulo 70 SeguridadSaludOcupacional. 4 equipos (ARN-004 inactivo). Las entregas vigentes usan el equipo LEN-003 (vida util
+-- de 3650 dias) para que sigan vigentes hasta 2036 sin depender del calendario; la entrega 1 del casco vencio en 2026-01-15.
+-- Examenes: el 1 vencido (2026-02-10), el 2 AptoConRestricciones, el 3 vigente hasta 2031 y el 4 de retiro del empleado 4
+-- (cese 2026-09-30, dentro de los 30 dias). Incidentes 2026: el 1 cerrado con su accion completada y el 2 AccidenteConBaja
+-- abierto con una accion pendiente.
+TRUNCATE TABLE "AccionesCorrectivasSst", "IncidentesSst", "ExamenesMedicos", "EntregasEpp", "EquiposProteccion" RESTART IDENTITY CASCADE;
+
+INSERT INTO "EquiposProteccion" ("Id", "Codigo", "Nombre", "VidaUtilDias", "Activo") VALUES
+    (1, 'CAS-001', 'Casco de seguridad', 365, true),
+    (2, 'GUA-002', 'Guantes de proteccion mecanica', 180, true),
+    (3, 'LEN-003', 'Lentes de proteccion', 3650, true),
+    (4, 'ARN-004', 'Arnes de seguridad', 730, false);
+
+INSERT INTO "EntregasEpp" ("Id", "EquipoProteccionId", "EmpleadoId", "FechaEntrega", "Cantidad", "FechaVencimiento") VALUES
+    (1, 1, 1, DATE '2025-01-15', 1, DATE '2025-01-15' + 365),
+    (2, 3, 2, DATE '2026-09-01', 1, DATE '2026-09-01' + 3650),
+    (3, 3, 3, DATE '2026-09-01', 2, DATE '2026-09-01' + 3650);
+
+INSERT INTO "ExamenesMedicos" ("Id", "EmpleadoId", "Tipo", "Fecha", "Resultado", "Restricciones", "FechaVencimiento", "Clinica") VALUES
+    (1, 1, 'Periodico', DATE '2025-02-10', 'Apto', NULL, DATE '2026-02-10', 'Clinica Salud Laboral'),
+    (2, 2, 'Ingreso', DATE '2026-03-05', 'AptoConRestricciones', 'Sin trabajo en altura ni cargas superiores a 15 kg', DATE '2031-03-05', 'Clinica Salud Laboral'),
+    (3, 3, 'Periodico', DATE '2026-06-12', 'Apto', NULL, DATE '2031-06-12', 'Centro Medico del Norte'),
+    (4, 4, 'Retiro', DATE '2026-10-05', 'Apto', NULL, NULL, 'Clinica Salud Laboral');
+
+INSERT INTO "IncidentesSst" ("Id", "Numero", "EmpleadoId", "Tipo", "Severidad", "Fecha", "Lugar", "Descripcion", "DiasBaja", "Estado", "FechaCierre") VALUES
+    (1, 'INC-000001', 3, 'AccidenteSinBaja', 'Leve', DATE '2026-04-14', 'Almacen central', 'Golpe en el pie al mover un pallet sin lesion que requiera descanso', 0, 'Cerrado', DATE '2026-05-10'),
+    (2, 'INC-000002', 2, 'AccidenteConBaja', 'Moderada', DATE '2026-10-20', 'Zona de despacho', 'Corte en la mano al retirar zunchos de un pallet', 5, 'Abierto', NULL);
+
+INSERT INTO "AccionesCorrectivasSst" ("Id", "IncidenteSstId", "Descripcion", "Responsable", "FechaCompromiso", "Completada", "FechaCompletada") VALUES
+    (1, 1, 'Senalizar la zona de pallets y exigir calzado con punta de acero', 'Jefe de Almacen', DATE '2026-05-05', true, DATE '2026-05-08'),
+    (2, 2, 'Entregar guantes anticorte y capacitar en el retiro de zunchos', 'Supervisor de Despacho', DATE '2026-12-15', false, NULL);
+
+SELECT setval(pg_get_serial_sequence('"EquiposProteccion"', 'Id'), (SELECT MAX("Id") FROM "EquiposProteccion"));
+SELECT setval(pg_get_serial_sequence('"EntregasEpp"', 'Id'), (SELECT MAX("Id") FROM "EntregasEpp"));
+SELECT setval(pg_get_serial_sequence('"ExamenesMedicos"', 'Id'), (SELECT MAX("Id") FROM "ExamenesMedicos"));
+SELECT setval(pg_get_serial_sequence('"IncidentesSst"', 'Id'), (SELECT MAX("Id") FROM "IncidentesSst"));
+SELECT setval(pg_get_serial_sequence('"AccionesCorrectivasSst"', 'Id'), (SELECT MAX("Id") FROM "AccionesCorrectivasSst"));
+
 COMMIT;

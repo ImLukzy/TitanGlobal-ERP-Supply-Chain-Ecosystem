@@ -2089,3 +2089,58 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1279px) { .capacitaciones-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .capacitaciones-filters, .capacitaciones-filters-tres, .capacitaciones-form, .capacitaciones-datos { grid-template-columns: minmax(0, 1fr); } .capacitaciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .capacitaciones-tabs { flex-wrap: wrap; } }
+.sst-tabs { margin-top: 14px; }
+.sst-tab-panel { display: grid; gap: 15px; min-width: 0; }
+.sst-anio { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.sst-anio label { color: var(--ink-soft); font-size: 11px; font-weight: 650; }
+.sst-anio select { height: 36px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.sst-summary { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.sst-stat-enlace { color: inherit; text-decoration: none; }
+.sst-stat-enlace:hover { border-color: var(--accent); }
+.sst-stat-enlace:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sst-stat.is-alerta { border-color: var(--bad); }
+.sst-aviso-resumen { color: var(--bad); font-size: 9px; font-weight: 700; }
+.sst-list-panel, .sst-detail-panel, .sst-form-panel { min-width: 0; margin-top: 0; }
+.sst-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.sst-filters-tres { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; }
+.sst-filters-cuatro { grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; }
+.sst-filters-seis { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+.sst-filters input[type="date"] { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.sst-check { display: flex; align-items: center; gap: 8px; height: 38px; color: var(--ink); font-size: 11px; white-space: nowrap; }
+.sst-table { min-width: 640px; }
+.sst-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sst-pastilla { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: var(--surface-raised); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.sst-pastilla.is-abierto { background: var(--accent-soft); color: var(--accent-ink); }
+.sst-pastilla.is-vigente { background: var(--good-soft); color: var(--good); }
+.sst-pastilla.is-alerta { background: var(--bad-soft); color: var(--bad); }
+.sst-restricciones { display: block; margin-top: 4px; color: var(--ink-soft); font-size: 10px; }
+.sst-aviso { margin: 10px 0 0; color: var(--ink-soft); font-size: 10px; }
+.sst-actions { flex-wrap: wrap; align-items: center; }
+.sst-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; }
+.sst-datos > div { min-width: 0; }
+.sst-datos dt { color: var(--ink-faint); font-size: 10px; font-weight: 650; }
+.sst-datos dd { margin: 4px 0 0; color: var(--ink); font-size: 11px; overflow-wrap: break-word; }
+.sst-dato-ancho { grid-column: 1 / -1; }
+.sst-section { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+.sst-section h3 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.sst-scroll { max-width: 100%; overflow-x: auto; }
+.sst-mini-tabla { width: 100%; min-width: 420px; border-collapse: collapse; text-align: left; font-size: 10px; }
+.sst-mini-tabla caption { padding: 0 0 6px; color: var(--ink-faint); text-align: left; font-size: 10px; font-weight: 650; }
+.sst-mini-tabla th { padding: 7px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.sst-mini-tabla td { padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: break-word; vertical-align: top; }
+.sst-fila-acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.sst-fila-boton { min-height: 0; padding: 5px 9px; font-size: 10px; white-space: nowrap; }
+.sst-vencimiento { margin: 0; color: var(--ink); font-size: 11px; font-weight: 650; }
+.sst-form, .sst-dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.sst-dialog-form { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
+.sst-dialog { width: min(100%, 520px); max-height: calc(100vh - 36px); overflow-y: auto; }
+.sst-form .form-field, .sst-dialog-form .form-field { min-width: 0; gap: 6px; }
+.sst-form .form-field select, .sst-form .form-field input, .sst-dialog-form .form-field select, .sst-dialog-form .form-field input { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.sst-form .form-field textarea, .sst-dialog-form .form-field textarea { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; resize: vertical; }
+.sst-form .form-field [aria-invalid="true"], .sst-dialog-form .form-field [aria-invalid="true"] { border-color: var(--bad); }
+.sst-form-wide { grid-column: 1 / -1; min-width: 0; }
+.sst-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.sst-form-actions p { flex: 1 1 100%; margin: 0; font-size: 10px; }
+@media (max-width: 1279px) { .sst-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .sst-filters, .sst-filters-tres, .sst-filters-cuatro, .sst-filters-seis, .sst-form, .sst-datos { grid-template-columns: minmax(0, 1fr); } .sst-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+@media (max-width: 520px) { .sst-tabs { flex-wrap: wrap; } }

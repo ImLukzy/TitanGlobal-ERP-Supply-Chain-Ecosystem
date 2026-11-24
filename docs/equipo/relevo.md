@@ -113,5 +113,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 038 | `038-planillas.sql` | Alexander | `alexander/modulo66-planillas` | sí, desde 028 |
 | 039 | `039-evaluacion-desempeno.sql` | Alexander | `alexander/modulo68-evaluacion-desempeno` | sí, desde 029 |
 | 040 | `040-capacitaciones.sql` | Alexander | `alexander/modulo69-capacitaciones` | sí, desde 030 |
+| 041 | `041-seguridad-salud-ocupacional.sql` | Alexander | `alexander/modulo70-seguridad-salud-ocupacional` | sí, desde 031 |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
