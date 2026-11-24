@@ -1,102 +1,136 @@
 # Especificación: modulo59-centros-costo-backend — Centros de costo
 
-> Estado: **propuesta pendiente de revisión y aprobación por Lukas**. Responsable: Leonel Portillo. La estructura, vigencia y reglas de uso por otros módulos son candidatas.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
 
 ## 1. Objetivo
 
-**Problema.** El [enunciado](../enunciado.md#2-los-80-módulos) asigna la distribución analítica de gastos al 59. El esquema existente tiene `CentroTrabajo` para manufactura, con planta, capacidad y costo por hora. Falta un catálogo de centros para clasificar operaciones financieras.
-
-**Resultado esperado.** Mantener centros de costo identificables por un código, consultar su vigencia y ponerlos a disposición de presupuestos, activos fijos y otras operaciones que apruebe Lukas.
+Mantener un catálogo de centros de costo con jerarquía de hasta tres niveles y vigencia administrable. Los consumidores mantienen una referencia histórica y validan la actividad del centro al crear una nueva asignación.
 
 ### Base comprobada y dependencias
 
-- El núcleo candidato parte de un catálogo propio. La [spec del 33](modulo33-centros-trabajo-backend.md) define un recurso de manufactura. Las relaciones con centros de trabajo, empleados (61) o sucursales (73) requieren el contrato que se acuerde en 59.1.
-- El [58](modulo58-presupuestos-backend.md) usaría `CentroCostoId` para partidas y el [60](modulo60-activos-fijos-backend.md) para asignación de activos. [54](modulo54-cuentas-por-pagar-backend.md) y [57](modulo57-caja-chica-backend.md) pueden consumirlo si se aprueba clasificación en su módulo. La base documental carece de un contrato integrado de Sucursales (73) para usarlo como dependencia obligatoria.
-- El alta, consulta y desactivación siguen las convenciones de la [revisión de Finanzas](../equipo/revision-finanzas-52-60.md#reglas-del-repositorio).
+- **Disponible en `main`.** `Empleados` del 61 para el responsable opcional. [Empleados](modulo61-empleados-backend.md)
+- **Consumidores posteriores.** [Presupuestos (58)](modulo58-presupuestos-backend.md) y [Activos fijos (60)](modulo60-activos-fijos-backend.md) usan el catálogo y validan actividad al alta. El 59 conserva la identidad y no agrega sus importes.
 
 ## 2. Fuera de alcance
 
-- Frontend, cálculo de distribuciones, plan de cuentas, asientos y reasignación masiva de operaciones.
-- Integración con manufactura, empleados y sucursales hasta que se apruebe la relación y su ámbito.
+- Relaciones con centros de trabajo del 33, sucursales, contabilidad y reportes de importes.
+- Borrado físico y cambios retroactivos en partidas o activos ya vinculados.
 
-| Nº | Tema | Propuesta para revisión | Qué debe confirmar Lukas |
-|---|---|---|---|
-| 59.1 | Identidad y organización | Catálogo plano con código único normalizado, nombre, descripción y vigencia. | Unicidad global o por empresa/sucursal, formato y cambios de código, datos y fuente del responsable, y si se requiere relación con los centros de trabajo. |
-| 59.2 | Jerarquía | Incorporar padre solo si se necesitan niveles o reportes acumulados. | Árbol, profundidad, tipos de centro, movilidad entre padres, reglas contra ciclos y descendientes de un centro inactivo. |
-| 59.3 | Vigencia y consumidores | Desactivación lógica. Mantener visibles las referencias históricas y evaluar actividad al asignar por primera vez. | Qué consumos requieren centro activo (58, 60 y opcionalmente 54 o 57), qué hacer con operaciones vigentes al desactivar, cómo conservar historia y si habrá reactivación. |
-| 59.4 | Acceso y reportes | Búsqueda de catálogo y filtro de vigencia con JWT. | Roles de mantenimiento o lectura y si el 59 debe reportar importes o dejar su agregación a cada módulo que los origina. |
+**Decisiones de producto aprobadas para la v0.** [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161)
+
+| Nº | Tema | Respuesta aprobada |
+|---|---|---|
+| 59.1 | Identidad y responsable | Código único en mayúsculas de 2 a 20 caracteres. El responsable del 61 es opcional. Catálogo independiente del 33. |
+| 59.2 | Árbol | Padre opcional y máximo tres niveles, sin ciclos. Un centro con hijos activos no puede desactivarse. |
+| 59.3 | Vigencia | Comprobar actividad al crear referencias. Desactivar conserva lo existente. El catálogo admite reactivación. |
+| 59.4 | Acceso y consultas | Aplicar G1. Las consultas de centros no reportan importes. |
+
+Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
-| Archivo | Acción | Nota |
+| Archivo previsto | Acción futura | Alcance |
 |---|---|---|
-| `database/NNN-modulo59-centros-costo.sql` y `docs/equipo/relevo.md` | crear / actualizar tras aprobación | Confirmar número en [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos). |
-| `src/TitanGlobal.Domain/Models/CentroCosto.cs` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | generar | Modelo y mapeo obtenidos por scaffold. |
-| `src/TitanGlobal.Application/DTOs/Modulo59_CentrosCosto/` y `src/TitanGlobal.Application/UseCases/Modulo59_CentrosCosto/` | crear | Mantenimiento y consultas de catálogo. |
-| `src/TitanGlobal.Api/Controllers/Modulo59_CentrosCosto/CentrosCostoController.cs` | crear | Rutas de §4. |
-| `tests/TitanGlobal.Api.Tests/Modulo59_CentrosCosto/CentrosCostoApiTests.cs`, `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | crear / actualizar | Fixtures con centros activos e inactivos. |
+| `database/NNN-modulo59-centros-costo.sql` y `docs/equipo/relevo.md` | Crear / registrar | Tomar el siguiente número libre al implementar y registrar solo la fila de este módulo. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
+| `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar | Entidades y navegaciones de §4 mediante scaffold. Revisar los nombres que produce el pluralizador. |
+| `src/TitanGlobal.Application/DTOs/Modulo59_CentrosCosto/` y `src/TitanGlobal.Application/UseCases/Modulo59_CentrosCosto/` | Crear | Validación, proyecciones y casos de uso concretos en Application. |
+| `src/TitanGlobal.Api/Controllers/Modulo59_CentrosCosto/CentrosCostoController.cs` | Crear | Rutas y autorización de §4. |
+| `tests/TitanGlobal.Api.Tests/Modulo59_CentrosCosto/CentrosCostoApiTests.cs` | Crear | Pruebas HTTP de §4. |
+| `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Ampliar | Fixtures idempotentes y checks HTTP/SQL del módulo. |
 
 ## 4. Diseño y lógica
 
-### Datos propuestos
+Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan el diseño para la revisión final. Las decisiones de producto aprobadas están en §2 y G1 a G9.
 
-| Tabla → entidad | Campos y relaciones candidatos |
+### Convenciones y permisos
+
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+
+El código de catálogo es capturado y validado en mayúsculas. Es una identidad maestra y no un folio transaccional de G5. G2 y G4 no tienen objeto en este catálogo. La reactivación expresa la excepción de G7 para la vigencia del maestro.
+
+### Datos y persistencia
+
+| Tabla → entidad | Campos y restricciones |
 |---|---|
-| `CentrosCosto` → `CentroCosto` | `Id` con identidad, `Codigo` (30), `Nombre` (120), `Descripcion?` (500), `Activo`, `FechaCreacion`, `FechaDesactivacion?`, `MotivoDesactivacion?` (500). Índice único sobre el código canónico en el ámbito aprobado. |
-| Jerarquía condicional en `CentrosCosto` | Si se aprueba 59.2, `CentroCostoPadreId?` con FK a `CentrosCosto.Id`, índice y borrado restringido. Validar pertenencia al ámbito, ascendientes y ciclos en Application. |
+| `CentrosCosto` → `CentroCosto` | `Id`, `Codigo varchar(20)` único y de longitud mínima 2, `Nombre varchar(120)`, `Descripcion varchar(300)?`, `ResponsableEmpleadoId` FK opcional a `Empleados`, `CentroCostoPadreId` FK opcional a la misma tabla, `Activo boolean`, `FechaRegistro timestamptz` y `FechaDesactivacion timestamptz?`. Índice por padre y actividad. Check de padre distinto del propio id. |
 
-Las fechas de auditoría y vigencia son `timestamptz` normalizadas con `FechasUtc`. Proponer código inmutable salvo decisión en 59.1. Los módulos consumidores guardan su FK al centro y consultan su propia información histórica. La decisión de conservar también un nombre histórico corresponde a esos contratos.
+Las PK son identidades `integer`. Las FKs se indexan y conservan referencias con `ON DELETE RESTRICT`. Application valida los límites de columna antes de guardar.
 
-### Operaciones y DTOs candidatos
+El nivel de la raíz es 1. Sus hijos están en nivel 2 y sus nietos en nivel 3. El estado inactivo se guarda en la fila y sus consumidores conservan la FK original.
 
-Ruta base `/api/v1/centros-costo`. JWT, consultas asíncronas y paginadas con `AsNoTracking`. Orden por `Codigo` e `Id` ascendentes, página 1, tamaño 20 por defecto y máximo 100.
+### Casos de uso, rutas y DTOs
 
-| Método y ruta relativa | Caso de uso | Entrada y respuesta |
+Ruta base `/api/v1/centros-costo`. Las rutas de consulta proyectan con `AsNoTracking`. Listar por `activo?` y `centroCostoPadreId?`. Orden por `Codigo` e `Id`. Páginas 1/20 y máximo 100.
+
+| Método y ruta relativa | Caso de uso | Entrada → éxito |
 |---|---|---|
-| `GET /` | `ListarCentrosCostoUseCase` | `busqueda?` por código o nombre, `activo?`, `pagina`, `tamanoPagina` → `200 PaginaCentrosCostoDto`. |
+| `GET /` | `ListarCentrosCostoUseCase` | Filtros → `200 PaginaCentrosCostoDto`. |
 | `GET /{id:int}` | `ObtenerCentroCostoUseCase` | `200 CentroCostoDetalleDto`. |
-| `POST /` | `CrearCentroCostoUseCase` | `CrearCentroCostoRequestDto` → `201 CentroCostoDetalleDto` con `Location`. |
-| `PUT /{id:int}` | `ActualizarCentroCostoUseCase` | `ActualizarCentroCostoRequestDto` → `200 CentroCostoDetalleDto`. |
-| `POST /{id:int}/desactivar` | `DesactivarCentroCostoUseCase` | `DesactivarCentroCostoRequestDto` → `200 CentroCostoDetalleDto`. |
-| `POST /{id:int}/reactivar` | `ReactivarCentroCostoUseCase` | Si se aprueba 59.3, sin cuerpo con `[PermitirCuerpoVacio]` → `200 CentroCostoDetalleDto`. |
+| `POST /` | `CrearCentroCostoUseCase` | `GuardarCentroCostoRequestDto` → `201` detalle y `Location`. |
+| `PUT /{id:int}` | `ActualizarCentroCostoUseCase` | `GuardarCentroCostoRequestDto` → `200` detalle. |
+| `POST /{id:int}/desactivar` | `DesactivarCentroCostoUseCase` | Sin cuerpo → `200` detalle. |
+| `POST /{id:int}/reactivar` | `ReactivarCentroCostoUseCase` | Sin cuerpo → `200` detalle. |
 
-- `CrearCentroCostoRequestDto { codigo, nombre, descripcion? }`, `ActualizarCentroCostoRequestDto { nombre, descripcion? }` y `DesactivarCentroCostoRequestDto { motivo }`.
-- `CentroCostoListadoDto { id, codigo, nombre, activo }`. El detalle añade `descripcion?`, `fechaCreacion`, `fechaDesactivacion?` y `motivoDesactivacion?`. La página expone `items`, `pagina`, `tamanoPagina`, `totalRegistros` y `totalPaginas`.
-- Si se aprueba jerarquía, añadir `centroCostoPadreId?` a alta, edición y detalle, y filtro por padre al listado. La salida conserva el mismo `id`.
+- `GuardarCentroCostoRequestDto { codigo, nombre, descripcion?, responsableEmpleadoId?, centroCostoPadreId? }`. El servidor valida el código normalizado, la relación jerárquica y las referencias. La edición de código y padre está sujeta a las precisiones de esta sección.
+- `CentroCostoListadoDto { id, codigo, nombre, centroCostoPadreId?, responsableEmpleadoId?, activo }`. El detalle añade descripción, nivel y fechas de vigencia. `PaginaCentrosCostoDto { items, pagina, tamanoPagina, totalRegistros, totalPaginas }`.
 
-### Reglas candidatas y errores literales
+### Validaciones y mensajes literales
 
-Recortar textos, normalizar código a mayúsculas, validar obligatoriedad, tamaños y páginas antes de consultar. Proponer alta activa, baja lógica con motivo y detalle visible para referencias históricas. Definir si se edita un centro inactivo al resolver 59.3.
+Recortar y pasar el código a mayúsculas antes de medir su longitud y consultar unicidad. Verificar existencia de padre o responsable cuando se informan. Revisar ancestros, identidad propia y altura del subárbol antes de guardar un vínculo. Ninguna operación puede dejar un ciclo o nivel 4.
 
-| HTTP | Condición | Mensaje literal propuesto |
+Serializar cambios de jerarquía y estado con sus controles. La desactivación verifica hijos activos antes de persistir y la reactivación recupera la vigencia del mismo id. En el 58 y el 60, la creación de una referencia y la consulta de centro activo usan una garantía compartida con la desactivación. La validación de actividad no invalida referencias anteriores.
+
+Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
+
+| HTTP | Condición | Literal propuesto |
 |---|---|---|
-| 400 | Código, nombre, descripción, motivo o paginación inválidos | «Los datos del centro de costo no son válidos.» |
-| 404 | Centro o padre inexistente | «El centro de costo no existe.» / «El centro de costo padre no existe.» |
-| 409 | Código duplicado | «El código de centro de costo ya existe.» |
-| 409 | Estado incompatible o baja bloqueada por uso | «El estado del centro de costo no permite esta operación.» / «El centro de costo tiene operaciones vigentes que impiden su desactivación.» |
-| 409 | Padre fuera de ámbito, inactivo o ciclo, si hay jerarquía | «El centro de costo padre no es válido para esta asignación.» / «La relación crearía un ciclo de centros de costo.» |
-| 409 | Referencia eliminada durante el guardado | «No se pudo guardar el centro de costo porque una referencia ya no existe.» |
+| 400 | Código, datos o filtros inválidos | «El código debe tener entre 2 y 20 caracteres y los datos del centro deben ser válidos.» |
+| 404 | Centro inexistente | «El centro de costo no existe.» |
+| 404 | Padre inexistente | «El centro de costo padre no existe.» |
+| 404 | Empleado inexistente | «El empleado responsable no existe.» |
+| 409 | Código normalizado duplicado | «Ya existe un centro de costo con ese código.» |
+| 409 | Ciclo o nivel superior a 3 | «La jerarquía de centros debe evitar ciclos y tener como máximo tres niveles.» |
+| 409 | Desactivar con hijos activos | «No se puede desactivar un centro de costo con hijos activos.» |
+| 409 | Vigencia solicitada ya vigente | «El centro de costo ya tiene el estado solicitado.» |
+| 409 | Referencia perdida al guardar | «No se pudo guardar el centro de costo porque una referencia ya no existe.» |
 
-El índice único protege altas concurrentes. Si se aprueba árbol editable, la lectura de ancestros y el cambio de padre requieren una garantía transaccional que evite dos reasignaciones válidas individualmente y cíclicas al combinarse. Si desactivar depende de operaciones vigentes, el consumidor y el catálogo deben acordar cómo proteger el alta concurrente de una referencia.
+### Precisiones para la revisión final
+
+- **Cambios del maestro.** Confirmar si el `PUT` admite cambio de código y de padre en registros existentes. Precisar alta o reactivación bajo un padre inactivo. Las reglas aprobadas de profundidad, ciclos y desactivación de padres con hijos activos se comprueban en todos los casos.
+
+### Seed, pruebas y smoke
+
+**Seed.** Crear por códigos estables una raíz, un hijo y un nieto activos, además de una hoja inactiva y un centro con responsable del 61. Resolver el padre y responsable por claves existentes y conservar identificadores al repetir.
+
+**Pruebas de integración.**
+
+1. Código de 2 y 20 caracteres, límites, normalización y duplicidad. Padre y responsable opcionales o inexistentes. Confirmar lectura sin importes.
+2. Árbol de tres niveles, cuarto nivel rechazado, ciclos, padre propio y altura del subárbol en cambios de vínculo.
+3. Desactivación con hijos activos rechazada, hoja desactivada y reactivada con la misma identidad, y referencias de 58/60 históricas intactas.
+4. JWT, ambos roles de escritura, 403 de consulta al escribir y cada literal.
+
+**Smoke PostgreSQL.** Probar tres niveles, duplicidad, rechazo del cuarto nivel y desactivación de padre con hijos activos. Probar desactivación y reactivación de una hoja y la carrera de cambios jerárquicos. Añadir `request_check`, la validación Python de códigos y cuerpos, y la comprobación de OpenAPI. Ejecutar en una base desechable hasta `SMOKE OK`.
 
 ## 5. Criterios de aceptación (medibles)
 
-| # | Criterio | Cómo se verifica | Umbral |
+| # | Criterio | Verificación | Umbral |
 |---|---|---|---|
-| A1 | Compilación y arquitectura | `dotnet build -warnaserror` y `./scripts/verify.sh` | 0 warnings, gate en verde |
-| A2 | API | Prueba por literal, JWT, roles aprobados, búsqueda, página estable y rutas en OpenAPI y Swagger | Todas pasan |
-| A3 | Catálogo | Alta, edición, variante de mayúsculas, baja y reactivación si aplica. Verificar lectura histórica e inelegibilidad para nuevas asignaciones donde se apruebe | Estado y referencias preservados |
-| A4 | Integridad | Dos altas de código equivalente en PostgreSQL. Si hay jerarquía, reasignación a descendiente y dos cruces concurrentes | Un solo código válido, ningún ciclo |
-| A5 | Database First | Aplicar SQL, seed repetible, scaffold y smoke de alta, filtro y duplicado | `SCAFFOLD AL DÍA` y `SMOKE OK` |
+| A1 | Arquitectura y compilación | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `./scripts/verify.sh` | Gate en verde |
+| A2 | API y autorización | Pruebas de cada literal, rutas, JWT y roles G1 | Lecturas autenticadas. Escrituras FINANZAS/ADMIN. Cada rechazo conserva los datos. |
+| A3 | Catálogo | Códigos en mayúsculas, longitud y responsable opcional | Identidades únicas y ausencia de importes |
+| A4 | Jerarquía y actividad | Ciclos, profundidad, padre con hijos activos y reactivación | Máximo 3 niveles. Referencias históricas preservadas |
+| A5 | Database First | Aplicar SQL local, repetir seed, comprobar scaffold y ejecutar smoke | SCAFFOLD AL DÍA y SMOKE OK |
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobar §2 y confirmar la elegibilidad para 58 y 60.
-- [ ] Confirmar numeración, aplicar el SQL y generar el modelo.
-- [ ] Implementar catálogo y verificar A1–A5.
+- [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
+- [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
+- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
+- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
-| 2026-11-22 | Revisión documental | Pendiente de aprobación | Se contrastó con el maestro `CentroTrabajo` y los consumidores propuestos 58 y 60. |
+| 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
+| 2026-11-23 | Validación funcional de la spec aprobada | Pendiente | Esta fase revisa documentación. La ejecución de §5 corresponde a la rama de implementación. |

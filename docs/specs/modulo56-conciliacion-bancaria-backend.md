@@ -1,110 +1,148 @@
 # Especificación: modulo56-conciliacion-bancaria-backend — Conciliación bancaria
 
-> Estado: **propuesta pendiente de revisión y aprobación por Lukas**. Responsable: Leonel Portillo. El origen de extractos y las reglas de coincidencia y cierre son candidatos.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
 
 ## 1. Objetivo
 
-**Problema.** El [enunciado](../enunciado.md#2-los-80-módulos) pide conciliar extractos contra libros. La cuenta y sus movimientos internos se proponen en el 55. Falta un registro separado de la evidencia del banco y de las coincidencias verificadas.
-
-**Resultado esperado.** Registrar un extracto normalizado de una cuenta, contrastar sus líneas con movimientos internos del 55 y conservar coincidencias, partidas pendientes y cierre.
+Cargar extractos bancarios por JSON, asociar cada ítem con un movimiento interno mediante una coincidencia explícita y cerrar el extracto conciliado con diferencia cero.
 
 ### Base comprobada y dependencias
 
-- El [55](modulo55-tesoreria-bancos-backend.md) es una dependencia de implementación. Su propuesta identifica `CuentaBancaria` y `MovimientoBancario` con cuenta, moneda, fecha, sentido e importe. Confirmar nombres y estados antes de crear FKs.
-- El 56 conserva evidencia y correspondencias. Los saldos de tesorería y el registro de movimientos siguen en el 55. La arquitectura y las garantías de persistencia están en la [revisión de Finanzas](../equipo/revision-finanzas-52-60.md#reglas-del-repositorio).
+- **Previa.** El [55](modulo55-tesoreria-bancos-backend.md) proporciona cuenta, moneda, tipo e importe de movimientos y marca de reversión. El 55 todavía se implementará y el 56 requiere que existan ese esquema y ese contrato.
+- **Guarda compartida.** El PR del 56 completa la consulta de coincidencia en el reverso del 55. Vincular y revertir comparten garantía transaccional, conservando los datos de tesorería.
 
 ## 2. Fuera de alcance
 
-- Frontend, cargos o ajustes automáticos de tesorería, conexión bancaria y parseadores de archivos bancarios. El formato de entrada de una importación se decide si se incluye.
-- Conciliación multimoneda, compensaciones agrupadas y reapertura como extensiones sujetas a aprobación.
+- Archivos bancarios, conexión con bancos, coincidencia automática, tolerancias, agrupaciones, conversión y generación de movimientos.
+- Reapertura, cierre parcial, borrado físico y contabilidad.
 
-| Nº | Tema | Propuesta para revisión | Qué debe confirmar Lukas |
-|---|---|---|---|
-| 56.1 | Extractos | Carga manual normalizada en JSON con cuenta, referencia, intervalo, saldos y líneas. Conservar dos líneas iguales cuando tienen posiciones distintas. | Formatos admitidos, identidad de extracto e ítem, duplicados entre extractos, periodos superpuestos y correcciones a una carga. |
-| 56.2 | Coincidencias | Asociación manual uno a uno, misma cuenta y sentido, importe exacto y moneda de la cuenta. | Criterio de signos, tolerancias, ventana de fechas, agrupaciones, coincidencia automática y elegibilidad de los movimientos del 55, incluidos los vinculados a una reversión. |
-| 56.3 | Cierre | Una conciliación por extracto. Cerrar si las líneas requeridas están conciliadas y el extracto cuadra según la validación aprobada. | Qué pendientes bloquean, fórmula y tolerancia, quién cierra y si hay reapertura o cierre parcial. |
-| 56.4 | Correcciones y acceso | Retirar una coincidencia antes del cierre con motivo. Preservar la evidencia de un movimiento que después se compense en el 55. | Política frente a reversión posterior, autorización de registrar, asociar, retirar y cerrar, y efectos sobre conciliaciones cerradas. |
+**Decisiones de producto aprobadas para la v0.** [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161)
+
+| Nº | Tema | Respuesta aprobada |
+|---|---|---|
+| 56.1 | Carga y edición | Recibir el extracto por JSON. Un extracto por cuenta y periodo, con prohibición de intervalos superpuestos. Los ítems se editan solo en extractos abiertos. |
+| 56.2 | Coincidencia | Vinculación manual uno a uno. Coinciden el signo y el importe exacto. Excluir movimientos revertidos. |
+| 56.3 | Cierre | El cierre exige conciliación completa con diferencia cero. No se reabre. |
+| 56.4 | Acceso y reversión | Aplicar G1. El 55 devuelve 409 al intentar revertir un movimiento conciliado. |
+
+Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
-| Archivo | Acción | Nota |
+| Archivo previsto | Acción futura | Alcance |
 |---|---|---|
-| `database/NNN-modulo56-conciliacion-bancaria.sql` y `docs/equipo/relevo.md` | crear / actualizar tras aprobación | Confirmar número en [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos). |
-| `src/TitanGlobal.Domain/Models/{ExtractoBancario,LineaExtractoBancario,ConciliacionBancaria,CoincidenciaConciliacion}.cs` | generar | Revisar las navegaciones inversas en `CuentaBancaria.cs` y `MovimientoBancario.cs`. |
-| `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` y `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | generar / ajustar si aplica | DbContext desde scaffold. Ajustar el pluralizador solo para los nombres nuevos que lo requieran. |
-| `src/TitanGlobal.Application/DTOs/Modulo56_ConciliacionBancaria/` y `src/TitanGlobal.Application/UseCases/Modulo56_ConciliacionBancaria/` | crear | Proyecciones y validaciones del 56. |
-| `src/TitanGlobal.Api/Controllers/Modulo56_ConciliacionBancaria/ConciliacionBancariaController.cs` | crear | Rutas de §4. |
-| `tests/TitanGlobal.Api.Tests/Modulo56_ConciliacionBancaria/ConciliacionBancariaApiTests.cs`, `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | crear / actualizar | Datos deterministas y casos sobre el 55. |
+| `database/NNN-modulo56-conciliacion-bancaria.sql` y `docs/equipo/relevo.md` | Crear / registrar | Tomar el siguiente número libre al implementar y registrar solo la fila de este módulo. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
+| `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar | Entidades y navegaciones de §4 mediante scaffold. Revisar los nombres que produce el pluralizador. |
+| `src/TitanGlobal.Application/DTOs/Modulo56_ConciliacionBancaria/` y `src/TitanGlobal.Application/UseCases/Modulo56_ConciliacionBancaria/` | Crear | Validación, proyecciones y casos de uso concretos en Application. |
+| `src/TitanGlobal.Api/Controllers/Modulo56_ConciliacionBancaria/ConciliacionBancariaController.cs` | Crear | Rutas y autorización de §4. |
+| Reversión de movimiento del 55 y sus pruebas | Completar con el 56 | Aplicar la guarda 55.4 bajo la misma transacción usada para asociar movimientos. |
+| `tests/TitanGlobal.Api.Tests/Modulo56_ConciliacionBancaria/ConciliacionBancariaApiTests.cs` | Crear | Pruebas HTTP de §4. |
+| `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Ampliar | Fixtures idempotentes y checks HTTP/SQL del módulo. |
 
 ## 4. Diseño y lógica
 
-### Datos propuestos
+Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan el diseño para la revisión final. Las decisiones de producto aprobadas están en §2 y G1 a G9.
 
-| Tabla → entidad | Campos y relaciones candidatos |
+### Convenciones y permisos
+
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+
+Los importes usan `numeric(18,2)` en la moneda de la cuenta. Las fechas de extracto e ítems son fechas efectivas y su extremo superior no supera hoy. Los extractos se identifican por cuenta/periodo y se consultan por id.
+
+### Datos y persistencia
+
+| Tabla → entidad | Campos y restricciones |
 |---|---|
-| `ExtractosBancarios` → `ExtractoBancario` | `Id`, `CuentaBancariaId` FK, `ReferenciaExtracto` (80), `FechaDesde`, `FechaHasta`, `SaldoInicial`, `SaldoFinal`, `FechaRegistro`. Unicidad candidata por cuenta y referencia. Moneda obtenida desde la cuenta. |
-| `LineasExtractoBancario` → `LineaExtractoBancario` | `Id`, `ExtractoBancarioId` FK, `Posicion`, `FechaOperacion`, `Sentido`, `Importe`, `Referencia?` (100). Unicidad `(ExtractoBancarioId, Posicion)`. |
-| `ConciliacionesBancarias` → `ConciliacionBancaria` | `Id`, `ExtractoBancarioId` FK único para la propuesta inicial, `Estado`, `FechaApertura`, `FechaCierre?`. Se propone `Abierta` → `Cerrada`. |
-| `CoincidenciasConciliacion` → `CoincidenciaConciliacion` | `Id`, `ConciliacionBancariaId`, `LineaExtractoBancarioId`, `MovimientoBancarioId` como FKs, `FechaVinculacion`, `FechaRetiro?`, `MotivoRetiro?` (500). Unicidad por línea y por movimiento. Si se permite retirar, aplicar la unicidad a filas con `FechaRetiro` nula. |
+| `ExtractosBancarios` → `ExtractoBancario` | `Id`, `CuentaBancariaId` FK, `FechaDesde date`, `FechaHasta date`, `SaldoInicial`, `SaldoFinal`, `Estado varchar(20)` (`Abierto`, `Cerrado`), `FechaRegistro timestamptz`, `FechaCierre timestamptz?`. Índice único por cuenta y ambos extremos. Comprobar `FechaDesde <= FechaHasta` y ausencia de superposición por cuenta. |
+| `LineasExtractoBancario` → `LineaExtractoBancario` | `Id`, `ExtractoBancarioId` FK, `Posicion integer`, `FechaOperacion date`, `Tipo varchar(20)` (`Ingreso`/`Egreso`), `Importe` positivo y `Referencia varchar(100)?`. Unicidad por extracto/posición. |
+| `CoincidenciasConciliacion` → `CoincidenciaConciliacion` | `Id`, `LineaExtractoBancarioId` FK única, `MovimientoBancarioId` FK única y `FechaVinculacion timestamptz`. Cada fila asocia una línea con un movimiento del 55. |
 
-Importes candidatos `numeric(18,2)` y fechas `timestamptz` con `FechasUtc`. Indexar FKs y cuenta/periodo. El ámbito de coincidencia exige la misma cuenta y pertenencia de la línea al extracto de la conciliación. Verificarlo en Application. Los saldos de extracto y el saldo del 55 conservan sus fuentes independientes.
+Las PK son identidades `integer`. Las FKs se indexan y conservan referencias con `ON DELETE RESTRICT`. Application valida los límites de columna antes de guardar.
 
-### Operaciones y DTOs candidatos
+Contrato técnico de diferencia propuesto para revisión: saldo final declarado − saldo inicial declarado − suma con signo de los movimientos vinculados (`Ingreso` positivo, `Egreso` negativo). Con apertura 100, ingreso 20 y egreso 5, el cierre requiere saldo final 115 y todas las líneas vinculadas. Un saldo final declarado de 116 deja diferencia 1.
 
-Ruta base `/api/v1/conciliacion-bancaria`. JWT y proyecciones asíncronas. Usar paginación 1 y 20 por defecto con tamaño máximo de 100. Ordenar por fecha del extracto e `Id` descendentes, y por posición para sus líneas.
+### Casos de uso, rutas y DTOs
 
-| Método y ruta relativa | Caso de uso | Entrada y respuesta |
+Ruta base `/api/v1/conciliacion-bancaria`. Las rutas de consulta proyectan con `AsNoTracking`. Listar extractos por `cuentaBancariaId?` y `estado?`, ordenados por `FechaHasta` e `Id` descendentes. Ordenar los ítems por posición. Paginación 1/20, máximo 100.
+
+| Método y ruta relativa | Caso de uso | Entrada → éxito |
 |---|---|---|
-| `POST /extractos` | `RegistrarExtractoBancarioUseCase` | `RegistrarExtractoBancarioRequestDto` → `201 ExtractoBancarioDto` con `Location`. |
-| `GET /extractos/{extractoId:int}` | `ObtenerExtractoBancarioUseCase` | `200 ExtractoBancarioDto`. |
-| `GET /` | `ListarConciliacionesBancariasUseCase` | `cuentaBancariaId?`, `estado?` y paginación → `200 PaginaConciliacionesBancariasDto`. |
-| `POST /` | `AbrirConciliacionBancariaUseCase` | `AbrirConciliacionBancariaRequestDto` → `201 ConciliacionBancariaDetalleDto` con `Location`. |
-| `GET /{id:int}` | `ObtenerConciliacionBancariaUseCase` | `200 ConciliacionBancariaDetalleDto`. |
-| `GET /{id:int}/pendientes` | `ListarPendientesConciliacionUseCase` | `lado=Extracto\|Banco` y paginación → `200 PaginaPendientesConciliacionDto`. |
-| `POST /{id:int}/coincidencias` | `VincularCoincidenciaConciliacionUseCase` | `VincularCoincidenciaRequestDto` → `201 CoincidenciaConciliacionDto`. |
-| `POST /{id:int}/coincidencias/{coincidenciaId:int}/retirar` | `RetirarCoincidenciaConciliacionUseCase` | `RetirarCoincidenciaRequestDto` → `200 CoincidenciaConciliacionDto`. |
-| `POST /{id:int}/cerrar` | `CerrarConciliacionBancariaUseCase` | Sin cuerpo, con `[PermitirCuerpoVacio]` → `200 ConciliacionBancariaDetalleDto`. |
+| `GET /extractos` | `ListarExtractosBancariosUseCase` | Filtros y paginación → `200 PaginaExtractosBancariosDto`. |
+| `POST /extractos` | `RegistrarExtractoBancarioUseCase` | `RegistrarExtractoBancarioRequestDto` → `201` detalle y `Location`. |
+| `GET /extractos/{id:int}` | `ObtenerExtractoBancarioUseCase` | `200 ExtractoBancarioDetalleDto`. |
+| `PUT /extractos/{id:int}/lineas/{lineaId:int}` | `ActualizarLineaExtractoBancarioUseCase` | `GuardarLineaExtractoBancarioRequestDto` → `200 LineaExtractoBancarioDto`. |
+| `GET /extractos/{id:int}/pendientes` | `ListarPendientesConciliacionUseCase` | `lado=Extracto` o `Banco` y paginación → `200 PaginaPendientesConciliacionDto`. |
+| `POST /extractos/{id:int}/coincidencias` | `VincularCoincidenciaConciliacionUseCase` | `VincularCoincidenciaRequestDto { lineaExtractoBancarioId, movimientoBancarioId }` → `201 CoincidenciaConciliacionDto`. |
+| `POST /extractos/{id:int}/cerrar` | `CerrarConciliacionBancariaUseCase` | Sin cuerpo → `200 ExtractoBancarioDetalleDto`. |
 
-- `RegistrarExtractoBancarioRequestDto { cuentaBancariaId, referenciaExtracto, fechaDesde, fechaHasta, saldoInicial, saldoFinal, lineas: LineaExtractoBancarioRequestDto[] }`, con líneas `{ posicion, fechaOperacion, sentido, importe, referencia? }`. Limitar el número de líneas por carga según 56.1.
-- `ExtractoBancarioDto { id, cuentaBancariaId, moneda, referenciaExtracto, fechaDesde, fechaHasta, saldoInicial, saldoFinal, cantidadLineas }`. `AbrirConciliacionBancariaRequestDto { extractoBancarioId }`.
-- `ConciliacionBancariaListadoDto { id, extractoBancarioId, cuentaBancariaId, estado, fechaApertura, fechaCierre? }`. El detalle añade saldos del extracto, `diferenciaExtracto`, conteos de coincidencias y pendientes por lado. Un pendiente expone `{ lado, id, fechaOperacion, sentido, importe, referencia? }`. Páginas con `items`, `pagina`, `tamanoPagina`, `totalRegistros` y `totalPaginas`.
-- `VincularCoincidenciaRequestDto { lineaExtractoBancarioId, movimientoBancarioId }` y `RetirarCoincidenciaRequestDto { motivo }`. `CoincidenciaConciliacionDto { id, conciliacionBancariaId, lineaExtractoBancarioId, movimientoBancarioId, fechaVinculacion, fechaRetiro?, motivoRetiro? }`.
+- `RegistrarExtractoBancarioRequestDto { cuentaBancariaId, fechaDesde, fechaHasta, saldoInicial, saldoFinal, lineas }`. `GuardarLineaExtractoBancarioRequestDto { posicion, fechaOperacion, tipo, importe, referencia? }`.
+- `ExtractoBancarioListadoDto { id, cuentaBancariaId, moneda, fechaDesde, fechaHasta, estado, diferencia }`. El detalle añade saldos declarados, `fechaCierre`, ítems y sus coincidencias. `LineaExtractoBancarioDto` agrega `id` y `movimientoBancarioId?` a los campos de entrada.
+- `CoincidenciaConciliacionDto { id, lineaExtractoBancarioId, movimientoBancarioId, fechaVinculacion }`. Un pendiente expone `lado`, `id`, `fechaOperacion`, `tipo`, `importe` y `referencia?`. Páginas con `items`, `pagina`, `tamanoPagina`, `totalRegistros`, `totalPaginas`.
 
-### Reglas candidatas y errores literales
+### Validaciones y mensajes literales
 
-Validar intervalo y datos de cada línea, pertenencia, estado de la conciliación y unicidad. Con la convención propuesta del 55, un ingreso suma y un egreso resta. El descuadre del extracto sería saldo final − saldo inicial − suma firmada de líneas. Los pendientes del lado de tesorería comprenden los movimientos elegibles del 55 para esa cuenta e intervalo que estén sin coincidencia activa. 56.2 define la elegibilidad y 56.3 decide qué pendientes bloquean el cierre.
+Validar posiciones sin duplicados, escalas y fechas de las líneas dentro del intervalo. Dos rangos inclusivos de la misma cuenta se solapan cuando uno comienza antes o en el fin del otro y termina después o en su comienzo. Proteger la consulta de solapamiento y el alta bajo bloqueo de la cuenta, y guardar cabecera e ítems en una transacción.
 
-| HTTP | Condición | Mensaje literal propuesto |
+La coincidencia requiere extracto abierto, línea de ese extracto, movimiento de la misma cuenta e importe y signo idénticos. Rechazar movimientos revertidos y líneas o movimientos ya vinculados. La edición de una línea abierta conserva la coherencia del vínculo existente. Compartir bloqueo por cuenta entre vincular y revertir, y por extracto entre editar, vincular y cerrar, con un orden fijo. El cierre comprueba todos los ítems y la diferencia en la misma transacción. Ninguna operación escribe importes en los movimientos de tesorería.
+
+Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
+
+| HTTP | Condición | Literal propuesto |
 |---|---|---|
-| 400 | Intervalo, referencia, líneas, motivo o paginación inválidos | «Los datos de conciliación bancaria no son válidos.» |
-| 400 | Posición repetida dentro del cuerpo | «El extracto contiene posiciones de línea repetidas.» |
-| 404 | Cuenta, extracto, conciliación, línea, movimiento o coincidencia inexistentes | «La cuenta bancaria no existe.» / «El extracto bancario no existe.» / «La conciliación bancaria no existe.» / «La línea del extracto no existe.» / «El movimiento bancario no existe.» / «La coincidencia de conciliación no existe.» |
-| 409 | Identidad de extracto repetida o extracto ya conciliado/iniciado | «El extracto bancario ya está registrado para esta cuenta.» / «El extracto ya tiene una conciliación bancaria.» |
-| 409 | Línea de otro extracto, movimiento de otra cuenta o incompatibilidad | «La línea no pertenece al extracto de la conciliación.» / «El movimiento no pertenece a la cuenta del extracto.» / «La línea y el movimiento no cumplen el criterio de coincidencia.» |
-| 409 | Línea o movimiento ya usado | «La línea o el movimiento ya tiene una coincidencia activa.» |
-| 409 | Estado incompatible o cierre con diferencias | «El estado de la conciliación no permite esta operación.» / «La conciliación aún tiene diferencias o pendientes de cierre.» |
-| 409 | Referencia eliminada durante el guardado | «No se pudo guardar la conciliación porque una referencia ya no existe.» |
+| 400 | Datos, intervalo, posiciones o paginación inválidos | «Los datos del extracto bancario no son válidos.» |
+| 404 | Cuenta inexistente | «La cuenta bancaria no existe.» |
+| 404 | Extracto inexistente | «El extracto bancario no existe.» |
+| 404 | Línea ajena o inexistente | «La línea indicada no existe en el extracto.» |
+| 404 | Movimiento inexistente | «El movimiento bancario no existe.» |
+| 409 | Periodo existente o superpuesto | «La cuenta ya tiene un extracto para un periodo que se superpone.» |
+| 409 | Extracto cerrado | «El extracto bancario está cerrado.» |
+| 409 | Cuenta, signo o importe incompatibles | «La línea y el movimiento deben tener la misma cuenta, signo e importe.» |
+| 409 | Movimiento revertido | «No se puede conciliar un movimiento revertido.» |
+| 409 | Línea o movimiento ya vinculado | «La línea o el movimiento ya tiene una coincidencia.» |
+| 409 | Edición incompatible con el vínculo | «La edición no puede invalidar la coincidencia registrada.» |
+| 409 | Cierre con pendientes o diferencia | «El extracto debe estar totalmente conciliado y con diferencia cero.» |
+| 409 | Reversión en 55 | «No se puede revertir un movimiento conciliado.» |
+| 409 | Referencia perdida al guardar | «No se pudo guardar la conciliación porque una referencia ya no existe.» |
 
-La carga guarda extracto y líneas juntos. La unicidad de coincidencias activas protege dos asociaciones simultáneas. Retirar, vincular y cerrar deben compartir la garantía transaccional por conciliación para evitar una coincidencia agregada después de cerrar. Si la aprobación exige considerar una reversión concurrente del 55, definir el contrato entre ambos módulos y su prueba PostgreSQL.
+### Precisiones para la revisión final
+
+- **Diferencia y completitud.** Confirmar la fórmula propuesta con saldos del extracto y si «todo conciliado» exige además vincular cada movimiento interno elegible del periodo. El criterio de cierre documentado comprueba todos los ítems del extracto y expone pendientes de ambos lados.
+- **Corrección antes del cierre.** Lukas autorizó editar ítems de extractos abiertos. Falta precisar si se puede retirar y reemplazar un vínculo y qué historial debe conservarse. El contrato evita invalidar coincidencias existentes.
+
+### Seed, pruebas y smoke
+
+**Seed.** A partir de una cuenta del 55 y sus movimientos, cargar un extracto abierto con un ingreso y un egreso, un movimiento revertido no elegible y un extracto cerrado de otro periodo. Identificar las filas por cuenta/periodo y posición para repetir la carga.
+
+**Pruebas de integración.**
+
+1. JSON válido, intervalo inválido, mismo periodo, superposición parcial y extremo compartido. Editar un ítem abierto y rechazar la edición tras cierre.
+2. Asociación exacta de ingreso y egreso, rechazos por importe, signo, cuenta, reversión o vínculo duplicado. Intentar revertir en el 55 después de conciliar y verificar 409.
+3. Cierre con un ítem pendiente, con diferencia distinta de cero y válido. Verificar que no hay reapertura y que el registro de tesorería del 55 conserva sus datos.
+4. JWT, roles de escritura, listados y cada literal.
+
+**Smoke PostgreSQL.** Cargar JSON de una cuenta del 55, editar, vincular, cerrar y verificar códigos y estado. Probar intervalos superpuestos concurrentes, dos asociaciones del mismo movimiento y asociación contra cierre o reversión en PostgreSQL. Añadir `request_check`, la validación Python de códigos y cuerpos, y la comprobación de OpenAPI. Ejecutar en una base desechable hasta `SMOKE OK`.
 
 ## 5. Criterios de aceptación (medibles)
 
-| # | Criterio | Cómo se verifica | Umbral |
+| # | Criterio | Verificación | Umbral |
 |---|---|---|---|
-| A1 | Compilación y arquitectura | `dotnet build -warnaserror` y `./scripts/verify.sh` | 0 warnings, gate en verde |
-| A2 | API | Pruebas HTTP por literal, JWT, roles aprobados, filtros y paginación. Validar rutas OpenAPI y Swagger | Todas pasan |
-| A3 | Extractos y cierre | Carga, línea repetida, asociación exacta, monto desigual, cuenta ajena, retiro y cierre con y sin pendientes según aprobación | Evidencia conservada, movimientos del 55 intactos |
-| A4 | Carreras | En PostgreSQL, dos asociaciones de la misma línea o movimiento y asociación concurrente con cierre | Un vínculo válido, ningún estado parcial |
-| A5 | Database First | SQL local, seed repetible, scaffold y smoke con extracto, coincidencia y cierre o conflicto | `SCAFFOLD AL DÍA` y `SMOKE OK` |
+| A1 | Arquitectura y compilación | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `./scripts/verify.sh` | Gate en verde |
+| A2 | API y autorización | Pruebas de cada literal, rutas, JWT y roles G1 | Lecturas autenticadas. Escrituras FINANZAS/ADMIN. Cada rechazo conserva los datos. |
+| A3 | Extractos | Carga, rango, superposición y edición | Una cabecera por intervalo permitido. Solo abiertos admiten edición |
+| A4 | Coincidencia y reversión | Casos de signo, monto, duplicidad y carrera con el 55 | Un vínculo válido por ítem y por movimiento. Reversión indebida rechazada |
+| A5 | Cierre | Casos de diferencia, pendientes y cierre definitivo | Cerrado solo con todos los ítems vinculados y diferencia cero |
+| A6 | Database First | Aplicar SQL local, repetir seed, comprobar scaffold y ejecutar smoke | SCAFFOLD AL DÍA y SMOKE OK |
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobar §2 y validar el contrato del 55.
-- [ ] Confirmar numeración, aplicar SQL y regenerar el modelo.
-- [ ] Implementar las operaciones aprobadas y registrar A1–A5.
+- [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
+- [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
+- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
+- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
-| 2026-11-22 | Revisión documental | Pendiente de aprobación | El 55 es una dependencia propuesta. Alcance de carga y cierre por confirmar. |
+| 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
+| 2026-11-23 | Validación funcional de la spec aprobada | Pendiente | Esta fase revisa documentación. La ejecución de §5 corresponde a la rama de implementación. |

@@ -1,106 +1,143 @@
 # Especificación: modulo60-activos-fijos-backend — Activos fijos
 
-> Estado: **propuesta pendiente de revisión y aprobación por Lukas**. Responsable: Leonel Portillo. El reconocimiento, la depreciación y la baja requieren validación funcional antes de implementar.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
 
 ## 1. Objetivo
 
-**Problema.** El [enunciado](../enunciado.md#2-los-80-módulos) enumera altas, bajas y depreciación. El modelo revisado carece de un registro de activos y del historial de sus periodos de depreciación.
-
-**Resultado esperado.** Registrar el alta y la baja de activos, relacionarlos con un centro de costo y consultar su historia. Registrar depreciaciones conforme al método, fechas y valores que se aprueben.
+Registrar activos fijos con categoría y centro de costo, depreciarlos mensualmente por método lineal y registrar de forma definitiva su baja. Mantener el costo, residual, meses depreciados y valor en libros en la moneda del activo.
 
 ### Base comprobada y dependencias
 
-- El [59](modulo59-centros-costo-backend.md) proveería el identificador de centro de costo para la asignación inicial. Las existencias de `Productos` y los `VehiculosFlota` pertenecen a dominios con contratos propios.
-- El [54](modulo54-cuentas-por-pagar-backend.md) podría aportar un documento del proveedor como evidencia opcional. Una misma obligación podría respaldar varios activos si se aprueba. El [58](modulo58-presupuestos-backend.md) podría consumir un alta como ejecución CAPEX después de aprobar la fuente.
-- El catálogo incluye CierresPeriodo (80). La aplicación de cierres corporativos depende de su contrato. Rigen las convenciones de la [revisión de Finanzas](../equipo/revision-finanzas-52-60.md#reglas-del-repositorio).
+- **Previa.** El [59](modulo59-centros-costo-backend.md) aporta el centro obligatorio y activo para el alta. La desactivación posterior conserva la referencia del activo.
+- **Transversal.** Permisos de G1. El 60 conserva su propio registro. El 54 y el 58 no son dependencias de la v0.
 
 ## 2. Fuera de alcance
 
-- Frontend, asientos, determinación tributaria, revalúos, deterioros, mantenimiento, subcomponentes y traslados en el núcleo candidato.
-- Generación automática desde compras, alta desde inventario y ejecución CAPEX hasta acordar el origen y sus efectos.
+- Integraciones de compra y presupuesto, asientos, revalorizaciones, conversiones, métodos distintos del lineal, sucursales y reversión de la baja.
+- Cálculo automático por tarea programada. El lote se solicita de forma explícita y escribe dentro del 60.
 
-| Nº | Tema | Propuesta para revisión | Qué debe confirmar Lukas |
-|---|---|---|---|
-| 60.1 | Alta y asignación | Alta explícita, código interno único, identidad y centro de costo. Si se aprueba, referencia documental al 54. | Qué se capitaliza, datos y evidencia, categorías, unicidad por ámbito, obligatoriedad y cambios del centro de costo. |
-| 60.2 | Base, método y moneda | Candidato a depreciación periódica lineal con costo, residual, vida en periodos y moneda fija. | Base capitalizable, valores admitidos, método, vida útil, residual, escala, redondeo y tratamiento del último periodo. |
-| 60.3 | Calendario | Un cálculo explícito por periodo mensual elegible, identificado por año y mes. | Inicio desde puesta en servicio u otro hito, prorrateo, periodos omitidos, cálculo en lote, cierres y fechas de corte. |
-| 60.4 | Baja y corrección | Baja trazable con fecha y motivo, con vista del valor libro calculado según el método aprobado. | Motivos y estados, última depreciación, reversión o reapertura de bajas y corrección de periodos ya registrados. |
-| 60.5 | Acceso e integraciones | JWT con roles pendientes. Alta y depreciación propias del 60. | Quién registra, deprecia y autoriza la baja. Si 54 prueba el origen y si el alta, la compra u otro evento alimenta el 58. |
+**Decisiones de producto aprobadas para la v0.** [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161)
+
+| Nº | Tema | Respuesta aprobada |
+|---|---|---|
+| 60.1 | Identidad y alta | Generar `AF-000001`. Categorías fijas `Edificios`, `Maquinaria`, `Vehiculos`, `EquiposComputo` y `Muebles`. Centro de costo obligatorio, costo positivo y fecha de puesta en servicio. |
+| 60.2 | Depreciación lineal | Vida útil de 1 a 600 meses y residual de 0 al costo. El último mes ajusta la diferencia de redondeo. |
+| 60.3 | Periodicidad | Depreciar desde el mes siguiente al de puesta en servicio. Registrar lote mensual sin saltos y con una fila por activo y mes. |
+| 60.4 | Baja | Motivo de catálogo `Venta`, `Obsolescencia`, `Siniestro` u `Otro`, con fecha. Incluir el mes de baja en el periodo depreciable. Baja definitiva. |
+| 60.5 | Acceso y alcance | Aplicar G1. Prescindir de integraciones con 54 y 58. |
+
+Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
-| Archivo | Acción | Nota |
+| Archivo previsto | Acción futura | Alcance |
 |---|---|---|
-| `database/NNN-modulo60-activos-fijos.sql` y `docs/equipo/relevo.md` | crear / actualizar tras aprobación | Confirmar número en [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos). |
-| `src/TitanGlobal.Domain/Models/{ActivoFijo,DepreciacionActivoFijo,BajaActivoFijo}.cs` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | generar | Revisar navegaciones inversas en `CentroCosto.cs` y en el origen aprobado. |
-| `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | ajustar si se necesita | Mapeos de nombres nuevos únicamente. |
-| `src/TitanGlobal.Application/DTOs/Modulo60_ActivosFijos/` y `src/TitanGlobal.Application/UseCases/Modulo60_ActivosFijos/` | crear | Altas, consultas, depreciaciones y bajas. |
-| `src/TitanGlobal.Api/Controllers/Modulo60_ActivosFijos/ActivosFijosController.cs` | crear | Rutas de §4. |
-| `tests/TitanGlobal.Api.Tests/Modulo60_ActivosFijos/ActivosFijosApiTests.cs`, `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | crear / actualizar | Fixtures y pruebas HTTP y PostgreSQL. |
+| `database/NNN-modulo60-activos-fijos.sql` y `docs/equipo/relevo.md` | Crear / registrar | Tomar el siguiente número libre al implementar y registrar solo la fila de este módulo. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
+| `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar | Entidades y navegaciones de §4 mediante scaffold. Revisar los nombres que produce el pluralizador. |
+| `src/TitanGlobal.Application/DTOs/Modulo60_ActivosFijos/` y `src/TitanGlobal.Application/UseCases/Modulo60_ActivosFijos/` | Crear | Validación, proyecciones y casos de uso concretos en Application. |
+| `src/TitanGlobal.Api/Controllers/Modulo60_ActivosFijos/ActivosFijosController.cs` | Crear | Rutas y autorización de §4. |
+| `tests/TitanGlobal.Api.Tests/Modulo60_ActivosFijos/ActivosFijosApiTests.cs` | Crear | Pruebas HTTP de §4. |
+| `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Ampliar | Fixtures idempotentes y checks HTTP/SQL del módulo. |
 
 ## 4. Diseño y lógica
 
-### Datos propuestos
+Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan el diseño para la revisión final. Las decisiones de producto aprobadas están en §2 y G1 a G9.
 
-| Tabla → entidad | Campos y relaciones candidatos |
+### Convenciones y permisos
+
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+
+`AF-` sigue G5 con número provisional `TMP-` y código definitivo `AF-{Id:D6}` en la misma transacción. Importes `numeric(18,2)`. En ausencia de documento de origen, el contrato técnico propone capturar `PEN` o `USD` y mantener esa moneda. G9 cede ante el catálogo de baja.
+
+### Datos y persistencia
+
+| Tabla → entidad | Campos y restricciones |
 |---|---|
-| `ActivosFijos` → `ActivoFijo` | `Id`, `Codigo` (30) único, `Nombre` (120), `Descripcion?` (500), `CentroCostoId` FK, `FechaAlta`, `FechaPuestaServicio?`, `Moneda` (3), `Costo`, `ValorResidual`, `VidaUtilPeriodos`, `Metodo`, `Estado`. Los últimos campos dependen del método confirmado. Agregar `CuentaPorPagarId?` solo si se aprueba el vínculo. |
-| `DepreciacionesActivoFijo` → `DepreciacionActivoFijo` | `Id`, `ActivoFijoId` FK, `Anio`, `Mes`, `Importe`, `FechaRegistro`, `BaseAplicada` o datos suficientes para explicar el valor registrado. Unicidad candidata por `(ActivoFijoId, Anio, Mes)` para el registro vigente del periodo. Diseñar historial de corrección solo si se aprueba 60.4. |
-| `BajasActivoFijo` → `BajaActivoFijo` | `Id`, `ActivoFijoId` FK y único si la baja es final, `FechaBaja`, `FechaRegistro`, `Motivo` (500) y `ValorLibroAlMomento`, sujeto a la regla de baja aprobada. |
+| `ActivosFijos` → `ActivoFijo` | `Id`, `Codigo varchar(30)` único, `Nombre varchar(120)`, `Categoria varchar(20)` del catálogo, `CentroCostoId` FK obligatoria, `Moneda char(3)`, `Costo` positivo, `ValorResidual` entre cero y costo, `VidaUtilMeses integer` entre 1 y 600, `FechaPuestaServicio date`, `FechaRegistro timestamptz`. Estado `Activo` o `Baja` derivado de la existencia de su baja. |
+| `DepreciacionesActivoFijo` → `DepreciacionActivoFijo` | `Id`, `ActivoFijoId` FK, `Periodo date` con primer día del mes, `Importe` no negativo, `FechaRegistro timestamptz`. Único `(ActivoFijoId, Periodo)`. Índice para historial ordenado. |
+| `BajasActivoFijo` → `BajaActivoFijo` | `Id`, `ActivoFijoId` FK única, `FechaBaja date`, `Motivo varchar(20)` del catálogo y `FechaRegistro timestamptz`. Registro único por activo e irreversible. |
 
-Montos candidatos `numeric(18,2)`. Las fechas de registro, puesta en servicio y baja usan `timestamptz` normalizado con `FechasUtc`. Año y mes identifican un periodo según el calendario aprobado. Indexar FKs y centro/estado para las consultas. Los cambios al catálogo del 59 preservan la referencia histórica del activo.
+Las PK son identidades `integer`. Las FKs se indexan y conservan referencias con `ON DELETE RESTRICT`. Application valida los límites de columna antes de guardar.
 
-### Operaciones y DTOs candidatos
+Base depreciable = costo − residual. Cuota ordinaria = `Round(base / vidaUtilMeses, 2, MidpointRounding.AwayFromZero)`. En el último mes de vida útil registrar base − cuotas previas. Cuando la baja antecede ese último mes, incluir la cuota que corresponda al mes de baja y dejar el valor en libros residual de ese momento. Valor en libros = costo − depreciación acumulada. Por ejemplo, base 100 en tres meses produce 33,33, 33,33 y 33,34.
 
-Ruta base `/api/v1/activos-fijos`. JWT y proyección con `AsNoTracking`. Paginación 1 y 20 por defecto con máximo 100, orden por fecha de alta e `Id` descendentes. Para depreciaciones, ordenar por año, mes e `Id` descendentes.
+### Casos de uso, rutas y DTOs
 
-| Método y ruta relativa | Caso de uso | Entrada y respuesta |
+Ruta base `/api/v1/activos-fijos`. Las rutas de consulta proyectan con `AsNoTracking`. Filtrar activos por `centroCostoId?`, `categoria?`, `estado?` y `moneda?`. Orden por `Codigo` e `Id`; historial por `Periodo` ascendente. Páginas 1/20, máximo 100.
+
+| Método y ruta relativa | Caso de uso | Entrada → éxito |
 |---|---|---|
-| `GET /` | `ListarActivosFijosUseCase` | `centroCostoId?`, `estado?`, `moneda?`, `busqueda?` y paginación → `200 PaginaActivosFijosDto`. |
+| `GET /` | `ListarActivosFijosUseCase` | Filtros → `200 PaginaActivosFijosDto`. |
 | `GET /{id:int}` | `ObtenerActivoFijoUseCase` | `200 ActivoFijoDetalleDto`. |
-| `POST /` | `DarAltaActivoFijoUseCase` | `DarAltaActivoFijoRequestDto` → `201 ActivoFijoDetalleDto` con `Location`. |
-| `GET /{id:int}/depreciaciones` | `ListarDepreciacionesActivoFijoUseCase` | `anio?` y paginación → `200 PaginaDepreciacionesActivoFijoDto`. |
-| `POST /{id:int}/depreciaciones` | `RegistrarDepreciacionActivoFijoUseCase` | `RegistrarDepreciacionActivoFijoRequestDto` → `201 DepreciacionActivoFijoDto` si se aprueba el cálculo. |
-| `POST /{id:int}/baja` | `DarBajaActivoFijoUseCase` | `DarBajaActivoFijoRequestDto` → `200 ActivoFijoDetalleDto`. |
+| `GET /{id:int}/depreciaciones` | `ListarDepreciacionesActivoFijoUseCase` | Paginación → `200 PaginaDepreciacionesActivoFijoDto`. |
+| `POST /` | `CrearActivoFijoUseCase` | `CrearActivoFijoRequestDto` → `201` detalle con `Location`. |
+| `POST /depreciaciones` | `RegistrarDepreciacionMensualUseCase` | `RegistrarDepreciacionMensualRequestDto { periodo }` → `200 LoteDepreciacionDto`. |
+| `POST /{id:int}/baja` | `DarBajaActivoFijoUseCase` | `DarBajaActivoFijoRequestDto { motivo, fechaBaja }` → `200` detalle. |
 
-- `DarAltaActivoFijoRequestDto { codigo, nombre, descripcion?, centroCostoId, fechaPuestaServicio?, moneda, costo, valorResidual, vidaUtilPeriodos }` para la alternativa lineal. Incorporar método en la entrada si se admiten varios.
-- `ActivoFijoListadoDto { id, codigo, nombre, centroCostoId, moneda, costo, estado, fechaAlta }`. El detalle agrega los parámetros aprobados, depreciación acumulada, valor libro y, si corresponde, `baja: { fechaBaja, motivo, valorLibroAlMomento }`.
-- `RegistrarDepreciacionActivoFijoRequestDto { anio, mes }`. `DepreciacionActivoFijoDto { id, activoFijoId, anio, mes, moneda, importe, fechaRegistro }`. `DarBajaActivoFijoRequestDto { fechaBaja, motivo }`. Las páginas exponen `items`, `pagina`, `tamanoPagina`, `totalRegistros` y `totalPaginas`.
+- `CrearActivoFijoRequestDto { nombre, categoria, centroCostoId, moneda, costo, valorResidual, vidaUtilMeses, fechaPuestaServicio }`. El código y método lineal son valores de servidor.
+- `ActivoFijoListadoDto { id, codigo, nombre, categoria, centroCostoId, moneda, costo, estado, valorEnLibros }`. El detalle añade residual, vida útil, puesta en servicio, depreciación acumulada y baja opcional con fecha y motivo.
+- `DepreciacionActivoFijoDto { id, activoFijoId, periodo, importe, fechaRegistro }`. `LoteDepreciacionDto { periodo, cantidadRegistrada, cantidadYaRegistrada }`. Páginas con `items`, `pagina`, `tamanoPagina`, `totalRegistros` y `totalPaginas`.
 
-### Reglas candidatas y errores literales
+### Validaciones y mensajes literales
 
-Validar datos y centro de costo, elegibilidad del activo y luego periodo o unicidad. Proponer alta en estado `Activo` y registrar fecha y motivo al pasar a `Baja`, conservando las depreciaciones previas. Evaluar como fórmula candidata una cuota lineal sobre costo menos residual, dividida entre los periodos de vida útil. El momento de la primera cuota, el prorrateo, el redondeo y el ajuste final requieren ejemplos aprobados. Proponer valor libro informativo como costo menos depreciación neta registrada, según el alcance acordado.
+Validar datos, centro activo al alta, categoría, escala, vida útil y residual. La puesta en servicio y la baja son fechas de negocio hasta hoy, al igual que el periodo de depreciación solicitado. Tras el alta, la desactivación del centro de costo conserva la referencia y el cálculo del activo.
 
-| HTTP | Condición | Mensaje literal propuesto |
+Procesar el lote en orden de activo y bloquear cada activo junto con su historial. El primer mes elegible es el posterior al de puesta en servicio. Un periodo posterior a un mes pendiente produce conflicto en el contrato técnico de lote, sin escribir el mes posterior. Un periodo ya registrado conserva su fila. Incluir el mes de baja dentro de la ventana de vida útil y excluir los posteriores. La baja exige fecha y motivo del catálogo, y se coordina con el lote para preservar el historial y el límite por periodo.
+
+Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
+
+| HTTP | Condición | Literal propuesto |
 |---|---|---|
-| 400 | Código, periodo, fecha, motivo o paginación inválidos | «Los datos del activo fijo no son válidos.» |
-| 400 | Costo, residual, vida o escala fuera del rango aprobado | «Los parámetros de depreciación no son válidos.» |
-| 404 | Activo o centro inexistentes | «El activo fijo no existe.» / «El centro de costo no existe.» |
-| 409 | Código repetido o centro inelegible | «El código del activo fijo ya existe.» / «El centro de costo no admite esta asignación.» |
-| 409 | Periodo repetido o inelegible | «El activo ya tiene una depreciación para ese periodo.» / «El activo fijo no admite depreciación en ese periodo.» |
-| 409 | Baja repetida, incompatibilidad con el historial o estado | «El activo fijo ya está dado de baja.» / «La fecha de baja no es compatible con las depreciaciones registradas.» / «El estado del activo fijo no permite esta operación.» |
-| 409 | Referencia eliminada durante el guardado | «No se pudo guardar el activo fijo porque una referencia ya no existe.» |
+| 400 | Datos, categoría, vida útil, residual, escala, fechas o filtros inválidos | «Los datos del activo fijo no son válidos.» |
+| 400 | Motivo de baja fuera de catálogo | «El motivo de baja debe ser Venta, Obsolescencia, Siniestro u Otro.» |
+| 400 | Periodo distinto del primer día del mes o futuro | «El periodo debe indicar el primer día de un mes no futuro.» |
+| 404 | Centro inexistente | «El centro de costo no existe.» |
+| 404 | Activo inexistente | «El activo fijo no existe.» |
+| 409 | Centro inactivo al alta | «El centro de costo debe estar activo para registrar el activo fijo.» |
+| 409 | Mes anterior pendiente | «No se puede registrar la depreciación mientras haya meses anteriores pendientes.» |
+| 409 | Baja anterior al historial mensual existente | «La fecha de baja es incompatible con las depreciaciones ya registradas.» |
+| 409 | Baja repetida | «El activo fijo ya fue dado de baja.» |
+| 409 | Referencia perdida al guardar | «No se pudo guardar el activo fijo porque una referencia ya no existe.» |
 
-Registro y baja deben coordinarse transaccionalmente por activo. El índice de periodo evita doble depreciación. Si se aprueba un tope acumulado, serializar el cálculo y la escritura para que dos periodos concurrentes no superen la base aprobada. Guardar el cambio de estado y la baja juntos.
+### Precisiones para la revisión final
+
+- **Moneda y fecha de baja.** Confirmar la moneda de alta sin documento de origen y el tratamiento de una baja retroactiva cuando ya existe depreciación posterior. El contrato de revisión preserva el historial y devuelve conflicto en ese caso.
+- **Lote y redondeo.** Confirmar si un activo con un mes pendiente bloquea todo el lote o solo ese activo. El diseño propone rechazo atómico del lote. Acordar cómo acotar la cuota ordinaria cuando su redondeo acumulado agotaría la base antes del último mes. La propuesta limita la cuota al saldo de base sin depreciar y ajusta el último mes.
+
+### Seed, pruebas y smoke
+
+**Seed.** Registrar con códigos y periodos fijos un activo vigente con depreciaciones contiguas, otro para ajuste de redondeo final y un activo dado de baja. Usar un centro del 59 y mantener el seed idempotente por código, periodo y activo de baja.
+
+**Pruebas de integración.**
+
+1. Código `AF-`, categorías, límites de vida útil 1/600, residual en 0 y costo, centro activo y fechas. Probar centro desactivado después del alta sin efecto sobre el historial.
+2. Primer mes, ausencia de saltos, repetición de lote, unicidad, dos lotes competidores y ajuste de última cuota. Verificar que el valor en libros no cae bajo el residual.
+3. Baja por cada motivo, baja repetida y depreciación incluida en el mes de baja y excluida después. Probar baja en el mes de puesta en servicio y baja concurrente con cálculo.
+4. JWT, roles, cada literal, filtros y ausencia de efectos en cuentas por pagar o presupuestos.
+
+**Smoke PostgreSQL.** Dar de alta con centro activo, correr lote mensual en orden, repetir el periodo y verificar el ajuste final. Registrar una baja y comprobar los límites por mes y la unicidad en PostgreSQL. Añadir `request_check`, la validación Python de códigos y cuerpos, y la comprobación de OpenAPI. Ejecutar en una base desechable hasta `SMOKE OK`.
 
 ## 5. Criterios de aceptación (medibles)
 
-| # | Criterio | Cómo se verifica | Umbral |
+| # | Criterio | Verificación | Umbral |
 |---|---|---|---|
-| A1 | Compilación y arquitectura | `dotnet build -warnaserror` y `./scripts/verify.sh` | 0 warnings, gate en verde |
-| A2 | API | Prueba HTTP por literal, JWT, roles aprobados, filtros y paginación. Verificar rutas en OpenAPI y Swagger | Todas pasan |
-| A3 | Alta, cálculo y baja | Centro válido, alta duplicada, periodos de inicio y fin, ejemplo aprobado de residual y redondeo, periodo duplicado, baja y depreciación posterior | Cuotas y estados pactados |
-| A4 | PostgreSQL y carreras | Dos registros del mismo periodo y depreciación frente a baja simultánea. Validar fechas, escala y persistencia completa | Un efecto por periodo, sin escritura parcial |
-| A5 | Database First | Aplicar SQL local, seed idempotente, scaffold y smoke con alta, depreciación autorizada y baja | `SCAFFOLD AL DÍA` y `SMOKE OK` |
+| A1 | Arquitectura y compilación | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `./scripts/verify.sh` | Gate en verde |
+| A2 | API y autorización | Pruebas de cada literal, rutas, JWT y roles G1 | Lecturas autenticadas. Escrituras FINANZAS/ADMIN. Cada rechazo conserva los datos. |
+| A3 | Alta | Código, catálogo, centro y límites de costo, residual y vida útil | Datos válidos y centro activo al crear |
+| A4 | Cálculo mensual | Sin saltos, lote repetido y redondeo final | Una depreciación por mes/activo y base ajustada al fin de vida |
+| A5 | Baja | Motivos, fecha, mes incluido y repetición | Baja definitiva e historial conservado |
+| A6 | Database First | Aplicar SQL local, repetir seed, comprobar scaffold y ejecutar smoke | SCAFFOLD AL DÍA y SMOKE OK |
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobar §2 y validar ejemplos de depreciación y baja con Lukas.
-- [ ] Confirmar el contrato del 59, numeración, SQL y scaffold.
-- [ ] Implementar y verificar A1–A5 con los casos aprobados.
+- [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
+- [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
+- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
+- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
-| 2026-11-22 | Revisión documental | Pendiente de aprobación | El enunciado identifica altas, bajas y depreciación. Modelo, fórmula y calendario sometidos a revisión. |
+| 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
+| 2026-11-23 | Validación funcional de la spec aprobada | Pendiente | Esta fase revisa documentación. La ejecución de §5 corresponde a la rama de implementación. |

@@ -1,156 +1,152 @@
-# Revisión de propuestas de Finanzas — módulos 52 a 60
+# Revisión de Finanzas — módulos 52 a 60
 
-**Estado.** Nueve propuestas para revisión de Lukas. Responsable de los módulos: Leonel Portillo, según [asignaciones](asignaciones.md#resumen-por-persona). Las decisiones de producto se responden por número en §2 de cada spec.
+**Estado.** Las nueve specs están aprobadas para la v0 por Lukas el 2026-11-23. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente. Responsable de los módulos: Leonel Portillo. [Respuesta oficial](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) · [Asignaciones](asignaciones.md#resumen-por-persona)
 
 ## Base revisada
 
-| Fuente | Hecho comprobado | Relevancia |
+| Base | Disponible | Uso en la v0 |
 |---|---|---|
-| [Enunciado](../enunciado.md#2-los-80-módulos) y [arquitectura](../arquitectura.md#los-80-módulos-8-dominios) | Identifican los nueve módulos del dominio y mencionan su alcance general. | Los ciclos, fórmulas y permisos de las propuestas requieren aprobación. |
-| 51 Facturación electrónica, rama publicada `fb84529` | El SQL `007` crea `Facturas` y `DetallesFactura`. La factura o boleta pertenece a un cliente, guarda moneda, total, estado y vencimiento opcional. Las líneas guardan cantidades, importes y porcentaje de impuesto. La emisión y la anulación son estados internos. El PR #48 está fuera de la base documental `e48a190`. | 52 y 53 deben revisar el contrato que se integre. La evidencia local con el 51 temporal está en [52 §7](../specs/modulo52-notas-credito-debito-backend.md#7-registro-de-verificación). |
-| 75 Impuestos y tasas, [esquema inicial](../../database/001-esquema-inicial.sql) y [cálculo vigente](../../src/TitanGlobal.Application/UseCases/Modulo75_ImpuestosTasas/CalcularImpuestoUseCase.cs) | `Impuesto` y `TasaImpuesto` guardan identidad y vigencia. El 75 calcula con una tasa activa para la fecha de operación. El 51 guarda el porcentaje que aplicó a cada línea. | Aprobar cuándo usar una tasa histórica o vigente antes de definir importes del 52. Autorizar por separado cualquier cálculo tributario adicional del 54. |
-| [Proveedores](../specs/12-modulo11-proveedores-backend.md) y [Órdenes de abastecimiento](../specs/16-modulo15-ordenes-abastecimiento-backend.md) | El 11 tiene un maestro con RUC único. El 15 tiene proveedor, estados y cantidades/precios. Recibir una orden registra el cambio de estado. | El 54 requiere el maestro. La orden puede servir de referencia documental si se aprueba. |
-| [Centros de trabajo](../specs/modulo33-centros-trabajo-backend.md) y [Contratos laborales](../specs/modulo62-contratos-laborales-backend.md) | Existen maestros de manufactura y empleados. La spec 62 muestra cómo registrar decisiones aprobadas y evidencias de aceptación. | El 59 propone un catálogo analítico propio. El 57 podría vincular custodio o beneficiario con el maestro de empleados. |
-| [Auditoría](../specs/45-modulo77-auditoria-transaccional-backend.md) y [autenticación JWT](../specs/51-autenticacion-jwt.md) | Hay trazabilidad de cambios y autenticación obligatoria para los nuevos recursos. | Cada spec debe indicar qué operaciones requieren roles y qué eventos conservan historial funcional. |
-
-El [borrador del 75](../specs/modulo75-impuestos-tasas-backend.md) aporta el contexto funcional. Para la arquitectura y persistencia de este conjunto rigen las reglas vigentes del repositorio y los contratos del backend integrado.
+| `origin/main` en `914a576` | Clientes (01), Proveedores (11), Órdenes de abastecimiento (15), Empleados (61), Impuestos y tasas (75), JWT y auditoría transversal. El seed registra los roles 1 a 6. | El 54 usa 11 y referencia opcional de 15, el 57 usa 61 como custodio y el 59 lo usa como responsable opcional. G1 agrega el rol 7 con el 52. |
+| [PR #48](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/48), `fb84529` | Facturas y detalles del 51 mediante el SQL `007`. Estado, cliente, moneda, vencimiento opcional y tasa aplicada por línea. | Disponible como base temporal para 52/53. Verificar el contrato integrado antes de fusionar sus backends. |
+| Rama `leonel/modulo52-notas-credito-debito`, `e005686` y `7a2057f` | Avance provisional del 52. El anexo registra 1107 pruebas de backend, 543 de frontend, scaffold al día y smoke previo. | La diferencia con el contrato aprobado se detalla al final. Aún se requiere implementar y validar la spec definitiva. |
+| [Spec 62](../specs/modulo62-contratos-laborales-backend.md) | Modelo de estructura, numeración, mensajes y evidencias. | Referencia técnica y documental. |
 
 ## Reglas del repositorio
 
-- La implementación aprobada seguirá Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. Los casos de uso concretos terminados en `UseCase` se registran por reflexión. Application contiene las validaciones y usa `ReglaNegocioException` y `CodigosEstado`. Los controladores se limitan a HTTP. [Arquitectura](../arquitectura.md#estilo-y-estructura-en-cuatro-capas) · [Guía de módulo](crear-modulo.md)
-- Cada módulo agrega su SQL numerado, lo aplica a PostgreSQL local y genera las entidades `partial` y `TitanGlobalDbContext` con el scaffold oficial. Los archivos ya fusionados y los generados se rigen por la política Database First. Los nombres candidatos deben comprobarse con el pluralizador. Si se necesita un mapeo nuevo, documentar el alcance y revisar el diff de las navegaciones inversas. [Spec técnica de scaffold](../specs/52-database-first-scaffold.md)
-- Normalizar instantes con `FechasUtc`. Separar el instante de auditoría de la fecha que el negocio usa para corte, vencimiento o periodo. Validar escala, rango y desbordamiento antes de persistir. Los tamaños y escalas candidatos de cada spec se ratifican según los datos requeridos.
-- Usar JWT, JSON en camelCase y errores `{ StatusCode, Message }`. Las acciones `POST` y `PUT` sin cuerpo llevan `[PermitirCuerpoVacio]`. Cada literal en las propuestas espera aprobación. La pertenencia del módulo al catálogo de roles sirve de referencia. La autorización de escritura requiere decidir permisos concretos.
-- El `IUnitOfWork` actual ofrece `Repository<T>()` y `CompleteAsync()`. El guardado traduce unicidad y FK de PostgreSQL mediante `ViolacionRestriccionException`. Un control previo en LINQ carece de protección contra carreras por sí solo. Donde se aprueben topes, secuencias o cierre concurrente, establecer la garantía en persistencia y probarla con dos contextos reales antes de dar esa operación por cubierta. Si se necesita ampliar el puerto, acordar el cambio y su traducción de errores antes de implementarlo. [Puerto](../../src/TitanGlobal.Domain/Repositories/IUnitOfWork.cs) · [Implementación](../../src/TitanGlobal.Infrastructure/Repositories/Implementation/UnitOfWork.cs)
-- El futuro gate incluye compilación sin warnings, reglas de arquitectura, pruebas y `verify.sh`. Los casos HTTP cubren uso nominal, límites, cada literal, JWT, permisos aprobados e inexistencias. PostgreSQL verifica constraints, precisión, carreras y atomicidad. Cada módulo agrega seed idempotente y comprobaciones con `request_check` y su validación Python, hasta `SMOKE OK`. [Guía de seed, smoke y gate](crear-modulo.md#9-seed-y-smoke)
+- Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. Los casos de uso se registran por reflexión. Application valida mediante `ReglaNegocioException` y `CodigosEstado`, sin dependencias HTTP. Los controladores delegan. [Arquitectura](../arquitectura.md#estilo-y-estructura-en-cuatro-capas)
+- Database First. Aplicar solo el SQL local y generar entidades `partial` y DbContext con el scaffold. Revisar las navegaciones e índices generados. Conservar los scripts fusionados. [Spec técnica de scaffold](../specs/52-database-first-scaffold.md)
+- JWT, JSON camelCase, errores `{ StatusCode, Message }` y `[PermitirCuerpoVacio]` en acciones sin cuerpo. Los literales de autenticación conservan «Debe iniciar sesión para acceder a este recurso.» (401) y «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.» (403). Probar también los literales de negocio revisados. `IUnitOfWork` traduce unicidad y FK. Las comprobaciones de saldo, estado y topes comparten la transacción de escritura. [Guía de módulo](crear-modulo.md)
+- Añadir seed idempotente y checks con `request_check` y validación Python. Verificar PostgreSQL desechable, con pruebas concurrentes donde la integridad dependa de ello. Exigir `SCAFFOLD AL DÍA`, `SMOKE OK` y gate completo antes de integrar. [Guía de seed y smoke](crear-modulo.md#9-seed-y-smoke)
 
-**Numeración.** La [tabla de relevo §8](relevo.md#8-números-de-los-scripts-de-base-de-datos), actualizada por el PR #50, reserva del `010` al `023`. El siguiente número general es `024`. Las nueve specs usan `NNN` y mantienen la numeración definitiva pendiente. Cada rama funcional verifica el siguiente número libre y registra su propia fila al incorporar su script.
+**Numeración SQL.** El 52 tiene asignado `024-modulo52-notas-credito-debito.sql`. La fila del 52 se registra en su rama de backend. El PR #57 reserva hasta `033`; en la base consultada se toma el siguiente libre a partir de `034`. Del 53 al 60, asignar al crear cada script y registrar solo su propia fila. [Relevo actualizado](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/914a5764d6ae04fd6dd7d081d1679f490963c4a5/docs/equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos)
+
+## Reglas generales G1 a G9
+
+| Regla | Aplicación y excepciones |
+|---|---|
+| G1 | JWT para toda consulta. Las escrituras de los nueve módulos requieren `FINANZAS` o `ADMIN`. El seed del 52 agrega `FINANZAS` con Id 7. |
+| G2 | PEN o USD en la moneda del origen. 52/53 heredan factura, 54 captura la de factura de proveedor, 55 define la de la cuenta y 56 la hereda. 58 usa PEN fijo. 57/60 requieren confirmar moneda al carecer de documento de origen. 59 no usa moneda. Conversión y dependencia del 74 quedan fuera. |
+| G3 | Una empresa en los nueve módulos. Sin sucursales. |
+| G4 | Montos `numeric(18,2)`, cantidades `numeric(18,4)` donde existan y redondeo de 2 decimales por línea con `MidpointRounding.AwayFromZero` antes de sumar. El 52 conserva la escala de tasa del 51, el 60 ajusta la última cuota y el 59 carece de importes. |
+| G5 | El servidor asigna folios internos mediante `TMP-` y código definitivo, sin series propias. 52 usa NC/ND con secuencias independientes y 60 usa AF. 57/58 describen prefijos internos propuestos. 54 conserva serie y número del proveedor, la cuenta bancaria del 55 conserva su número externo y 59 usa un código de catálogo. 53 y 56 conservan claves de origen y periodo. |
+| G6 | Escrituras en el módulo dueño. Referencias manuales y FKs del contrato aprobado, incluidas las obligatorias expresas. Las guardas compartidas conservan integridad sin crear operaciones en otro módulo. Sin contabilidad. |
+| G7 | Sin `DELETE`. Anulaciones o reversiones lógicas con motivo y sin reapertura. El 59 permite reactivar el maestro por decisión expresa. La baja de 60 es irreversible. |
+| G8 | Fechas efectivas `date` hasta hoy e instantes `timestamptz` normalizados con `FechasUtc`. Corte de Lima expreso en el 53. El vencimiento derivado del 53 puede ser futuro. La fecha pactada del 54 requiere la precisión indicada en su spec. |
+| G9 | Motivos de texto libre obligatorio entre 3 y 300 caracteres en los flujos que los piden. La baja de activos usa el catálogo del 60. |
 
 ## Matriz de dependencias entre módulos
 
-La fila consume al módulo de la columna. **Base** es requisito del núcleo propuesto. **Opcional** corresponde a una integración que espera aprobación. Los guiones indican que el alcance propuesto no requiere esa relación.
+Los requisitos previos corresponden al núcleo. La columna «Posterior» indica guardas o consumos que se completan al existir el módulo dependiente.
 
-| Consumidor | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59 | 60 | Dependencias externas |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 52 Notas de crédito y débito | — | — | — | — | — | — | — | — | — | 51 base, 75 según la fuente de tasa aprobada, 76 si se usa numeración común |
-| 53 Cuentas por cobrar | Base | — | — | Opcional | — | — | — | — | — | 01 mediante el 51, 51 base |
-| 54 Cuentas por pagar | — | — | — | Opcional | — | — | — | Opcional | — | 11 base, 15 o 19 si se aprueban los vínculos de origen, 73 y 75 según alcance |
-| 55 Tesorería y bancos | — | — | — | — | — | — | — | — | — | 73 y 74 opcionales |
-| 56 Conciliación bancaria | — | — | — | Base | — | — | — | — | — | — |
-| 57 Caja chica | — | — | — | Opcional | — | — | — | Opcional | — | 61 y 73 opcionales |
-| 58 Presupuestos | — | — | Opcional | Opcional | — | Opcional | — | Base | Opcional | 73 y 80 opcionales |
-| 59 Centros de costo | — | — | — | — | — | — | — | — | — | 33, 61 y 73 opcionales |
-| 60 Activos fijos | — | — | Opcional | — | — | — | — | Base | — | 80 opcional |
+| Módulo | Disponible en main | Requisito previo de implementación | Posterior |
+|---|---|---|---|
+| 52 Notas de crédito y débito | 75 como contexto. Se usa tasa histórica del 51. | 51, disponible en PR #48 | 53 protege la anulación de créditos aplicados |
+| 53 Cuentas por cobrar | 01 a través del 51 | 51 y 52 para facturas y notas de crédito | — |
+| 54 Cuentas por pagar | 11 requerido, 15 como referencia opcional | — | — |
+| 55 Tesorería y bancos | — | — | 56 completa la guarda de reversión de movimiento conciliado |
+| 56 Conciliación bancaria | — | 55 para cuenta y movimiento | — |
+| 57 Caja chica | 61 como custodio obligatorio | — | — |
+| 58 Presupuestos | — | 59 para altas de partidas en centro activo | — |
+| 59 Centros de costo | 61 como responsable opcional | — | 58 y 60 consumen el catálogo |
+| 60 Activos fijos | — | 59 para el centro obligatorio al alta | — |
 
-### Contratos que necesitan revisión conjunta
+El rol de escritura de G1 es transversal. El seed del 52 lo habilita para el conjunto. El 54 puede consultar al 15 por FK, sin cambiar la orden. El 58 y 60 conservan la referencia histórica al centro.
 
-| Relación | Límite del contrato propuesto | Decisiones vinculadas |
+### Guardas entre módulos
+
+| Operación | PR de implementación | Cambio y límite |
 |---|---|---|
-| 51 → 52 → 53 | El 51 conserva venta y totales originales. El 52 registra la nota. El 53 aplica su efecto sobre una sola cuenta mediante la identidad de la nota. Una nota emitida y una nota aplicada son eventos distintos. | 52.1, 52.2, 52.5, 52.6 y 53.1, 53.3 |
-| 53, 54, 57 con 55 | Cada módulo conserva su obligación, aplicación o fondo. El 55 mantiene el movimiento bancario. Antes de añadir un enlace, decidir qué operación crea los registros, cómo se revierte y cómo evitar un efecto duplicado ante reintentos. | 53.5, 54.5, 55.6 y 57.4 |
-| 55 → 56 | El 55 conserva los movimientos registrados y sus reversiones. El 56 administra extractos y coincidencias. Acordar la elegibilidad y el efecto de una reversión durante o después del cierre. | 55.2, 55.4 y 56.2, 56.3, 56.4 |
-| 59 → 58, 60 y consumidores opcionales | El 59 mantiene la identidad y vigencia del centro. Los consumidores validan elegibilidad e historial según su contrato. Acordar las garantías si la baja bloquea nuevas asignaciones concurrentes. | 59.1, 59.3, 58.2, 60.1, 54.5 y 57.4 |
-| 54, 55, 57 o 60 → 58 | La partida y su ejecución pertenecen al 58. Si se conecta una fuente, acordar la identidad del evento que ejecuta. El documento, su pago y una reposición pueden reflejar el mismo hecho económico. | 54.5, 57.4, 58.4 y 60.5 |
+| Anular factura con nota emitida | 52 | El 51 rechaza con 409. Emisión de nota y anulación de factura comparten bloqueo por factura. |
+| Anular factura con cobros o nota con crédito aplicado | 53 | El 51 comprueba cobros y el 52 comprueba aplicaciones del 53 con HTTP 409. Las tablas nacen en el 53. |
+| Revertir movimiento con coincidencia | 56 | La reversión del 55 devuelve 409. Coordinar protección de coincidencia y reversión. |
+| Crear partida o activo con centro inactivo | 58 y 60 | Comprobar actividad al crear. El 59 conserva las referencias existentes al desactivar el centro. |
 
-## Orden de implementación propuesto
+## Orden de implementación
 
-1. **52, 59, 55 y 54.** Empezar el 52 al confirmar el contrato del 51. El maestro 59, la tesorería 55 y la deuda con proveedor 54 se pueden preparar en paralelo tras sus aprobaciones.
-2. **53, 56 y 57.** El 53 avanza con el 51 y el 52. El 56 espera las cuentas y movimientos del 55. Caja chica puede avanzar con su propio registro y sumar vínculos al 55 o al 59 cuando se aprueben.
-3. **58 y 60.** Ambos se apoyan en el 59. Presupuestos puede iniciar con ejecución explícita. Si el alta de activos se aprueba como fuente automática inicial, terminar el contrato necesario del 60 antes de esa integración.
+1. Integrar el 51 y ajustar el avance del 52 al contrato aprobado. Incorporar G1 y la guarda por notas emitidas.
+2. Con 51 y 52, implementar 53. El 54, 55, 57 y 59 pueden prepararse en paralelo. Integrar sus escrituras con G1.
+3. Con el 55, implementar 56. Con el 59, implementar 58 y 60 en cualquier orden.
 
-Una secuencia posible para un solo responsable es **52 → 59 → 55 → 54 → 53 → 56 → 57 → 58 → 60**. Mientras el 51 esté pendiente de integración, la primera tarea aprobada sin esa dependencia puede avanzar.
+Trabajar cada backend en su propia rama. Separar SQL y entidades en un commit y API, pruebas, seed y smoke en el siguiente.
 
-Después de la revisión de este conjunto, cada módulo parte de su rama de implementación. El primer commit reúne SQL, entidades y persistencia. El segundo reúne DTOs, casos de uso, API y pruebas. Los enlaces opcionales entran en el alcance del módulo consumidor después de acordar el contrato compartido.
+## Matriz de cumplimiento de las 44 decisiones
 
-## Respuestas que se solicitan a Lukas
+Cada fila remite a la decisión en §2 y a su cobertura en §4. Los números T1, T2 y siguientes corresponden al orden de pruebas propuesto en cada spec. La cobertura es documental.
 
-Las 44 entradas reproducen el número, el tema y el texto de «Qué debe confirmar Lukas» en §2 de cada propuesta. Se puede responder por número. Para cálculos, adjuntar entradas y resultados esperados. Para permisos, indicar quién puede operar en cada caso.
-
-### [52 Notas de crédito y débito](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
+| Nº | Decisión en §2 | Cobertura documentada |
 |---|---|---|
-| 52.1 | Tipos y comprobante de origen | Tipos de nota, factura o boleta admitidas, estados elegibles, cuándo se verifica el estado y cómo coordinar la anulación del comprobante con el 51 si existen notas. |
-| 52.2 | Estados y transiciones de la nota | Alta directa o borrador, transiciones, fechas, motivo y efectos de anular una nota. |
-| 52.3 | Motivos y permisos | Catálogo o texto libre, códigos, obligatoriedad y longitudes por campo, y roles por operación. |
-| 52.4 | Numeración | Ámbito de unicidad, series admitidas, captura manual o correlativo automático, momento de asignación y reintentos. |
-| 52.5 | Líneas y cálculo | Modalidad global o por línea por motivo, componentes de entrada y calculados, reglas tributarias aplicables, base, exenciones, fuente de tasa, fórmula, escala y orden de redondeo. |
-| 52.6 | Topes y aplicación en cartera | Qué estados computan, si hay topes por monto o cantidad, efecto de débitos y anulaciones, qué nota es elegible para cartera y cómo se coordina una anulación después de aplicarla. Confirmar la precedencia de validaciones y errores. |
+| 52.1 | [Comprobante de origen](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Origen del 51 y guarda de anulación (T1, T4) |
+| 52.2 | [Ciclo](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Ciclo, fecha de emisión y guarda al incorporar 53 (T1, T5) |
+| 52.3 | [Motivos y acceso](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Motivos y autorización (T2) |
+| 52.4 | [Correlativos](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Folios, secuencias e índice (T1, smoke) |
+| 52.5 | [Detalle y cálculo](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Líneas, tasa histórica y redondeo (T3) |
+| 52.6 | [Topes y orden de validación](../specs/modulo52-notas-credito-debito-backend.md#2-fuera-de-alcance) | Precedencia, acumulados y elegibilidad (T2, T4, T5) |
+| 53.1 | [Apertura](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance) | Alta, FK única y vencimiento (T1) |
+| 53.2 | [Cobros y reversión](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance) | Medio, fecha, saldo y reversión (T1, T2) |
+| 53.3 | [Aplicaciones y anulaciones](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance) | Aplicación y guardas del 51, 52 y 53 (T3, T4) |
+| 53.4 | [Cartera](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance) | Corte de Lima, clientes y tramos (T4) |
+| 53.5 | [Acceso](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance) | Autorización y separación bancaria (T5) |
+| 54.1 | [Nacimiento](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance) | Proveedor activo y FK opcional del 15 (T1) |
+| 54.2 | [Identidad e importes](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance) | Clave normalizada y base más impuesto (T1, T2) |
+| 54.3 | [Pagos y anulación](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance) | Saldo, reversión y anulación (T2) |
+| 54.4 | [Cartera](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance) | Vencimiento, tramos y pago directo (T1, T2, T3) |
+| 54.5 | [Independencia](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance) | Datos y efectos propios del módulo (T3) |
+| 55.1 | [Cuentas](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Clave banco/número, tipos y moneda (T1) |
+| 55.2 | [Ingreso y egreso](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Movimientos, fecha y saldo (T2) |
+| 55.3 | [Transferencia](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Dos movimientos atómicos (T3) |
+| 55.4 | [Conciliación](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Guarda de reversión con 56 (T3, smoke del 56) |
+| 55.5 | [Cheques](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Fuera de alcance y rutas sin cheques |
+| 55.6 | [Referencias](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance) | Referencia de texto y datos locales (T4) |
+| 56.1 | [Carga y edición](../specs/modulo56-conciliacion-bancaria-backend.md#2-fuera-de-alcance) | JSON, periodos, solapamiento y edición (T1) |
+| 56.2 | [Coincidencia](../specs/modulo56-conciliacion-bancaria-backend.md#2-fuera-de-alcance) | Coincidencia manual exacta (T2) |
+| 56.3 | [Cierre](../specs/modulo56-conciliacion-bancaria-backend.md#2-fuera-de-alcance) | Cierre, pendientes y diferencia (T3) |
+| 56.4 | [Acceso y reversión](../specs/modulo56-conciliacion-bancaria-backend.md#2-fuera-de-alcance) | Acceso y guarda del 55 (T2, T4) |
+| 57.1 | [Fondo](../specs/modulo57-caja-chica-backend.md#2-fuera-de-alcance) | Nombre, custodio, monto y cierre (T1, T2) |
+| 57.2 | [Movimientos](../specs/modulo57-caja-chica-backend.md#2-fuera-de-alcance) | Comprobante, saldo y reversión (T2) |
+| 57.3 | [Rendición](../specs/modulo57-caja-chica-backend.md#2-fuera-de-alcance) | Rendición y reposición manual (T2, T3) |
+| 57.4 | [Acceso](../specs/modulo57-caja-chica-backend.md#2-fuera-de-alcance) | Acceso y separación de 58/59 (T4) |
+| 58.1 | [Presupuesto](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance) | Año calendario, nombre y PEN (T1) |
+| 58.2 | [Partidas](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance) | Centro activo y categoría de texto (T1, T2) |
+| 58.3 | [Ciclo](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance) | Ciclo y edición de montos (T2) |
+| 58.4 | [Ejecución](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance) | Ejecución manual y exceso permitido (T2) |
+| 58.5 | [Disponible](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance) | Disponible por año y centro (T3) |
+| 59.1 | [Identidad y responsable](../specs/modulo59-centros-costo-backend.md#2-fuera-de-alcance) | Código y empleado opcional, sin 33 (T1) |
+| 59.2 | [Árbol](../specs/modulo59-centros-costo-backend.md#2-fuera-de-alcance) | Profundidad, ciclos e hijos activos (T2, T3) |
+| 59.3 | [Vigencia](../specs/modulo59-centros-costo-backend.md#2-fuera-de-alcance) | Actividad, historial y reactivación (T3) |
+| 59.4 | [Acceso y consultas](../specs/modulo59-centros-costo-backend.md#2-fuera-de-alcance) | Autorización y consultas sin importes (T1, T4) |
+| 60.1 | [Identidad y alta](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance) | Código, catálogo, centro, costo y fecha (T1) |
+| 60.2 | [Depreciación lineal](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance) | Método lineal, vida útil, residual y redondeo (T1, T2) |
+| 60.3 | [Periodicidad](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance) | Lote mensual, continuidad y unicidad (T2, smoke) |
+| 60.4 | [Baja](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance) | Motivo, fecha y mes de baja (T3) |
+| 60.5 | [Acceso y alcance](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance) | Acceso y separación de 54/58 (T4) |
 
-### [53 Cuentas por cobrar](../specs/modulo53-cuentas-por-cobrar-backend.md#2-fuera-de-alcance)
+## Precisiones pendientes de la revisión final
 
-| Nº | Tema | Qué debe confirmar Lukas |
+| Módulo | Por confirmar o coordinar |
+|---|---|
+| 52 | Precio, descuentos y orden del redondeo de base e impuesto. Campos editables. Carrera preexistente de edición/emisión del 51. |
+| 53 | Factura frente a boleta, fecha de origen, cobros revertidos, cuenta con crédito aplicado y precedencia de guardas del 51. |
+| 54 | Vencimiento futuro y relación con la fecha documentaria. Efecto de pagos revertidos en la anulación. |
+| 55 | Reversión atómica de transferencias y saldo de apertura. |
+| 56 | Fórmula de diferencia, conjunto requerido para cerrar y corrección de coincidencia antes del cierre. |
+| 57 | Saldo inicial, tope autorizado, moneda y reversión de gastos rendidos. Selección de gastos. |
+| 58 | Ventana y fechas de ejecución. Corrección de ejecuciones. |
+| 59 | Edición de código o padre, y alta o reactivación con padre inactivo. |
+| 60 | Moneda, baja retroactiva, atomicidad del lote y redondeo con bases pequeñas. |
+
+Los límites de columnas y mecanismos de persistencia documentan el diseño de revisión. Los mensajes de negocio son literales propuestos. Las precisiones listadas quedan abiertas en el PR.
+
+## Diferencias del 52 frente al backend provisional
+
+| Aspecto | Publicado en `e005686` y `7a2057f` | Spec aprobada |
 |---|---|---|
-| 53.1 | Origen | Factura o boleta, estados y condiciones de venta elegibles, apertura explícita o automática, vencimiento ausente y cardinalidad si hay cuotas o letras. |
-| 53.2 | Cobros | Medios y comprobantes exigidos, sobrepago y saldo a favor, reversión parcial o total, fecha admitida y respuesta a un reintento. |
-| 53.3 | Notas y anulaciones | Estado de nota elegible, crédito mayor al saldo, efectos de anular factura o nota ya aplicada, reaplicación y anulación de la cuenta. |
-| 53.4 | Cartera | Fecha y zona de corte, vencimiento en el día, agrupaciones, tramos y alcance de letras o mora. |
-| 53.5 | Acceso e integración | Roles para consultar, registrar y revertir, y si debe existir contabilización bancaria coordinada en la misma operación. |
+| Acceso | JWT general | JWT de lectura. Escritura con `FINANZAS`/Id 7 o `ADMIN` |
+| Numeración | Serie y entero capturados, únicos por tipo/serie/número | NC/ND automáticos y correlativos independientes, sin serie |
+| Datos y montos | Positivo global informado, sin líneas | FK a `DetalleFacturaId`, cantidad de 4 decimales, tasa histórica y cálculo por línea |
+| Límites | Rango y escala del importe global | Topes acumulados de cantidad y total en créditos emitidos por línea. Débitos sin tope |
+| Motivos y fechas | Motivos hasta 500 y emisión como instante UTC | Motivos de 3–300 y fecha de negocio al emitir |
+| Estado de factura | Comprueba `Emitida` al crear, editar y emitir | La aprobación exige comprobar al crear y emitir |
+| Anulación | Ciclo lógico y guarda 409 del 51. La carrera de edición/emisión sigue pendiente | Conserva ciclo y guarda. Añade la protección de nota aplicada al integrar 53 |
+| Esquema | SQL `024` del avance provisional | Reserva `024`, con cambios de modelo y pruebas para el contrato definitivo |
 
-### [54 Cuentas por pagar](../specs/modulo54-cuentas-por-pagar-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 54.1 | Fuente | Clases de documento, proveedores admisibles, cuándo nace la deuda, relación con órdenes o recepciones y si se permiten cuotas. |
-| 54.2 | Identidad e importe | Unicidad y normalización, series opcionales, ámbito por emisor o sucursal, moneda, componentes, impuestos y retenciones si se incluyen. |
-| 54.3 | Pagos y anulaciones | Anticipos, sobrepagos, pagos agrupados, formas y evidencias requeridas, reversión parcial, efecto de la anulación y reintentos. |
-| 54.4 | Vencimiento y acceso | Tratamiento de vencimiento ausente, tramos, roles de lectura y escritura y si se exige aprobación antes de pagar. |
-| 54.5 | Integraciones | Si se requiere pago coordinado con 55, clasificación por centro y uso de una obligación como fuente para el 58 o el 60. |
-
-### [55 Tesorería y bancos](../specs/modulo55-tesoreria-bancos-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 55.1 | Cuenta | Ámbito de unicidad, uso de sucursal, datos a almacenar o mostrar, catálogo de monedas y cambios permitidos al haber movimientos. |
-| 55.2 | Movimientos y saldo | Tipos, saldo negativo, fechas admitidas, matriz de roles, aprobaciones y sentido de cada evento. |
-| 55.3 | Transferencias | Transferencias entre monedas, comisiones, quién puede confirmar y si se admite reversión. |
-| 55.4 | Identidad y conciliación | Ámbito de reintentos, qué efectos tiene revertir un movimiento ya conciliado y si requiere coordinación con 56. |
-| 55.5 | Cheques | Si entran en esta entrega, numeración, estados, cuándo afectan saldo, rechazo, anulación y relación con 56. |
-| 55.6 | Vínculos | Qué canales enlazar, creación coordinada o manual, cardinalidad y orden transaccional de los cambios. |
-
-### [56 Conciliación bancaria](../specs/modulo56-conciliacion-bancaria-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 56.1 | Extractos | Formatos admitidos, identidad de extracto e ítem, duplicados entre extractos, periodos superpuestos y correcciones a una carga. |
-| 56.2 | Coincidencias | Criterio de signos, tolerancias, ventana de fechas, agrupaciones, coincidencia automática y elegibilidad de los movimientos del 55, incluidos los vinculados a una reversión. |
-| 56.3 | Cierre | Qué pendientes bloquean, fórmula y tolerancia, quién cierra y si hay reapertura o cierre parcial. |
-| 56.4 | Correcciones y acceso | Política frente a reversión posterior, autorización de registrar, asociar, retirar y cerrar, y efectos sobre conciliaciones cerradas. |
-
-### [57 Caja chica](../specs/modulo57-caja-chica-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 57.1 | Fondo | Ámbito, sucursal, custodio como texto o empleado, monto autorizado, cambio de responsable y condiciones de cierre. |
-| 57.2 | Movimientos | Tipos, gastos y comprobantes admitidos, límites, saldo negativo, reversión, devolución parcial y tratamiento de sobrantes o faltantes. |
-| 57.3 | Rendiciones | Qué operaciones se rinden, plazos, anticipos pendientes, estados, corrección o reapertura y si se puede volver a incluir un egreso. |
-| 57.4 | Acceso e integración | Roles y separación de funciones, validez de una reposición bancaria, obligatoriedad del centro de costo y evento que cuenta como ejecución presupuestaria. |
-
-### [58 Presupuestos](../specs/modulo58-presupuestos-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 58.1 | Periodo, versión y moneda | Calendario, ámbito por empresa o sucursal, versiones simultáneas, unicidad y moneda por presupuesto o partida. |
-| 58.2 | Partidas | Estructura, jerarquía, centro activo en alta o también en ejecución, categorías admitidas y si existe otra dimensión aprobada. |
-| 58.3 | Ciclo | Aprobación, responsables, revisiones, traspasos o ampliaciones, reapertura y relación con CierresPeriodo (80). |
-| 58.4 | Ejecución y disponible | Si cuenta compromiso, devengo, pago u otro evento; fuentes del 54, 55, 57 o 60, identidad, sobrepresupuesto y correcciones. |
-| 58.5 | Consultas y acceso | Agrupaciones, consulta histórica, zonas de corte, roles y alcance por centro. |
-
-### [59 Centros de costo](../specs/modulo59-centros-costo-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 59.1 | Identidad y organización | Unicidad global o por empresa/sucursal, formato y cambios de código, datos y fuente del responsable, y si se requiere relación con los centros de trabajo. |
-| 59.2 | Jerarquía | Árbol, profundidad, tipos de centro, movilidad entre padres, reglas contra ciclos y descendientes de un centro inactivo. |
-| 59.3 | Vigencia y consumidores | Qué consumos requieren centro activo (58, 60 y opcionalmente 54 o 57), qué hacer con operaciones vigentes al desactivar, cómo conservar historia y si habrá reactivación. |
-| 59.4 | Acceso y reportes | Roles de mantenimiento o lectura y si el 59 debe reportar importes o dejar su agregación a cada módulo que los origina. |
-
-### [60 Activos fijos](../specs/modulo60-activos-fijos-backend.md#2-fuera-de-alcance)
-
-| Nº | Tema | Qué debe confirmar Lukas |
-|---|---|---|
-| 60.1 | Alta y asignación | Qué se capitaliza, datos y evidencia, categorías, unicidad por ámbito, obligatoriedad y cambios del centro de costo. |
-| 60.2 | Base, método y moneda | Base capitalizable, valores admitidos, método, vida útil, residual, escala, redondeo y tratamiento del último periodo. |
-| 60.3 | Calendario | Inicio desde puesta en servicio u otro hito, prorrateo, periodos omitidos, cálculo en lote, cierres y fechas de corte. |
-| 60.4 | Baja y corrección | Motivos y estados, última depreciación, reversión o reapertura de bajas y corrección de periodos ya registrados. |
-| 60.5 | Acceso e integraciones | Quién registra, deprecia y autoriza la baja. Si 54 prueba el origen y si el alta, la compra u otro evento alimenta el 58. |
+[Anexo del avance provisional](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/7a2057f4e1d34abdc8a74a2d1605b529b320e063/docs/specs/modulo52-notas-credito-debito-implementacion.md)
