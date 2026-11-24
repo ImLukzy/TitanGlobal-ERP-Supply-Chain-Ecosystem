@@ -87,7 +87,7 @@ Base `api/v1/mantenimientos-preventivos`. JWT obligatorio. JSON en camelCase. Er
 - `EditarMantenimientoPreventivoRequestDto { descripcion, fechaProgramada, duracionHorasPlanificada, frecuenciaDias?, responsable? }`
 - `CompletarMantenimientoPreventivoRequestDto { horasReales, observaciones? }` y `CancelarMantenimientoPreventivoRequestDto { motivo }`
 
-El listado ordena por `FechaProgramada` ascendente y luego por `Id` ascendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los cuatro valores sin distinguir mayúsculas. Las fechas se reciben como día (`2026-12-01`) y se normalizan con `FechasUtc.Normalizar(DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc))`. Los textos opcionales en blanco se guardan como `null`.
+El listado ordena por `FechaProgramada` ascendente y luego por `Id` ascendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los cuatro valores sin distinguir mayúsculas. Las fechas programadas y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada, así que no cambian de día por la zona horaria. `FechaInicioReal` y `FechaFinReal` se asignan con `DateTime.UtcNow`. «Hoy» es `DateOnly.FromDateTime(DateTime.UtcNow)`. Los textos opcionales en blanco se guardan como `null`.
 
 ### Reglas y mensajes literales
 
