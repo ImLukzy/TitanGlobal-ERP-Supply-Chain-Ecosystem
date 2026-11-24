@@ -21,7 +21,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/030-capacitaciones.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/040-capacitaciones.sql` y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades y navegaciones regeneradas, `TitanGlobalDbContext.cs`, `PluralizadorEspanol.cs` si hace falta | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo69_Capacitaciones/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo69_Capacitaciones/AdministrarCursosUseCase.cs`, `AdministrarProgramacionesCursoUseCase.cs`, `ConsultarCapacitacionesUseCase.cs`, `ValidacionCapacitacion.cs` | crear |
@@ -100,7 +100,7 @@ En el 9, `{estado}` es «activo» o «inactivo».
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 030, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 040, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, casos de uso y controladores.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A4 en §7.
 
@@ -110,7 +110,8 @@ En el 9, `{estado}` es «activo» o «inactivo».
 | 2026-11-22 | A1 Gate | Verde salvo el fallo CRLF conocido | `./scripts/verify.sh`: compilación sin advertencias; 1442 superadas, 1 fallo (`RolesPermisosApiTests.CatalogoCoincideConLosOchentaModulosDeArquitectura`, CRLF); `npm --prefix frontend run verify` correcto |
 | 2026-11-22 | A2 K1–K5 | Pasan | 31 pruebas de `tests/TitanGlobal.Api.Tests/Modulo69_Capacitaciones/` (un caso por mensaje, cupo exacto, resultados, certificación, `Vencida`, horas por año) |
 | 2026-11-22 | A3 Roles y auditoría | Pasan | `EscriturasExigenRolRrhhOAdmin...`, `RolesRrhhYAdmin...` y las pruebas de auditoría de cada controlador |
-| 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (030 aplicado), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA»), `./scripts/smoke-postgres.sh` termina en `SMOKE OK`; base local restaurada después |
+| 2026-11-22 | A4 PostgreSQL | `SMOKE OK` | `./scripts/aplicar-bd.sh` (040 aplicado), `./scripts/scaffold.sh --comprobar` («SCAFFOLD AL DÍA»), `./scripts/smoke-postgres.sh` termina en `SMOKE OK`; base local restaurada después |
+| 2026-11-23 | A1 a A4 | cumple | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 040: gate en verde (`dotnet build -warnaserror` 0 advertencias; `dotnet test` 1495 superadas y 1 fallo, el CRLF conocido; `check-rules.sh` sin errores; frontend 1217 pruebas en verde); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `PUT` de curso permite editar siempre (también con programaciones); el código se guarda en mayúsculas y se valida como en el alta.
