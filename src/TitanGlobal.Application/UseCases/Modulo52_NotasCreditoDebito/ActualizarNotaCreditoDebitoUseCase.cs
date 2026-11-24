@@ -13,23 +13,21 @@ public sealed class ActualizarNotaCreditoDebitoUseCase
         _unitOfWork = unitOfWork;
     }
 
-    public Task<NotaCreditoDebitoDetalleDto> ExecuteAsync(int id, GuardarNotaCreditoDebitoRequestDto solicitud)
+    public Task<NotaCreditoDebitoDetalleDto> ExecuteAsync(int id, ActualizarNotaCreditoDebitoRequestDto solicitud)
     {
-        DatosNotaCreditoDebito datos = ValidacionNotaCreditoDebito.ValidarSolicitud(solicitud);
+        string motivo = ValidacionNotaCreditoDebito.NormalizarMotivo(solicitud.Motivo);
+        List<DetalleNotaCreditoDebitoRequestDto> entradas = ValidacionNotaCreditoDebito.ValidarDetalles(solicitud.Detalles);
         return PersistenciaNotaCreditoDebito.ModificarAsync(_unitOfWork, id, ActualizarBorradorAsync);
 
         async Task ActualizarBorradorAsync(NotaCreditoDebito nota)
         {
-            ValidacionNotaCreditoDebito.ValidarFacturaId(datos.FacturaId, nota.FacturaId);
+            List<DetalleNotaCreditoDebito> detalles = await CalculoNotaCreditoDebito.CalcularAsync(
+                _unitOfWork, nota.FacturaId, entradas);
+            CalculoNotaCreditoDebito.AsignarTotales(nota, detalles);
             ValidacionNotaCreditoDebito.ValidarEstado(nota, NotaCreditoDebito.EstadoBorrador);
-            await PersistenciaNotaCreditoDebito.ValidarFacturaEmitidaAsync(_unitOfWork, nota.FacturaId);
-            await PersistenciaNotaCreditoDebito.ValidarNumeracionAsync(_unitOfWork, datos, nota.Id);
 
-            nota.Tipo = datos.Tipo;
-            nota.Serie = datos.Serie;
-            nota.Numero = datos.Numero;
-            nota.Motivo = datos.Motivo;
-            nota.Total = datos.Importe;
+            nota.Motivo = motivo;
+            await PersistenciaNotaCreditoDebito.ActualizarDetallesAsync(_unitOfWork, nota, detalles);
         }
     }
 }

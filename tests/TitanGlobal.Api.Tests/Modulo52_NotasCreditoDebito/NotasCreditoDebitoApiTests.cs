@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
@@ -23,310 +24,427 @@ public class NotasCreditoDebitoApiTests
     private const string EstadoNotaInvalido = "El estado de la nota no permite esta operación.";
     private const string EstadoFacturaInvalido = "El estado de la factura no permite registrar la nota.";
     private const string NotaInexistente = "La nota de crédito o débito no existe.";
-    private const string NumeroDuplicado = "Ya existe una nota con la misma serie y número.";
+    private const string MotivoInvalido = "El motivo debe tener entre 3 y 300 caracteres.";
+    private const string ImporteInvalido = "La cantidad o el importe de la nota no es válido.";
+    private const string DetalleInvalido = "Indique al menos una línea válida y sin duplicados.";
+    private const string FiltroInvalido = "Los filtros o la paginación de notas no son válidos.";
+    private const string SinPermiso = "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.";
     private readonly HttpClient _cliente;
+    private readonly OrdenesCompraApiFactory _fabrica;
 
     public NotasCreditoDebitoApiTests(OrdenesCompraApiFactory fabrica)
     {
+        _fabrica = fabrica;
         _cliente = fabrica.CreateClient();
         fabrica.SeedDatabase();
         RestablecerDatos(fabrica);
     }
 
     [Theory]
-    [InlineData("Credito", "Factura", "PEN")]
-    [InlineData("Debito", "Boleta", "USD")]
-    public async Task AltaConsultaEdicionYCicloConservanLosImportesDelComprobante(
-        string tipo, string tipoComprobante, string moneda)
+    [InlineData("Credito", "Factura", "PEN", "NC-000001")]
+    [InlineData("Debito", "Boleta", "USD", "ND-000001")]
+    public async Task AltaEdicionEmisionYAnulacionConservanElComprobante(
+        string tipo, string tipoComprobante, string moneda, string numero)
     {
         FacturaDetalleDto factura = await CrearFacturaAsync(1, tipoComprobante, moneda);
-        GuardarNotaCreditoDebitoRequestDto solicitud = Solicitud(factura.Id, tipo: tipo);
-        solicitud.Serie = " nc52 ";
+        CrearNotaCreditoDebitoRequestDto solicitud = Solicitud(factura, tipo);
         solicitud.Motivo = " Ajuste informado ";
         using HttpResponseMessage alta = await _cliente.PostAsJsonAsync(RutaNotas, solicitud);
-        NotaCreditoDebitoDetalleDto borrador = await LeerAsync<NotaCreditoDebitoDetalleDto>(alta, HttpStatusCode.Created);
-        Assert.Equal($"{RutaNotas}/{borrador.Id}", alta.Headers.Location?.AbsolutePath);
-        Assert.Equal(factura.Id, borrador.FacturaId);
-        Assert.Equal(factura.ClienteId, borrador.ClienteId);
-        Assert.Equal(tipoComprobante, borrador.FacturaTipoComprobante);
-        Assert.Equal(SerieFacturas, borrador.FacturaSerie);
-        Assert.Equal(1, borrador.FacturaNumero);
-        Assert.Equal(tipo, borrador.Tipo);
-        Assert.Equal("NC52", borrador.Serie);
-        Assert.Equal(moneda, borrador.Moneda);
-        Assert.Equal("Ajuste informado", borrador.Motivo);
-        Assert.Equal(5.25m, borrador.Total);
-        Assert.Equal("Borrador", borrador.Estado);
-        Assert.Equal(DateTimeKind.Utc, borrador.FechaCreacion.Kind);
-        Assert.Null(borrador.FechaEmision);
+        NotaCreditoDebitoDetalleDto nota = await LeerAsync<NotaCreditoDebitoDetalleDto>(alta, HttpStatusCode.Created);
+        Assert.Equal($"{RutaNotas}/{nota.Id}", alta.Headers.Location?.AbsolutePath);
+        Assert.Equal(numero, nota.Numero);
+        Assert.Equal(factura.Id, nota.FacturaId);
+        Assert.Equal(factura.ClienteId, nota.ClienteId);
+        Assert.Equal(tipoComprobante, nota.FacturaTipoComprobante);
+        Assert.Equal(moneda, nota.Moneda);
+        Assert.Equal("Ajuste informado", nota.Motivo);
+        Assert.Equal("Borrador", nota.Estado);
+        Assert.Equal(5.25m, nota.Total);
+        Assert.Equal(DateTimeKind.Utc, nota.FechaCreacion.Kind);
+        Assert.Null(nota.FechaEmision);
 
-        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}/{borrador.Id}");
-        Assert.Equal(borrador.Id, (await LeerAsync<NotaCreditoDebitoDetalleDto>(consulta)).Id);
+        LineaNotaCreditoDebitoDto linea = Assert.Single(nota.Detalles);
+        Assert.Equal(Assert.Single(factura.Detalles).Id, linea.DetalleFacturaId);
+        Assert.Equal(0.25m, linea.Cantidad);
+        ActualizarNotaCreditoDebitoRequestDto cambio = Cambio(factura, 0.5m, 17m);
+        using HttpResponseMessage editada = await _cliente.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", cambio);
+        NotaCreditoDebitoDetalleDto actualizada = await LeerAsync<NotaCreditoDebitoDetalleDto>(editada);
+        Assert.Equal(8.50m, actualizada.Total);
+        Assert.Equal(nota.Numero, actualizada.Numero);
+        Assert.Equal(nota.FechaCreacion, actualizada.FechaCreacion);
+        Assert.Equal(linea.Id, Assert.Single(actualizada.Detalles).Id);
 
-        solicitud.Importe = 8.50m;
-        solicitud.Motivo = "Ajuste editado";
-        using HttpResponseMessage edicion = await _cliente.PutAsJsonAsync($"{RutaNotas}/{borrador.Id}", solicitud);
-        NotaCreditoDebitoDetalleDto editada = await LeerAsync<NotaCreditoDebitoDetalleDto>(edicion);
-        Assert.Equal(8.50m, editada.Total);
-        Assert.Equal("Ajuste editado", editada.Motivo);
-        Assert.Equal(borrador.FechaCreacion, editada.FechaCreacion);
-
-        using HttpResponseMessage emision = await _cliente.PostAsync($"{RutaNotas}/{borrador.Id}/emitir", null);
-        NotaCreditoDebitoDetalleDto emitida = await LeerAsync<NotaCreditoDebitoDetalleDto>(emision);
+        NotaCreditoDebitoDetalleDto emitida = await EmitirNotaAsync(nota.Id);
         Assert.Equal("Emitida", emitida.Estado);
-        Assert.Equal(DateTimeKind.Utc, emitida.FechaEmision?.Kind);
-        Assert.Equal(8.50m, emitida.Total);
-        await VerificarErrorAsync(
-            await _cliente.PutAsJsonAsync($"{RutaNotas}/{borrador.Id}", solicitud),
-            HttpStatusCode.Conflict, EstadoNotaInvalido);
-        await VerificarErrorAsync(
-            await _cliente.PostAsync($"{RutaNotas}/{borrador.Id}/emitir", null),
-            HttpStatusCode.Conflict, EstadoNotaInvalido);
+        Assert.Equal(DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+            TimeZoneInfo.FindSystemTimeZoneById("America/Lima"))), emitida.FechaEmision);
 
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{RutaFacturas}/{factura.Id}/anular", new { motivo = "Anulación solicitada" }),
-            HttpStatusCode.Conflict, "No se puede anular un comprobante con notas emitidas.");
-        using HttpResponseMessage facturaProtegida = await _cliente.GetAsync($"{RutaFacturas}/{factura.Id}");
-        FacturaDetalleDto despuesDeRechazo = await LeerAsync<FacturaDetalleDto>(facturaProtegida);
-        Assert.Equal("Emitida", despuesDeRechazo.Estado);
-        VerificarImportes(factura, despuesDeRechazo);
+        await VerificarErrorAsync(await _cliente.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", cambio),
+            HttpStatusCode.Conflict, EstadoNotaInvalido);
+        await VerificarErrorAsync(await _cliente.PostAsync($"{RutaNotas}/{nota.Id}/emitir", null),
+            HttpStatusCode.Conflict, EstadoNotaInvalido);
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync($"{RutaFacturas}/{factura.Id}/anular",
+            new { motivo = "Motivo de anulación" }), HttpStatusCode.Conflict,
+            "No se puede anular un comprobante con notas emitidas.");
 
-        using HttpResponseMessage anulacion = await _cliente.PostAsJsonAsync(
-            $"{RutaNotas}/{borrador.Id}/anular", new { motivo = " Rectificación interna " });
-        NotaCreditoDebitoDetalleDto anulada = await LeerAsync<NotaCreditoDebitoDetalleDto>(anulacion);
+        using HttpResponseMessage facturaOriginal = await _cliente.GetAsync($"{RutaFacturas}/{factura.Id}");
+        FacturaDetalleDto comprobante = await LeerAsync<FacturaDetalleDto>(facturaOriginal);
+        Assert.Equal("Emitida", comprobante.Estado);
+        VerificarImportes(factura, comprobante);
+
+        NotaCreditoDebitoDetalleDto anulada = await AnularNotaAsync(nota.Id);
         Assert.Equal("Anulada", anulada.Estado);
         Assert.Equal(emitida.FechaEmision, anulada.FechaEmision);
-        Assert.Equal(DateTimeKind.Utc, anulada.FechaAnulacion?.Kind);
         Assert.Equal("Rectificación interna", anulada.MotivoAnulacion);
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{RutaNotas}/{borrador.Id}/anular", new { motivo = "Reintento" }),
-            HttpStatusCode.Conflict, EstadoNotaInvalido);
+        Assert.Equal(DateTimeKind.Utc, anulada.FechaAnulacion?.Kind);
+        Assert.Equal(linea.Id, Assert.Single(anulada.Detalles).Id);
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular",
+            new { motivo = "Segunda anulación" }), HttpStatusCode.Conflict, EstadoNotaInvalido);
+        using HttpResponseMessage borrado = await _cliente.DeleteAsync($"{RutaNotas}/{nota.Id}");
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, borrado.StatusCode);
+        using HttpResponseMessage reabrir = await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/reabrir", new { });
+        Assert.Equal(HttpStatusCode.NotFound, reabrir.StatusCode);
 
-        using HttpResponseMessage anularFactura = await _cliente.PostAsJsonAsync(
-            $"{RutaFacturas}/{factura.Id}/anular", new { motivo = "Comprobante rectificado" });
-        FacturaDetalleDto anuladaFactura = await LeerAsync<FacturaDetalleDto>(anularFactura);
-        Assert.Equal("Anulada", anuladaFactura.Estado);
-        VerificarImportes(factura, anuladaFactura);
+        using HttpResponseMessage facturaAnulada = await _cliente.PostAsJsonAsync($"{RutaFacturas}/{factura.Id}/anular",
+            new { motivo = "Motivo de anulación" });
+        FacturaDetalleDto despues = await LeerAsync<FacturaDetalleDto>(facturaAnulada);
+        Assert.Equal("Anulada", despues.Estado);
+        VerificarImportes(factura, despues);
     }
 
     [Fact]
     public async Task BorradorNoBloqueaAnularFacturaYNoPuedeEmitirseDespues()
     {
         FacturaDetalleDto factura = await CrearFacturaAsync(1);
-        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura.Id));
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular", new { motivo = "Borrador" }),
-            HttpStatusCode.Conflict, EstadoNotaInvalido);
+        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura));
 
-        using HttpResponseMessage anulacion = await _cliente.PostAsJsonAsync(
-            $"{RutaFacturas}/{factura.Id}/anular", new { motivo = "Anulación de origen" });
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular",
+            new { motivo = "Motivo de anulación" }), HttpStatusCode.Conflict, EstadoNotaInvalido);
+        using HttpResponseMessage anulacion = await _cliente.PostAsJsonAsync($"{RutaFacturas}/{factura.Id}/anular",
+            new { motivo = "Comprobante anulado" });
         Assert.Equal("Anulada", (await LeerAsync<FacturaDetalleDto>(anulacion)).Estado);
-        await VerificarErrorAsync(
-            await _cliente.PostAsync($"{RutaNotas}/{nota.Id}/emitir", null),
+        await VerificarErrorAsync(await _cliente.PostAsync($"{RutaNotas}/{nota.Id}/emitir", null),
             HttpStatusCode.Conflict, EstadoFacturaInvalido);
-        await VerificarErrorAsync(
-            await _cliente.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", Solicitud(factura.Id)),
-            HttpStatusCode.Conflict, EstadoFacturaInvalido);
-
-        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}/{nota.Id}");
-        Assert.Equal("Borrador", (await LeerAsync<NotaCreditoDebitoDetalleDto>(consulta)).Estado);
+        Assert.Equal("Borrador", (await ConsultarNotaAsync(nota.Id)).Estado);
     }
 
     [Fact]
-    public async Task ListadoFiltraPorFacturaYPaginaPorFechaEIdDescendentes()
+    public async Task ListadoFiltraPorFacturaTipoYEstadoConPaginacionEstable()
     {
         FacturaDetalleDto primera = await CrearFacturaAsync(1);
         FacturaDetalleDto segunda = await CrearFacturaAsync(2);
-        NotaCreditoDebitoDetalleDto antigua = await CrearNotaAsync(Solicitud(primera.Id, 1));
-        await CrearNotaAsync(Solicitud(segunda.Id, 2));
-        NotaCreditoDebitoDetalleDto reciente = await CrearNotaAsync(Solicitud(primera.Id, 3));
-
-        using HttpResponseMessage consulta1 = await _cliente.GetAsync($"{RutaNotas}?facturaId={primera.Id}&tamanoPagina=1");
-        PaginaNotasCreditoDebitoDto pagina1 = await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta1);
-        Assert.Equal(1, pagina1.Pagina);
-        Assert.Equal(1, pagina1.TamanoPagina);
-        Assert.Equal(2, pagina1.TotalPaginas);
-        Assert.Equal(2, pagina1.TotalRegistros);
-        Assert.Equal(reciente.Id, Assert.Single(pagina1.Items).Id);
-
-        using HttpResponseMessage consulta2 = await _cliente.GetAsync($"{RutaNotas}?facturaId={primera.Id}&tamanoPagina=1&pagina=2");
-        PaginaNotasCreditoDebitoDto pagina2 = await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta2);
-        Assert.Equal(2, pagina2.Pagina);
-        Assert.Equal(antigua.Id, Assert.Single(pagina2.Items).Id);
+        NotaCreditoDebitoDetalleDto antigua = await CrearNotaAsync(Solicitud(primera));
+        NotaCreditoDebitoDetalleDto nueva = await CrearNotaAsync(Solicitud(primera));
+        await EmitirNotaAsync(nueva.Id);
+        await CrearNotaAsync(Solicitud(primera, "Debito"));
+        await CrearNotaAsync(Solicitud(segunda));
+        using HttpResponseMessage consulta = await _cliente.GetAsync(
+            $"{RutaNotas}?facturaId={primera.Id}&tipo=credito&tamanoPagina=1");
+        PaginaNotasCreditoDebitoDto pagina = await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta);
+        Assert.Equal(2, pagina.TotalRegistros);
+        Assert.Equal(2, pagina.TotalPaginas);
+        Assert.Equal(nueva.Id, Assert.Single(pagina.Items).Id);
+        using HttpResponseMessage consultaBorrador = await _cliente.GetAsync(
+            $"{RutaNotas}?facturaId={primera.Id}&tipo=Credito&estado=borrador");
+        PaginaNotasCreditoDebitoDto borradores = await LeerAsync<PaginaNotasCreditoDebitoDto>(consultaBorrador);
+        Assert.Equal(antigua.Id, Assert.Single(borradores.Items).Id);
     }
 
     [Fact]
-    public async Task LaNumeracionEsUnicaPorTipoSerieYNumeroYTieneAlcanceEntreFacturas()
+    public async Task NumeracionSeGeneraIndependienteYEntreFacturas()
     {
         FacturaDetalleDto primera = await CrearFacturaAsync(1);
         FacturaDetalleDto segunda = await CrearFacturaAsync(2);
-        await CrearNotaAsync(Solicitud(primera.Id));
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync(RutaNotas, Solicitud(segunda.Id)),
-            HttpStatusCode.Conflict, NumeroDuplicado);
-        NotaCreditoDebitoDetalleDto debito = await CrearNotaAsync(Solicitud(segunda.Id, tipo: "Debito"));
-        Assert.Equal("Debito", debito.Tipo);
-
-        NotaCreditoDebitoDetalleDto otroNumero = await CrearNotaAsync(Solicitud(segunda.Id, 2));
-        await VerificarErrorAsync(
-            await _cliente.PutAsJsonAsync($"{RutaNotas}/{otroNumero.Id}", Solicitud(segunda.Id)),
-            HttpStatusCode.Conflict, NumeroDuplicado);
-        await VerificarErrorAsync(
-            await _cliente.PutAsJsonAsync($"{RutaNotas}/{otroNumero.Id}", Solicitud(primera.Id, 3)),
-            HttpStatusCode.BadRequest, "Debe indicar una factura válida.");
-        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}/{otroNumero.Id}");
-        NotaCreditoDebitoDetalleDto conservada = await LeerAsync<NotaCreditoDebitoDetalleDto>(consulta);
-        Assert.Equal(2, conservada.Numero);
-        Assert.Equal(segunda.Id, conservada.FacturaId);
+        Assert.Equal("NC-000001", (await CrearNotaAsync(Solicitud(primera))).Numero);
+        Assert.Equal("ND-000001", (await CrearNotaAsync(Solicitud(primera, "Debito"))).Numero);
+        Assert.Equal("NC-000002", (await CrearNotaAsync(Solicitud(segunda))).Numero);
+        Assert.Equal("ND-000002", (await CrearNotaAsync(Solicitud(segunda, "Debito"))).Numero);
     }
 
     [Fact]
-    public async Task RechazaFacturaInexistenteYComprobanteEnBorrador()
+    public async Task ExistenciaYPertenenciaSeCompruebanAntesDelEstado()
     {
         FacturaDetalleDto borrador = await CrearFacturaAsync(1, emitir: false);
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync(RutaNotas, Solicitud(int.MaxValue)),
+        FacturaDetalleDto otra = await CrearFacturaAsync(2);
+        CrearNotaCreditoDebitoRequestDto solicitud = Solicitud(borrador);
+        solicitud.FacturaId = int.MaxValue;
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync(RutaNotas, solicitud),
             HttpStatusCode.NotFound, "La factura de origen no existe.");
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync(RutaNotas, Solicitud(borrador.Id)),
+        solicitud.FacturaId = borrador.Id;
+        solicitud.Detalles = new() { Linea(int.MaxValue, 1m, 5m) };
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync(RutaNotas, solicitud),
+            HttpStatusCode.NotFound, "El detalle de factura indicado no existe.");
+        solicitud.Detalles = Solicitud(otra).Detalles;
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync(RutaNotas, solicitud),
+            HttpStatusCode.BadRequest, "El detalle indicado no pertenece a la factura de la nota.");
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync(RutaNotas, Solicitud(borrador)),
             HttpStatusCode.Conflict, EstadoFacturaInvalido);
-        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}?facturaId={borrador.Id}");
-        Assert.Empty((await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta)).Items);
     }
 
-    [Fact]
-    public async Task ViolacionClaveFacturaAlGuardarDevuelveConflictoSinDejarNota()
+    [Theory]
+    [InlineData(PostgresErrorCodes.ForeignKeyViolation, "FK_NotasCreditoDebito_Facturas_FacturaId",
+        "No se pudo guardar la nota porque una referencia ya no existe.")]
+    [InlineData(PostgresErrorCodes.ForeignKeyViolation, "FK_DetallesNotaCreditoDebito_DetallesFactura_DetalleFacturaId",
+        "No se pudo guardar la nota porque una referencia ya no existe.")]
+    [InlineData(PostgresErrorCodes.UniqueViolation, "IX_NotasCreditoDebito_Numero", "Ya existe una nota con ese número.")]
+    public async Task ViolacionDePersistenciaDevuelveConflictoSinDejarNota(string estadoSql, string restriccion, string mensaje)
     {
-        using FabricaConFalloClaveFactura fabrica = new FabricaConFalloClaveFactura();
+        using FabricaNotas fabrica = new FabricaNotas(new InterceptorNota(estadoSql, restriccion));
         using HttpClient cliente = fabrica.CreateClient();
         fabrica.SeedDatabase();
         FacturaDetalleDto factura = await CrearFacturaAsync(1, cliente: cliente);
-
-        await VerificarErrorAsync(
-            await cliente.PostAsJsonAsync(RutaNotas, Solicitud(factura.Id)),
-            HttpStatusCode.Conflict, "No se pudo guardar la nota porque una referencia ya no existe.");
-
+        await VerificarErrorAsync(await cliente.PostAsJsonAsync(RutaNotas, Solicitud(factura)), HttpStatusCode.Conflict, mensaje);
         using IServiceScope alcance = fabrica.Services.CreateScope();
         TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
-        Assert.Empty(await contexto.NotasCreditoDebito.ToListAsync());
-
+        Assert.Empty(contexto.NotasCreditoDebito);
+        Assert.Empty(contexto.DetallesNotaCreditoDebito);
         using HttpResponseMessage consulta = await cliente.GetAsync($"{RutaFacturas}/{factura.Id}");
-        FacturaDetalleDto conservada = await LeerAsync<FacturaDetalleDto>(consulta);
-        Assert.Equal("Emitida", conservada.Estado);
-        VerificarImportes(factura, conservada);
+        VerificarImportes(factura, await LeerAsync<FacturaDetalleDto>(consulta));
     }
 
     [Fact]
-    public async Task DevuelveElMismoLiteralParaNotaInexistenteEnDetalleYEscrituras()
+    public async Task DevuelveMismoLiteralParaNotaInexistenteEnDetalleYEscrituras()
     {
+        FacturaDetalleDto factura = await CrearFacturaAsync(1);
         string ruta = $"{RutaNotas}/{int.MaxValue}";
         await VerificarErrorAsync(await _cliente.GetAsync(ruta), HttpStatusCode.NotFound, NotaInexistente);
-        await VerificarErrorAsync(
-            await _cliente.PutAsJsonAsync(ruta, Solicitud(1)), HttpStatusCode.NotFound, NotaInexistente);
-        await VerificarErrorAsync(
-            await _cliente.PostAsync($"{ruta}/emitir", null), HttpStatusCode.NotFound, NotaInexistente);
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{ruta}/anular", new { motivo = "No existe" }),
+        await VerificarErrorAsync(await _cliente.PutAsJsonAsync(ruta, Cambio(factura, 1m, 1m)),
+            HttpStatusCode.NotFound, NotaInexistente);
+        await VerificarErrorAsync(await _cliente.PostAsync($"{ruta}/emitir", null), HttpStatusCode.NotFound, NotaInexistente);
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync($"{ruta}/anular", new { motivo = "No existe" }),
             HttpStatusCode.NotFound, NotaInexistente);
     }
 
     [Theory]
     [InlineData("factura", "Debe indicar una factura válida.")]
     [InlineData("tipo", "El tipo de nota debe ser Credito o Debito.")]
-    [InlineData("motivo", "El motivo de la nota es obligatorio.")]
-    [InlineData("motivo-largo", "El motivo de la nota supera la longitud permitida.")]
-    [InlineData("serie", "La serie o el número de la nota no son válidos.")]
-    [InlineData("serie-larga", "La serie o el número de la nota no son válidos.")]
-    [InlineData("numero", "La serie o el número de la nota no son válidos.")]
-    [InlineData("importe", "El importe del ajuste no es válido.")]
-    [InlineData("importe-escala", "El importe del ajuste no es válido.")]
-    [InlineData("importe-maximo", "El importe del ajuste no es válido.")]
-    public async Task AltaInvalidaDevuelveElLiteralSinGuardar(string campo, string mensaje)
+    [InlineData("motivo", MotivoInvalido)]
+    [InlineData("motivo-corto", MotivoInvalido)]
+    [InlineData("motivo-largo", MotivoInvalido)]
+    [InlineData("vacio", DetalleInvalido)]
+    [InlineData("nulo", DetalleInvalido)]
+    [InlineData("duplicado", DetalleInvalido)]
+    [InlineData("linea", DetalleInvalido)]
+    [InlineData("cantidad", ImporteInvalido)]
+    [InlineData("cantidad-escala", ImporteInvalido)]
+    [InlineData("cantidad-maximo", ImporteInvalido)]
+    [InlineData("precio", ImporteInvalido)]
+    [InlineData("precio-escala", ImporteInvalido)]
+    [InlineData("precio-maximo", ImporteInvalido)]
+    [InlineData("producto-maximo", ImporteInvalido)]
+    public async Task FormaInvalidaDevuelveLiteralAntesDeGuardar(string campo, string mensaje)
     {
         FacturaDetalleDto factura = await CrearFacturaAsync(1);
-        GuardarNotaCreditoDebitoRequestDto solicitud = Solicitud(factura.Id);
+        CrearNotaCreditoDebitoRequestDto solicitud = Solicitud(factura);
+        List<DetalleNotaCreditoDebitoRequestDto?> detalles = Assert.IsType<List<DetalleNotaCreditoDebitoRequestDto?>>(solicitud.Detalles);
+        DetalleNotaCreditoDebitoRequestDto linea = Assert.IsType<DetalleNotaCreditoDebitoRequestDto>(Assert.Single(detalles));
         switch (campo)
         {
-            case "factura":
-                solicitud.FacturaId = 0;
-                break;
-            case "tipo":
-                solicitud.Tipo = "Otro";
-                break;
-            case "motivo":
-                solicitud.Motivo = null;
-                break;
-            case "motivo-largo":
-                solicitud.Motivo = new string('a', 501);
-                break;
-            case "serie":
-                solicitud.Serie = " ";
-                break;
-            case "serie-larga":
-                solicitud.Serie = new string('a', 11);
-                break;
-            case "numero":
-                solicitud.Numero = 0;
-                break;
-            case "importe":
-                solicitud.Importe = 0m;
-                break;
-            case "importe-escala":
-                solicitud.Importe = 3.456m;
-                break;
-            case "importe-maximo":
-                solicitud.Importe = 10000000000000000m;
+            case "factura": solicitud.FacturaId = 0; break;
+            case "tipo": solicitud.Tipo = "Otro"; break;
+            case "motivo": solicitud.Motivo = null; break;
+            case "motivo-corto": solicitud.Motivo = " ab "; break;
+            case "motivo-largo": solicitud.Motivo = new string('x', 301); break;
+            case "vacio": detalles.Clear(); break;
+            case "nulo": detalles[0] = null; break;
+            case "duplicado": detalles.Add(linea); break;
+            case "linea": linea.DetalleFacturaId = 0; break;
+            case "cantidad": linea.Cantidad = 0; break;
+            case "cantidad-escala": linea.Cantidad = 0.12345m; break;
+            case "cantidad-maximo": linea.Cantidad = 100000000000000m; break;
+            case "precio": linea.PrecioUnitario = -1; break;
+            case "precio-escala": linea.PrecioUnitario = 3.456m; break;
+            case "precio-maximo": linea.PrecioUnitario = 10000000000000000m; break;
+            case "producto-maximo":
+                linea.Cantidad = 99999999999999.9999m;
+                linea.PrecioUnitario = 9999999999999999.99m;
                 break;
         }
 
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync(RutaNotas, solicitud), HttpStatusCode.BadRequest, mensaje);
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync(RutaNotas, solicitud), HttpStatusCode.BadRequest, mensaje);
         using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}?facturaId={factura.Id}");
-        Assert.Equal(0, (await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta)).TotalRegistros);
-    }
-
-    [Fact]
-    public async Task AnulacionValidaMotivoAntesDeCambiarElEstado()
-    {
-        FacturaDetalleDto factura = await CrearFacturaAsync(1);
-        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura.Id));
-        using HttpResponseMessage emision = await _cliente.PostAsync($"{RutaNotas}/{nota.Id}/emitir", null);
-        Assert.Equal(HttpStatusCode.OK, emision.StatusCode);
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular", new { motivo = " " }),
-            HttpStatusCode.BadRequest, "El motivo de anulación es obligatorio.");
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular", new { motivo = new string('a', 501) }),
-            HttpStatusCode.BadRequest, "El motivo de la nota supera la longitud permitida.");
-        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}/{nota.Id}");
-        Assert.Equal("Emitida", (await LeerAsync<NotaCreditoDebitoDetalleDto>(consulta)).Estado);
+        Assert.Empty((await LeerAsync<PaginaNotasCreditoDebitoDto>(consulta)).Items);
     }
 
     [Theory]
-    [InlineData("pagina=0", "La paginación solicitada no es válida.")]
-    [InlineData("tamanoPagina=101", "La paginación solicitada no es válida.")]
-    [InlineData("pagina=2147483647&tamanoPagina=100", "La paginación solicitada no es válida.")]
-    [InlineData("facturaId=0", "Debe indicar una factura válida.")]
-    public async Task ListadoRechazaParametrosInvalidos(string consulta, string mensaje)
+    [InlineData("")]
+    [InlineData("ab")]
+    public async Task AnulacionValidaMotivoAntesDeCambiarEstado(string motivo)
     {
-        await VerificarErrorAsync(
-            await _cliente.GetAsync($"{RutaNotas}?{consulta}"), HttpStatusCode.BadRequest, mensaje);
+        FacturaDetalleDto factura = await CrearFacturaAsync(1);
+        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura));
+        await EmitirNotaAsync(nota.Id);
+        await VerificarErrorAsync(await _cliente.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular", new { motivo }),
+            HttpStatusCode.BadRequest, MotivoInvalido);
+        Assert.Equal("Emitida", (await ConsultarNotaAsync(nota.Id)).Estado);
+    }
+
+    [Theory]
+    [InlineData("pagina=0", FiltroInvalido)]
+    [InlineData("tamanoPagina=101", FiltroInvalido)]
+    [InlineData("pagina=2147483647&tamanoPagina=100", FiltroInvalido)]
+    [InlineData("tipo=otro", FiltroInvalido)]
+    [InlineData("estado=otro", FiltroInvalido)]
+    [InlineData("facturaId=0", "Debe indicar una factura válida.")]
+    public async Task ListadoRechazaFiltrosYPaginacionInvalidos(string consulta, string mensaje)
+    {
+        await VerificarErrorAsync(await _cliente.GetAsync($"{RutaNotas}?{consulta}"), HttpStatusCode.BadRequest, mensaje);
     }
 
     [Fact]
     public async Task ConsultasYCambiosExigenJwt()
     {
-        _cliente.DefaultRequestHeaders.Authorization = null;
-        const string sinSesion = "Debe iniciar sesión para acceder a este recurso.";
-        await VerificarErrorAsync(await _cliente.GetAsync(RutaNotas), HttpStatusCode.Unauthorized, sinSesion);
-        await VerificarErrorAsync(
-            await _cliente.PostAsJsonAsync(RutaNotas, Solicitud(1)), HttpStatusCode.Unauthorized, sinSesion);
-        await VerificarErrorAsync(
-            await _cliente.PostAsync($"{RutaNotas}/1/emitir", null), HttpStatusCode.Unauthorized, sinSesion);
+        FacturaDetalleDto factura = await CrearFacturaAsync(1);
+        using HttpClient anonimo = _fabrica.CreateClient();
+        anonimo.DefaultRequestHeaders.Authorization = null;
+        const string mensaje = "Debe iniciar sesión para acceder a este recurso.";
+        await VerificarErrorAsync(await anonimo.GetAsync(RutaNotas), HttpStatusCode.Unauthorized, mensaje);
+        await VerificarErrorAsync(await anonimo.PostAsJsonAsync(RutaNotas, Solicitud(factura)),
+            HttpStatusCode.Unauthorized, mensaje);
+    }
+
+    [Fact]
+    public async Task FinanzasEscribeYConsultaSoloLee()
+    {
+        FacturaDetalleDto factura = await CrearFacturaAsync(1);
+        using HttpClient finanzas = _fabrica.CreateClient();
+        finanzas.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", TokenPruebas.Emitir(_fabrica.Services, "FINANZAS"));
+        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura), finanzas);
+
+        using HttpClient consulta = _fabrica.CreateClient();
+        consulta.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", TokenPruebas.Emitir(_fabrica.Services, "CONSULTA"));
+        using HttpResponseMessage leer = await consulta.GetAsync($"{RutaNotas}/{nota.Id}");
+        Assert.Equal(HttpStatusCode.OK, leer.StatusCode);
+        using HttpResponseMessage listado = await consulta.GetAsync(RutaNotas);
+        Assert.Equal(HttpStatusCode.OK, listado.StatusCode);
+        await VerificarErrorAsync(await consulta.PostAsJsonAsync(RutaNotas, Solicitud(factura)),
+            HttpStatusCode.Forbidden, SinPermiso);
+        await VerificarErrorAsync(await consulta.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", Cambio(factura, 1m, 5m)),
+            HttpStatusCode.Forbidden, SinPermiso);
+        await VerificarErrorAsync(await consulta.PostAsync($"{RutaNotas}/{nota.Id}/emitir", null),
+            HttpStatusCode.Forbidden, SinPermiso);
+        await VerificarErrorAsync(await consulta.PostAsJsonAsync($"{RutaNotas}/{nota.Id}/anular", new { motivo = "Anulación" }),
+            HttpStatusCode.Forbidden, SinPermiso);
+        using HttpResponseMessage editada = await finanzas.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", Cambio(factura, 1m, 5m));
+        Assert.Equal(HttpStatusCode.OK, editada.StatusCode);
+        Assert.Equal("Emitida", (await EmitirNotaAsync(nota.Id, finanzas)).Estado);
+        Assert.Equal("Anulada", (await AnularNotaAsync(nota.Id, finanzas)).Estado);
+    }
+
+    [Fact]
+    public async Task CalculaPorLineaConTasaHistoricaYSinAceptarTotalesDelCliente()
+    {
+        using FabricaNotas fabrica = new FabricaNotas();
+        using HttpClient cliente = fabrica.CreateClient();
+        fabrica.SeedDatabase();
+        using IServiceScope alcance = fabrica.Services.CreateScope();
+        TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        Impuesto impuesto = new Impuesto
+        {
+            Codigo = "IGV",
+            Nombre = "IGV",
+            Tipo = "Porcentaje",
+            Pais = "Perú",
+            Activo = true,
+            FechaCreacion = DateTime.UtcNow
+        };
+        TasaImpuesto tasa = new TasaImpuesto
+        {
+            Impuesto = impuesto,
+            Porcentaje = 18m,
+            Activo = true,
+            FechaInicio = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+        contexto.TasasImpuestos.Add(tasa);
+        await contexto.SaveChangesAsync();
+
+        FacturaDetalleDto factura = await CrearFacturaAsync(1, moneda: "USD", cliente: cliente, impuestoId: impuesto.Id, lineas: 2);
+        tasa.Porcentaje = 25m;
+        await contexto.SaveChangesAsync();
+
+        using HttpResponseMessage alta = await cliente.PostAsJsonAsync(RutaNotas, new
+        {
+            facturaId = factura.Id,
+            tipo = "Credito",
+            motivo = "Cálculo histórico",
+            numero = "NC-999999",
+            moneda = "PEN",
+            total = 0.01m,
+            detalles = new[]
+            {
+                new { detalleFacturaId = factura.Detalles[0].Id, cantidad = 1.0005m, precioUnitario = 10m, porcentajeImpuesto = 0, total = 99m },
+                new { detalleFacturaId = factura.Detalles[1].Id, cantidad = 1m, precioUnitario = 12.25m, porcentajeImpuesto = 0, total = 99m }
+            }
+        });
+        NotaCreditoDebitoDetalleDto nota = await LeerAsync<NotaCreditoDebitoDetalleDto>(alta, HttpStatusCode.Created);
+        Assert.Equal("NC-000001", nota.Numero);
+        Assert.Equal("USD", nota.Moneda);
+        Assert.Equal(1.0005m, nota.Detalles[0].Cantidad);
+        Assert.Equal(10.01m, nota.Detalles[0].BaseImponible);
+        Assert.Equal(2.21m, nota.Detalles[1].ImporteImpuesto);
+        Assert.All(nota.Detalles, detalle => Assert.Equal(18m, detalle.PorcentajeImpuesto));
+        Assert.Equal(22.26m, nota.BaseImponible);
+        Assert.Equal(4.01m, nota.ImporteImpuesto);
+        Assert.Equal(26.27m, nota.Total);
+        using HttpResponseMessage actual = await cliente.GetAsync($"{RutaFacturas}/{factura.Id}");
+        VerificarImportes(factura, await LeerAsync<FacturaDetalleDto>(actual));
+    }
+
+    [Fact]
+    public async Task CreditosSoloAcumulanEmitidasYAnularLiberaCantidad()
+    {
+        FacturaDetalleDto factura = await CrearFacturaAsync(1);
+        NotaCreditoDebitoDetalleDto primera = await CrearNotaAsync(Solicitud(factura, cantidad: 1.5m, precio: 20m));
+        NotaCreditoDebitoDetalleDto segunda = await CrearNotaAsync(Solicitud(factura, cantidad: 0.6m, precio: 20m));
+        await EmitirNotaAsync(primera.Id);
+        await VerificarErrorAsync(await _cliente.PostAsync($"{RutaNotas}/{segunda.Id}/emitir", null),
+            HttpStatusCode.Conflict, "El crédito supera la cantidad disponible de la línea de factura.");
+        Assert.Equal("Borrador", (await ConsultarNotaAsync(segunda.Id)).Estado);
+        await AnularNotaAsync(primera.Id);
+        Assert.Equal("Emitida", (await EmitirNotaAsync(segunda.Id)).Estado);
+    }
+
+    [Fact]
+    public async Task CreditoUsaTotalFacturadoPorLineaYDebitoNoTieneTope()
+    {
+        FacturaDetalleDto factura = await CrearFacturaAsync(1, lineas: 2);
+        Assert.Equal(90m, factura.Detalles[0].Total);
+        NotaCreditoDebitoDetalleDto primera = await CrearNotaAsync(Solicitud(factura, cantidad: 1m, precio: 60m));
+        await EmitirNotaAsync(primera.Id);
+        NotaCreditoDebitoDetalleDto segunda = await CrearNotaAsync(Solicitud(factura, cantidad: 0.5m, precio: 62m));
+        await VerificarErrorAsync(await _cliente.PostAsync($"{RutaNotas}/{segunda.Id}/emitir", null),
+            HttpStatusCode.Conflict, "El crédito supera el importe disponible de la línea de factura.");
+        using HttpResponseMessage corregir = await _cliente.PutAsJsonAsync($"{RutaNotas}/{segunda.Id}", Cambio(factura, 1m, 30m));
+        Assert.Equal(HttpStatusCode.OK, corregir.StatusCode);
+        Assert.Equal(30m, (await EmitirNotaAsync(segunda.Id)).Total);
+        NotaCreditoDebitoDetalleDto debito = await CrearNotaAsync(Solicitud(factura, "Debito", 3m, 100m));
+        Assert.Equal(300m, (await EmitirNotaAsync(debito.Id)).Total);
+    }
+
+    [Fact]
+    public async Task EditarBorradorReemplazaLasLineasSinCambiarFolioNiOrigen()
+    {
+        FacturaDetalleDto factura = await CrearFacturaAsync(1, lineas: 2);
+        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura));
+        ActualizarNotaCreditoDebitoRequestDto cambio = new ActualizarNotaCreditoDebitoRequestDto
+        {
+            Motivo = new string('x', 300),
+            Detalles = new() { Linea(factura.Detalles[1].Id, 0.3333m, 40m) }
+        };
+        using HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", cambio);
+        NotaCreditoDebitoDetalleDto actual = await LeerAsync<NotaCreditoDebitoDetalleDto>(respuesta);
+        Assert.Equal(nota.Numero, actual.Numero);
+        Assert.Equal(nota.FacturaId, actual.FacturaId);
+        Assert.Equal(nota.Tipo, actual.Tipo);
+        Assert.Equal(factura.Detalles[1].Id, Assert.Single(actual.Detalles).DetalleFacturaId);
+        Assert.Equal(13.33m, actual.Total);
     }
 
     private async Task<FacturaDetalleDto> CrearFacturaAsync(
-        int numero, string tipoComprobante = "Factura", string moneda = "PEN", bool emitir = true, HttpClient? cliente = null)
+        int numero, string tipoComprobante = "Factura", string moneda = "PEN", bool emitir = true,
+        HttpClient? cliente = null, int? impuestoId = null, int lineas = 1)
     {
         HttpClient clienteApi = cliente ?? _cliente;
         GuardarFacturaRequestDto solicitud = new GuardarFacturaRequestDto
@@ -337,17 +455,15 @@ public class NotasCreditoDebitoApiTests
             Numero = numero,
             Moneda = moneda,
             FechaEmision = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc),
-            Detalles = new List<GuardarDetalleFacturaRequestDto>
+            Detalles = Enumerable.Range(1, lineas).Select(productoId => new GuardarDetalleFacturaRequestDto
             {
-                new GuardarDetalleFacturaRequestDto
-                {
-                    ProductoId = 1,
-                    Descripcion = "Producto de prueba",
-                    Cantidad = 2m,
-                    PrecioUnitario = 50m,
-                    DescuentoPorcentaje = 10m
-                }
-            }
+                ProductoId = productoId,
+                Descripcion = "Producto de prueba",
+                Cantidad = 2m,
+                PrecioUnitario = 50m,
+                DescuentoPorcentaje = 10m,
+                ImpuestoId = impuestoId
+            }).ToList()
         };
 
         using HttpResponseMessage alta = await clienteApi.PostAsJsonAsync(RutaFacturas, solicitud);
@@ -361,23 +477,55 @@ public class NotasCreditoDebitoApiTests
         return await LeerAsync<FacturaDetalleDto>(emision);
     }
 
-    private async Task<NotaCreditoDebitoDetalleDto> CrearNotaAsync(GuardarNotaCreditoDebitoRequestDto solicitud)
+    private async Task<NotaCreditoDebitoDetalleDto> CrearNotaAsync(CrearNotaCreditoDebitoRequestDto solicitud, HttpClient? cliente = null)
     {
-        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(RutaNotas, solicitud);
+        using HttpResponseMessage respuesta = await (cliente ?? _cliente).PostAsJsonAsync(RutaNotas, solicitud);
         return await LeerAsync<NotaCreditoDebitoDetalleDto>(respuesta, HttpStatusCode.Created);
     }
 
-    private static GuardarNotaCreditoDebitoRequestDto Solicitud(int facturaId, int numero = 1, string tipo = "Credito")
+    private async Task<NotaCreditoDebitoDetalleDto> EmitirNotaAsync(int id, HttpClient? cliente = null)
     {
-        return new GuardarNotaCreditoDebitoRequestDto
+        using HttpResponseMessage respuesta = await (cliente ?? _cliente).PostAsync($"{RutaNotas}/{id}/emitir", null);
+        return await LeerAsync<NotaCreditoDebitoDetalleDto>(respuesta);
+    }
+
+    private async Task<NotaCreditoDebitoDetalleDto> AnularNotaAsync(int id, HttpClient? cliente = null)
+    {
+        using HttpResponseMessage respuesta = await (cliente ?? _cliente).PostAsJsonAsync($"{RutaNotas}/{id}/anular",
+            new { motivo = " Rectificación interna " });
+        return await LeerAsync<NotaCreditoDebitoDetalleDto>(respuesta);
+    }
+
+    private async Task<NotaCreditoDebitoDetalleDto> ConsultarNotaAsync(int id)
+    {
+        using HttpResponseMessage consulta = await _cliente.GetAsync($"{RutaNotas}/{id}");
+        return await LeerAsync<NotaCreditoDebitoDetalleDto>(consulta);
+    }
+
+    private static CrearNotaCreditoDebitoRequestDto Solicitud(FacturaDetalleDto factura,
+        string tipo = "Credito", decimal cantidad = 0.25m, decimal precio = 21m)
+    {
+        return new CrearNotaCreditoDebitoRequestDto
         {
-            FacturaId = facturaId,
+            FacturaId = factura.Id,
             Tipo = tipo,
-            Serie = "NC52",
-            Numero = numero,
             Motivo = "Ajuste informado",
-            Importe = 5.25m
+            Detalles = new() { Linea(factura.Detalles[0].Id, cantidad, precio) }
         };
+    }
+
+    private static ActualizarNotaCreditoDebitoRequestDto Cambio(FacturaDetalleDto factura, decimal cantidad, decimal precio)
+    {
+        return new ActualizarNotaCreditoDebitoRequestDto
+        {
+            Motivo = "Ajuste corregido",
+            Detalles = new() { Linea(factura.Detalles[0].Id, cantidad, precio) }
+        };
+    }
+
+    private static DetalleNotaCreditoDebitoRequestDto Linea(int id, decimal cantidad, decimal precio)
+    {
+        return new DetalleNotaCreditoDebitoRequestDto { DetalleFacturaId = id, Cantidad = cantidad, PrecioUnitario = precio };
     }
 
     private static void VerificarImportes(FacturaDetalleDto original, FacturaDetalleDto actual)
@@ -386,7 +534,7 @@ public class NotasCreditoDebitoApiTests
         Assert.Equal(original.TotalDescuento, actual.TotalDescuento);
         Assert.Equal(original.TotalImpuesto, actual.TotalImpuesto);
         Assert.Equal(original.Total, actual.Total);
-        Assert.Equal(Assert.Single(original.Detalles).Total, Assert.Single(actual.Detalles).Total);
+        Assert.Equal(original.Detalles.Select(detalle => detalle.Total), actual.Detalles.Select(detalle => detalle.Total));
     }
 
     private static async Task<T> LeerAsync<T>(HttpResponseMessage respuesta, HttpStatusCode estado = HttpStatusCode.OK)
@@ -415,38 +563,62 @@ public class NotasCreditoDebitoApiTests
         TitanGlobalDbContext contexto = alcance.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
         List<Factura> facturas = contexto.Facturas.Where(factura => factura.Serie == SerieFacturas).ToList();
         int[] ids = facturas.Select(factura => factura.Id).ToArray();
-        contexto.NotasCreditoDebito.RemoveRange(contexto.NotasCreditoDebito.Where(nota => ids.Contains(nota.FacturaId)));
+        List<NotaCreditoDebito> notas = contexto.NotasCreditoDebito.Where(nota => ids.Contains(nota.FacturaId)).ToList();
+        int[] idsNotas = notas.Select(nota => nota.Id).ToArray();
+        contexto.DetallesNotaCreditoDebito.RemoveRange(
+            contexto.DetallesNotaCreditoDebito.Where(detalle => idsNotas.Contains(detalle.NotaCreditoDebitoId)));
+        contexto.NotasCreditoDebito.RemoveRange(notas);
         contexto.DetallesFactura.RemoveRange(contexto.DetallesFactura.Where(detalle => ids.Contains(detalle.FacturaId)));
         contexto.Facturas.RemoveRange(facturas);
         contexto.SaveChanges();
     }
 
-    private sealed class FabricaConFalloClaveFactura : OrdenesCompraApiFactory
+    private sealed class FabricaNotas : OrdenesCompraApiFactory
     {
+        private readonly string _base = $"Modulo52-{Guid.NewGuid():N}";
+        private readonly SaveChangesInterceptor? _interceptor;
+
+        public FabricaNotas(SaveChangesInterceptor? interceptor = null)
+        {
+            _interceptor = interceptor;
+        }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
             builder.ConfigureServices(servicios =>
             {
-                servicios.AddDbContext<TitanGlobalDbContext>(opciones => opciones
-                    .UseInMemoryDatabase("Modulo52ReferenciaForanea")
-                    .AddInterceptors(new ViolacionClaveFacturaInterceptor()));
+                servicios.AddDbContext<TitanGlobalDbContext>(opciones =>
+                {
+                    opciones.UseInMemoryDatabase(_base);
+                    if (_interceptor is not null)
+                    {
+                        opciones.AddInterceptors(_interceptor);
+                    }
+                });
             });
         }
     }
 
-    private sealed class ViolacionClaveFacturaInterceptor : SaveChangesInterceptor
+    private sealed class InterceptorNota : SaveChangesInterceptor
     {
+        private readonly string _estado;
+        private readonly string _restriccion;
+
+        public InterceptorNota(string estado, string restriccion)
+        {
+            _estado = estado;
+            _restriccion = restriccion;
+        }
+
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
             DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
             DbContext? contexto = eventData.Context;
             if (contexto != null && contexto.ChangeTracker.Entries<NotaCreditoDebito>().Any(entrada => entrada.State == EntityState.Added))
             {
-                // InMemory no comprueba la FK. Reproducir en SaveChangesAsync el fallo del proveedor para esta inserción.
                 PostgresException postgres = new PostgresException(
-                    "Violación de la clave foránea de la factura.", "ERROR", "ERROR", PostgresErrorCodes.ForeignKeyViolation,
-                    tableName: "NotasCreditoDebito", constraintName: "FK_NotasCreditoDebito_Facturas_FacturaId");
+                    "Restricción de nota.", "ERROR", "ERROR", _estado, constraintName: _restriccion);
                 throw new DbUpdateException("Error al insertar la nota.", postgres);
             }
 

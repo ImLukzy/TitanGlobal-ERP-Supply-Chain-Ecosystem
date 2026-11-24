@@ -8,6 +8,9 @@ public sealed class NotaCreditoDebitoDetalleDto : NotaCreditoDebitoListadoDto
     public string FacturaSerie { get; set; } = string.Empty;
     public int FacturaNumero { get; set; }
     public string Motivo { get; set; } = string.Empty;
+    public decimal BaseImponible { get; set; }
+    public decimal ImporteImpuesto { get; set; }
     public DateTime? FechaAnulacion { get; set; }
     public string? MotivoAnulacion { get; set; }
+    public List<LineaNotaCreditoDebitoDto> Detalles { get; set; } = new();
 }

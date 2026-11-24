@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo52_NotasCreditoDebito;
@@ -35,10 +36,12 @@ public sealed class NotasCreditoDebitoController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginaNotasCreditoDebitoDto>> Listar(
         [FromQuery] int? facturaId = null,
+        [FromQuery] string? tipo = null,
+        [FromQuery] string? estado = null,
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        return Ok(await _listar.ExecuteAsync(facturaId, pagina, tamanoPagina));
+        return Ok(await _listar.ExecuteAsync(facturaId, tipo, estado, pagina, tamanoPagina));
     }
 
     [HttpGet("{id:int}")]
@@ -48,20 +51,24 @@ public sealed class NotasCreditoDebitoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<NotaCreditoDebitoDetalleDto>> Crear([FromBody] GuardarNotaCreditoDebitoRequestDto solicitud)
+    [Authorize(Roles = "FINANZAS,ADMIN")]
+    [ProducesResponseType<NotaCreditoDebitoDetalleDto>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<NotaCreditoDebitoDetalleDto>> Crear([FromBody] CrearNotaCreditoDebitoRequestDto solicitud)
     {
         NotaCreditoDebitoDetalleDto detalle = await _crear.ExecuteAsync(solicitud);
         return CreatedAtAction(nameof(Obtener), new { id = detalle.Id }, detalle);
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "FINANZAS,ADMIN")]
     public async Task<ActionResult<NotaCreditoDebitoDetalleDto>> Actualizar(
-        int id, [FromBody] GuardarNotaCreditoDebitoRequestDto solicitud)
+        int id, [FromBody] ActualizarNotaCreditoDebitoRequestDto solicitud)
     {
         return Ok(await _actualizar.ExecuteAsync(id, solicitud));
     }
 
     [HttpPost("{id:int}/emitir")]
+    [Authorize(Roles = "FINANZAS,ADMIN")]
     [PermitirCuerpoVacio]
     public async Task<ActionResult<NotaCreditoDebitoDetalleDto>> Emitir(int id)
     {
@@ -69,6 +76,7 @@ public sealed class NotasCreditoDebitoController : ControllerBase
     }
 
     [HttpPost("{id:int}/anular")]
+    [Authorize(Roles = "FINANZAS,ADMIN")]
     public async Task<ActionResult<NotaCreditoDebitoDetalleDto>> Anular(
         int id, [FromBody] AnularNotaCreditoDebitoRequestDto solicitud)
     {

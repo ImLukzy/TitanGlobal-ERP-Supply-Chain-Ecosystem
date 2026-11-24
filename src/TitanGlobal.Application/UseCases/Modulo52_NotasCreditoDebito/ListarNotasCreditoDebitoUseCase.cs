@@ -14,9 +14,17 @@ public sealed class ListarNotasCreditoDebitoUseCase
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PaginaNotasCreditoDebitoDto> ExecuteAsync(int? facturaId, int pagina, int tamanoPagina)
+    public async Task<PaginaNotasCreditoDebitoDto> ExecuteAsync(
+        int? facturaId, string? tipo, string? estado, int pagina, int tamanoPagina)
     {
         int desplazamiento = ValidacionNotaCreditoDebito.ObtenerDesplazamiento(pagina, tamanoPagina);
+        string? tipoCanonico = ValidacionNotaCreditoDebito.NormalizarTipo(tipo);
+        string? estadoCanonico = ValidacionNotaCreditoDebito.NormalizarEstado(estado);
+        if ((tipo is not null && tipoCanonico is null) || (estado is not null && estadoCanonico is null))
+        {
+            throw ValidacionNotaCreditoDebito.FiltroInvalido();
+        }
+
         IQueryable<NotaCreditoDebito> consulta = _unitOfWork.Repository<NotaCreditoDebito>()
             .AsQueryable()
             .AsNoTracking();
@@ -25,6 +33,16 @@ public sealed class ListarNotasCreditoDebitoUseCase
         {
             ValidacionNotaCreditoDebito.ValidarFacturaId(facturaId.Value);
             consulta = consulta.Where(nota => nota.FacturaId == facturaId.Value);
+        }
+
+        if (tipoCanonico is not null)
+        {
+            consulta = consulta.Where(nota => nota.Tipo == tipoCanonico);
+        }
+
+        if (estadoCanonico is not null)
+        {
+            consulta = consulta.Where(nota => nota.Estado == estadoCanonico);
         }
 
         int totalRegistros = await consulta.CountAsync();
@@ -38,11 +56,10 @@ public sealed class ListarNotasCreditoDebitoUseCase
                 Id = nota.Id,
                 FacturaId = nota.FacturaId,
                 Tipo = nota.Tipo,
-                Serie = nota.Serie,
                 Numero = nota.Numero,
                 Estado = nota.Estado,
                 Total = nota.Total,
-                Moneda = nota.Factura.Moneda,
+                Moneda = nota.Moneda,
                 FechaCreacion = nota.FechaCreacion,
                 FechaEmision = nota.FechaEmision
             })

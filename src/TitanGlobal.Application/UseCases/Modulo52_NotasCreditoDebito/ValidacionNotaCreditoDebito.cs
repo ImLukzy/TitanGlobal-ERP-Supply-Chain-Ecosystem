@@ -1,3 +1,4 @@
+using System.Text;
 using TitanGlobal.Application.DTOs.Modulo52_NotasCreditoDebito;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Models;
@@ -6,43 +7,86 @@ namespace TitanGlobal.Application.UseCases.Modulo52_NotasCreditoDebito;
 
 internal static class ValidacionNotaCreditoDebito
 {
-    private const int LongitudMaximaSerie = 10;
-    private const int LongitudMaximaMotivo = 500;
-    private const decimal ImporteMaximo = 9999999999999999.99m;
+    public const decimal ImporteMaximo = 9999999999999999.99m;
+    private const decimal CantidadMaxima = 99999999999999.9999m;
 
-    public static DatosNotaCreditoDebito ValidarSolicitud(GuardarNotaCreditoDebitoRequestDto solicitud)
+    public static void ValidarFacturaId(int facturaId)
     {
-        ValidarFacturaId(solicitud.FacturaId);
-        string tipo = NormalizarTipo(solicitud.Tipo);
-        string motivo = NormalizarMotivo(solicitud.Motivo, "El motivo de la nota es obligatorio.");
-        string serie = solicitud.Serie?.Trim().ToUpperInvariant() ?? string.Empty;
-        if (serie.Length == 0 || serie.Length > LongitudMaximaSerie || solicitud.Numero <= 0)
+        if (facturaId <= 0)
         {
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "La serie o el número de la nota no son válidos.");
+            throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "Debe indicar una factura válida.");
         }
-
-        if (solicitud.Importe <= 0m || solicitud.Importe > ImporteMaximo
-            || decimal.Round(solicitud.Importe, 2) != solicitud.Importe)
-        {
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "El importe del ajuste no es válido.");
-        }
-
-        return new DatosNotaCreditoDebito(
-            solicitud.FacturaId, tipo, serie, solicitud.Numero, motivo, solicitud.Importe);
     }
 
-    public static void ValidarFacturaId(int facturaId, int? facturaOriginalId = null)
+    public static string NormalizarMotivo(string? entrada)
     {
-        if (facturaId <= 0 || (facturaOriginalId.HasValue && facturaId != facturaOriginalId.Value))
+        string motivo = entrada?.Trim() ?? string.Empty;
+        int longitud = motivo.EnumerateRunes().Count();
+        if (longitud < 3 || longitud > 300)
         {
             throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "Debe indicar una factura válida.");
+                CodigosEstado.Status400BadRequest, "El motivo debe tener entre 3 y 300 caracteres.");
         }
+
+        return motivo;
+    }
+
+    public static List<DetalleNotaCreditoDebitoRequestDto> ValidarDetalles(
+        List<DetalleNotaCreditoDebitoRequestDto?>? detalles)
+    {
+        if (detalles is null || detalles.Count == 0)
+        {
+            throw DetalleInvalido();
+        }
+
+        HashSet<int> ids = new();
+        List<DetalleNotaCreditoDebitoRequestDto> validados = new();
+        foreach (DetalleNotaCreditoDebitoRequestDto? detalle in detalles)
+        {
+            if (detalle is null || detalle.DetalleFacturaId <= 0 || !ids.Add(detalle.DetalleFacturaId))
+            {
+                throw DetalleInvalido();
+            }
+
+            if (detalle.Cantidad <= 0 || detalle.Cantidad > CantidadMaxima
+                || decimal.Round(detalle.Cantidad, 4) != detalle.Cantidad
+                || detalle.PrecioUnitario <= 0 || detalle.PrecioUnitario > ImporteMaximo
+                || decimal.Round(detalle.PrecioUnitario, 2) != detalle.PrecioUnitario)
+            {
+                throw ImporteInvalido();
+            }
+
+            validados.Add(detalle);
+        }
+
+        return validados;
+    }
+
+    public static string ValidarTipo(string? entrada)
+    {
+        return NormalizarTipo(entrada) ?? throw new ReglaNegocioException(
+            CodigosEstado.Status400BadRequest, "El tipo de nota debe ser Credito o Debito.");
+    }
+
+    public static string? NormalizarTipo(string? entrada)
+    {
+        return entrada?.Trim().ToUpperInvariant() switch
+        {
+            "CREDITO" => NotaCreditoDebito.TipoCredito,
+            "DEBITO" => NotaCreditoDebito.TipoDebito,
+            _ => null
+        };
+    }
+
+    public static string? NormalizarEstado(string? entrada)
+    {
+        return entrada?.Trim().ToUpperInvariant() switch
+        {
+            "BORRADOR" => NotaCreditoDebito.EstadoBorrador,
+            "EMITIDA" => NotaCreditoDebito.EstadoEmitida,
+            "ANULADA" => NotaCreditoDebito.EstadoAnulada,
+            _ => null
+        };
     }
 
     public static int ObtenerDesplazamiento(int pagina, int tamanoPagina)
@@ -50,9 +94,7 @@ internal static class ValidacionNotaCreditoDebito
         long desplazamiento = ((long)pagina - 1) * tamanoPagina;
         if (pagina <= 0 || tamanoPagina < 1 || tamanoPagina > 100 || desplazamiento > int.MaxValue)
         {
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "La paginación solicitada no es válida.");
+            throw FiltroInvalido();
         }
 
         return (int)desplazamiento;
@@ -63,52 +105,25 @@ internal static class ValidacionNotaCreditoDebito
         if (nota.Estado != estadoRequerido)
         {
             throw new ReglaNegocioException(
-                CodigosEstado.Status409Conflict,
-                "El estado de la nota no permite esta operación.");
+                CodigosEstado.Status409Conflict, "El estado de la nota no permite esta operación.");
         }
     }
 
-    public static string NormalizarMotivoAnulacion(string? motivo)
+    public static ReglaNegocioException FiltroInvalido()
     {
-        return NormalizarMotivo(motivo, "El motivo de anulación es obligatorio.");
+        return new ReglaNegocioException(
+            CodigosEstado.Status400BadRequest, "Los filtros o la paginación de notas no son válidos.");
     }
 
-    private static string NormalizarTipo(string? entrada)
+    public static ReglaNegocioException ImporteInvalido()
     {
-        string? tipo = entrada?.Trim();
-        if (string.Equals(tipo, NotaCreditoDebito.TipoCredito, StringComparison.OrdinalIgnoreCase))
-        {
-            return NotaCreditoDebito.TipoCredito;
-        }
-
-        if (string.Equals(tipo, NotaCreditoDebito.TipoDebito, StringComparison.OrdinalIgnoreCase))
-        {
-            return NotaCreditoDebito.TipoDebito;
-        }
-
-        throw new ReglaNegocioException(
-            CodigosEstado.Status400BadRequest,
-            "El tipo de nota debe ser Credito o Debito.");
+        return new ReglaNegocioException(
+            CodigosEstado.Status400BadRequest, "La cantidad o el importe de la nota no es válido.");
     }
 
-    private static string NormalizarMotivo(string? entrada, string mensajeObligatorio)
+    private static ReglaNegocioException DetalleInvalido()
     {
-        string motivo = entrada?.Trim() ?? string.Empty;
-        if (motivo.Length == 0)
-        {
-            throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, mensajeObligatorio);
-        }
-
-        if (motivo.Length > LongitudMaximaMotivo)
-        {
-            throw new ReglaNegocioException(
-                CodigosEstado.Status400BadRequest,
-                "El motivo de la nota supera la longitud permitida.");
-        }
-
-        return motivo;
+        return new ReglaNegocioException(
+            CodigosEstado.Status400BadRequest, "Indique al menos una línea válida y sin duplicados.");
     }
 }
-
-internal sealed record DatosNotaCreditoDebito(
-    int FacturaId, string Tipo, string Serie, int Numero, string Motivo, decimal Importe);

@@ -16,7 +16,7 @@ public sealed class AnularNotaCreditoDebitoUseCase
 
     public Task<NotaCreditoDebitoDetalleDto> ExecuteAsync(int id, AnularNotaCreditoDebitoRequestDto solicitud)
     {
-        string motivo = ValidacionNotaCreditoDebito.NormalizarMotivoAnulacion(solicitud.Motivo);
+        string motivo = ValidacionNotaCreditoDebito.NormalizarMotivo(solicitud.Motivo);
         return PersistenciaNotaCreditoDebito.ModificarAsync(_unitOfWork, id, AnularEmitidaAsync);
 
         Task AnularEmitidaAsync(NotaCreditoDebito nota)

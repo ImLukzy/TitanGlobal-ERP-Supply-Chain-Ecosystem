@@ -1,5 +1,17 @@
 BEGIN;
 
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM "Roles"
+        WHERE ("Id" = 7 AND "Codigo" <> 'FINANZAS')
+           OR ("Codigo" = 'FINANZAS' AND "Id" <> 7)
+    ) THEN
+        RAISE EXCEPTION 'El rol FINANZAS y el Id 7 no coinciden. El seed no se aplicó.';
+    END IF;
+END
+$$;
+
 TRUNCATE TABLE "RegistrosAuditoria" RESTART IDENTITY;
 
 TRUNCATE TABLE "DetallesOrdenCompra", "OrdenesCompra", "Clientes", "Productos" RESTART IDENTITY CASCADE;
@@ -291,7 +303,8 @@ INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema") VALUE
     (3, 'COMPRAS', 'Compras', 'Gestión de abastecimiento', FALSE),
     (4, 'ALMACEN', 'Almacén', 'Gestión de inventarios', FALSE),
     (5, 'CONSULTA', 'Consulta', 'Solo lectura', FALSE),
-    (6, 'RRHH', 'Recursos Humanos', 'Gestión de capital humano', FALSE);
+    (6, 'RRHH', 'Recursos Humanos', 'Gestión de capital humano', FALSE),
+    (7, 'FINANZAS', 'Finanzas', 'Operaciones financieras', FALSE);
 
 -- Contraseñas solo de desarrollo (hash BCrypt): admin → Admin2026!, invitado → Demo2026! (cuenta de demostración).
 INSERT INTO "Usuarios" ("Id", "NombreUsuario", "NombreCompleto", "Email", "Activo", "FechaAlta", "ContrasenaHash") VALUES
@@ -628,8 +641,9 @@ INSERT INTO "Facturas" (
     "ClienteId", "TipoComprobante", "Serie", "Numero", "FechaEmision",
     "Moneda", "Estado", "Subtotal", "TotalDescuento", "TotalImpuesto", "Total"
 )
-SELECT 1, 'Factura', 'F52-DEV', numero, '2026-10-01 00:00:00+00'::timestamptz,
-       'PEN', 'Emitida', 100.00, 0, 0, 100.00
+SELECT 1, CASE WHEN numero = 2 THEN 'Boleta' ELSE 'Factura' END,
+       'F52-DEV', numero, '2026-10-01 00:00:00+00'::timestamptz,
+       CASE WHEN numero = 2 THEN 'USD' ELSE 'PEN' END, 'Emitida', 100.00, 0, 0, 100.00
 FROM generate_series(1, 3) AS numeros(numero)
 ON CONFLICT ("TipoComprobante", "Serie", "Numero") DO NOTHING;
 
@@ -639,21 +653,39 @@ INSERT INTO "DetallesFactura" (
 )
 SELECT factura."Id", 1, 'Producto de ejemplo para notas', 1, 100.00, 100.00, 100.00, 100.00
 FROM "Facturas" AS factura
-WHERE factura."TipoComprobante" = 'Factura' AND factura."Serie" = 'F52-DEV'
+WHERE factura."Serie" = 'F52-DEV'
+  AND factura."TipoComprobante" = CASE WHEN factura."Numero" = 2 THEN 'Boleta' ELSE 'Factura' END
   AND factura."Numero" BETWEEN 1 AND 3
   AND NOT EXISTS (SELECT 1 FROM "DetallesFactura" AS detalle WHERE detalle."FacturaId" = factura."Id");
 
-INSERT INTO "NotasCreditoDebito" (
-    "FacturaId", "Tipo", "Serie", "Numero", "Motivo", "Total", "Estado", "FechaCreacion", "FechaEmision"
+WITH nuevas AS (
+    INSERT INTO "NotasCreditoDebito" (
+        "FacturaId", "Tipo", "Numero", "Moneda", "Motivo", "BaseImponible", "ImporteImpuesto",
+        "Total", "Estado", "FechaCreacion", "FechaEmision"
+    )
+    SELECT factura."Id", nota.tipo, nota.numero, factura."Moneda", nota.motivo, nota.total, 0,
+           nota.total, nota.estado, '2026-10-02 00:00:00+00'::timestamptz, nota.emision
+    FROM (VALUES
+        ('Factura', 1, 'Credito', 'NC-000001', 'Nota de crédito de ejemplo', 10.00, 'Emitida', DATE '2026-10-03'),
+        ('Boleta', 2, 'Debito', 'ND-000001', 'Nota de débito en preparación', 5.00, 'Borrador', NULL)
+    ) AS nota(comprobante, numero_factura, tipo, numero, motivo, total, estado, emision)
+    JOIN "Facturas" AS factura ON factura."TipoComprobante" = nota.comprobante
+        AND factura."Serie" = 'F52-DEV' AND factura."Numero" = nota.numero_factura
+    ON CONFLICT ("Numero") DO NOTHING
+    RETURNING "Id", "FacturaId", "Total"
 )
-SELECT factura."Id", nota.tipo, nota.serie, 1, nota.motivo, nota.total,
-       nota.estado, '2026-10-02 00:00:00+00'::timestamptz, nota.emision
-FROM (VALUES
-    (1, 'Credito', 'NC52-DEV', 'Nota de crédito de ejemplo', 10.00, 'Emitida', '2026-10-03 00:00:00+00'::timestamptz),
-    (2, 'Debito', 'ND52-DEV', 'Nota de débito en preparación', 5.00, 'Borrador', NULL)
-) AS nota(numero_factura, tipo, serie, motivo, total, estado, emision)
-JOIN "Facturas" AS factura ON factura."TipoComprobante" = 'Factura'
-    AND factura."Serie" = 'F52-DEV' AND factura."Numero" = nota.numero_factura
-ON CONFLICT ("Tipo", "Serie", "Numero") DO NOTHING;
+INSERT INTO "DetallesNotaCreditoDebito" (
+    "NotaCreditoDebitoId", "DetalleFacturaId", "Cantidad", "PrecioUnitario", "PorcentajeImpuesto",
+    "BaseImponible", "ImporteImpuesto", "Total"
+)
+SELECT nota."Id", detalle."Id", nota."Total" / 100.00, 100.00, 0, nota."Total", 0, nota."Total"
+FROM nuevas AS nota
+JOIN "DetallesFactura" AS detalle ON detalle."FacturaId" = nota."FacturaId"
+    AND detalle."Descripcion" = 'Producto de ejemplo para notas';
+
+SELECT setval('"SecuenciaNotasCredito"', MAX(substring("Numero" FROM 4)::bigint))
+FROM "NotasCreditoDebito" WHERE "Numero" LIKE 'NC-%';
+SELECT setval('"SecuenciaNotasDebito"', MAX(substring("Numero" FROM 4)::bigint))
+FROM "NotasCreditoDebito" WHERE "Numero" LIKE 'ND-%';
 
 COMMIT;
