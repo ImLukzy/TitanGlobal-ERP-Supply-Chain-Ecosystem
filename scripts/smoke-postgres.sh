@@ -36,6 +36,7 @@ EMPLEADO_CREADO_ID=""
 CONTRATO_LABORAL_EMPLEADO_ID=""
 CONTRATO_LABORAL_CREADO_ID=""
 CONTRATO_LABORAL_RENOVADO_ID=""
+EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 
@@ -192,6 +193,12 @@ checks = {
     "provider-countries": lambda data: data == ["Chile", "China", "Peru"],
     "providers-summary": lambda data: data["totalProveedores"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["sinEmail"] == 2 and [(item["pais"], item["totalProveedores"], item["activos"]) for item in data["porPais"]] == [("Peru", 3, 3), ("Chile", 2, 1), ("China", 1, 1)],
     "provider-created": lambda data: data["id"] > 0,
+    "evaluaciones-proveedor-1": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 1] and all(item["proveedorId"] == 1 for item in data["items"]),
+    "evaluaciones-excelente": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 6] and all(item["calificacion"] == "Excelente" for item in data["items"]),
+    "evaluacion-detalle": lambda data: data["id"] == 2 and data["proveedorId"] == 1 and data["periodo"] == "2026-10" and data["puntajeFinal"] == 92.6 and data["calificacion"] == "Excelente",
+    "evaluaciones-resumen": lambda data: data["totalEvaluaciones"] == 6 and data["proveedoresEvaluados"] == 4 and data["promedioGeneral"] == 78.72 and [(item["calificacion"], item["total"]) for item in data["porCalificacion"]] == [("Excelente", 2), ("Bueno", 2), ("Regular", 1), ("Deficiente", 1)] and [(item["proveedorId"], item["promedio"]) for item in data["ranking"]] == [(6, 95.5), (1, 89.05), (4, 66.6), (2, 65.5)],
+    "evaluacion-created": lambda data: data["id"] > 0,
+    "evaluacion-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "El proveedor 1 ya tiene una evaluación del periodo 2026-10.",
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
     "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
     "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
@@ -378,6 +385,9 @@ checks = {
     "vehiculos-resumen": lambda data: data["totalVehiculos"] == 6 and data["activos"] == 5 and data["inactivos"] == 1 and data["capacidadTotalKg"] == 44050.0 and [(item["tipo"], item["totalVehiculos"], item["activos"]) for item in data["porTipo"]] == [("Camion", 2, 2), ("Furgon", 2, 1), ("Moto", 1, 1), ("Otro", 1, 1)],
     "vehiculo-created": lambda data: data["id"] > 0,
     "vehiculo-placa-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa ABC-123.",
+    "vehiculo-placa-minuscula-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un vehículo con la placa abc-123." and "Detail" not in data,
+    "vehiculo-placa-propia-updated": lambda data: data["id"] > 0,
+    "vehiculo-placa-propia-minuscula": lambda data: data["placa"] == "smk-001" and data["observaciones"] == "Alta de smoke",
     "vehiculo-capacidad-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "La capacidad no puede superar 9999999999999999.99." and "Detail" not in data,
     "vehiculo-observaciones-invalid": lambda data: data["StatusCode"] == 400 and data["Message"] == "Las observaciones no pueden superar 500 caracteres." and "Detail" not in data,
     "conductor-sin-zona-created": lambda data: data["id"] > 0,
@@ -391,6 +401,9 @@ checks = {
     "conductor-detail": lambda data: data["id"] == 1 and data["nombre"] == "Carlos Ruiz" and data["documentoLicencia"] == "PLT-0001" and data["habilitado"] is True,
     "conductor-created": lambda data: data["id"] > 0,
     "conductor-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un conductor con el documento de licencia PLT-0001." and "Detail" not in data,
+    "conductor-duplicate-minuscula": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un conductor con el documento de licencia plt-0001." and "Detail" not in data,
+    "conductor-licencia-propia-updated": lambda data: data["id"] > 0,
+    "conductor-licencia-propia-detail": lambda data: data["documentoLicencia"] == "plt-smk-1" and data["vencimientoLicencia"] == "2027-12-31T00:00:00Z",
     "conductor-missing": lambda data: data["StatusCode"] == 404 and data["Message"] == "El conductor 9999 no existe." and "Detail" not in data,
     "openapi-empleados": lambda data: all(path in data["paths"] for path in ["/api/v1/empleados", "/api/v1/empleados/{id}", "/api/v1/empleados/{id}/cese"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/empleados", "get"), ("/api/v1/empleados", "post"), ("/api/v1/empleados/{id}", "get"), ("/api/v1/empleados/{id}", "put"), ("/api/v1/empleados/{id}/cese", "post")]) and "delete" not in data["paths"]["/api/v1/empleados/{id}"],
     "empleados-cesados": lambda data: data["total"] == 1 and data["items"][0]["legajo"] == "EMP-000004",
@@ -551,6 +564,10 @@ request_check() {
         PROVEEDOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "evaluacion-created" ]]; then
+        EVALUACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -705,6 +722,13 @@ request_check 'Resumen de proveedores' GET '/api/v1/proveedores/resumen' 200 pro
 request_check 'POST proveedor válido' POST '/api/v1/proveedores' 200 provider-created '{"razonSocial":"Proveedor Smoke","ruc":"20987654321","pais":"Peru","email":"smoke@proveedor.example","telefono":"+51 1 555-0199","activo":true}'
 request_check 'POST proveedor RUC del seed' POST '/api/v1/proveedores' 409 provider-duplicate '{"razonSocial":"Proveedor duplicado","ruc":"20600000001","pais":"Peru","activo":true}'
 request_check 'DELETE proveedor recién creado' DELETE "/api/v1/proveedores/${PROVEEDOR_CREADO_ID}" 204 ''
+request_check 'Evaluaciones del proveedor 1' GET '/api/v1/evaluaciones-proveedores?proveedorId=1' 200 evaluaciones-proveedor-1
+request_check 'Evaluaciones calificación excelente' GET '/api/v1/evaluaciones-proveedores?calificacion=excelente' 200 evaluaciones-excelente
+request_check 'Detalle de la evaluación 2' GET '/api/v1/evaluaciones-proveedores/2' 200 evaluacion-detalle
+request_check 'Resumen de evaluaciones' GET '/api/v1/evaluaciones-proveedores/resumen' 200 evaluaciones-resumen
+request_check 'POST evaluación válida' POST '/api/v1/evaluaciones-proveedores' 200 evaluacion-created '{"proveedorId":1,"periodo":"2026-08","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80,"observaciones":"Evaluación smoke"}'
+request_check 'POST evaluación del periodo repetido' POST '/api/v1/evaluaciones-proveedores' 409 evaluacion-duplicate '{"proveedorId":1,"periodo":"2026-10","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80}'
+request_check 'DELETE evaluación recién creada' DELETE "/api/v1/evaluaciones-proveedores/${EVALUACION_CREADA_ID}" 204 ''
 request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
 request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
 request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary
@@ -906,6 +930,21 @@ request_check 'Tipos de vehículo' GET '/api/v1/vehiculos-flota/tipos' 200 vehic
 request_check 'Resumen de vehículos' GET '/api/v1/vehiculos-flota/resumen' 200 vehiculos-resumen
 request_check 'POST vehículo válido' POST '/api/v1/vehiculos-flota' 200 vehiculo-created '{"placa":"SMK-001","marca":"Marca Smoke","modelo":"Modelo Smoke","anio":2024,"tipo":"Camion","capacidadKg":1234.5,"activo":true,"observaciones":"Alta de smoke"}'
 request_check 'POST vehículo con placa del seed' POST '/api/v1/vehiculos-flota' 409 vehiculo-placa-duplicate '{"placa":"ABC-123","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'POST vehículo con placa del seed en minúsculas' POST '/api/v1/vehiculos-flota' 409 vehiculo-placa-minuscula-duplicate '{"placa":"  abc-123  ","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'PUT vehículo con placa ajena en minúsculas' PUT "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 409 vehiculo-placa-minuscula-duplicate '{"placa":"abc-123","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":1000,"activo":true}'
+request_check 'PUT vehículo con su propia placa en minúsculas' PUT "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 200 vehiculo-placa-propia-updated '{"placa":"smk-001","marca":"Marca Smoke","modelo":"Modelo Smoke","anio":2024,"tipo":"Camion","capacidadKg":1234.5,"activo":true,"observaciones":"Alta de smoke"}'
+request_check 'GET vehículo conserva su placa en minúsculas' GET "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 200 vehiculo-placa-propia-minuscula
+# La escritura directa evita la validación de Application y comprueba el índice real.
+if error_placa_duplicada="$(docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -c \
+    "INSERT INTO \"VehiculosFlota\" (\"Placa\", \"Marca\", \"Modelo\", \"Anio\", \"Tipo\", \"CapacidadKg\", \"Activo\") SELECT upper(\"Placa\"), \"Marca\", \"Modelo\", \"Anio\", \"Tipo\", \"CapacidadKg\", \"Activo\" FROM \"VehiculosFlota\" WHERE \"Id\" = ${VEHICULO_CREADO_ID};" 2>&1)"; then
+    printf 'ERROR: PostgreSQL admitió una placa duplicada con otras mayúsculas\n' >&2
+    exit 1
+fi
+if [[ "$error_placa_duplicada" != *23505* || "$error_placa_duplicada" != *UX_VehiculosFlota_PlacaNormalizada* ]]; then
+    printf 'ERROR: la escritura directa no falló por el índice esperado de placas\n%s\n' "$error_placa_duplicada" >&2
+    exit 1
+fi
+printf 'OK: índice de placas rechaza duplicados sin distinguir mayúsculas\n'
 request_check 'POST vehículo con capacidad fuera de decimal(18,2)' POST '/api/v1/vehiculos-flota' 400 vehiculo-capacidad-invalid '{"placa":"SMK-002","marca":"Marca","modelo":"Modelo","anio":2024,"tipo":"Camion","capacidadKg":100000000000000000,"activo":true}'
 request_check 'POST vehículo con observaciones de 501 caracteres' POST '/api/v1/vehiculos-flota' 400 vehiculo-observaciones-invalid "{\"placa\":\"SMK-003\",\"marca\":\"Marca\",\"modelo\":\"Modelo\",\"anio\":2024,\"tipo\":\"Camion\",\"capacidadKg\":1000,\"activo\":true,\"observaciones\":\"${OBSERVACIONES_LARGAS}\"}"
 request_check 'DELETE vehículo recién creado' DELETE "/api/v1/vehiculos-flota/${VEHICULO_CREADO_ID}" 204 ''
@@ -913,6 +952,20 @@ request_check 'Conductores del seed' GET '/api/v1/conductores' 200 conductores-l
 request_check 'Detalle del conductor 1' GET '/api/v1/conductores/1' 200 conductor-detail
 request_check 'Crear conductor smoke' POST '/api/v1/conductores' 200 conductor-created '{"nombre":"Conductor Smoke","documentoLicencia":"PLT-SMK-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true,"observaciones":"Alta de smoke"}'
 request_check 'Conductor con documento duplicado' POST '/api/v1/conductores' 409 conductor-duplicate '{"nombre":"Conductor Duplicado","documentoLicencia":"PLT-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'POST conductor con licencia del seed en minúsculas' POST '/api/v1/conductores' 409 conductor-duplicate-minuscula '{"nombre":"Conductor Duplicado","documentoLicencia":"  plt-0001  ","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'PUT conductor con licencia ajena en minúsculas' PUT "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 409 conductor-duplicate-minuscula '{"nombre":"Conductor Smoke","documentoLicencia":"plt-0001","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'PUT conductor cambia mayúsculas de su propia licencia' PUT "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 200 conductor-licencia-propia-updated '{"nombre":"Conductor Smoke","documentoLicencia":"plt-smk-1","vencimientoLicencia":"2027-12-31T00:00:00Z","habilitado":true,"activo":true}'
+request_check 'GET conductor conserva documento y fecha UTC' GET "/api/v1/conductores/${CONDUCTOR_CREADO_ID}" 200 conductor-licencia-propia-detail
+if error_licencia_duplicada="$(docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -c \
+    "INSERT INTO \"Conductores\" (\"Nombre\", \"DocumentoLicencia\", \"VencimientoLicencia\", \"Habilitado\", \"Activo\") SELECT \"Nombre\", upper(\"DocumentoLicencia\"), \"VencimientoLicencia\", \"Habilitado\", \"Activo\" FROM \"Conductores\" WHERE \"Id\" = ${CONDUCTOR_CREADO_ID};" 2>&1)"; then
+    printf 'ERROR: PostgreSQL admitió una licencia duplicada con otras mayúsculas\n' >&2
+    exit 1
+fi
+if [[ "$error_licencia_duplicada" != *23505* || "$error_licencia_duplicada" != *UX_Conductores_DocumentoLicenciaNormalizado* ]]; then
+    printf 'ERROR: la escritura directa no falló por el índice esperado de licencias\n%s\n' "$error_licencia_duplicada" >&2
+    exit 1
+fi
+printf 'OK: índice de licencias rechaza duplicados sin distinguir mayúsculas\n'
 request_check 'Crear conductor con fecha sin Z' POST '/api/v1/conductores' 200 conductor-sin-zona-created '{"nombre":"Conductor Sin Zona","documentoLicencia":"PLT-SMK-2","vencimientoLicencia":"2027-12-31","habilitado":true,"activo":true}'
 request_check 'Detalle del conductor con fecha sin Z' GET "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 200 conductor-sin-zona-detail
 request_check 'Eliminar conductor con fecha sin Z' DELETE "/api/v1/conductores/${CONDUCTOR_SIN_ZONA_ID}" 204 ''

@@ -25,8 +25,8 @@ Reglas aplicadas: V1 a V6, T2, T5 y T6. Lo que las reglas no fijan se marca **[e
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/026-vacaciones-permisos.sql` | crear | tabla `Ausencias`; fila 026 en `docs/equipo/relevo.md` §8 |
-| `docs/equipo/relevo.md` | modificar | solo la fila 026 |
+| `database/036-vacaciones-permisos.sql` | crear | tabla `Ausencias`; fila 036 en `docs/equipo/relevo.md` §8 |
+| `docs/equipo/relevo.md` | modificar | solo la fila 036 |
 | entidad `Ausencia`, navegación en `Empleado`, `TitanGlobalDbContext.cs` | regenerar | `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Application/DTOs/Modulo65_VacacionesPermisos/*.cs` | crear | |
 | `src/TitanGlobal.Application/UseCases/Modulo65_VacacionesPermisos/AdministrarAusenciasUseCase.cs`, `ValidacionAusencia.cs`, `CalculadoraSaldoVacacional.cs` | crear | la calculadora es estática y pública |
@@ -99,7 +99,7 @@ En el mensaje 14 el saldo se escribe con un decimal y punto (`12.5`).
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 026, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 036, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: DTOs, validación, calculadora, caso de uso y controlador.
 - [x] Tarea 3: pruebas, seed y humo; A1 a A5 en §7.
 
@@ -108,7 +108,8 @@ En el mensaje 14 el saldo se escribe con un decimal y punto (`12.5`).
 |---|---|---|---|
 | 2026-11-22 | A1 | `verify.sh` llega al `dotnet test`: 1309 de 1310 pruebas en verde; solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` (CRLF del entorno, ajeno al módulo) | `PATH=shim ./scripts/verify.sh`; `npm --prefix frontend run verify` en verde |
 | 2026-11-22 | A2, A3, A4 | 47 pruebas del módulo 65 en verde (mensajes 1 a 23, calculadora con fin de mes, roles, auditoría) | `dotnet test --filter FullyQualifiedName~Modulo65` |
-| 2026-11-22 | A5 | `SMOKE OK` con `026` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
+| 2026-11-22 | A5 | `SMOKE OK` con `036` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
+| 2026-11-23 | Actualización con main | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 036: gate y smoke en verde (compilación con 0 advertencias, `dotnet test` con 1362 superadas y solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` por CRLF local, `check-rules.sh` limpio, scaffold al día, `npm run verify` con 961 pruebas); smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `dotnet build -warnaserror`, `dotnet test`, `./scripts/check-rules.sh`, `npm --prefix frontend run verify` |
 
 **Detalles resueltos al implementar (opción más simple):**
 - `AprobadasMes`: ausencias `Aprobada` cuya `FechaInicio` cae en el mes calendario actual (UTC). `AusentesHoy` cuenta ausencias (no hay solapes entre aprobadas), no empleados.
