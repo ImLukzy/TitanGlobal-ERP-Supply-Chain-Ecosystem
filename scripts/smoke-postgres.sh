@@ -154,6 +154,25 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    "m48-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m48-flete-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m48-list": lambda d: d["total"] == 6 and len(d["items"]) == 6,
+    "m48-inactivos": lambda d: d["total"] == 1 and d["items"][0]["activo"] is False,
+    "m48-resumen": lambda d: d["totalTransportistas"] == 6 and d["activos"] == 5 and d["inactivos"] == 1 and sum(t["totalTransportistas"] for t in d["porTipoServicio"]) == 6,
+    "m48-fletes": lambda d: d["total"] == 4 and all(isinstance(f["importe"], str) for f in d["items"]) and set(f["moneda"] for f in d["items"]) == {"PEN", "USD"},
+    "m48-flete-detail": lambda d: d["referencia"] == "SMOKE-48" and d["importe"] == "9999999999999999.99" and d["moneda"] == "USD" and d["fecha"] == "2026-11-21T00:00:00Z" and d["estado"] == "Registrado",
+    "m48-cancelado": lambda d: d["estado"] == "Cancelado" and d["motivoCancelacion"] == "Ruta suspendida" and d["fechaCancelacion"].endswith("Z"),
+    "m48-filtro": lambda d: d["total"] == 1 and d["items"][0]["referencia"] == "SMOKE-48" and d["items"][0]["estado"] == "Cancelado",
+    "m48-inactivo-detail": lambda d: d["activo"] is False and d["tipoServicio"] == "Ambos" and d["contacto"] is None,
+    "m48-duplicate": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe un transportista con el documento fiscal smoke-48 en perú.",
+    "m48-historial": lambda d: d["StatusCode"] == 409 and d["Message"] == "No se puede eliminar un transportista con fletes registrados.",
+    "m48-inactivo": lambda d: d["StatusCode"] == 409 and d["Message"] == "No se pueden registrar fletes para un transportista inactivo.",
+    "m48-referencia": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe un flete con la referencia smoke-48 para este transportista.",
+    "m48-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "El importe no puede tener más de 2 decimales.",
+    "m48-motivo": lambda d: d["StatusCode"] == 400 and d["Message"] == "El motivo de cancelación es obligatorio.",
+    "m48-repetida": lambda d: d["StatusCode"] == 409 and re.fullmatch(r"El flete [0-9]+ ya está cancelado\.", d["Message"]) is not None,
+    "m48-missing": lambda d: d["StatusCode"] == 404 and d["Message"] == "El transportista 999999 no existe.",
+    "m48-openapi": lambda d: all(verb in d["paths"][path] for path, verb in [("/api/v1/transportistas-terceros", "get"), ("/api/v1/transportistas-terceros", "post"), ("/api/v1/transportistas-terceros/{id}", "get"), ("/api/v1/transportistas-terceros/{id}", "put"), ("/api/v1/transportistas-terceros/{id}", "delete"), ("/api/v1/transportistas-terceros/resumen", "get"), ("/api/v1/fletes-terceros", "get"), ("/api/v1/fletes-terceros", "post"), ("/api/v1/fletes-terceros/{id}", "get"), ("/api/v1/fletes-terceros/{id}/cancelacion", "post")]) and "delete" not in d["paths"]["/api/v1/fletes-terceros/{id}"] and "put" not in d["paths"]["/api/v1/fletes-terceros/{id}"],
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -623,6 +642,12 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m48-created" ]]; then
+        TRANSPORTISTA_48_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m48-flete-created" ]]; then
+        FLETE_48_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -993,6 +1018,61 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 48: contratos y persistencia real, sin modificar módulos ajenos.
+TOKEN_48_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M48 exige sesión' GET '/api/v1/transportistas-terceros' 401 no-session
+request_check 'M48 fletes exige sesión' GET '/api/v1/fletes-terceros' 401 no-session
+TOKEN_ACTUAL="$TOKEN_48_ADMIN"
+request_check 'M48 OpenAPI diez operaciones' GET '/openapi/v1.json' 200 m48-openapi
+request_check 'M48 maestro del seed' GET '/api/v1/transportistas-terceros' 200 m48-list
+request_check 'M48 inactivos' GET '/api/v1/transportistas-terceros?activo=false' 200 m48-inactivos
+request_check 'M48 resumen' GET '/api/v1/transportistas-terceros/resumen' 200 m48-resumen
+request_check 'M48 fletes en monedas originales' GET '/api/v1/fletes-terceros' 200 m48-fletes
+request_check 'M48 crear inactivo' POST '/api/v1/transportistas-terceros' 200 m48-created '{"razonSocial":"Smoke 48","documentoFiscal":"SMOKE-48","pais":"Perú","tipoServicio":"ambos","contacto":" ","activo":false}'
+request_check 'M48 false y normalización persistidos' GET "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 200 m48-inactivo-detail
+request_check 'M48 duplicado normalizado' POST '/api/v1/transportistas-terceros' 409 m48-duplicate '{"razonSocial":"Otro","documentoFiscal":" smoke-48 ","pais":" perú ","tipoServicio":"Flete"}'
+FLETE_48_JSON='{"transportistaId":'"${TRANSPORTISTA_48_ID}"',"referencia":"SMOKE-48","fecha":"2026-11-21","origen":"Lima","destino":"Callao","importe":9999999999999999.99,"moneda":"usd"}'
+request_check 'M48 impide flete de inactivo' POST '/api/v1/fletes-terceros' 409 m48-inactivo "$FLETE_48_JSON"
+request_check 'M48 activar transportista' PUT "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 200 created '{"razonSocial":"Smoke 48","documentoFiscal":"SMOKE-48","pais":"Perú","tipoServicio":"Ambos","activo":true}'
+request_check 'M48 flete sin Z y decimal máximo' POST '/api/v1/fletes-terceros' 200 m48-flete-created "$FLETE_48_JSON"
+request_check 'M48 fecha UTC e importe exacto' GET "/api/v1/fletes-terceros/${FLETE_48_ID}" 200 m48-flete-detail
+request_check 'M48 impide baja con historial' DELETE "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 409 m48-historial
+request_check 'M48 no redondea' POST '/api/v1/fletes-terceros' 400 m48-decimales '{"transportistaId":1,"referencia":"DEC-48","fecha":"2026-11-21","origen":"Lima","destino":"Callao","importe":1.001,"moneda":"PEN"}'
+request_check 'M48 exige motivo' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 400 m48-motivo '{"motivo":" "}'
+request_check 'M48 cancelar con motivo' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 200 created '{"motivo":"  Ruta suspendida  "}'
+request_check 'M48 historial de cancelación' GET "/api/v1/fletes-terceros/${FLETE_48_ID}" 200 m48-cancelado
+request_check 'M48 no permite doble cancelación' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 409 m48-repetida '{"motivo":"Repetida"}'
+request_check 'M48 cancelado reserva referencia' POST '/api/v1/fletes-terceros' 409 m48-referencia "${FLETE_48_JSON/SMOKE-48/smoke-48}"
+request_check 'M48 filtrar historial' GET "/api/v1/fletes-terceros?transportistaId=${TRANSPORTISTA_48_ID}&estado=Cancelado&busqueda=callao" 200 m48-filtro
+request_check 'M48 cancelado impide baja' DELETE "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 409 m48-historial
+request_check 'M48 inexistente' GET '/api/v1/transportistas-terceros/999999' 404 m48-missing
+# Deshacer únicamente los datos de esta comprobación después de validar su historial.
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO "TransportistasTerceros" ("RazonSocial", "DocumentoFiscal", "Pais", "TipoServicio")
+        VALUES ('Duplicado SQL', ' smoke-48 ', ' perú ', 'Flete');
+        RAISE EXCEPTION 'M48: falta unicidad normalizada del transportista';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "FletesTerceros" ("TransportistaTerceroId", "Referencia", "Fecha", "Origen", "Destino", "Importe", "Moneda")
+        SELECT "TransportistaTerceroId", ' smoke-48 ', now(), 'Lima', 'Callao', 1, 'PEN'
+        FROM "FletesTerceros" WHERE "Referencia" = 'SMOKE-48';
+        RAISE EXCEPTION 'M48: falta unicidad normalizada de la referencia';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        DELETE FROM "TransportistasTerceros" WHERE "DocumentoFiscal" = 'SMOKE-48';
+        RAISE EXCEPTION 'M48: falta protección de historial por clave foránea';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+END $$;
+DELETE FROM "FletesTerceros" WHERE "Referencia" = 'SMOKE-48';
+DELETE FROM "TransportistasTerceros" WHERE "DocumentoFiscal" = 'SMOKE-48';
+SQL
 request_check 'OpenAPI de turnos y asignaciones' GET '/openapi/v1.json' 200 openapi-turnos
 request_check 'Turnos rotativos' GET '/api/v1/turnos?tipo=Rotativo' 200 turnos-rotativos
 request_check 'Resumen de turnos' GET '/api/v1/turnos/resumen' 200 turnos-resumen
