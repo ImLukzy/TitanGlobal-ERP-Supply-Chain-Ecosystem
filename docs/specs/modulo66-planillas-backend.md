@@ -19,7 +19,7 @@
 3. **Sueldo.** El vigente el último día cubierto del mes (contrato más adendas, como `SueldoVigente` del 62). El prorrateo por tramos de adendas queda fuera de v0.
 4. **Horas extra (P3).** Jornadas del mes con horas extra `Aprobada`. Valor hora = sueldo / 30 / `HORAS_JORNADA`; por jornada, los primeros `MINUTOS_RECARGO_25` minutos con 25 % y el resto con 35 % (D. S. 007-2002-TR).
 5. **Pensión (P4).** Tabla `AfiliacionesPension` por empleado: `ONP` (13 % de los ingresos) o una AFP (aporte + comisión sobre ingresos, más prima de seguro sobre `min(ingresos, RemuneracionMaximaAsegurable)`). Sin afiliación, el empleado se excluye con la incidencia «Sin afiliación a un sistema de pensiones.».
-6. **Salud.** EsSalud (9 %) lo paga el empleador en Perú: se calcula y se muestra como `AporteEssalud`, pero **no se descuenta** al trabajador. P4 lo lista entre los descuentos; esta es la desviación consciente.
+6. **Salud.** EsSalud (9 %) lo paga el empleador en Perú: se calcula y se muestra como `AporteEssalud`, pero **no se descuenta** al trabajador. P4 lo lista entre los descuentos; esta es la desviación consciente. Confirmado por Lukas el 2026-11-24: es aporte del empleador.
 7. **Quinta categoría (P4), método simplificado.** Proyección anual = ingresos del mes × 12; base = proyección − 7 UIT; impuesto anual por tramos de `TramosQuintaCategoria` (hasta 5, 20, 35 y 45 UIT y el resto: 8, 14, 17, 20 y 30 %); retención = impuesto / 12. Sin ajustes por meses anteriores.
 8. **Préstamos (P4, L3).** Después de pensión y quinta, con el saldo restante como tope (`DescontarCuotasAsync` del 67). Si se recalcula, primero `RevertirDescuentosAsync`.
 9. **Neto negativo (P5).** Si pensión más quinta superan los ingresos, el empleado se excluye con la incidencia «Neto negativo: revisar ingresos y descuentos.».
@@ -105,6 +105,8 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 
 **Seed:** parámetros, pensiones y tramos; afiliaciones de los empleados 1 (INTEGRA), 2 (ONP) y 3 (PRIMA); un bono del empleado 1 en 2026-10; planilla mensual 2026-10 `Pagada` con sus detalles y boletas calculados con estas reglas (los importes se obtienen ejecutando el cálculo y se copian al seed), y 2026-11 en `Borrador`.
 
+**Parámetros de ejemplo:** los valores de `ParametrosPlanilla`, `ParametrosPension` y de los tramos de quinta categoría del seed (UIT, tasas de AFP y ONP, comisiones, tope asegurable y tramos) son de ejemplo para la demo y las pruebas, no valores legales vigentes. Antes de usar la planilla en producción hay que cargarlos desde fuentes oficiales por script SQL (hasta que exista ParametrosSistema, módulo 79).
+
 **Pruebas:** un caso por mensaje; `CalculadoraRemuneracion` con casos numéricos a mano: mes completo ONP, AFP con tope de la prima, ingreso parcial por alta a mitad de mes, permiso sin goce, faltas, horas extra con tramo de 25 % y 35 %, quinta con tramos (0 bajo 7 UIT, un tramo, varios tramos), préstamo limitado por el neto, neto negativo, sin afiliación; flujo completo con recálculo (los descuentos de préstamos no se duplican), aprobación inmutable (P2), boletas únicas (P6), complementaria; roles; auditoría.
 
 **Humo:** OpenAPI; parámetros; crear 2026-11 duplicada → 409 con el mensaje 5; calcular la 2026-11 del seed → 200; aprobar → 200; recalcular → 409 con el mensaje 10; boleta de un detalle → 200 con número `BOL-`; pago → 200.
@@ -137,7 +139,7 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 - **Totales y contadores.** `Empleados`, `TotalIngresos`, `TotalDescuentos`, `TotalNeto` y `TotalAportesEmpleador` cuentan solo los empleados incluidos; `Incidencias` cuenta los excluidos (sin afiliación o neto negativo). Un excluido se guarda con días y sueldo informativos pero importes en 0.
 - **Préstamos y tope.** La calculadora devuelve `SaldoParaPrestamos` (neto tras pensión y quinta); `DescontarCuotasAsync` lo usa como `montoMaximo` y `AplicarPrestamos` vuelve a acotar al neto.
 - **Faltas y permisos.** `DiasFalta` cuenta fechas distintas con jornada `Falta` del mes; `DiasSinGoce` cuenta los días naturales del mes cubiertos por ausencias `PermisoSinGoce` aprobadas, aunque caigan fuera de los días de contrato.
-- **Parámetros ausentes.** Si falta una clave de `ParametrosPlanilla` o no hay tramos, se usan los valores del seed (UIT 5350, EsSalud 9 %, jornada de 8 h, 120 min al 25 %, recargos 0.25/0.35, 7 UIT y los cinco tramos).
+- **Parámetros ausentes.** Si falta una clave de `ParametrosPlanilla` o no hay tramos, se usan los valores del seed (UIT 5350, EsSalud 9 %, jornada de 8 h, 120 min al 25 %, recargos 0.25/0.35, 7 UIT y los cinco tramos). Estos valores de respaldo son también de ejemplo.
 - **Quinta en la complementaria.** Se calcula con la misma fórmula sobre los ingresos de los bonos (sin acumular lo de la mensual).
 - **Bonos sin empleado calculado.** Un bono mensual de un empleado sin días cubiertos o excluido queda sin `PlanillaId`.
 - **Resumen.** `UltimoPeriodo` es `AAAA-MM` de la última planilla mensual (nulo si no hay) y `BorradoresYCalculadas` cuenta todas las planillas en ambos estados.
