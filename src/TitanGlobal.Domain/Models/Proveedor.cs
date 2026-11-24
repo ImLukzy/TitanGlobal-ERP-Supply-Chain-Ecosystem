@@ -19,6 +19,8 @@ public partial class Proveedor
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = new List<EvaluacionProveedor>();
+
     public virtual ICollection<Licitacion> Licitaciones { get; set; } = new List<Licitacion>();
 
     public virtual ICollection<OfertaLicitacion> OfertasLicitacion { get; set; } = new List<OfertaLicitacion>();

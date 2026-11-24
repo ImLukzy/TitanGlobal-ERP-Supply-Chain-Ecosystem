@@ -54,3 +54,4 @@
 | 2026-11-05 | A5 | pasa | `MatrizPermisos.test.tsx`: 9 tests |
 | 2026-11-05 | A6 | pasa | `npx vitest run` en la rama fusionada con `main`: 71 archivos y 534 tests, 10 ejecuciones seguidas sin fallos |
 | 2026-11-05 | A7 | adjuntas | capturas con `page.route` a 375 y 1280 px, claro y oscuro (editor con un dominio abierto, matriz, diálogo de baja y lista con rol de sistema): sin scroll horizontal de página, margen lateral mínimo de 34 px (375) y 67 px (1280), sin palabras partidas |
+| 2026-11-23 | Integración y producción | pasa | PR #42 fusionado con merge commit (`599dbb0`) tras `verify.sh` y `smoke-postgres.sh` en verde sobre la rama fusionada con `main`; gate de GitHub, Vercel y Render correctos; en producción la pantalla muestra «Matriz de permisos» y «Editar permisos», y `/api/v1/roles` y `/api/v1/roles/{id}/permisos` responden 200 |
