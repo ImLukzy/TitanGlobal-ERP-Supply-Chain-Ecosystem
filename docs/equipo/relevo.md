@@ -106,5 +106,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | no (en `main` por el PR #51 y aplicado en la demo) |
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | no (en `main` por el PR #59 y aplicado en la demo) |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
+| 043 | `043-control-calidad-insumos.sql` | Antony | `antony/modulo36-control-calidad-insumos` | no |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
