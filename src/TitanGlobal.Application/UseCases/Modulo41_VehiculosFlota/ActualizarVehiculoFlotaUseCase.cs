@@ -34,9 +34,10 @@ public class ActualizarVehiculoFlotaUseCase
             throw new ReglaNegocioException(CodigosEstado.Status404NotFound, $"El vehículo {id} no existe.");
         }
 
+        string placaNormalizada = placa.ToLowerInvariant();
         bool placaEnUso = await _unitOfWork.Repository<VehiculoFlota>()
             .AsQueryable()
-            .AnyAsync(v => v.Placa == placa && v.Id != id);
+            .AnyAsync(v => v.Placa.Trim().ToLower() == placaNormalizada && v.Id != id);
 
         if (placaEnUso)
         {
