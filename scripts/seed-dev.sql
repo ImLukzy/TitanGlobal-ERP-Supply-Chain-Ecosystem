@@ -757,4 +757,36 @@ INSERT INTO "CuotasPrestamo" ("Id", "PrestamoId", "NumeroCuota", "Anio", "Mes", 
 SELECT setval(pg_get_serial_sequence('"Prestamos"', 'Id'), (SELECT MAX("Id") FROM "Prestamos"));
 SELECT setval(pg_get_serial_sequence('"CuotasPrestamo"', 'Id'), (SELECT MAX("Id") FROM "CuotasPrestamo"));
 
+TRUNCATE TABLE "DescuentosCuotaPrestamo", "BonosPlanilla", "PlanillaDetalles", "Planillas", "AfiliacionesPension" RESTART IDENTITY CASCADE;
+
+-- ParametrosPlanilla, ParametrosPension y TramosQuintaCategoria los carga database/038-planillas.sql (catalogos).
+
+INSERT INTO "AfiliacionesPension" ("Id", "EmpleadoId", "ParametroPensionId", "Cuspp", "FechaAfiliacion") VALUES
+    (1, 1, 2, '123456ATORR1', DATE '2021-03-01'),
+    (2, 2, 1, NULL, DATE '2019-08-16'),
+    (3, 3, 3, '654321MSALA0', DATE '2024-01-08');
+
+-- Planilla 2026-10 pagada: los importes salen de CalculadoraRemuneracion con estos datos (empleado 1: 9500 + bono 500, INTEGRA;
+-- empleado 2: 4200, ONP; cuotas de prestamo descontadas de los prestamos 1 y 2 del modulo 67). Planilla 2026-11 en borrador.
+INSERT INTO "Planillas" ("Id", "Numero", "Anio", "Mes", "Tipo", "Estado", "Empleados", "Incidencias", "TotalIngresos", "TotalDescuentos", "TotalNeto", "TotalAportesEmpleador", "FechaCalculo", "CalculadoPor", "AprobadoPor", "FechaAprobacion", "FechaPago") VALUES
+    (1, 'PLA-202610-M', 2026, 10, 'Mensual', 'Pagada', 2, 0, 14200.00, 3353.66, 10846.34, 1278.00, TIMESTAMPTZ '2026-11-02 15:00:00+00', 'admin', 'admin', TIMESTAMPTZ '2026-11-03 15:00:00+00', DATE '2026-11-05'),
+    (2, 'PLA-202611-M', 2026, 11, 'Mensual', 'Borrador', 0, 0, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO "PlanillaDetalles" ("Id", "PlanillaId", "EmpleadoId", "ContratoLaboralId", "Cargo", "SueldoBasico", "DiasContrato", "DiasSinGoce", "DiasFalta", "DiasLaborados", "IngresoBasico", "MinutosExtra", "IngresoHorasExtra", "IngresoBonos", "TotalIngresos", "CodigoPension", "DescuentoPension", "DescuentoQuinta", "DescuentoPrestamos", "TotalDescuentos", "Neto", "AporteEssalud", "Incidencia", "NumeroBoleta") VALUES
+    (1, 1, 1, 1, 'Gerente Comercial', 9500.00, 30, 0, 0, 30, 9500.00, 0, 0.00, 500.00, 10000.00, 'INTEGRA', 1292.00, 829.33, 100.00, 2221.33, 7778.67, 900.00, NULL, 'BOL-202610-M-000001'),
+    (2, 1, 2, 4, 'Analista de Compras', 4200.00, 30, 0, 0, 30, 4200.00, 0, 0.00, 0.00, 4200.00, 'ONP', 546.00, 86.33, 500.00, 1132.33, 3067.67, 378.00, NULL, 'BOL-202610-M-000002');
+
+INSERT INTO "BonosPlanilla" ("Id", "EmpleadoId", "Anio", "Mes", "TipoPlanilla", "Concepto", "Monto", "PlanillaId") VALUES
+    (1, 1, 2026, 10, 'Mensual', 'Bono por metas', 500.00, 1);
+
+INSERT INTO "DescuentosCuotaPrestamo" ("Id", "CuotaPrestamoId", "PlanillaId", "Monto") VALUES
+    (1, 2, 1, 100.00),
+    (2, 7, 1, 500.00);
+
+SELECT setval(pg_get_serial_sequence('"AfiliacionesPension"', 'Id'), (SELECT MAX("Id") FROM "AfiliacionesPension"));
+SELECT setval(pg_get_serial_sequence('"Planillas"', 'Id'), (SELECT MAX("Id") FROM "Planillas"));
+SELECT setval(pg_get_serial_sequence('"PlanillaDetalles"', 'Id'), (SELECT MAX("Id") FROM "PlanillaDetalles"));
+SELECT setval(pg_get_serial_sequence('"BonosPlanilla"', 'Id'), (SELECT MAX("Id") FROM "BonosPlanilla"));
+SELECT setval(pg_get_serial_sequence('"DescuentosCuotaPrestamo"', 'Id'), (SELECT MAX("Id") FROM "DescuentosCuotaPrestamo"));
+
 COMMIT;

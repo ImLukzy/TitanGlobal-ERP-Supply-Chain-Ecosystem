@@ -29,6 +29,7 @@ import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
 import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiometricaPage';
 import { VacacionesPermisosPage } from './vacaciones-permisos/VacacionesPermisosPage';
 import { AdelantosPrestamosPage } from './adelantos-prestamos/AdelantosPrestamosPage';
+import { PlanillasPage } from './planillas/PlanillasPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -61,4 +62,5 @@ export const pantallas: Record<string, ComponentType> = {
   '63-asistencia-biometrica': AsistenciaBiometricaPage,
   '65-vacaciones-permisos': VacacionesPermisosPage,
   '67-adelantos-prestamos': AdelantosPrestamosPage,
+  '66-planillas': PlanillasPage,
 };
