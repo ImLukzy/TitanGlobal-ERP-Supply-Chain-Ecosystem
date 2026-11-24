@@ -35,5 +35,7 @@ public partial class Empleado
 
     public string? MotivoCese { get; set; }
 
+    public virtual ICollection<CentroCosto> CentrosCosto { get; set; } = new List<CentroCosto>();
+
     public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
 }
