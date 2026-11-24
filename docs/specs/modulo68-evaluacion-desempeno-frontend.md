@@ -36,7 +36,7 @@
 | A3 | Ciclos | tests: competencias, suma de pesos, abrir bloqueado, cerrar, resultados | pasan |
 | A4 | Evaluaciones | tests: alta con validación, calificación con puntaje en vivo, envío, cierre | pasan |
 | A5 | Roles y pestañas | tests | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo68/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests.
@@ -53,6 +53,7 @@
 | 2026-11-22 | A4 | cumple | `EvaluacionesVista.test.tsx` (14): alta con mensajes 17 y 18, calificación con puntaje estimado en vivo, guardado, envío (con el 28 del servidor), cierre y solo lectura |
 | 2026-11-22 | A5 | cumple | `EvaluacionDesempenoPage.test.tsx` (5): pestañas por `?vista=`, flechas y `tabIndex`, y roles RRHH/ADMIN frente a otros; `npx vitest run src/modules/evaluacion-desempeno` ×3: 5 archivos y 62 pruebas superadas cada vez |
 | 2026-11-22 | A6 | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro, aún sin tomar |
+| 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo68/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
 
 ### Opciones tomadas donde la spec no decía nada
 - **Columna «Evaluaciones» de la tabla de ciclos:** el listado del backend no trae el conteo (solo el detalle), así que la tabla muestra Código, Nombre, Periodo, Fechas y Estado, y los conteos por estado van en el detalle.

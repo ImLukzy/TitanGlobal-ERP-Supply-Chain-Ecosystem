@@ -91,7 +91,7 @@ Verificado en el repositorio (rama desde `origin/main` `e48a190`): existen `pant
 | A6 | Roles (decisión 1) | tests: con `roles: ['CONSULTA']` los botones de escritura deshabilitados con el texto; con `RRHH` o `ADMIN`, habilitados | pasan |
 | A7 | Sin regresiones | las demás pantallas sin cambios; la prueba de «Pantalla pendiente» de `App.test.tsx` sigue en verde; la suite pasa 10 veces seguidas | pasan |
 | A8 | QA contra PostgreSQL | API local con `scripts/seed-dev.sql`: CTR-000005 se ve `Vencido`, CTR-000001 muestra «Gerente Comercial» y 9500.00 vigentes, alta, renovación, adenda y anulación de extremo a extremo; seed restaurado al terminar | anotado en §7 |
-| A9 | Visual | capturas a 375 y 1280 px, claro y oscuro: listado con detalle `Vigente` y `Anulado`, alta y los tres diálogos; comparación con Empleados; sin scroll horizontal de página ni palabras partidas | adjuntas al PR |
+| A9 | Visual | capturas a 375 y 1280 px, claro y oscuro: listado con detalle `Vigente` y `Anulado`, alta y los tres diálogos; comparación con Empleados; sin scroll horizontal de página ni palabras partidas | en `docs/evidencias/modulo62/` |
 
 ## 6. Checklist de ejecución
 - [x] Decisiones 1 a 3 de §2 resueltas con la opción A (acuerdo con Lukas del 2026-11-22; revisión al final).
@@ -114,3 +114,5 @@ Verificado en el repositorio (rama desde `origin/main` `e48a190`): existen `pant
 | 2026-11-22 | A7 | Parcial: suite completa en verde (600 tests, incluida «Pantalla pendiente» de `App.test.tsx`); la carpeta del módulo se ejecutó 3 veces seguidas (57 tests cada vez). Las 10 repeticiones de la suite completa quedan pendientes | `npx vitest run src/modules/contratos-laborales` x3 |
 | 2026-11-22 | A8 | pendiente: QA contra PostgreSQL y capturas | — |
 | 2026-11-22 | A9 | pendiente: QA contra PostgreSQL y capturas | — |
+| 2026-11-24 | A8 | Parcial: en pantalla contra PostgreSQL local, CTR-000005 se ve `Vencido` y CTR-000001 muestra «Gerente Comercial» y S/ 9,500.00 vigentes; alta, renovación, adenda y anulación se abrieron sin enviar (el seed no cambia). Los flujos de escritura contra PostgreSQL los cubre `./scripts/smoke-postgres.sh` (SMOKE OK en la rama final) | `docs/evidencias/modulo62/` |
+| 2026-11-24 | A9 | OK | 32 capturas (8 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo62/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
