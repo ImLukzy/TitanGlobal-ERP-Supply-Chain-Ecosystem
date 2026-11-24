@@ -757,30 +757,9 @@ INSERT INTO "CuotasPrestamo" ("Id", "PrestamoId", "NumeroCuota", "Anio", "Mes", 
 SELECT setval(pg_get_serial_sequence('"Prestamos"', 'Id'), (SELECT MAX("Id") FROM "Prestamos"));
 SELECT setval(pg_get_serial_sequence('"CuotasPrestamo"', 'Id'), (SELECT MAX("Id") FROM "CuotasPrestamo"));
 
-TRUNCATE TABLE "DescuentosCuotaPrestamo", "BonosPlanilla", "PlanillaDetalles", "Planillas", "AfiliacionesPension", "ParametrosPension", "ParametrosPlanilla", "TramosQuintaCategoria" RESTART IDENTITY CASCADE;
+TRUNCATE TABLE "DescuentosCuotaPrestamo", "BonosPlanilla", "PlanillaDetalles", "Planillas", "AfiliacionesPension" RESTART IDENTITY CASCADE;
 
-INSERT INTO "ParametrosPlanilla" ("Id", "Clave", "Valor", "Descripcion") VALUES
-    (1, 'UIT', 5350.0000, 'Unidad impositiva tributaria'),
-    (2, 'TASA_ESSALUD', 0.0900, 'Aporte del empleador a EsSalud'),
-    (3, 'HORAS_JORNADA', 8.0000, 'Horas de la jornada ordinaria'),
-    (4, 'MINUTOS_RECARGO_25', 120.0000, 'Minutos de cada jornada con recargo del 25 por ciento'),
-    (5, 'RECARGO_EXTRA_25', 0.2500, 'Recargo de los primeros minutos extra'),
-    (6, 'RECARGO_EXTRA_35', 0.3500, 'Recargo del resto de minutos extra'),
-    (7, 'DEDUCCION_UIT_QUINTA', 7.0000, 'UIT deducibles en la quinta categoria');
-
-INSERT INTO "ParametrosPension" ("Id", "Codigo", "Sistema", "TasaAporte", "TasaPrimaSeguro", "TasaComision", "RemuneracionMaximaAsegurable") VALUES
-    (1, 'ONP', 'ONP', 0.1300, 0.0000, 0.0000, NULL),
-    (2, 'INTEGRA', 'AFP', 0.1000, 0.0137, 0.0155, 12027.10),
-    (3, 'PRIMA', 'AFP', 0.1000, 0.0137, 0.0160, 12027.10),
-    (4, 'PROFUTURO', 'AFP', 0.1000, 0.0137, 0.0169, 12027.10),
-    (5, 'HABITAT', 'AFP', 0.1000, 0.0137, 0.0147, 12027.10);
-
-INSERT INTO "TramosQuintaCategoria" ("Id", "Orden", "HastaUit", "Tasa") VALUES
-    (1, 1, 5.00, 0.0800),
-    (2, 2, 20.00, 0.1400),
-    (3, 3, 35.00, 0.1700),
-    (4, 4, 45.00, 0.2000),
-    (5, 5, NULL, 0.3000);
+-- ParametrosPlanilla, ParametrosPension y TramosQuintaCategoria los carga database/038-planillas.sql (catalogos).
 
 INSERT INTO "AfiliacionesPension" ("Id", "EmpleadoId", "ParametroPensionId", "Cuspp", "FechaAfiliacion") VALUES
     (1, 1, 2, '123456ATORR1', DATE '2021-03-01'),
@@ -804,9 +783,6 @@ INSERT INTO "DescuentosCuotaPrestamo" ("Id", "CuotaPrestamoId", "PlanillaId", "M
     (1, 2, 1, 100.00),
     (2, 7, 1, 500.00);
 
-SELECT setval(pg_get_serial_sequence('"ParametrosPlanilla"', 'Id'), (SELECT MAX("Id") FROM "ParametrosPlanilla"));
-SELECT setval(pg_get_serial_sequence('"ParametrosPension"', 'Id'), (SELECT MAX("Id") FROM "ParametrosPension"));
-SELECT setval(pg_get_serial_sequence('"TramosQuintaCategoria"', 'Id'), (SELECT MAX("Id") FROM "TramosQuintaCategoria"));
 SELECT setval(pg_get_serial_sequence('"AfiliacionesPension"', 'Id'), (SELECT MAX("Id") FROM "AfiliacionesPension"));
 SELECT setval(pg_get_serial_sequence('"Planillas"', 'Id'), (SELECT MAX("Id") FROM "Planillas"));
 SELECT setval(pg_get_serial_sequence('"PlanillaDetalles"', 'Id'), (SELECT MAX("Id") FROM "PlanillaDetalles"));

@@ -128,3 +128,36 @@ CREATE INDEX "IX_BonosPlanilla_PlanillaId" ON "BonosPlanilla" ("PlanillaId");
 CREATE INDEX "IX_BonosPlanilla_Anio_Mes" ON "BonosPlanilla" ("Anio", "Mes");
 
 ALTER TABLE "DescuentosCuotaPrestamo" ADD CONSTRAINT "FK_DescuentosCuotaPrestamo_Planillas_PlanillaId" FOREIGN KEY ("PlanillaId") REFERENCES "Planillas" ("Id") ON DELETE RESTRICT;
+
+-- Catalogos de calculo: sin ellos no hay sistemas de pension a los que afiliar y toda planilla sale vacia.
+-- Valores de ejemplo para la demo (spec 66, Parametros de ejemplo); se cambian con un script nuevo.
+-- ON CONFLICT DO NOTHING: no pisa catalogos que ya existan en la base.
+INSERT INTO "ParametrosPlanilla" ("Id", "Clave", "Valor", "Descripcion") VALUES
+    (1, 'UIT', 5350.0000, 'Unidad impositiva tributaria'),
+    (2, 'TASA_ESSALUD', 0.0900, 'Aporte del empleador a EsSalud'),
+    (3, 'HORAS_JORNADA', 8.0000, 'Horas de la jornada ordinaria'),
+    (4, 'MINUTOS_RECARGO_25', 120.0000, 'Minutos de cada jornada con recargo del 25 por ciento'),
+    (5, 'RECARGO_EXTRA_25', 0.2500, 'Recargo de los primeros minutos extra'),
+    (6, 'RECARGO_EXTRA_35', 0.3500, 'Recargo del resto de minutos extra'),
+    (7, 'DEDUCCION_UIT_QUINTA', 7.0000, 'UIT deducibles en la quinta categoria')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "ParametrosPension" ("Id", "Codigo", "Sistema", "TasaAporte", "TasaPrimaSeguro", "TasaComision", "RemuneracionMaximaAsegurable") VALUES
+    (1, 'ONP', 'ONP', 0.1300, 0.0000, 0.0000, NULL),
+    (2, 'INTEGRA', 'AFP', 0.1000, 0.0137, 0.0155, 12027.10),
+    (3, 'PRIMA', 'AFP', 0.1000, 0.0137, 0.0160, 12027.10),
+    (4, 'PROFUTURO', 'AFP', 0.1000, 0.0137, 0.0169, 12027.10),
+    (5, 'HABITAT', 'AFP', 0.1000, 0.0137, 0.0147, 12027.10)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "TramosQuintaCategoria" ("Id", "Orden", "HastaUit", "Tasa") VALUES
+    (1, 1, 5.00, 0.0800),
+    (2, 2, 20.00, 0.1400),
+    (3, 3, 35.00, 0.1700),
+    (4, 4, 45.00, 0.2000),
+    (5, 5, NULL, 0.3000)
+ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('"ParametrosPlanilla"', 'Id'), (SELECT MAX("Id") FROM "ParametrosPlanilla"));
+SELECT setval(pg_get_serial_sequence('"ParametrosPension"', 'Id'), (SELECT MAX("Id") FROM "ParametrosPension"));
+SELECT setval(pg_get_serial_sequence('"TramosQuintaCategoria"', 'Id'), (SELECT MAX("Id") FROM "TramosQuintaCategoria"));
