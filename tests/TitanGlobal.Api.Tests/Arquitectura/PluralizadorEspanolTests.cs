@@ -26,6 +26,15 @@ public class PluralizadorEspanolTests
     }
 
     [Theory]
+    [InlineData("TransportistasTerceros", "TransportistaTercero")]
+    [InlineData("FletesTerceros", "FleteTercero")]
+    public void NuevasTablasLogisticasConservanSusNombres(string tabla, string entidad)
+    {
+        Assert.Equal(entidad, _pluralizador.Singularize(tabla));
+        Assert.Equal(tabla, _pluralizador.Pluralize(entidad));
+    }
+
+    [Theory]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("RutasDespacho", "RutaDespacho")]
     [InlineData("UnidadesMedida", "UnidadMedida")]

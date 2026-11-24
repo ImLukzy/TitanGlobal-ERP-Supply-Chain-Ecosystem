@@ -587,7 +587,7 @@ INSERT INTO "Conductores" ("Id", "Nombre", "DocumentoLicencia", "VencimientoLice
     (1, 'Carlos Ruiz', 'PLT-0001', TIMESTAMPTZ '2027-12-31 00:00:00+00', TRUE, TRUE, NULL),
     (2, 'Maria Quispe', 'PLT-0002', TIMESTAMPTZ '2026-06-30 00:00:00+00', TRUE, TRUE, NULL),
     (3, 'Jose Flores', 'PLT-0003', TIMESTAMPTZ '2028-01-15 00:00:00+00', FALSE, TRUE, 'Sin habilitacion')
-ON CONFLICT ("DocumentoLicencia") DO UPDATE SET
+ON CONFLICT (lower(btrim("DocumentoLicencia"))) DO UPDATE SET
     "Nombre" = EXCLUDED."Nombre",
     "VencimientoLicencia" = EXCLUDED."VencimientoLicencia",
     "Habilitado" = EXCLUDED."Habilitado",
@@ -622,6 +622,41 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
+
+TRUNCATE TABLE "EvaluacionesProveedor" RESTART IDENTITY;
+
+INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCumplimiento", "PuntajeCalidad", "PuntajePlazos", "PuntajeFinal", "Calificacion", "Observaciones", "FechaRegistro") VALUES
+    (1, 1, '2026-09', 90, 85, 80, 85.50, 'Bueno', 'Entregas completas, un retraso menor.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (2, 1, '2026-10', 95, 92, 90, 92.60, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (3, 2, '2026-10', 70, 65, 60, 65.50, 'Regular', 'Varios lotes fuera de especificación.', TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (4, 4, '2026-09', 55, 60, 50, 55.00, 'Deficiente', 'Incumplió plazos acordados.', TIMESTAMPTZ '2026-09-30 12:00:00+00'),
+    (5, 4, '2026-10', 80, 78, 76, 78.20, 'Bueno', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00'),
+    (6, 6, '2026-10', 100, 90, 95, 95.50, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
+
+-- Módulo 48: proveedores externos e historial de fletes (idempotente).
+INSERT INTO "TransportistasTerceros" ("RazonSocial", "DocumentoFiscal", "Pais", "TipoServicio", "Contacto", "Email", "Telefono", "Observaciones", "Activo") VALUES
+('Andes Logística 3PL', '20148000001', 'Perú', 'Ambos', 'Lucía Torres', 'operaciones@andes.example', '+51 999480001', 'Distribución nacional y almacenamiento externo.', true),
+('Pacífico Fletes', '20148000002', 'Perú', 'Flete', 'Pedro Ruiz', 'trafico@pacifico.example', '+51 999480002', NULL, true),
+('Sur Operador 3PL', '76.480.003-1', 'Chile', '3PL', 'Camila Soto', 'contacto@sur.example', '+56 948000003', NULL, true),
+('Atlántico Transporte', '48.000.004/0001-01', 'Brasil', 'Ambos', 'Ana Costa', NULL, '+55 1148000004', NULL, true),
+('Ruta Histórica', '20148000005', 'Perú', 'Flete', NULL, NULL, NULL, 'Proveedor desactivado; conservar historial.', false),
+('Norte Express', '20148000006', 'Perú', 'Flete', NULL, NULL, NULL, NULL, true)
+ON CONFLICT (lower(btrim("Pais")), lower(btrim("DocumentoFiscal"))) DO NOTHING;
+
+INSERT INTO "FletesTerceros" ("TransportistaTerceroId", "Referencia", "Fecha", "Origen", "Destino", "Importe", "Moneda", "Estado", "Observaciones", "MotivoCancelacion", "FechaCancelacion")
+SELECT t."Id", v.referencia, v.fecha::timestamptz, v.origen, v.destino, v.importe, v.moneda, v.estado, v.observaciones, v.motivo, v.cancelacion::timestamptz
+FROM (VALUES
+('20148000001', 'Perú', 'FLT-48001', '2026-11-10T00:00:00Z', 'Lima', 'Arequipa', 1250.50, 'PEN', 'Registrado', 'Entrega industrial.', NULL, NULL),
+('20148000002', 'Perú', 'FLT-48002', '2026-11-11T00:00:00Z', 'Callao', 'Lima', 450.00, 'PEN', 'Registrado', NULL, NULL, NULL),
+('76.480.003-1', 'Chile', 'FLT-48003', '2026-11-12T00:00:00Z', 'Santiago', 'Valparaíso', 330.25, 'USD', 'Registrado', NULL, NULL, NULL),
+('20148000005', 'Perú', 'FLT-48004', '2026-11-09T00:00:00Z', 'Lima', 'Trujillo', 900.00, 'PEN', 'Cancelado', NULL, 'Ruta suspendida por el cliente.', '2026-11-10T15:00:00Z')
+) AS v(documento, pais, referencia, fecha, origen, destino, importe, moneda, estado, observaciones, motivo, cancelacion)
+JOIN "TransportistasTerceros" t ON lower(btrim(t."DocumentoFiscal")) = lower(v.documento) AND lower(btrim(t."Pais")) = lower(v.pais)
+ON CONFLICT ("TransportistaTerceroId", lower(btrim("Referencia"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"TransportistasTerceros"', 'Id'), (SELECT MAX("Id") FROM "TransportistasTerceros"));
+SELECT setval(pg_get_serial_sequence('"FletesTerceros"', 'Id'), (SELECT MAX("Id") FROM "FletesTerceros"));
 
 -- Módulo 43: maestro de rutas; estimaciones por recorrido, sin conversión.
 INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda", "Activo", "Observaciones") VALUES

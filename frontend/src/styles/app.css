@@ -1486,6 +1486,182 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .centros-trabajo-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
 }
 
+/* Módulo 72 · Editor de permisos por módulo. */
+.roles-permisos-panel { margin-top: 15px; }
+.permisos-dominios { display: grid; gap: 10px; }
+.permisos-dominio { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.permisos-dominio > summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 11px 13px; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; }
+.permisos-dominio > summary:focus-visible { border-radius: 8px; outline: 2px solid var(--accent); outline-offset: 2px; }
+.permisos-dominio-resumen { color: var(--ink-soft); font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.permisos-atajos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 13px 10px; }
+.permisos-lista { margin: 0; padding: 0 13px 6px; list-style: none; }
+.permiso-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 16px; padding: 7px 0; border-top: 1px solid var(--line); }
+.permiso-modulo { min-width: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.permiso-numero { display: inline-block; min-width: 22px; margin-right: 7px; color: var(--ink-faint); font-size: 10px; font-variant-numeric: tabular-nums; }
+.permiso-casilla { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; color: var(--ink-soft); cursor: pointer; font-size: 11px; }
+.permiso-casilla input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.permiso-casilla input:disabled { cursor: not-allowed; }
+.permisos-acciones { align-items: flex-start; }
+.permisos-acciones p { max-width: none; }
+.permisos-acciones .permisos-contador { color: var(--ink); font-size: 11px; font-weight: 700; }
+.permisos-acciones .rol-form-nota { margin-top: 4px; color: var(--ink-faint); }
+.permisos-acciones .permisos-error { margin-top: 6px; color: var(--bad); }
+.permisos-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+@media (max-width: 720px) {
+  .permiso-fila { grid-template-columns: auto auto minmax(0, 1fr); }
+  .permiso-modulo { grid-column: 1 / -1; }
+  .permisos-acciones { flex-direction: column; align-items: stretch; }
+}
+
+/* Módulo 72 · Pestañas Roles/Matriz y matriz de permisos. */
+.roles-tabs { flex-wrap: wrap; }
+.roles-matriz-panel { min-width: 0; }
+.matriz-filtros { grid-template-columns: minmax(0, 340px) auto; align-items: end; }
+.matriz-filtros select { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 11px; }
+.matriz-resumen { margin: 0 0 8px; color: var(--ink-soft); font-size: 10px; font-variant-numeric: tabular-nums; }
+.matriz-scroll { position: relative; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--line); border-radius: 10px; }
+.matriz-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.matriz-tabla { width: 100%; min-width: 560px; border-collapse: separate; border-spacing: 0; font-size: 11px; text-align: left; }
+.matriz-tabla thead th { padding: 9px 10px; background: var(--surface-muted); color: var(--ink-soft); font-size: 9px; font-weight: 700; text-align: center; white-space: nowrap; }
+.matriz-tabla thead th:first-child { position: sticky; left: 0; z-index: 2; text-align: left; }
+.matriz-tabla tbody th[scope="row"] { position: sticky; left: 0; z-index: 1; min-width: 200px; padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 500; text-align: left; }
+.matriz-tabla td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+.matriz-tabla .matriz-dominio th { position: sticky; left: 0; padding: 9px 10px; background: var(--surface-muted); color: var(--ink); font-size: 10px; font-weight: 700; text-align: left; }
+.matriz-nivel { display: inline-block; min-width: 72px; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.matriz-nivel.is-escritura { background: var(--accent-soft); color: var(--accent-ink); }
+.matriz-nivel.is-lectura { background: var(--surface-muted); color: var(--ink-soft); }
+.matriz-nivel.is-ninguno { color: var(--ink-faint); font-weight: 500; }
+
+@media (max-width: 720px) {
+  .matriz-filtros { grid-template-columns: minmax(0, 1fr); }
+  .matriz-tabla tbody th[scope="row"] { min-width: 150px; }
+}
+
+/* Módulo 72 · Etiquetas de tipo legibles sobre la fila seleccionada. */
+.roles-table tbody tr.is-selected .rol-tipo { background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+.roles-table tbody tr.is-selected .rol-tipo.is-sistema { border-color: var(--accent-ink); color: var(--accent-ink); }
+
+/* Módulo 41: Vehículos de flota */
+
+.vehiculos-flota-page { padding-bottom: 42px; }
+.vehiculos-flota-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.vehiculos-flota-summary > .cliente-stat { grid-column: auto; min-width: 0; }
+
+.vehiculos-flota-summary small { color: var(--ink-soft); font-size: 11px; }
+.vehiculos-flota-summary-panel { grid-column: 1 / -1; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.vehiculos-flota-summary-panel h2 { margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.vehiculos-flota-summary-panel table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--ink); }
+.vehiculos-flota-summary-panel th, .vehiculos-flota-summary-panel td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.vehiculos-flota-summary-panel thead th { white-space: nowrap; color: var(--ink-soft); }
+.vehiculos-flota-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.vehiculos-flota-list-panel, .vehiculos-flota-detail-panel { min-width: 0; }
+.vehiculos-flota-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.vehiculos-flota-filters > div { display: grid; min-width: 0; gap: 6px; }
+.vehiculos-flota-filters label { font-size: 11px; color: var(--ink-soft); }
+.vehiculos-flota-filters input, .vehiculos-flota-filters select, .vehiculos-flota-form input:not([type="checkbox"]), .vehiculos-flota-form select, .vehiculos-flota-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 12px; }
+.vehiculos-flota-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.vehiculos-flota-table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 10px; text-align: left; }
+.vehiculos-flota-table th { padding: 9px 5px; background: var(--surface-muted); color: var(--ink-soft); font-size: 10px; white-space: nowrap; }
+.vehiculos-flota-table td { padding: 10px 5px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.vehiculos-flota-table tr.is-selected { background: var(--accent-soft); }
+.vehiculos-flota-table td:first-child { white-space: nowrap; }
+.vehiculos-flota-code-button { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.vehiculos-flota-number { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vehiculos-flota-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0; }
+.vehiculos-flota-detail-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; }
+.vehiculos-flota-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.vehiculos-flota-detail-panel .clientes-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.vehiculos-flota-detail-panel .clientes-detail-actions button { white-space: normal; }
+.vehiculos-flota-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vehiculos-flota-active-field { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; }
+.vehiculos-flota-form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.vehiculos-flota-form-actions p { color: var(--bad); }
+@media (min-width: 1024px) {
+  .vehiculos-flota-work-area { grid-template-columns: minmax(0, 1fr) 260px; }
+  .vehiculos-flota-table { min-width: 0; }
+}
+@media (max-width: 719px) {
+  .vehiculos-flota-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .vehiculos-flota-summary > .cliente-stat { grid-column: auto; }
+  .vehiculos-flota-summary > .cliente-stat:nth-child(4), .vehiculos-flota-summary > .cliente-stat:nth-child(5) { grid-column: auto; }
+  .vehiculos-flota-summary-panel { grid-column: 1 / -1; }
+  .vehiculos-flota-filters, .vehiculos-flota-form { grid-template-columns: minmax(0, 1fr); }
+  .vehiculos-flota-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
+}
+
+/* Módulo 42: Conductores */
+.conductores-page { padding-bottom: 42px; }
+.conductores-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.conductores-list-panel, .conductores-detail-panel { min-width: 0; }
+.conductores-detail-panel h2, .conductores-page .clientes-dialog { overflow-wrap: anywhere; }
+.conductores-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.conductores-filters > div { display: grid; min-width: 0; gap: 6px; }
+.conductores-filters label { font-size: 11px; color: var(--ink-soft); }
+.conductores-filters input, .conductores-filters select, .conductores-form input:not([type="checkbox"]), .conductores-form textarea { width: 100%; min-width: 0; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 12px; }
+.conductores-form textarea { resize: vertical; }
+.conductores-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.conductores-table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 10px; text-align: left; }
+.conductores-table th { padding: 9px 5px; background: var(--surface-muted); color: var(--ink-soft); white-space: nowrap; }
+.conductores-table td { padding: 10px 5px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.conductores-table tr.is-selected { background: var(--accent-soft); }
+.conductores-code-button { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.conductores-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.conductores-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0; }
+.conductores-detail-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; }
+.conductores-detail-grid dd { margin: 0; color: var(--ink); font-size: 12px; overflow-wrap: anywhere; }
+.conductores-detail-panel .clientes-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.conductores-detail-panel .clientes-detail-actions button { white-space: normal; }
+.conductores-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.conductores-active-field { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; }
+.conductores-form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.conductores-form-actions p { color: var(--bad); }
+.conductores-help { margin: 10px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+.conductores-form > .conductores-help { grid-column: 1 / -1; }
+.conductores-warning { margin: 16px 0; padding: 12px; border: 1px solid var(--bad); border-radius: 8px; color: var(--bad); background: var(--surface); font-size: 12px; line-height: 1.5; }
+@media (min-width: 1024px) {
+  .conductores-work-area { grid-template-columns: minmax(0, 1fr) 260px; }
+  .conductores-table { min-width: 0; }
+}
+@media (max-width: 719px) {
+  .conductores-filters, .conductores-form { grid-template-columns: minmax(0, 1fr); }
+  .conductores-list-panel .clientes-panel-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
+}
+
+/* Módulo 48: transportistas terceros */
+.transportistas-terceros-page { min-width: 0; }
+.transportistas-terceros-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--line); margin: 20px 0; }
+.transportistas-terceros-tabs a { color: var(--ink-soft); padding: 12px 16px; text-decoration: none; border-bottom: 3px solid transparent; }
+.transportistas-terceros-tabs .transportistas-terceros-tab-active { color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+.transportistas-terceros-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.transportistas-terceros-summary > .transportistas-terceros-card { grid-column: 1 / -1; }
+.transportistas-terceros-stat, .transportistas-terceros-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+.transportistas-terceros-stat { display: grid; gap: 12px; color: var(--ink-soft); }
+.transportistas-terceros-stat strong { color: var(--ink); font-size: 28px; }
+.transportistas-terceros-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 16px; }
+.transportistas-terceros-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.transportistas-terceros-filters label { display: grid; gap: 8px; }
+.transportistas-terceros-page input:not([type=checkbox]), .transportistas-terceros-page select, .transportistas-terceros-page textarea, .transportistas-terceros-dialog textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.transportistas-terceros-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+.transportistas-terceros-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+.transportistas-terceros-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.transportistas-terceros-details div { border-bottom: 1px solid var(--line); padding: 10px 0; overflow-wrap: anywhere; }
+.transportistas-terceros-details dt { color: var(--ink-soft); font-size: 13px; }
+.transportistas-terceros-details dd { margin: 6px 0 0; }
+.transportistas-terceros-muted { display: block; color: var(--ink-soft); margin-top: 6px; font-weight: 400; }
+.transportistas-terceros-badge { display: inline-flex; padding: 5px 9px; border-radius: 6px; color: var(--good); background: var(--good-soft); }
+.transportistas-terceros-inactivo { color: var(--ink-soft); background: var(--surface-muted); }
+.transportistas-terceros-money { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.transportistas-terceros-selector { border: 1px solid var(--line); padding: 16px; margin: 0 0 20px; min-width: 0; border-radius: 10px; display: grid; gap: 8px; }
+.transportistas-terceros-dialog { max-height: 90vh; overflow-y: auto; }
+@media (max-width: 1100px) { .transportistas-terceros-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .transportistas-terceros-summary, .transportistas-terceros-filters { grid-template-columns: minmax(0, 1fr); }
+  .transportistas-terceros-toolbar { align-items: stretch; flex-direction: column; }
+  .transportistas-terceros-card, .transportistas-terceros-stat { padding: 16px; }
+  .transportistas-terceros-actions > button { flex: 1 1 auto; }
+}
+
 /* Módulo 43: rutas de despacho */
 .rutas-despacho-page { min-width: 0; }
 .rutas-despacho-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
