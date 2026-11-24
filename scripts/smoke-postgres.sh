@@ -493,6 +493,19 @@ checks = {
     "planilla-pagada": lambda data: data["id"] == 2,
     "ausencia-created-9":lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
     "ausencia-id-9": lambda data: data["id"] == 9,
+    "openapi-evaluaciones": lambda data: all(path in data["paths"] for path in ["/api/v1/ciclos-evaluacion", "/api/v1/ciclos-evaluacion/{id}", "/api/v1/ciclos-evaluacion/{id}/resultados", "/api/v1/ciclos-evaluacion/{id}/competencias", "/api/v1/ciclos-evaluacion/{id}/competencias/{competenciaId}", "/api/v1/ciclos-evaluacion/{id}/apertura", "/api/v1/ciclos-evaluacion/{id}/cierre", "/api/v1/evaluaciones", "/api/v1/evaluaciones/{id}", "/api/v1/evaluaciones/{id}/calificaciones", "/api/v1/evaluaciones/{id}/envio", "/api/v1/evaluaciones/{id}/cierre"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/ciclos-evaluacion", "post"), ("/api/v1/ciclos-evaluacion/{id}/competencias/{competenciaId}", "delete"), ("/api/v1/ciclos-evaluacion/{id}/apertura", "post"), ("/api/v1/evaluaciones", "post"), ("/api/v1/evaluaciones/{id}/calificaciones", "put"), ("/api/v1/evaluaciones/{id}/envio", "post")]),
+    "evaluacion-resultados-s1": lambda data: data["evaluadas"] == 3 and data["puntajePromedio"] == 3.63 and [(fila["etiqueta"], fila["cantidad"]) for fila in data["distribucion"]] == [("Insuficiente", 0), ("En desarrollo", 1), ("Competente", 1), ("Destacado", 0), ("Excepcional", 1)] and [(fila["competencia"], fila["promedio"]) for fila in data["porCompetencia"]] == [("Calidad del trabajo", 4), ("Trabajo en equipo", 3.33), ("Cumplimiento de objetivos", 3.67), ("Iniciativa", 3.33)],
+    "evaluacion-4-detalle": lambda data: data["cicloCodigo"] == "2026-S2" and data["estado"] == "Enviada" and data["puntajeFinal"] == 4.1 and data["etiqueta"] == "Destacado" and [fila["calificacion"] for fila in data["calificaciones"]] == [4, 5, 4, 3],
+    "ciclo-evaluacion-created-3": lambda data: data["id"] == 3,
+    "ciclo-evaluacion-id-3": lambda data: data["id"] == 3,
+    "competencia-evaluacion-created-9": lambda data: data["id"] == 9,
+    "competencia-evaluacion-created-10": lambda data: data["id"] == 10,
+    "ciclo-evaluacion-pesos-incompletos": lambda data: data["StatusCode"] == 409 and data["Message"] == "Los pesos de las competencias suman 60.00 y deben sumar 100." and "Detail" not in data,
+    "evaluacion-created-6": lambda data: data["id"] == 6,
+    "evaluacion-id-6": lambda data: data["id"] == 6,
+    "evaluacion-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 1 ya tiene una evaluación en el ciclo SMK-2026." and "Detail" not in data,
+    "evaluacion-6-enviada": lambda data: data["estado"] == "Enviada" and data["puntajeFinal"] == 4.4 and data["etiqueta"] == "Destacado",
+    "evaluacion-resultados-smk": lambda data: data["evaluadas"] == 1 and data["puntajePromedio"] == 4.4,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1140,4 +1153,24 @@ request_check 'POST aprobar planilla 2026-11' POST '/api/v1/planillas/2/aprobaci
 request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calculo' 409 planilla-aprobada-no-modificable
 request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
 request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
+# Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
+SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
+SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
+SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
+SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
+request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
+request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle
+request_check 'POST ciclo de evaluacion' POST '/api/v1/ciclos-evaluacion' 200 ciclo-evaluacion-created-3 "{\"codigo\":\"smk-2026\",\"nombre\":\"Ciclo de smoke\",\"periodo\":\"Semestral\",\"fechaInicioPeriodo\":\"${SMOKE_INICIO_PERIODO}\",\"fechaFinPeriodo\":\"${SMOKE_FIN_PERIODO}\",\"fechaApertura\":\"${SMOKE_APERTURA_CICLO}\",\"fechaCierre\":\"${SMOKE_CIERRE_CICLO}\"}"
+request_check 'POST primera competencia (60)' POST '/api/v1/ciclos-evaluacion/3/competencias' 200 competencia-evaluacion-created-9 '{"nombre":"Calidad","descripcion":"Calidad de smoke","peso":60}'
+request_check 'POST abrir ciclo con pesos que no suman 100' POST '/api/v1/ciclos-evaluacion/3/apertura' 409 ciclo-evaluacion-pesos-incompletos
+request_check 'POST segunda competencia (40)' POST '/api/v1/ciclos-evaluacion/3/competencias' 200 competencia-evaluacion-created-10 '{"nombre":"Equipo","peso":40}'
+request_check 'POST abrir ciclo' POST '/api/v1/ciclos-evaluacion/3/apertura' 200 ciclo-evaluacion-id-3
+request_check 'POST evaluacion del empleado 1' POST '/api/v1/evaluaciones' 200 evaluacion-created-6 '{"cicloId":3,"empleadoId":1,"evaluadorId":2}'
+request_check 'POST segunda evaluacion del mismo empleado' POST '/api/v1/evaluaciones' 409 evaluacion-duplicada '{"cicloId":3,"empleadoId":1,"evaluadorId":2}'
+request_check 'PUT calificaciones completas' PUT '/api/v1/evaluaciones/6/calificaciones' 200 evaluacion-id-6 '{"calificaciones":[{"competenciaId":9,"calificacion":4},{"competenciaId":10,"calificacion":5}],"comentario":"Evaluacion de smoke"}'
+request_check 'POST enviar evaluacion' POST '/api/v1/evaluaciones/6/envio' 200 evaluacion-id-6
+request_check 'Evaluacion enviada con puntaje' GET '/api/v1/evaluaciones/6' 200 evaluacion-6-enviada
+request_check 'POST cerrar ciclo de humo' POST '/api/v1/ciclos-evaluacion/3/cierre' 200 ciclo-evaluacion-id-3
+request_check 'Resultados del ciclo de humo' GET '/api/v1/ciclos-evaluacion/3/resultados' 200 evaluacion-resultados-smk
 printf 'SMOKE OK\n'
