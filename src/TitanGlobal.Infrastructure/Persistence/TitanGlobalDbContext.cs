@@ -67,6 +67,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Evaluacion> Evaluaciones { get; set; } = null!;
 
+    public virtual DbSet<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = null!;
+
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
     public virtual DbSet<InscripcionCurso> InscripcionesCurso { get; set; } = null!;
@@ -597,6 +599,20 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Evaluador).WithMany(p => p.EvaluacionesEvaluador)
                 .HasForeignKey(d => d.EvaluadorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<EvaluacionProveedor>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProveedorId, e.Periodo }, "IX_EvaluacionesProveedor_ProveedorId_Periodo").IsUnique();
+
+            entity.Property(e => e.Calificacion).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Periodo).HasMaxLength(7);
+            entity.Property(e => e.PuntajeFinal).HasPrecision(5, 2);
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.EvaluacionesProveedor)
+                .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

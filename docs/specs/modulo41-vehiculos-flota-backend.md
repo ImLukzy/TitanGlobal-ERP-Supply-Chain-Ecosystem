@@ -21,10 +21,13 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12). Responsable: Kelvin Pinto.
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `src/TitanGlobal.Domain/Models/VehiculoFlota.cs` | crear | entidad `partial`, estilo de `Proveedor.cs` |
-| `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | modificar | `DbSet<VehiculoFlota> VehiculosFlota`; índice único en `Placa`; longitudes máximas (§4) |
-| `src/TitanGlobal.Infrastructure/Migrations/*_VehiculosFlota*.cs` + snapshot | crear | generada con `dotnet ef migrations add VehiculosFlota -p src/TitanGlobal.Api` (nunca a mano) |
-| `src/TitanGlobal.Api/Modules/Modulo41_VehiculosFlota/{Controllers,Dtos,UseCases}/` | crear | un archivo por clase; `[Route("api/v1/vehiculos-flota")]`, controlador delgado |
+| `src/TitanGlobal.Domain/Models/VehiculoFlota.cs` | regenerar | entidad `partial` generada por `scripts/scaffold.sh`, sin edición manual |
+| `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | configuración generada desde PostgreSQL local |
+| `database/001-esquema-inicial.sql` | referencia | esquema integrado: no se modifica |
+| `database/021-vehiculos-flota-placa-unica.sql` | crear | índice único de placa sin distinguir mayúsculas; ampliación en `modulo41-vehiculos-flota-integridad.md`; número oficial tras renombrar 010 |
+| `src/TitanGlobal.Application/DTOs/Modulo41_VehiculosFlota/` | crear / mantener | DTOs del contrato |
+| `src/TitanGlobal.Application/UseCases/Modulo41_VehiculosFlota/` | crear / mantener | reglas y casos de uso, sin ASP.NET ni Npgsql |
+| `src/TitanGlobal.Api/Controllers/Modulo41_VehiculosFlota/` | crear / mantener | controlador delgado en `api/v1/vehiculos-flota` |
 | `scripts/seed-dev.sql` | modificar | 6 vehículos idempotentes (§4) |
 | `scripts/smoke-postgres.sh` | modificar | rutas de vehiculos-flota (§5 A5) |
 | `tests/TitanGlobal.Api.Tests/Modulo41_VehiculosFlota/*.cs` | crear | tests de integración con InMemory |
@@ -59,7 +62,7 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12). Responsable: Kelvin Pinto.
 5. `tipo` tras `Trim()`: vacío → 400 «El tipo es obligatorio.»; valor no es `Camion`, `Furgon`, `Moto` u `Otro` → 400 «El tipo debe ser Camion, Furgon, Moto u Otro.»
 6. `capacidadKg`: menor o igual a 0 → 400 «La capacidad debe ser mayor que cero.»; mayor que 9999999999999999.99 (límite de `decimal(18,2)`) → 400 «La capacidad no puede superar 9999999999999999.99.»; más de 2 decimales → 400 «La capacidad no puede tener más de 2 decimales.»
 7. `observaciones` tras `Trim()`: vacías → `null`; más de 500 → 400 «Las observaciones no pueden superar 500 caracteres.»
-8. Placa usada por otro vehículo → 409 «Ya existe un vehículo con la placa {placa}.» También en la carrera (`23505`). Un PUT que mantiene su propia placa es válido.
+8. Placa usada por otro vehículo, sin distinguir mayúsculas y recortando espacios exteriores → 409 «Ya existe un vehículo con la placa {placa}.» También en la carrera (`23505`). Un PUT que mantiene su propia placa o solo cambia sus mayúsculas es válido. Se conserva el formato solicitado tras `Trim()`.
 9. Id inexistente en GET, PUT o DELETE → 404 «El vehículo {id} no existe.»
 
 **Paginación inválida** (`GET` de listado): `pagina < 1` → 400 «El número de página debe ser mayor que cero.»; `tamanoPagina` fuera de 1–100 → 400 «El tamaño de página debe estar entre 1 y 100.»
@@ -78,17 +81,24 @@ Sigue el patrón de `Modulo11_Proveedores` (spec 12). Responsable: Kelvin Pinto.
 | A1 | Gate | `./scripts/verify.sh` | en verde |
 | A2 | Reglas | tests: cada mensaje de §4 con su código, literal y sin `Detail`; placa con espacios aceptada y guardada sin ellos; PUT con su propia placa → 200 | pasan |
 | A3 | Consultas | tests con datos conocidos: búsqueda por placa, marca y modelo; filtro por tipo y activo; paginación; tipos ordenados; resumen exacto | pasan |
-| A4 | Migración | `VehiculosFlota` generada con `dotnet ef`; aplica sin errores; no cambia tablas existentes | evidencia |
+| A4 | Esquema y scaffold | scripts aplicados con `aplicar-bd.sh`; entidades regeneradas con `scaffold.sh`; `scaffold.sh --comprobar` al día | evidencia |
 | A5 | PostgreSQL | `./scripts/smoke-postgres.sh` ampliado: listado con `tipo=Camion`, `activo=false`, detalle, tipos, resumen, POST válido, POST con placa del seed → 409, DELETE del recién creado → 204 | `SMOKE OK` |
 | A6 | OpenAPI | `/openapi/v1.json` incluye las 7 operaciones | presentes |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: entidad, `DbContext` y migración.
-- [ ] Tarea 2: DTOs, UseCases y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: A1–A6.
+- [x] Tarea 1: esquema SQL aplicado y entidad/DbContext regenerados mediante scaffold.
+- [x] Tarea 2: DTOs, UseCases y controlador.
+- [x] Tarea 3: tests, seed y smoke, incluida unicidad sin distinguir mayúsculas.
+- [x] Tarea 4: A1–A6 del backend verificados localmente.
+
+El backend original ya estaba integrado. La ampliación de integridad y la pantalla permanecen en la rama de Kelvin; este checklist no acredita aprobación de Lukas, integración ni despliegue de esas ampliaciones.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| AAAA-MM-DD | A1 | ✅ / ❌ | … |
+| 2026-11-21 | A1–A3 | Aprobados | `./scripts/verify.sh`: compilación con cero errores/advertencias; 1090 pruebas de backend y 582 de frontend aprobadas. Vite mantiene su aviso existente de tamaño de bundle |
+| 2026-11-21 | A4 | Aprobado | `aplicar-bd.sh --reiniciar`: 001, 008 y 010 aplicados localmente; `scaffold.sh` ejecutado y `SCAFFOLD AL DÍA` en el smoke; sin cambios de modelo generados ni edición manual |
+| 2026-11-21 | A5 | Aprobado | `./scripts/smoke-postgres.sh` finaliza en `SMOKE OK`; POST/PUT duplicados → 409 literal, PUT de la propia placa → 200, escritura SQL directa duplicada rechazada por `UX_VehiculosFlota_PlacaNormalizada` con 23505 |
+| 2026-11-21 | A6 | Aprobado | OpenAPI local comprobado: GET de listado, POST de alta, GET/PUT/DELETE por Id, GET de tipos y GET de resumen; `OPENAPI OK: las 7 operaciones del modulo 41 estan documentadas` |
+| 2026-11-22 | Numeración oficial, A1–A4 | Aprobados | Rama actualizada con main; script vigente `021-vehiculos-flota-placa-unica.sql`, base local recreada, seed y scaffold sin diferencias de contenido. Gate completo salida0:1090backend y582frontend/73archivos; primer fallo de arranque de trabajador de Vitest documentado y reintento completo correcto sin cambiar pruebas/timeouts |
+| 2026-11-22 | A5, PostgreSQL tras actualizar main | Aprobado | `./scripts/smoke-postgres.sh`: salida0, `SCAFFOLD AL DÍA` y `SMOKE OK`, con001/008/021; duplicados normalizados POST/PUT y actualización de la propia placa comprobados |

@@ -29,7 +29,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/028-planillas.sql` (tablas de §4, seed de parámetros fuera: el seed va en `seed-dev.sql`; `ALTER TABLE "DescuentosCuotaPrestamo" ADD CONSTRAINT "FK_DescuentosCuotaPrestamo_Planillas_PlanillaId" FOREIGN KEY ("PlanillaId") REFERENCES "Planillas" ("Id") ON DELETE RESTRICT` (tabla del 67 con un registro por descuento)) y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/038-planillas.sql` (tablas de §4, seed de parámetros fuera: el seed va en `seed-dev.sql`; `ALTER TABLE "DescuentosCuotaPrestamo" ADD CONSTRAINT "FK_DescuentosCuotaPrestamo_Planillas_PlanillaId" FOREIGN KEY ("PlanillaId") REFERENCES "Planillas" ("Id") ON DELETE RESTRICT` (tabla del 67 con un registro por descuento)) y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades nuevas y navegaciones regeneradas, `TitanGlobalDbContext.cs`, `PluralizadorEspanol.cs` si hace falta | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo66_Planillas/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo66_Planillas/AdministrarPlanillasUseCase.cs`, `CalcularPlanillaUseCase.cs`, `AdministrarBonosPlanillaUseCase.cs`, `AdministrarAfiliacionesPensionUseCase.cs`, `ValidacionPlanilla.cs`, `CalculadoraRemuneracion.cs` (estática y pública, pura) | crear |
@@ -117,10 +117,11 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 | A3 | Flujo y boletas (P1, P2, P6) | pruebas | pasan |
 | A4 | Bonos, afiliaciones, roles y auditoría | pruebas | pasan |
 | A5 | PostgreSQL | `aplicar-bd.sh`, `scaffold.sh --comprobar`, `smoke-postgres.sh` | `SMOKE OK` |
+| 2026-11-23 | Actualización | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 038: gate y smoke en verde. `dotnet test` 1425 de 1426 (único fallo el CRLF conocido), 0 advertencias, reglas OK, frontend 1096 pruebas en verde; smoke en la rama final (alexander/modulo70-seguridad-salud-ocupacional) | `verify` |
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 028, scaffold y fila en `relevo.md`.
+- [x] Tarea 1: script 038, scaffold y fila en `relevo.md`.
 - [x] Tarea 2: `CalculadoraRemuneracion` y sus pruebas.
 - [x] Tarea 3: casos de uso, controladores y pruebas de API.
 - [x] Tarea 4: seed y humo; A1 a A5 en §7.
@@ -130,7 +131,7 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 |---|---|---|---|
 | 2026-11-22 | A1 | `verify.sh` llega al `dotnet test`: 1372 de 1373 pruebas en verde; solo falla `CatalogoCoincideConLosOchentaModulosDeArquitectura` (CRLF del entorno, ajeno al módulo); formato, reglas y compilación sin warnings | `PATH=shim ./scripts/verify.sh`; `npm --prefix frontend run verify` en verde |
 | 2026-11-22 | A2, A3, A4 | 13 pruebas de `CalculadoraRemuneracion` con importes a mano y 23 de API del módulo 66 en verde (mensajes 1 a 28, flujo con recálculo sin duplicar préstamos, aprobación inmutable, boletas únicas, complementaria, roles, auditoría) | `dotnet test --filter FullyQualifiedName~Modulo66` |
-| 2026-11-22 | A5 | `SMOKE OK` con `028` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
+| 2026-11-22 | A5 | `SMOKE OK` con `038` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
 
 ### Decisiones de detalle tomadas al implementar (la spec no las fijaba)
 - **Totales y contadores.** `Empleados`, `TotalIngresos`, `TotalDescuentos`, `TotalNeto` y `TotalAportesEmpleador` cuentan solo los empleados incluidos; `Incidencias` cuenta los excluidos (sin afiliación o neto negativo). Un excluido se guarda con días y sueldo informativos pero importes en 0.
