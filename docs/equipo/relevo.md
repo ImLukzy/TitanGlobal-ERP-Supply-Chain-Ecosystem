@@ -19,11 +19,11 @@ Los módulos de estas ramas **ya están en `main`**, con sus commits a nombre de
 
 | Persona | Módulos integrados | Lo que le falta para terminarlos |
 |---|---|---|
-| Sergio | 72 RolesPermisos: backend y pantalla completa (PR #42, 2026-11-23) | Nada del 72. Siguen 12, 14 y 20 (PR #43, #44 y #45), que deben actualizarse con `main` |
+| Sergio | 72 RolesPermisos: backend y pantalla completa (PR #42, 2026-11-23). 12 EvaluacionProveedores: backend (PR #43, `005` aplicado en la demo el 2026-11-23) | **12:** pantalla, con su spec. Siguen 14 y 20 (PR #44 y #45), que deben actualizarse con `main` |
 | Leonel | 75 ImpuestosTasas: backend, pruebas, seed y smoke | Cierre o edición de tasas (hoy una tasa abierta impide registrar otra), tasa de 0 %, `Total` según el tipo de impuesto, paginación, resumen y pantalla |
 | Maxi | 22 CategoriasProducto: backend, pruebas, seed y smoke | Pantalla, reactivar categorías, unicidad sin distinguir mayúsculas y decidir la jerarquía de familias, líneas y sublíneas. También el QA visual de §5 |
 | Antony | 33 CentrosTrabajo: backend, pruebas, seed y smoke | Pantalla y control de concurrencia en baja y edición |
-| Kelvin | 41 VehiculosFlota: backend y pantalla con placa única (PR #51, `021` aplicado en la demo el 2026-11-23). 42 Conductores: backend, pruebas, seed y smoke | **42:** pantalla, unicidad sin distinguir mayúsculas y relación entre `Habilitado` y vencimiento (rama `kelvin/modulo42-conductores`, por abrir PR). Después 48, 43, 44, 45, 46, 47, 49, 50 y 73, de uno en uno |
+| Kelvin | 41 VehiculosFlota: backend y pantalla con placa única (PR #51, `021` aplicado en la demo el 2026-11-23). 42 Conductores: backend y pantalla con licencia única y vigencia (PR #59, `022` aplicado en la demo el 2026-11-23) | Nada del 41 ni del 42. Siguen 48, 43, 44, 45, 46, 47, 49, 50 y 73, de uno en uno |
 | Alexander | 61 Empleados y 71 Usuarios: backend de 61 y ambas pantallas | QA visual integrado (PR #20). `docs/hcm-reglas-negocio.md` aprobada el 2026-11-17: backend del 62 integrado (PR #39) y `008` aplicado en la demo el 2026-11-19; sigue la pantalla del 62 con su spec |
 
 Un módulo cuenta como terminado solo con todo lo de [`cadencia.md`](cadencia.md) §6. Un backend integrado sin pantalla aún no cuenta.
@@ -87,7 +87,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 002 | `002-lotes-series.sql` | Maxi | `maxi/modulo25-lotes-series` | no |
 | 003 | `003-kardex-valorizado.sql` | Maxi | `maxi/modulo26-kardex-valorizado` | no |
 | 004 | `004-transferencias-almacen.sql` | Maxi | `maxi/modulo27-transferencias-almacen` | no |
-| 005 | `005-evaluaciones-proveedor.sql` | Sergio | `sergio/modulo12-evaluacion-proveedores` | sí, desde 004 |
+| 005 | `005-evaluaciones-proveedor.sql` | Sergio | `sergio/modulo12-evaluacion-proveedores` | no (en `main` por el PR #43 y aplicado en la demo) |
 | 006 | `006-licitaciones.sql` | Sergio | `sergio/modulo14-licitaciones` | sí, desde 005 |
 | 007 | `007-modulo51-facturacion-electronica.sql` | Leonel | `leonel/modulo51-facturacion-electronica` | sí, desde 002 |
 | 008 | `008-contratos-laborales.sql` | Alexander | `alexander/modulo62-contratos-laborales-backend` | no (en `main` por el PR #39 y aplicado en la demo) |
@@ -104,7 +104,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 019 | `019-siniestros-flota.sql` | Kelvin | `kelvin/modulo50-siniestros-flota` | no |
 | 020 | `020-sucursales.sql` | Kelvin | `kelvin/modulo73-sucursales` | no |
 | 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | no (en `main` por el PR #51 y aplicado en la demo) |
-| 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | sí, desde 011 |
+| 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | no (en `main` por el PR #59 y aplicado en la demo) |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).

@@ -40,7 +40,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 09 ReclamosPostventa | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 33, 34 |
 | 10 DevolucionesComerciales | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 35, 36 |
 | 11 Proveedores | Compras y Abastecimiento Global | Lukas Melgar | terminado | 12, 13 |
-| 12 EvaluacionProveedores | Compras y Abastecimiento Global | Sergio | pendiente | — |
+| 12 EvaluacionProveedores | Compras y Abastecimiento Global | Sergio | backend integrado (PR #43, 2026-11-23), pantalla pendiente | modulo12 |
 | 13 SolicitudesCompra | Compras y Abastecimiento Global | Lukas Melgar | terminado | 14, 15 |
 | 14 Licitaciones | Compras y Abastecimiento Global | Sergio | pendiente | — |
 | 15 OrdenesAbastecimiento | Compras y Abastecimiento Global | Lukas Melgar | terminado | 16, 17, 18 |
@@ -70,7 +70,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 39 MantenimientoPreventivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 40 MantenimientoCorrectivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (pantalla y placa única por el PR #51, 2026-11-23) | modulo41 |
-| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado; pantalla, unicidad y vigencia verificadas en rama de Kelvin, pendientes revisión/integración | modulo42 |
+| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (pantalla, licencia única y vigencia por el PR #59, 2026-11-23) | modulo42 |
 | 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 44 ConsolidacionCarga | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 45 GuiasRemision | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
