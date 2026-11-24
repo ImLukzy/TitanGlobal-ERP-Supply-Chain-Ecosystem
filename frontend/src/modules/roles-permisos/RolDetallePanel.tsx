@@ -8,11 +8,22 @@ interface RolDetallePanelProps {
   cargando: boolean;
   error: string;
   editar: () => void;
+  editarPermisos: () => void;
   eliminar: () => void;
   botonEliminarRef: RefObject<HTMLButtonElement | null>;
+  botonPermisosRef: RefObject<HTMLButtonElement | null>;
 }
 
-export function RolDetallePanel({ detalle, cargando, error, editar, eliminar, botonEliminarRef }: RolDetallePanelProps) {
+export function RolDetallePanel({
+  detalle,
+  cargando,
+  error,
+  editar,
+  editarPermisos,
+  eliminar,
+  botonEliminarRef,
+  botonPermisosRef,
+}: RolDetallePanelProps) {
   return (
     <PanelDetalle ariaLabelledBy="rol-detail-title" className="clientes-detail-panel roles-detail-panel">
       {error !== '' && <p className="clientes-error" role="alert">{error}</p>}
@@ -56,6 +67,7 @@ export function RolDetallePanel({ detalle, cargando, error, editar, eliminar, bo
             </div>
           </dl>
           <div className="clientes-detail-actions">
+            <button className="primary-button" onClick={editarPermisos} ref={botonPermisosRef} type="button">Editar permisos</button>
             <button className="secondary-button" onClick={editar} type="button">Editar</button>
             <button className="danger-button" onClick={eliminar} ref={botonEliminarRef} type="button">Eliminar</button>
           </div>

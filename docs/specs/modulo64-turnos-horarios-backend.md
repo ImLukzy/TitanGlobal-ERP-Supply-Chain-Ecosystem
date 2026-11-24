@@ -29,8 +29,8 @@ Reglas aplicadas: H1 a H5, T2, T5 y T6. Lo que las reglas no fijan se marca **[e
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/024-turnos-horarios.sql` | crear | `Turnos` y `AsignacionesTurno` (§4); número 024 añadido a `docs/equipo/relevo.md` §8 |
-| `docs/equipo/relevo.md` | modificar | solo la fila 024 de la tabla de §8 |
+| `database/034-turnos-horarios.sql` | crear | `Turnos` y `AsignacionesTurno` (§4); número 034 añadido a `docs/equipo/relevo.md` §8 |
+| `docs/equipo/relevo.md` | modificar | solo la fila 034 de la tabla de §8 |
 | `src/TitanGlobal.Domain/Models/Turno.cs`, `AsignacionTurno.cs`, `Empleado.cs` | regenerar | `./scripts/scaffold.sh`; `Empleado` solo gana la navegación |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | generado |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold no singulariza bien `AsignacionesTurno` → `AsignacionTurno` |
@@ -171,7 +171,7 @@ Reglas aplicadas: H1 a H5, T2, T5 y T6. Lo que las reglas no fijan se marca **[e
 
 ## 6. Checklist de ejecución
 - [x] Decisiones de §2 con la opción recomendada (acuerdo con Lukas del 2026-11-22).
-- [x] Tarea 1: script 024, `aplicar-bd.sh`, `scaffold.sh` y fila en `relevo.md` §8.
+- [x] Tarea 1: script 034, `aplicar-bd.sh`, `scaffold.sh` y fila en `relevo.md` §8.
 - [x] Tarea 2: DTOs, validación, `CalculadoraTurnos`, casos de uso y controladores.
 - [x] Tarea 3: pruebas.
 - [x] Tarea 4: seed y humo.
@@ -186,8 +186,9 @@ Reglas aplicadas: H1 a H5, T2, T5 y T6. Lo que las reglas no fijan se marca **[e
 | 2026-11-22 | A4 | OK | pruebas de asignaciones (mensajes 25 a 40 y cierre automático): 0 fallos |
 | 2026-11-22 | A5 | OK | pruebas de programación y de `CalculadoraTurnos`: 0 fallos |
 | 2026-11-22 | A6 | OK | pruebas de roles (401, 403, RRHH, ADMIN) y de auditoría: 0 fallos |
-| 2026-11-22 | A7 | OK | `./scripts/aplicar-bd.sh` aplica 024; `./scripts/scaffold.sh --comprobar`: SCAFFOLD AL DÍA; `./scripts/smoke-postgres.sh`: `SMOKE OK` |
+| 2026-11-22 | A7 | OK | `./scripts/aplicar-bd.sh` aplica 034; `./scripts/scaffold.sh --comprobar`: SCAFFOLD AL DÍA; `./scripts/smoke-postgres.sh`: `SMOKE OK` |
 | 2026-11-22 | A8 | OK | `git diff` y `git status`: solo archivos de §3 (más `Empleado.cs` y `ValoresIniciales.cs`, ver nota) |
+| 2026-11-23 | A9 | OK | Actualizado con main (módulos 12, 41, 42 y 72) y script renumerado a 034: gate y smoke en verde (build 0 warnings; dotnet test 1249 superadas y 1 fallo ambiental conocido; frontend 810 pruebas; `SMOKE OK`) |
 
 Notas de la ejecución:
 - `ValoresIniciales.cs` (Domain) gana la clase parcial `Turno` con `Activo = true`, como indica el criterio de la tabla `Turnos`.
