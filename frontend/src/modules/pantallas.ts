@@ -21,6 +21,9 @@ import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
+import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
+import { ConductoresPage } from './conductores/ConductoresPage';
+import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -45,4 +48,7 @@ export const pantallas: Record<string, ComponentType> = {
   '71-usuarios': UsuariosPage,
   '61-empleados': EmpleadosPage,
   '33-centros-trabajo': CentrosTrabajoPage,
+  '41-vehiculos-flota': VehiculosFlotaPage,
+  '42-conductores': ConductoresPage,
+  '48-transportistas-terceros': TransportistasTercerosPage,
 };
