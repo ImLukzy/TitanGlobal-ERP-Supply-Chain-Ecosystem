@@ -43,7 +43,7 @@
 | A4 | Asignaciones | tests: filtros, programación de 14 días con textos, alta (25 a 28), fijar fin, eliminar solo futuras | pasan |
 | A5 | Roles y pestañas | tests: botones deshabilitados sin rol; `?vista=` cambia de vista | pasan |
 | A6 | Sin regresiones | suite completa 3 veces seguidas | pasa |
-| A7 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A7 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo64/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests de api.
@@ -61,3 +61,4 @@
 | 2026-11-22 | A5 | OK | pruebas de rol (`CONSULTA` deshabilita; `RRHH` y `ADMIN` habilitan) y de pestañas (`?vista=asignaciones`, clic y flechas) |
 | 2026-11-22 | A6 | OK | `npx vitest run src/modules/turnos-horarios` 3 veces seguidas: 5 archivos y 95 pruebas superadas en cada una; suite completa 695 superadas en `verify` |
 | 2026-11-22 | A7 | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro, por adjuntar al PR |
+| 2026-11-24 | A7 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo64/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |

@@ -37,7 +37,7 @@
 | A3 | Programaciones | tests: inscripción con cupo, retiro, realizada, resultados, certificación, cancelación | pasan |
 | A4 | Cursos y horas | tests | pasan |
 | A5 | Roles y pestañas | tests | pasan |
-| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | adjuntas al PR (pendiente) |
+| A6 | Visual | capturas a 375 y 1280 px, claro y oscuro | en `docs/evidencias/modulo69/` |
 
 ## 6. Checklist de ejecución
 - [x] Tarea 1: tipos, api y tests.
@@ -54,3 +54,4 @@
 | 2026-11-22 | A4 Cursos y horas | Pasan | `CursosVista.test.tsx` (10) y `HorasVista.test.tsx` (5): filtros, búsqueda a 300 ms, alta, edición, activar/desactivar y ficha del empleado |
 | 2026-11-22 | A5 Roles y pestañas | Pasan | `CapacitacionesPage.test.tsx` (7): `?vista=`, flechas, selector de año, resumen y escrituras deshabilitadas sin RRHH ni ADMIN; `npx vitest run src/modules/capacitaciones` ×3 (59 pruebas cada vez) |
 | 2026-11-22 | A6 Visual | pendiente: capturas | capturas a 375 y 1280 px, claro y oscuro, por adjuntar al PR |
+| 2026-11-24 | A6 | OK | 12 capturas (3 escenarios a 375 y 1280 px, claro y oscuro) en `docs/evidencias/modulo69/`, contra API y PostgreSQL locales con el seed: sin desplazamiento horizontal de página, sin errores de consola y Escape cierra los diálogos; detalle en su `README.md` y `resultado-visual.json` |
