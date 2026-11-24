@@ -29,7 +29,7 @@
 ## 3. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/038-planillas.sql` (tablas de §4, seed de parámetros fuera: el seed va en `seed-dev.sql`; `ALTER TABLE "DescuentosCuotaPrestamo" ADD CONSTRAINT "FK_DescuentosCuotaPrestamo_Planillas_PlanillaId" FOREIGN KEY ("PlanillaId") REFERENCES "Planillas" ("Id") ON DELETE RESTRICT` (tabla del 67 con un registro por descuento)) y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
+| `database/038-planillas.sql` (tablas de §4; al final, las filas de `ParametrosPlanilla`, `ParametrosPension` y `TramosQuintaCategoria` con `ON CONFLICT DO NOTHING`, porque son catálogos y la demo de producción no carga el seed; `ALTER TABLE "DescuentosCuotaPrestamo" ADD CONSTRAINT "FK_DescuentosCuotaPrestamo_Planillas_PlanillaId" FOREIGN KEY ("PlanillaId") REFERENCES "Planillas" ("Id") ON DELETE RESTRICT` (tabla del 67 con un registro por descuento)) y su fila en `docs/equipo/relevo.md` §8 | crear / modificar |
 | entidades nuevas y navegaciones regeneradas, `TitanGlobalDbContext.cs`, `PluralizadorEspanol.cs` si hace falta | regenerar |
 | `src/TitanGlobal.Application/DTOs/Modulo66_Planillas/*.cs` | crear |
 | `src/TitanGlobal.Application/UseCases/Modulo66_Planillas/AdministrarPlanillasUseCase.cs`, `CalcularPlanillaUseCase.cs`, `AdministrarBonosPlanillaUseCase.cs`, `AdministrarAfiliacionesPensionUseCase.cs`, `ValidacionPlanilla.cs`, `CalculadoraRemuneracion.cs` (estática y pública, pura) | crear |
@@ -39,8 +39,8 @@
 
 ## 4. Diseño y lógica
 **Tablas** (importes `numeric(12,2)`, tasas `numeric(6,4)`):
-- `ParametrosPlanilla`: `Id`, `Clave varchar(50)` única, `Valor numeric(14,4)`, `Descripcion varchar(200)`. Claves del seed: `UIT` 5350, `TASA_ESSALUD` 0.09, `HORAS_JORNADA` 8, `MINUTOS_RECARGO_25` 120, `RECARGO_EXTRA_25` 0.25, `RECARGO_EXTRA_35` 0.35, `DEDUCCION_UIT_QUINTA` 7.
-- `ParametrosPension`: `Id`, `Codigo varchar(20)` único (`ONP`, `INTEGRA`, `PRIMA`, `PROFUTURO`, `HABITAT`), `Sistema varchar(10)` (`ONP`/`AFP`), `TasaAporte`, `TasaPrimaSeguro`, `TasaComision`, `RemuneracionMaximaAsegurable` (nula en ONP). Valores de ejemplo en el seed (ONP 0.13; AFP 0.10 de aporte, 0.0137 de prima, comisión 0.0155 / 0.0160 / 0.0169 / 0.0147, tope 12 027.10).
+- `ParametrosPlanilla`: `Id`, `Clave varchar(50)` única, `Valor numeric(14,4)`, `Descripcion varchar(200)`. Claves que carga el script: `UIT` 5350, `TASA_ESSALUD` 0.09, `HORAS_JORNADA` 8, `MINUTOS_RECARGO_25` 120, `RECARGO_EXTRA_25` 0.25, `RECARGO_EXTRA_35` 0.35, `DEDUCCION_UIT_QUINTA` 7.
+- `ParametrosPension`: `Id`, `Codigo varchar(20)` único (`ONP`, `INTEGRA`, `PRIMA`, `PROFUTURO`, `HABITAT`), `Sistema varchar(10)` (`ONP`/`AFP`), `TasaAporte`, `TasaPrimaSeguro`, `TasaComision`, `RemuneracionMaximaAsegurable` (nula en ONP). Valores de ejemplo que carga el script (ONP 0.13; AFP 0.10 de aporte, 0.0137 de prima, comisión 0.0155 / 0.0160 / 0.0169 / 0.0147, tope 12 027.10).
 - `TramosQuintaCategoria`: `Id`, `Orden` único, `HastaUit numeric(8,2)` (nulo en el último), `Tasa`.
 - `AfiliacionesPension`: `Id`, `EmpleadoId` único (FK), `ParametroPensionId` (FK), `Cuspp varchar(12)` (obligatorio en AFP), `FechaAfiliacion date`.
 - `BonosPlanilla`: `Id`, `EmpleadoId` (FK), `Anio`, `Mes`, `TipoPlanilla varchar(20)`, `Concepto varchar(100)`, `Monto > 0`, `PlanillaId` (FK nula; la fija el cálculo).
@@ -103,9 +103,9 @@ Escrituras con `RRHH` o `ADMIN`; `CalculadoPor` y `AprobadoPor` vienen del JWT, 
 
 Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calculada`), 13 (sin ningún detalle incluido). Pago 7, 8, 11, 12. Boleta 14, 15. Bonos 16, 1, 2, 3, 18, 19, 17; eliminar 20, 21. Afiliación 22, 23, 24, 25, 17. Listados 26, 27, 28.
 
-**Seed:** parámetros, pensiones y tramos; afiliaciones de los empleados 1 (INTEGRA), 2 (ONP) y 3 (PRIMA); un bono del empleado 1 en 2026-10; planilla mensual 2026-10 `Pagada` con sus detalles y boletas calculados con estas reglas (los importes se obtienen ejecutando el cálculo y se copian al seed), y 2026-11 en `Borrador`.
+**Seed:** afiliaciones de los empleados 1 (INTEGRA), 2 (ONP) y 3 (PRIMA); un bono del empleado 1 en 2026-10; planilla mensual 2026-10 `Pagada` con sus detalles y boletas calculados con estas reglas (los importes se obtienen ejecutando el cálculo y se copian al seed), y 2026-11 en `Borrador`.
 
-**Parámetros de ejemplo:** los valores de `ParametrosPlanilla`, `ParametrosPension` y de los tramos de quinta categoría del seed (UIT, tasas de AFP y ONP, comisiones, tope asegurable y tramos) son de ejemplo para la demo y las pruebas, no valores legales vigentes. Antes de usar la planilla en producción hay que cargarlos desde fuentes oficiales por script SQL (hasta que exista ParametrosSistema, módulo 79).
+**Parámetros de ejemplo:** los valores de `ParametrosPlanilla`, `ParametrosPension` y de los tramos de quinta categoría que carga `038-planillas.sql` (UIT, tasas de AFP y ONP, comisiones, tope asegurable y tramos) son de ejemplo para la demo y las pruebas, no valores legales vigentes. Para usar valores oficiales se actualizan con un script SQL nuevo (el `ON CONFLICT DO NOTHING` de 038 no pisa filas existentes), hasta que exista ParametrosSistema (módulo 79).
 
 **Pruebas:** un caso por mensaje; `CalculadoraRemuneracion` con casos numéricos a mano: mes completo ONP, AFP con tope de la prima, ingreso parcial por alta a mitad de mes, permiso sin goce, faltas, horas extra con tramo de 25 % y 35 %, quinta con tramos (0 bajo 7 UIT, un tramo, varios tramos), préstamo limitado por el neto, neto negativo, sin afiliación; flujo completo con recálculo (los descuentos de préstamos no se duplican), aprobación inmutable (P2), boletas únicas (P6), complementaria; roles; auditoría.
 
@@ -135,12 +135,13 @@ Reglas: crear 1, 2, 3, 4, 5, 6. Calcular 8, 10. Aprobar 8, 9 (si no está `Calcu
 | 2026-11-22 | A2, A3, A4 | 13 pruebas de `CalculadoraRemuneracion` con importes a mano y 23 de API del módulo 66 en verde (mensajes 1 a 28, flujo con recálculo sin duplicar préstamos, aprobación inmutable, boletas únicas, complementaria, roles, auditoría) | `dotnet test --filter FullyQualifiedName~Modulo66` |
 | 2026-11-22 | A5 | `SMOKE OK` con `038` aplicado; `scaffold.sh --comprobar`: SCAFFOLD AL DÍA | `./scripts/smoke-postgres.sh`, `./scripts/scaffold.sh --comprobar` |
 | 2026-11-24 | Actualización con main | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | Actualizado con main (módulo 48): build sin warnings, 1480 pruebas backend y 1133 frontend |
+| 2026-11-24 | Catálogos en el script (pedido de Lukas) | OK (fallo ambiental conocido en `CatalogoCoincideConLosOchentaModulosDeArquitectura`) | `ParametrosPlanilla`, `ParametrosPension` y `TramosQuintaCategoria` al final de `038-planillas.sql` con `ON CONFLICT DO NOTHING` y fuera del seed: con solo los scripts quedan 7/5/5 filas, 038 se reaplica sin errores, el seed corre dos veces sin duplicar, la secuencia sigue en 6; build sin warnings, 1480 pruebas backend, `SCAFFOLD AL DÍA` y `SMOKE OK` |
 
 ### Decisiones de detalle tomadas al implementar (la spec no las fijaba)
 - **Totales y contadores.** `Empleados`, `TotalIngresos`, `TotalDescuentos`, `TotalNeto` y `TotalAportesEmpleador` cuentan solo los empleados incluidos; `Incidencias` cuenta los excluidos (sin afiliación o neto negativo). Un excluido se guarda con días y sueldo informativos pero importes en 0.
 - **Préstamos y tope.** La calculadora devuelve `SaldoParaPrestamos` (neto tras pensión y quinta); `DescontarCuotasAsync` lo usa como `montoMaximo` y `AplicarPrestamos` vuelve a acotar al neto.
 - **Faltas y permisos.** `DiasFalta` cuenta fechas distintas con jornada `Falta` del mes; `DiasSinGoce` cuenta los días naturales del mes cubiertos por ausencias `PermisoSinGoce` aprobadas, aunque caigan fuera de los días de contrato.
-- **Parámetros ausentes.** Si falta una clave de `ParametrosPlanilla` o no hay tramos, se usan los valores del seed (UIT 5350, EsSalud 9 %, jornada de 8 h, 120 min al 25 %, recargos 0.25/0.35, 7 UIT y los cinco tramos). Estos valores de respaldo son también de ejemplo.
+- **Parámetros ausentes.** Si falta una clave de `ParametrosPlanilla` o no hay tramos, se usan los valores del script (UIT 5350, EsSalud 9 %, jornada de 8 h, 120 min al 25 %, recargos 0.25/0.35, 7 UIT y los cinco tramos). Estos valores de respaldo son también de ejemplo.
 - **Quinta en la complementaria.** Se calcula con la misma fórmula sobre los ingresos de los bonos (sin acumular lo de la mensual).
 - **Bonos sin empleado calculado.** Un bono mensual de un empleado sin días cubiertos o excluido queda sin `PlanillaId`.
 - **Resumen.** `UltimoPeriodo` es `AAAA-MM` de la última planilla mensual (nulo si no hay) y `BorradoresYCalculadas` cuenta todas las planillas en ambos estados.
