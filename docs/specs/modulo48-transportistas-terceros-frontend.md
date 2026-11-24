@@ -66,3 +66,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1138 pruebas backend y 580 frontend en 73 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Actualización para revisión — 2026-11-23
+
+- Rama actualizada con `origin/main` (0b0324ff0863a4b5ab6c977e649c7840eb199caa) después de integrar el PR #59 del módulo 42.
+- `relevo.md` idéntico a main. Se conservaron las pantallas y ambos bloques de CSS, además del seed de evaluaciones de proveedores; contexto regenerado con el scaffold oficial desde la base combinada.
+- Base local reiniciada, seis scripts aplicados y seed cargado. Script propio: `012-transportistas-terceros.sql`; aplicación en la demo pendiente de Lukas.
+- `./scripts/verify.sh`: exit 0; 1191 pruebas backend, 695 pruebas frontend en 84 archivos; .NET con cero warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del módulo 48 y los módulos existentes.
+- El frontend conserva los avisos existentes de obsolescencia de ESLint 9 y tamaño del bundle de Vite. La evidencia visual del 2026-11-21 sigue disponible; esta actualización conserva el bloque visual del 48.
+- Propuesta, pendiente de aprobación de Lukas. No se han aplicado scripts contra producción.

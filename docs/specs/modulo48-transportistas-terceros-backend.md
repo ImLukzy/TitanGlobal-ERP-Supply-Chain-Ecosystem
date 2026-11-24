@@ -6,7 +6,7 @@
 **Problema:** el enunciado define «TransportistasTerceros (3PL y fletes)», pero no hay tablas, API ni reglas aprobadas para el módulo. Es previo a RutasDespacho según `docs/equipo/asignaciones.md`.
 **Resultado propuesto:** mantener proveedores logísticos externos y registrar fletes manuales, con referencia, trayecto e importe declarado. El registro y su cancelación conservan el historial; no calculan tarifas ni generan documentos contables.
 
-Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, creada desde `origin/main`. **Estado: Propuesta, pendiente de aprobación de Lukas; revisión y aprobación de Lukas pendientes.**
+Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, creada desde `origin/main`. **Estado: propuesta, pendiente de aprobación de Lukas.**
 
 ## 2. Fuera de alcance y decisiones pendientes
 - Rutas, conductores, vehículos, guías, facturas, pagos y demás módulos; ninguna FK hacia las cuatro entidades base.
@@ -14,18 +14,18 @@ Responsable: Kelvin Pinto. Rama: `kelvin/modulo48-transportistas-terceros`, crea
 - Middleware, autenticación, pipeline, scripts fusionados y edición manual de archivos generados.
 - Aplicar SQL en producción o declarar el módulo integrado/desplegado.
 
-**Decisiones de producto propuestas, implementadas localmente como propuesta, pendiente de aprobación de Lukas y pendientes de aprobación de Lukas para su integración:**
+**Decisiones de producto propuestas, pendientes de aprobación de Lukas para su integración:**
 1. Alcance propuesto: maestro de transportistas + registro/cancelación manual de fletes; no un motor de tarifas.
 2. Identificación fiscal por país y documento libre (no exigir RUC peruano a empresas extranjeras). La unicidad propuesta compara país y documento sin mayúsculas ni espacios exteriores; el país se mantiene como texto, siguiendo el maestro Proveedores. Revisar si se requiere un código de país normalizado.
 3. Moneda declarativa de tres letras, sin validar contra el módulo 74 todavía ni sumar importes de monedas diferentes.
 4. Fechas de fletes históricas o futuras válidas, siempre UTC. Cancelación administrativa con motivo; sin efectos contables.
 
-Estas decisiones son propuestas, no reglas ya presentes en el enunciado. La aprobación de Kelvin para continuar el trabajo no se presenta como revisión de Lukas.
+Estas decisiones son propuestas, no reglas ya presentes en el enunciado. La implementación local no sustituye la revisión y aprobación de Lukas.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
 |---|---|---|
-| `database/012-transportistas-terceros.sql` | creado y aplicado localmente | dos tablas, FK, índices y restricciones; 010/011 reservados a ramas independientes del 41/42 |
+| `database/012-transportistas-terceros.sql` | creado y aplicado localmente | dos tablas, FK, índices y restricciones; los scripts 021/022 del 41/42 ya están integrados en main |
 | `src/TitanGlobal.Domain/Models/TransportistaTercero.cs` | regenerar | exclusivamente scaffold |
 | `src/TitanGlobal.Domain/Models/FleteTercero.cs` | regenerar | exclusivamente scaffold |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | DbSet y configuración; sin edición manual |
@@ -145,3 +145,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1138 pruebas backend y 580 frontend en 73 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Actualización para revisión — 2026-11-23
+
+- Rama actualizada con `origin/main` (0b0324ff0863a4b5ab6c977e649c7840eb199caa) después de integrar el PR #59 del módulo 42.
+- `relevo.md` idéntico a main. Se conservaron las pantallas y ambos bloques de CSS, además del seed de evaluaciones de proveedores; contexto regenerado con el scaffold oficial desde la base combinada.
+- Base local reiniciada, seis scripts aplicados y seed cargado. Script propio: `012-transportistas-terceros.sql`; aplicación en la demo pendiente de Lukas.
+- `./scripts/verify.sh`: exit 0; 1191 pruebas backend, 695 pruebas frontend en 84 archivos; .NET con cero warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del módulo 48 y los módulos existentes.
+- El frontend conserva los avisos existentes de obsolescencia de ESLint 9 y tamaño del bundle de Vite. La evidencia visual del 2026-11-21 sigue disponible; esta actualización conserva el bloque visual del 48.
+- Propuesta, pendiente de aprobación de Lukas. No se han aplicado scripts contra producción.
