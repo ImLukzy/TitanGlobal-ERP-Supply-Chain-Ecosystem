@@ -1,0 +1,63 @@
+# Especificación: módulo 42 — unicidad de licencias
+
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #59 y desplegada en la demo.
+
+## 1. Objetivo
+Impedir documentos de licencia duplicados sin distinguir mayúsculas en alta, edición y escritura directa/concurrente en PostgreSQL, conservando el formato solicitado tras Trim. Responsable: Kelvin Pinto. Propuesta, pendiente de aprobación de Lukas.
+
+## 2. Fuera de alcance
+Otros módulos, entidades base, pipeline, middleware, edición manual de código generado, scripts fusionados y producción. El permiso administrativo y la fecha mantienen el contrato del backend: una licencia vencida se puede conservar al editar/reactivar, tal como exige el smoke existente; la pantalla presenta su vigencia por separado.
+
+## 3. Archivos afectados
+`database/022-conductores-licencia-unica.sql`, los casos de uso Crear/Actualizar de `Modulo42_Conductores`, sus pruebas API, el bloque de Conductores de `scripts/seed-dev.sql`, la sección propia del smoke, la reserva de scripts del relevo y la spec backend del 42. Modelos/DbContext solo mediante scaffold si produce cambios reales.
+
+## 4. Diseño y lógica
+- Comparar `Trim().ToLower()` en consulta con el documento solicitado en minúsculas invariantes. En PUT excluir el Id propio. Conservar el formato solicitado tras Trim.
+- 409 literal: «Ya existe un conductor con el documento de licencia {documentoLicencia}.», sin Detail. Mantener traducción de `ViolacionRestriccionException` y el orden existente de validación, incluida la conservación de fechas vencidas.
+- Índice único sobre `lower(btrim("DocumentoLicencia"))`; conservar el índice original por compatibilidad con el scaffold y usar el índice normalizado en el ON CONFLICT del seed para admitir cambios de mayúsculas sin duplicar registros. No borrar ni fusionar datos: si existen duplicados normalizados, la aplicación del script falla y se revierte.
+- El índice de expresión puede ser omitido por el scaffold de EF; se verifica su protección en PostgreSQL real.
+- La tabla oficial reserva 021 al 41 y 022 a este módulo. Se renombra 011 a 022; el41 se recibe desde main ya integrado, sin incorporar otras ramas de desarrollo. Los huecos se permiten según relevo §8.
+
+## 5. Criterios de aceptación
+POST/PUT con variantes de mayúsculas → 409 literal; cambio de mayúsculas del documento propio → 200; escritura directa duplicada → 23505 por el índice esperado; aplicar-bd y scaffold al día; verify y smoke en verde; pantalla con vigencia y permiso administrativo separados.
+
+## 6. Checklist
+- [ ] Aprobación de Lukas.
+- [x] SQL aplicado y scaffold.
+- [x] Casos de uso, integración y smoke.
+- [x] Gate y evidencia en §7.
+
+## 7. Registro de verificación
+| Fecha | Verificación | Resultado |
+|---|---|---|
+| 2026-11-21 | Esquema | PostgreSQL 16 local: 001/008/011 aplicados; `scaffold.sh` ejecutado y `SCAFFOLD AL DÍA`, sin cambios de modelo |
+| 2026-11-21 | Integración | siete casos nuevos: POST/PUT duplicados con variantes de mayúsculas y cambio de mayúsculas del documento propio |
+| 2026-11-21 | PostgreSQL | `SMOKE OK`: 409 literales, actualización propia y persistencia UTC correctas; escritura directa rechazada con 23505 por `UX_Conductores_DocumentoLicenciaNormalizado` |
+| 2026-11-21 | Seed | bloque real del seed ejecutado con el documento existente en minúsculas: conserva tres conductores y el documento normalizado sin duplicación; comprobación dentro de transacción revertida |
+| 2026-11-21 | Gate | `verify.sh` aprobado: 1090 pruebas backend, 582 frontend, cero errores/advertencias de compilación .NET; aviso existente de Vite sobre bundle superior a 500 kB |
+| 2026-11-21 | Pantalla real | 375/1280 px claro/oscuro, licencia vencida visible, conflicto 409, CRUD y conservación exacta del instante vencido al desactivar/reactivar; evidencia en `../evidencias/modulo42/` |
+| 2026-11-23 | Integración y producción | Aprobado. Spec aprobada por Lukas. `022` aplicado en la demo con copia y ensayo (5 scripts registrados, filas de las 41 tablas sin cambios). PR #59 fusionado con merge commit (`0b0324f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/conductores` responde 200 |
+
+La aprobación de Lukas, revisión e integración siguen pendientes. No se aplicó SQL a producción.
+
+### Preparación de revisión — 2026-11-22
+
+Rama actualizada con `git pull origin main`, conservando la tabla oficial de relevo y modificando solo la línea de Kelvin y la reserva propia. Script vigente: `database/022-conductores-licencia-unica.sql`. Propuesta, pendiente de aprobación de Lukas. Base PostgreSQL local recreada, seed cargado y entidades/contexto regenerados mediante scaffold, sin edición manual ni diferencias de contenido.
+
+`./scripts/verify.sh`: salida0, 1090 pruebas backend y 582 frontend en 74 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales. El primer smoke se detuvo en su precomprobación porque el contenedor local de preparación ocupaba5433. Se cerró con docker compose down y el smoke completo pasó al repetirlo; se conserva el registro inicial.
+
+No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Preparación del PR de Conductores — 2026-11-23
+
+Actualizada la rama con main cb9dfe1851428cfa60d2b9b9e47b3d426043bb69 después de integrar los PR #51 y #55. Se conserva `docs/equipo/relevo.md` exactamente como main; asignaciones conserva los estados aprobados del41/72/62 y solo actualiza la fila propia del42. Registro de pantallas y estilos conservan íntegros main y Conductores. No hubo conflicto en TitanGlobalDbContext.cs ni edición manual de archivos generados.
+
+Script propio vigente: `database/022-conductores-licencia-unica.sql`; la aplicación en la demo corresponde a Lukas antes de integrar. Localmente se recreó PostgreSQL, se cargó el seed y se ejecutó scaffold sin diferencias de contenido en modelos/código/pruebas. Los scripts001/008/021/022 están aplicados en la base de prueba. El41 se recibe desde main ya integrado; no se incorporan otras ramas de desarrollo.
+
+`./scripts/verify.sh` terminó con salida0: 1097 pruebas backend y 658 frontend en 81 archivos, sin fallos ni omisiones. Compilación .NET sin errores/advertencias; formato, reglas/capas, lint, tipos y build correctos. `./scripts/smoke-postgres.sh` terminó con salida0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos POST/PUT duplicados normalizados, cambio de mayúsculas propio, UTC y rechazo de duplicado por índice real.
+
+VITEST_MAX_WORKERS=1 fue temporal; sin modificar pruebas/timeouts/configuración compartida. Se conservan las capturas y el QA real previos, sin generar imágenes nuevas para esta actualización. Avisos globales conocidos de ESLint9/Vite documentados, sin cambiar dependencias ni umbrales. Propuesta del42 pendiente de aprobación de Lukas; no se aplica SQL a producción ni se declara integración.
+
+## Numeración vigente
+
+El script actual es `database/022-conductores-licencia-unica.sql`. Las verificaciones históricas con011 corresponden al nombre anterior. Preparación local con main actual; propuesta, pendiente de aprobación de Lukas.

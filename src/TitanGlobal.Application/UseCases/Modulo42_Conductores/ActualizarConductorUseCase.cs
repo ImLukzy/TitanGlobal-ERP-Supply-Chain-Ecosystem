@@ -39,9 +39,10 @@ public class ActualizarConductorUseCase
 
         string? observaciones = ValidacionConductor.NormalizarObservaciones(solicitud.Observaciones);
 
+        string documentoNormalizado = documentoLicencia.ToLowerInvariant();
         bool documentoEnUso = await _unitOfWork.Repository<Conductor>()
             .AsQueryable()
-            .AnyAsync(conductor => conductor.DocumentoLicencia == documentoLicencia && conductor.Id != id);
+            .AnyAsync(conductor => conductor.DocumentoLicencia.Trim().ToLower() == documentoNormalizado && conductor.Id != id);
 
         if (documentoEnUso)
         {
