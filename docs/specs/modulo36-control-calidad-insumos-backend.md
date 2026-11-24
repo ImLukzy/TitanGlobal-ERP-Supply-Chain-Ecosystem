@@ -89,7 +89,7 @@ Base `api/v1/inspecciones-insumos`. JWT obligatorio. JSON en camelCase. Errores 
 - `DictaminarInspeccionInsumoRequestDto { resultado, cantidadDefectuosa, observaciones? }`: `resultado` es `Aprobada` o `Rechazada`.
 - `AnularInspeccionInsumoRequestDto { motivo }`
 
-El listado ordena por `FechaInspeccion` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. Los filtros de estado y el resultado aceptan sus valores sin distinguir mayúsculas. `FechaInspeccion` y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada. `FechaDictamen` se asigna con `DateTime.UtcNow`. Los textos opcionales en blanco se guardan como `null`.
+El listado ordena por `FechaInspeccion` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. Los filtros de estado y el resultado aceptan sus valores sin distinguir mayúsculas. `FechaInspeccion` y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada. `FechaDictamen` se asigna con `DateTime.UtcNow`. «Hoy» es el día en hora de Lima: `DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5))` (Perú es UTC−5 y no tiene horario de verano; es la misma regla que `CalculadoraJornada.HoyLocal()` del módulo 63). Con UTC, a partir de las 19:00 de Lima ya sería el día siguiente y se aceptaría una fecha de inspección de mañana. Los textos opcionales en blanco se guardan como `null`.
 
 ### Reglas y mensajes literales
 
@@ -107,7 +107,7 @@ Orden de validación: el listado valida página, tamaño, búsqueda, producto, p
 | Lote vacío tras recortar espacios | 400 | El lote es obligatorio. |
 | Lote de más de 50 caracteres | 400 | El lote no puede superar 50 caracteres. |
 | Fecha de inspección ausente | 400 | La fecha de inspección es obligatoria. |
-| Fecha de inspección posterior a hoy (UTC) | 400 | La fecha de inspección no puede ser posterior a hoy. |
+| Fecha de inspección posterior a hoy (hora de Lima) | 400 | La fecha de inspección no puede ser posterior a hoy. |
 | Cantidad recibida fuera de (0, 1000000000] | 400 | La cantidad recibida debe ser mayor que 0 y como máximo 1000000000. |
 | Cantidad recibida con más de 3 decimales | 400 | La cantidad recibida admite como máximo 3 decimales. |
 | Muestra ≤ 0 | 400 | La cantidad de la muestra debe ser mayor que 0. |
