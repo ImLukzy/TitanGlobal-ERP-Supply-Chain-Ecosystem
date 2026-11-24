@@ -43,7 +43,7 @@ La implementación consume el [contrato del backend del módulo 37](modulo37-con
 
 ### Formulario y transiciones
 
-- **Nueva inspección**: se elige una orden `Terminada` en el selector (`GET /ordenes-produccion?estado=Terminada&busqueda=`). Al elegirla se carga su avance y se muestran las unidades por inspeccionar como ayuda del campo. Se indican fecha de inspección (por defecto hoy), unidades inspeccionadas, tolerancia en % e inspector.
+- **Nueva inspección**: se elige una orden `Terminada` en el selector (`GET /ordenes-produccion?estado=Terminada&busqueda=`). Al elegirla se carga su avance y se muestran las unidades por inspeccionar como ayuda del campo. Se indican fecha de inspección (por defecto hoy en hora de Lima), unidades inspeccionadas, tolerancia en % e inspector.
 - **Editar** (solo `Pendiente`) muestra la orden como dato de lectura y permite cambiar el resto.
 - **Dictaminar** (solo `Pendiente`) abre `DictamenProductoDialog` con las unidades no conformes, el resultado («Aprobada» o «Rechazada») y observaciones. Mientras se escribe, el diálogo calcula el % y avisa si supera la tolerancia; en ese caso la opción «Aprobada» queda deshabilitada con la explicación visible. El backend vuelve a validarlo.
 - **Anular** (solo `Pendiente`) abre `AnularInspeccionProductoDialog` con el motivo.
@@ -77,6 +77,8 @@ Mismos mensajes literales que el backend:
 |---|---|
 | Orden sin seleccionar | El identificador de la orden de producción debe ser mayor que 0. |
 | Fecha vacía / posterior a hoy | La fecha de inspección es obligatoria. / La fecha de inspección no puede ser posterior a hoy. |
+
+«Hoy» es el día en hora de Lima (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 de Lima ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 | Unidades inspeccionadas vacías, no enteras o fuera de 1–1000000 | La cantidad inspeccionada debe estar entre 1 y 1000000. |
 | Tolerancia fuera de 0–100 / con más de 2 decimales | La tolerancia de no conformes debe estar entre 0 y 100. / La tolerancia de no conformes admite como máximo 2 decimales. |
 | Inspector vacío / de más de 100 caracteres | El inspector es obligatorio. / El inspector no puede superar 100 caracteres. |
