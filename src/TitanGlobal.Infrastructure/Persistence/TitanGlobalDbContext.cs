@@ -23,17 +23,11 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<BonoPlanilla> BonosPlanilla { get; set; } = null!;
 
-    public virtual DbSet<CalificacionEvaluacion> CalificacionesEvaluacion { get; set; } = null!;
-
     public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
 
     public virtual DbSet<CentroTrabajo> CentrosTrabajo { get; set; } = null!;
 
-    public virtual DbSet<CicloEvaluacion> CiclosEvaluacion { get; set; } = null!;
-
     public virtual DbSet<Cliente> Clientes { get; set; } = null!;
-
-    public virtual DbSet<CompetenciaEvaluacion> CompetenciasEvaluacion { get; set; } = null!;
 
     public virtual DbSet<Conductor> Conductores { get; set; } = null!;
 
@@ -61,7 +55,7 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Empleado> Empleados { get; set; } = null!;
 
-    public virtual DbSet<Evaluacion> Evaluaciones { get; set; } = null!;
+    public virtual DbSet<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = null!;
 
     public virtual DbSet<Impuesto> Impuestos { get; set; } = null!;
 
@@ -243,22 +237,6 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<CalificacionEvaluacion>(entity =>
-        {
-            entity.HasIndex(e => e.CompetenciaEvaluacionId, "IX_CalificacionesEvaluacion_CompetenciaEvaluacionId");
-
-            entity.HasIndex(e => new { e.EvaluacionId, e.CompetenciaEvaluacionId }, "IX_CalificacionesEvaluacion_EvaluacionId_CompetenciaEvaluacionI").IsUnique();
-
-            entity.HasOne(d => d.CompetenciaEvaluacion).WithMany(p => p.CalificacionesEvaluacion)
-                .HasForeignKey(d => d.CompetenciaEvaluacionId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FK_CalificacionesEvaluacion_CompetenciasEvaluacion_CompetenciaE");
-
-            entity.HasOne(d => d.Evaluacion).WithMany(p => p.CalificacionesEvaluacion)
-                .HasForeignKey(d => d.EvaluacionId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
         modelBuilder.Entity<CategoriaProducto>(entity =>
         {
             entity.HasIndex(e => e.Nombre, "IX_CategoriasProducto_Nombre").IsUnique();
@@ -281,32 +259,9 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Tipo).HasMaxLength(20);
         });
 
-        modelBuilder.Entity<CicloEvaluacion>(entity =>
-        {
-            entity.HasIndex(e => e.Codigo, "IX_CiclosEvaluacion_Codigo").IsUnique();
-
-            entity.Property(e => e.Codigo).HasMaxLength(20);
-            entity.Property(e => e.Estado).HasMaxLength(20);
-            entity.Property(e => e.Nombre).HasMaxLength(100);
-            entity.Property(e => e.Periodo).HasMaxLength(20);
-        });
-
         modelBuilder.Entity<Cliente>(entity =>
         {
             entity.HasIndex(e => e.Ruc, "IX_Clientes_Ruc").IsUnique();
-        });
-
-        modelBuilder.Entity<CompetenciaEvaluacion>(entity =>
-        {
-            entity.HasIndex(e => new { e.CicloEvaluacionId, e.Nombre }, "IX_CompetenciasEvaluacion_CicloEvaluacionId_Nombre").IsUnique();
-
-            entity.Property(e => e.Descripcion).HasMaxLength(300);
-            entity.Property(e => e.Nombre).HasMaxLength(100);
-            entity.Property(e => e.Peso).HasPrecision(5, 2);
-
-            entity.HasOne(d => d.CicloEvaluacion).WithMany(p => p.CompetenciasEvaluacion)
-                .HasForeignKey(d => d.CicloEvaluacionId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Conductor>(entity =>
@@ -543,28 +498,17 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.TipoDocumento).HasMaxLength(10);
         });
 
-        modelBuilder.Entity<Evaluacion>(entity =>
+        modelBuilder.Entity<EvaluacionProveedor>(entity =>
         {
-            entity.HasIndex(e => new { e.CicloEvaluacionId, e.EmpleadoId }, "IX_Evaluaciones_CicloEvaluacionId_EmpleadoId").IsUnique();
+            entity.HasIndex(e => new { e.ProveedorId, e.Periodo }, "IX_EvaluacionesProveedor_ProveedorId_Periodo").IsUnique();
 
-            entity.HasIndex(e => e.EmpleadoId, "IX_Evaluaciones_EmpleadoId");
+            entity.Property(e => e.Calificacion).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Periodo).HasMaxLength(7);
+            entity.Property(e => e.PuntajeFinal).HasPrecision(5, 2);
 
-            entity.HasIndex(e => e.EvaluadorId, "IX_Evaluaciones_EvaluadorId");
-
-            entity.Property(e => e.Comentario).HasMaxLength(500);
-            entity.Property(e => e.Estado).HasMaxLength(20);
-            entity.Property(e => e.PuntajeFinal).HasPrecision(4, 2);
-
-            entity.HasOne(d => d.CicloEvaluacion).WithMany(p => p.Evaluaciones)
-                .HasForeignKey(d => d.CicloEvaluacionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(d => d.Empleado).WithMany(p => p.EvaluacionesEmpleado)
-                .HasForeignKey(d => d.EmpleadoId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(d => d.Evaluador).WithMany(p => p.EvaluacionesEvaluador)
-                .HasForeignKey(d => d.EvaluadorId)
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.EvaluacionesProveedor)
+                .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
