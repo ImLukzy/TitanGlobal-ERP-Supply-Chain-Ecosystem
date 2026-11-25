@@ -57,6 +57,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<DetalleDevolucion> DetallesDevolucion { get; set; } = null!;
 
+    public virtual DbSet<DetalleListaMaterial> DetallesListaMaterial { get; set; } = null!;
+
     public virtual DbSet<DetalleOrdenAbastecimiento> DetallesOrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<DetalleOrdenCompra> DetallesOrdenCompra { get; set; } = null!;
@@ -90,6 +92,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
+
+    public virtual DbSet<ListaMateriales> ListasMateriales { get; set; } = null!;
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
@@ -514,6 +518,22 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<DetalleListaMaterial>(entity =>
+        {
+            entity.HasIndex(e => e.ComponenteProductoId, "IX_DetallesListaMaterial_ComponenteProductoId");
+
+            entity.HasIndex(e => new { e.ListaMaterialId, e.ComponenteProductoId }, "IX_DetallesListaMaterial_ListaMaterialId_ComponenteProductoId").IsUnique();
+
+            entity.Property(e => e.Cantidad).HasPrecision(18, 6);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(20);
+
+            entity.HasOne(d => d.ComponenteProducto).WithMany(p => p.DetallesListaMaterial)
+                .HasForeignKey(d => d.ComponenteProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.ListaMaterial).WithMany(p => p.DetallesListaMaterial).HasForeignKey(d => d.ListaMaterialId);
+        });
+
         modelBuilder.Entity<DetalleOrdenAbastecimiento>(entity =>
         {
             entity.HasIndex(e => e.OrdenAbastecimientoId, "IX_DetallesOrdenesAbastecimiento_OrdenAbastecimientoId");
@@ -801,6 +821,21 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Vendedor).WithMany(p => p.LiquidacionesComisiones)
                 .HasForeignKey(d => d.VendedorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ListaMateriales>(entity =>
+        {
+            entity.HasIndex(e => e.ProductoId, "IX_ListasMateriales_ProductoId_Activa")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text = 'Activa'::text)");
+
+            entity.HasIndex(e => new { e.ProductoId, e.Version }, "IX_ListasMateriales_ProductoId_Version").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(10);
+
+            entity.HasOne(d => d.Producto).WithOne(p => p.ListaMateriales)
+                .HasForeignKey<ListaMateriales>(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

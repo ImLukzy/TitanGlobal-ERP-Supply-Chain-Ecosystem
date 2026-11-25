@@ -19,6 +19,8 @@ public partial class Producto
 
     public virtual ICollection<DetalleDevolucion> DetallesDevolucion { get; set; } = new List<DetalleDevolucion>();
 
+    public virtual ICollection<DetalleListaMaterial> DetallesListaMaterial { get; set; } = new List<DetalleListaMaterial>();
+
     public virtual ICollection<DetalleOrdenCompra> DetallesOrdenCompra { get; set; } = new List<DetalleOrdenCompra>();
 
     public virtual ICollection<DetalleOrdenAbastecimiento> DetallesOrdenesAbastecimiento { get; set; } = new List<DetalleOrdenAbastecimiento>();
@@ -26,6 +28,8 @@ public partial class Producto
     public virtual ICollection<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = new List<DetalleSolicitudCompra>();
 
     public virtual ICollection<ItemListaPrecios> ItemsListaPrecios { get; set; } = new List<ItemListaPrecios>();
+
+    public virtual ListaMateriales? ListaMateriales { get; set; }
 
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();
 
