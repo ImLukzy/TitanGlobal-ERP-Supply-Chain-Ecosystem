@@ -2144,3 +2144,91 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1279px) { .sst-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sst-filters, .sst-filters-tres, .sst-filters-cuatro, .sst-filters-seis, .sst-form, .sst-datos { grid-template-columns: minmax(0, 1fr); } .sst-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .sst-tabs { flex-wrap: wrap; } }
+
+/* Módulo 36 · Control de calidad de insumos */
+.control-calidad-insumos-page { padding-bottom: 42px; }
+.control-calidad-insumos-page button { max-width: 100%; white-space: normal; }
+.control-calidad-insumos-resumen { display: grid; gap: 12px; margin-bottom: 16px; }
+.control-calidad-insumos-metricas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.control-calidad-insumos-area { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.control-calidad-insumos-tarjeta {
+  min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.control-calidad-insumos-tarjeta h2 { margin: 0 0 12px; color: var(--ink); }
+.control-calidad-insumos-encabezado, .control-calidad-insumos-acciones, .control-calidad-insumos-selector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.control-calidad-insumos-encabezado { justify-content: space-between; margin-bottom: 16px; }
+.control-calidad-insumos-encabezado h2 { margin: 0; }
+.control-calidad-insumos-filtros, .control-calidad-insumos-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.control-calidad-insumos-filtros { margin-bottom: 16px; }
+.control-calidad-insumos-campos { min-width: 0; margin: 0 0 16px; padding: 0; border: 0; }
+.control-calidad-insumos-filtros select, .control-calidad-insumos-filtros input,
+.control-calidad-insumos-campos input, .control-calidad-insumos-dialogo input:not([type="radio"]), .control-calidad-insumos-dialogo textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font: inherit;
+}
+.control-calidad-insumos-tabla-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.control-calidad-insumos-tabla { width: 100%; min-width: 640px; border-collapse: collapse; text-align: left; }
+.control-calidad-insumos-resumen .control-calidad-insumos-tabla { min-width: 420px; }
+.control-calidad-insumos-tabla caption { padding-bottom: 8px; color: var(--ink-soft); text-align: left; }
+.control-calidad-insumos-tabla th, .control-calidad-insumos-tabla td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.control-calidad-insumos-tabla thead { background: var(--surface-muted); }
+.control-calidad-insumos-tabla thead th { color: var(--ink-soft); white-space: nowrap; }
+.control-calidad-insumos-tabla tbody tr.is-selected { background: var(--accent-soft); }
+.control-calidad-insumos-cifra { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.control-calidad-insumos-enlace { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; white-space: nowrap; }
+.control-calidad-insumos-estado { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.control-calidad-insumos-estado.is-pendiente { background: var(--accent-soft); color: var(--accent-ink); }
+.control-calidad-insumos-estado.is-aprobada { background: var(--good-soft); color: var(--good); }
+.control-calidad-insumos-estado.is-rechazada { background: var(--bad-soft); color: var(--bad); }
+.control-calidad-insumos-estado.is-anulada { background: var(--surface-muted); color: var(--ink-soft); }
+.control-calidad-insumos-datos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 12px; margin: 0 0 16px; }
+.control-calidad-insumos-datos dt { color: var(--ink-faint); font-size: 12px; font-weight: 650; }
+.control-calidad-insumos-datos dd { margin: 0 0 8px; color: var(--ink); }
+.control-calidad-insumos-tolerancia { color: var(--good); font-weight: 650; }
+.control-calidad-insumos-tolerancia.is-supera { color: var(--bad); }
+.control-calidad-insumos-resultado { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.control-calidad-insumos-resultado label { display: inline-flex; align-items: center; gap: 6px; }
+.control-calidad-insumos-resultado .field-error { flex-basis: 100%; }
+.control-calidad-insumos-catalogo { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.control-calidad-insumos-busqueda { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.control-calidad-insumos-busqueda .form-field { flex: 1 1 145px; min-width: 0; }
+.control-calidad-insumos-opciones { display: grid; gap: 4px; list-style: none; padding: 0; }
+.control-calidad-insumos-opciones button { width: 100%; text-align: left; }
+.control-calidad-insumos-aviso, .control-calidad-insumos-error { margin-bottom: 12px; }
+.control-calidad-insumos-aviso { padding: 10px 14px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+.control-calidad-insumos-dialogo { display: grid; gap: 10px; width: min(480px, 100%); max-height: 90vh; overflow: auto; }
+.control-calidad-insumos-dialogo h2, .control-calidad-insumos-dialogo p { margin: 0; }
+
+@media (min-width: 720px) {
+  .control-calidad-insumos-metricas { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .control-calidad-insumos-filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .control-calidad-insumos-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .control-calidad-insumos-datos { grid-template-columns: max-content minmax(0, 1fr); }
+  .control-calidad-insumos-datos dd { margin-bottom: 0; }
+}
+
+@media (min-width: 1024px) {
+  .control-calidad-insumos-area { grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr); }
+}
