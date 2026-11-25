@@ -106,6 +106,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | no (en `main` por el PR #51 y aplicado en la demo) |
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | no (en `main` por el PR #59 y aplicado en la demo) |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
+| 026 | `026-mantenimiento-preventivo.sql` | Antony | `antony/modulo39-mantenimiento-preventivo` | no |
 | 034 | `034-turnos-horarios.sql` | Alexander | `alexander/modulo64-turnos-horarios` | no (en `main` por el PR #65 y aplicado en la demo) |
 | 035 | `035-asistencia-biometrica.sql` | Alexander | `alexander/modulo63-asistencia-biometrica` | no (en `main` por el PR #66 y aplicado en la demo) |
 | 036 | `036-vacaciones-permisos.sql` | Alexander | `alexander/modulo65-vacaciones-permisos` | no (en `main` por el PR #67 y aplicado en la demo) |
