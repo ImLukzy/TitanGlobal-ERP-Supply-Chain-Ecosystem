@@ -1,0 +1,363 @@
+{
+  "fecha": "2026-11-24",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "navegador": "Microsoft Edge headless",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "escenarios": {
+        "detalle": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "vencido": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "anulado": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "formulario": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "renovacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "adenda": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "anulacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "empleados": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "escenarios": {
+        "detalle": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "vencido": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "anulado": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "formulario": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "renovacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "adenda": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "anulacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "empleados": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "escenarios": {
+        "detalle": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "vencido": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "anulado": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "formulario": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "renovacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "adenda": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "anulacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "empleados": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "escenarios": {
+        "detalle": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "vencido": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "anulado": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "formulario": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "renovacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "adenda": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "anulacion": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        },
+        "empleados": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    }
+  ]
+}
