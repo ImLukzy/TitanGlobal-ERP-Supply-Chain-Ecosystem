@@ -24,6 +24,15 @@ import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
 import { ConductoresPage } from './conductores/ConductoresPage';
 import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
+import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
+import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
+import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiometricaPage';
+import { VacacionesPermisosPage } from './vacaciones-permisos/VacacionesPermisosPage';
+import { AdelantosPrestamosPage } from './adelantos-prestamos/AdelantosPrestamosPage';
+import { PlanillasPage } from './planillas/PlanillasPage';
+import { EvaluacionDesempenoPage } from './evaluacion-desempeno/EvaluacionDesempenoPage';
+import { CapacitacionesPage } from './capacitaciones/CapacitacionesPage';
+import { SeguridadSaludOcupacionalPage } from './seguridad-salud-ocupacional/SeguridadSaludOcupacionalPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -51,4 +60,13 @@ export const pantallas: Record<string, ComponentType> = {
   '41-vehiculos-flota': VehiculosFlotaPage,
   '42-conductores': ConductoresPage,
   '48-transportistas-terceros': TransportistasTercerosPage,
+  '62-contratos-laborales': ContratosLaboralesPage,
+  '64-turnos-horarios': TurnosHorariosPage,
+  '63-asistencia-biometrica': AsistenciaBiometricaPage,
+  '65-vacaciones-permisos': VacacionesPermisosPage,
+  '67-adelantos-prestamos': AdelantosPrestamosPage,
+  '66-planillas': PlanillasPage,
+  '68-evaluacion-desempeno': EvaluacionDesempenoPage,
+  '69-capacitaciones': CapacitacionesPage,
+  '70-seguridad-salud-ocupacional': SeguridadSaludOcupacionalPage,
 };

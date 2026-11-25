@@ -1,0 +1,187 @@
+{
+  "fecha": "2026-11-24",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "navegador": "Microsoft Edge headless",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "escenarios": {
+        "planillas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "bonos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "afiliaciones": {
+          "pasos": [],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "boleta": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "escenarios": {
+        "planillas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "bonos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "afiliaciones": {
+          "pasos": [],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "boleta": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "escenarios": {
+        "planillas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "bonos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "afiliaciones": {
+          "pasos": [],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "boleta": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "escenarios": {
+        "planillas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "bonos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "afiliaciones": {
+          "pasos": [],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "boleta": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "verificado": null,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    }
+  ]
+}
