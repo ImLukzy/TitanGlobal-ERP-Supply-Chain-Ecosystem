@@ -900,4 +900,17 @@ SELECT setval(pg_get_serial_sequence('"ExamenesMedicos"', 'Id'), (SELECT MAX("Id
 SELECT setval(pg_get_serial_sequence('"IncidentesSst"', 'Id'), (SELECT MAX("Id") FROM "IncidentesSst"));
 SELECT setval(pg_get_serial_sequence('"AccionesCorrectivasSst"', 'Id'), (SELECT MAX("Id") FROM "AccionesCorrectivasSst"));
 
+-- Módulo 31: dos versiones para el producto 1.
+INSERT INTO "ListasMateriales" ("ProductoId", "Version", "Estado") VALUES
+    (1, 1, 'Activa'),
+    (1, 2, 'Borrador')
+ON CONFLICT ("ProductoId", "Version") DO NOTHING;
+
+INSERT INTO "DetallesListaMaterial" ("ListaMaterialId", "ComponenteProductoId", "Cantidad", "UnidadMedida")
+SELECT lista."Id", datos.componente_id, datos.cantidad, 'unidad'
+FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.000000))
+    AS datos(version, componente_id, cantidad)
+JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
+ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
+
 COMMIT;
