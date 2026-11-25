@@ -21,6 +21,8 @@ public partial class Proveedor
 
     public virtual ICollection<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = new List<EvaluacionProveedor>();
 
+    public virtual ICollection<InspeccionInsumo> InspeccionesInsumos { get; set; } = new List<InspeccionInsumo>();
+
     public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();
 
     public virtual ICollection<SolicitudCompra> SolicitudesCompra { get; set; } = new List<SolicitudCompra>();
