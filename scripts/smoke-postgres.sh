@@ -39,6 +39,10 @@ CONTRATO_LABORAL_RENOVADO_ID=""
 EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
+MANTENIMIENTO_CENTRO_ID=""
+MANTENIMIENTO_CENTRO_ARE_ID=""
+MANTENIMIENTO_CENTRO_INACTIVO_ID=""
+MANTENIMIENTO_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -559,6 +563,30 @@ checks = {
     ] == [(6, 0.123456, "unidad")],
     "lista-material-version-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1.",
     "lista-material-edicion-bloqueada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar listas de materiales en borrador.",
+    "openapi-mantenimientos-preventivos": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/mantenimientos-preventivos", "get"), ("/api/v1/mantenimientos-preventivos", "post"),
+        ("/api/v1/mantenimientos-preventivos/resumen", "get"),
+        ("/api/v1/mantenimientos-preventivos/{id}", "get"), ("/api/v1/mantenimientos-preventivos/{id}", "put"),
+        ("/api/v1/mantenimientos-preventivos/{id}/iniciar", "post"),
+        ("/api/v1/mantenimientos-preventivos/{id}/completar", "post"),
+        ("/api/v1/mantenimientos-preventivos/{id}/cancelar", "post"),
+    ]),
+    "mantenimientos-seed": lambda data: data["total"] == 2 and [
+        (item["numero"], item["centroTrabajoCodigo"], item["fechaProgramada"]) for item in data["items"]
+    ] == [("MP-000001", "CT-LIM-L01", "2027-01-15"), ("MP-000002", "CT-ARE-C01", "2027-01-20")],
+    "mantenimiento-centros-inactivos": lambda data: any(item["codigo"] == "CT-ARE-L01" for item in data["items"]),
+    "mantenimiento-completado-detail": lambda data: data["numero"] == "MP-000004" and data["estado"] == "Completado" and data["horasReales"] == 3.25 and data["fechaSiguienteSugerida"] == "2026-11-09" and data["vencido"] is False,
+    "mantenimientos-summary": lambda data: data["totalMantenimientos"] == 4 and data["porEstado"] == [
+        {"estado": "Programado", "total": 2}, {"estado": "EnEjecucion", "total": 1}, {"estado": "Completado", "total": 1},
+    ] and data["horasPlanificadasPendientes"] == 12.5,
+    "mantenimiento-creado": lambda data: isinstance(data.get("id"), int) and re.fullmatch(r"MP-[0-9]{6}", data["numero"]) is not None,
+    "mantenimiento-creado-detail": lambda data: data["fechaProgramada"] == "2027-03-02" and data["duracionHorasPlanificada"] == 1.5 and data["responsable"] is None and data["estado"] == "Programado",
+    "mantenimiento-fecha-ocupada": lambda data: data["StatusCode"] == 409 and data["Message"] == "El centro de trabajo CT-LIM-L01 ya tiene un mantenimiento programado el 2027-03-01." and "Detail" not in data,
+    "mantenimiento-centro-inactivo": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El centro de trabajo [0-9]+ está inactivo\.", data["Message"]) is not None and "Detail" not in data,
+    "mantenimiento-duracion-decimales": lambda data: data["StatusCode"] == 400 and data["Message"] == "La duración admite como máximo 2 decimales." and "Detail" not in data,
+    "mantenimiento-fecha-pasada": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha programada no puede ser anterior a hoy." and "Detail" not in data,
+    "mantenimiento-completar-bloqueado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden completar mantenimientos en ejecución." and "Detail" not in data,
+    "centro-con-mantenimientos": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"No se puede eliminar el centro de trabajo [0-9]+ porque tiene mantenimientos preventivos\.", data["Message"]) is not None and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -762,6 +790,16 @@ request_check() {
     fi
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "mantenimientos-seed" ]]; then
+        MANTENIMIENTO_CENTRO_ID="$(python3 -c 'import json,sys; print(next(item["centroTrabajoId"] for item in json.loads(sys.argv[1])["items"] if item["centroTrabajoCodigo"] == "CT-LIM-L01"))' "$body")"
+        MANTENIMIENTO_CENTRO_ARE_ID="$(python3 -c 'import json,sys; print(next(item["centroTrabajoId"] for item in json.loads(sys.argv[1])["items"] if item["centroTrabajoCodigo"] == "CT-ARE-C01"))' "$body")"
+    fi
+    if [[ "$validation" == "mantenimiento-centros-inactivos" ]]; then
+        MANTENIMIENTO_CENTRO_INACTIVO_ID="$(python3 -c 'import json,sys; print(next(item["id"] for item in json.loads(sys.argv[1])["items"] if item["codigo"] == "CT-ARE-L01"))' "$body")"
+    fi
+    if [[ "$validation" == "mantenimiento-creado" ]]; then
+        MANTENIMIENTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1347,4 +1385,78 @@ assert estado == 200 and lista["estado"] == "Activa", lista
 assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
 print("Concurrencia de listas de materiales OK")
 PY
+request_check 'OpenAPI de mantenimientos preventivos' GET '/openapi/v1.json' 200 openapi-mantenimientos-preventivos
+request_check 'Mantenimientos programados del seed' GET '/api/v1/mantenimientos-preventivos?estado=programado' 200 mantenimientos-seed
+request_check 'Centros inactivos para el mantenimiento' GET '/api/v1/centros-trabajo?activo=false' 200 mantenimiento-centros-inactivos
+request_check 'Detalle del mantenimiento completado' GET '/api/v1/mantenimientos-preventivos/4' 200 mantenimiento-completado-detail
+request_check 'Resumen de mantenimientos preventivos' GET '/api/v1/mantenimientos-preventivos/resumen' 200 mantenimientos-summary
+request_check 'POST mantenimiento con la fecha como día' POST '/api/v1/mantenimientos-preventivos' 201 mantenimiento-creado '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ID}"',"descripcion":"Mantenimiento smoke","fechaProgramada":"2027-03-01","duracionHorasPlanificada":2}'
+request_check 'POST mantenimiento con fecha ocupada' POST '/api/v1/mantenimientos-preventivos' 409 mantenimiento-fecha-ocupada '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ID}"',"descripcion":"Repetido","fechaProgramada":"2027-03-01","duracionHorasPlanificada":2}'
+request_check 'POST mantenimiento en centro inactivo' POST '/api/v1/mantenimientos-preventivos' 409 mantenimiento-centro-inactivo '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_INACTIVO_ID}"',"descripcion":"Inactivo","fechaProgramada":"2027-03-01","duracionHorasPlanificada":2}'
+request_check 'POST mantenimiento con tres decimales' POST '/api/v1/mantenimientos-preventivos' 400 mantenimiento-duracion-decimales '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ID}"',"descripcion":"Decimales","fechaProgramada":"2027-03-05","duracionHorasPlanificada":1.234}'
+request_check 'POST mantenimiento con fecha pasada' POST '/api/v1/mantenimientos-preventivos' 400 mantenimiento-fecha-pasada '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ID}"',"descripcion":"Pasado","fechaProgramada":"2020-01-01","duracionHorasPlanificada":2}'
+request_check 'PUT mantenimiento creado' PUT "/api/v1/mantenimientos-preventivos/${MANTENIMIENTO_CREADO_ID}" 200 created '{"descripcion":"Mantenimiento smoke editado","fechaProgramada":"2027-03-02","duracionHorasPlanificada":1.5,"responsable":"  "}'
+request_check 'Detalle del mantenimiento editado' GET "/api/v1/mantenimientos-preventivos/${MANTENIMIENTO_CREADO_ID}" 200 mantenimiento-creado-detail
+request_check 'Completar mantenimiento sin iniciar' POST "/api/v1/mantenimientos-preventivos/${MANTENIMIENTO_CREADO_ID}/completar" 409 mantenimiento-completar-bloqueado '{"horasReales":1}'
+request_check 'Cancelar mantenimiento creado' POST "/api/v1/mantenimientos-preventivos/${MANTENIMIENTO_CREADO_ID}/cancelar" 200 created '{"motivo":"Cancelación de smoke"}'
+request_check 'La fecha cancelada queda libre' POST '/api/v1/mantenimientos-preventivos' 201 mantenimiento-creado '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ID}"',"descripcion":"Reprogramado","fechaProgramada":"2027-03-02","duracionHorasPlanificada":1}'
+request_check 'Proteger el centro con mantenimientos' DELETE "/api/v1/centros-trabajo/${MANTENIMIENTO_CENTRO_ARE_ID}" 409 centro-con-mantenimientos
+
+TITANGLOBAL_SMOKE_MANTENIMIENTO_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/mantenimientos-preventivos" "$MANTENIMIENTO_CENTRO_ID" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+centro_id = int(sys.argv[2])
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_MANTENIMIENTO_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = b"" if datos is None and metodo == "POST" else None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, (primera, segunda)))
+
+alta = {"centroTrabajoId": centro_id, "descripcion": "Carrera", "fechaProgramada": "2027-05-01", "duracionHorasPlanificada": 1}
+resultados = en_paralelo(("POST", "", alta), ("POST", "", alta))
+assert sorted(estado for estado, _ in resultados) == [201, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "El centro de trabajo CT-LIM-L01 ya tiene un mantenimiento programado el 2027-05-01.", conflicto
+id_mantenimiento = next(cuerpo["id"] for estado, cuerpo in resultados if estado == 201)
+
+inicios = en_paralelo(("POST", f"/{id_mantenimiento}/iniciar"), ("POST", f"/{id_mantenimiento}/iniciar"))
+assert sorted(estado for estado, _ in inicios) == [200, 409], inicios
+bloqueado = next(cuerpo for estado, cuerpo in inicios if estado == 409)
+assert bloqueado["Message"] == "Solo se pueden iniciar mantenimientos programados.", bloqueado
+
+estado, respuesta = peticion("POST", f"/{id_mantenimiento}/completar", {"horasReales": 1.25, "observaciones": "Smoke"})
+assert estado == 200, respuesta
+estado, detalle = peticion("GET", f"/{id_mantenimiento}")
+assert estado == 200 and detalle["estado"] == "Completado" and detalle["horasReales"] == 1.25, detalle
+assert detalle["fechaInicioReal"].endswith("Z") or "+00:00" in detalle["fechaInicioReal"], detalle
+print("Concurrencia de mantenimientos preventivos OK")
+PY
+# Módulo 39: «hoy» en hora de Perú (UTC-5). Desde las 19:00 en Perú, UTC ya es el día siguiente y aun así se programa para hoy.
+MANTENIMIENTO_HOY_PERU="$(date -u -d '-5 hours' +%Y-%m-%d)"
+request_check 'POST mantenimiento para hoy en Perú' POST '/api/v1/mantenimientos-preventivos' 201 mantenimiento-creado '{"centroTrabajoId":'"${MANTENIMIENTO_CENTRO_ARE_ID}"',"descripcion":"Hoy en Perú","fechaProgramada":"'"${MANTENIMIENTO_HOY_PERU}"'","duracionHorasPlanificada":1}'
 printf 'SMOKE OK\n'

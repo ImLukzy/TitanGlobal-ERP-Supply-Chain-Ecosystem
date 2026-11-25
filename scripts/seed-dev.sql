@@ -913,4 +913,26 @@ FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.0000
 JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
 ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
 
+-- Módulo 39: paradas de mantenimiento preventivo. No usa CT-LIM-C01, que el smoke del módulo 32 protege por sus rutas.
+TRUNCATE TABLE "MantenimientosPreventivos" RESTART IDENTITY;
+
+INSERT INTO "MantenimientosPreventivos" (
+    "Id", "Numero", "CentroTrabajoId", "Descripcion", "FechaProgramada", "DuracionHorasPlanificada", "FrecuenciaDias",
+    "Responsable", "Estado", "FechaInicioReal", "FechaFinReal", "HorasReales", "Observaciones", "MotivoCancelacion")
+SELECT datos.id, datos.numero, centro."Id", datos.descripcion, datos.fecha, datos.duracion, datos.frecuencia,
+    datos.responsable, datos.estado, datos.inicio, datos.fin, datos.horas, datos.observaciones, NULL
+FROM (VALUES
+    (1, 'MP-000001', 'CT-LIM-L01', 'Cambio de rodamientos', DATE '2027-01-15', 6.00, 90, 'Carlos Ramos', 'Programado',
+        NULL::timestamptz, NULL::timestamptz, NULL::numeric, NULL),
+    (2, 'MP-000002', 'CT-ARE-C01', 'Calibración de sensores', DATE '2027-01-20', 2.50, NULL, NULL, 'Programado',
+        NULL, NULL, NULL, NULL),
+    (3, 'MP-000003', 'CT-LIM-L02', 'Lubricación general', DATE '2026-11-20', 4.00, 30, 'Carlos Ramos', 'EnEjecucion',
+        TIMESTAMPTZ '2026-11-20 08:00:00+00', NULL, NULL, NULL),
+    (4, 'MP-000004', 'CT-ARE-C01', 'Limpieza de cabezales', DATE '2026-10-10', 3.00, 30, NULL, 'Completado',
+        TIMESTAMPTZ '2026-10-10 08:00:00+00', TIMESTAMPTZ '2026-10-10 11:15:00+00', 3.25, 'Sin novedades')
+) AS datos(id, numero, codigo_centro, descripcion, fecha, duracion, frecuencia, responsable, estado, inicio, fin, horas, observaciones)
+JOIN "CentrosTrabajo" centro ON centro."Codigo" = datos.codigo_centro;
+
+SELECT setval(pg_get_serial_sequence('"MantenimientosPreventivos"', 'Id'), (SELECT MAX("Id") FROM "MantenimientosPreventivos"));
+
 COMMIT;

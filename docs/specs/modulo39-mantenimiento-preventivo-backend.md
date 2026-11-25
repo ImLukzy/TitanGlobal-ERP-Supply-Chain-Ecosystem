@@ -6,7 +6,7 @@
 
 **Resultado esperado:** el usuario programa paradas de mantenimiento preventivo para un centro de trabajo, las lleva por sus estados hasta completarlas o cancelarlas, ve las vencidas y las próximas, y obtiene la fecha sugerida de la siguiente parada según la frecuencia.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #74, fusionado el 2026-11-24).
 
 **Dependencias:** solo usa `CentrosTrabajo` (módulo 33), que ya está en `main`. No depende de ramas abiertas.
 
@@ -141,13 +141,20 @@ La edición que mantiene su propia fecha es válida. La fecha repetida se compru
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato.
-- [ ] Commit 1: script SQL 026, fila en `relevo.md`, pluralizador y entidades generadas.
-- [ ] Commit 2: DTOs, validaciones y casos de uso.
-- [ ] Commit 3: controlador, cambio en el 33, pruebas, seed y smoke.
-- [ ] Verificar A1–A7 y registrar los resultados.
+- [x] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato (PR #74, 2026-11-24).
+- [x] Commit 1: script SQL 026, fila en `relevo.md`, pluralizador y entidades generadas.
+- [x] Commit 2: DTOs, validaciones y casos de uso.
+- [x] Commit 3: controlador, cambio en el 33, pruebas, seed y smoke.
+- [x] Verificar A1–A7 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-24 | A1 | 0 errores, 0 warnings | `dotnet build -warnaserror` dentro de `./scripts/verify.sh` |
+| 2026-11-24 | A2 | En verde | `./scripts/verify.sh` |
+| 2026-11-24 | A3 | 36 de 36 en verde, incluido el cambio de día a las 19:00 en Perú | `dotnet test --filter Modulo39_MantenimientoPreventivo` (1648 en total) |
+| 2026-11-24 | A4 | Las ocho operaciones presentes y autenticadas | `openapi-mantenimientos-preventivos` en el smoke |
+| 2026-11-24 | A5 | `vencido`, `fechaSiguienteSugerida`, resumen, fecha liberada al cancelar y 409 del DELETE del centro | Pruebas de integración y smoke |
+| 2026-11-24 | A6 | `SMOKE OK`, con la fecha como día, el 409 del índice parcial, las transiciones concurrentes y la alta para hoy en Perú | `./scripts/smoke-postgres.sh` |
+| 2026-11-24 | A7 | Cuatro paradas (`Programado` ×2, `EnEjecucion` y `Completado`) tras dos cargas seguidas | `scripts/seed-dev.sql` cargado dos veces con `psql` sobre la base local |

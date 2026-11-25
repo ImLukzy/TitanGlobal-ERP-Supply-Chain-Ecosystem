@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Application.UseCases.Modulo39_MantenimientoPreventivo;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
@@ -23,7 +25,30 @@ public class EliminarCentroTrabajoUseCase
             throw PersistenciaCentroTrabajo.CrearNoEncontrado(id);
         }
 
+        bool tieneMantenimientos = await _unitOfWork.Repository<MantenimientoPreventivo>()
+            .AsQueryable()
+            .AnyAsync(mantenimiento => mantenimiento.CentroTrabajoId == id);
+        if (tieneMantenimientos)
+        {
+            throw ConMantenimientos(id);
+        }
+
         _unitOfWork.Repository<CentroTrabajo>().Remove(centro);
-        await _unitOfWork.CompleteAsync();
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException error) when (
+            error.Tipo == TipoViolacionRestriccion.ReferenciaForanea
+            && error.Restriccion == PersistenciaMantenimientoPreventivo.ReferenciaCentro)
+        {
+            throw ConMantenimientos(id);
+        }
+    }
+
+    private static ReglaNegocioException ConMantenimientos(int id)
+    {
+        return new ReglaNegocioException(CodigosEstado.Status409Conflict,
+            $"No se puede eliminar el centro de trabajo {id} porque tiene mantenimientos preventivos.");
     }
 }
