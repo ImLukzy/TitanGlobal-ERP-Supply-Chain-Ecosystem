@@ -1,0 +1,131 @@
+{
+  "fecha": "2026-11-24",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "navegador": "Microsoft Edge headless",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "escenarios": {
+        "incidentes": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "epp": {
+          "pasos": [],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "examen": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "escenarios": {
+        "incidentes": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "epp": {
+          "pasos": [],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "examen": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "escenarios": {
+        "incidentes": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "epp": {
+          "pasos": [],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "examen": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "escenarios": {
+        "incidentes": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "epp": {
+          "pasos": [],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "examen": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    }
+  ]
+}
