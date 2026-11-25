@@ -37,5 +37,7 @@ public partial class ExpedienteImportacion
 
     public DateTime FechaRegistro { get; set; }
 
+    public virtual DeclaracionAduana? DeclaracionAduana { get; set; }
+
     public virtual OrdenAbastecimiento OrdenAbastecimiento { get; set; } = null!;
 }

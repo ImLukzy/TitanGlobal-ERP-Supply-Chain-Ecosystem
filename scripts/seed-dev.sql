@@ -935,7 +935,7 @@ ON CONFLICT ("RutaProduccionId", "Secuencia") DO UPDATE SET
     "MinutosPreparacion" = EXCLUDED."MinutosPreparacion",
     "MinutosPorUnidad" = EXCLUDED."MinutosPorUnidad";
 
-TRUNCATE TABLE "ExpedientesImportacion" RESTART IDENTITY;
+TRUNCATE TABLE "ExpedientesImportacion" RESTART IDENTITY CASCADE;
 
 INSERT INTO "ExpedientesImportacion" (
     "Numero", "OrdenAbastecimientoId", "Incoterm", "MedioTransporte", "PaisOrigen", "LugarOrigen", "LugarDestino",
@@ -955,5 +955,35 @@ JOIN "OrdenesAbastecimiento" orden ON orden."Numero" = datos.orden_numero
 ORDER BY datos.numero;
 
 SELECT setval(pg_get_serial_sequence('"ExpedientesImportacion"', 'Id'), (SELECT MAX("Id") FROM "ExpedientesImportacion"));
+
+TRUNCATE TABLE "DeclaracionesAduana", "AgentesAduaneros" RESTART IDENTITY;
+
+INSERT INTO "AgentesAduaneros" ("Ruc", "RazonSocial", "NumeroRegistro", "Email", "Telefono", "Activo", "FechaRegistro") VALUES
+    ('20512345678', 'Aduanas del Pacífico S.A.C.', 'AA-0101', 'contacto@aduanaspacifico.pe', '014001001', TRUE, TIMESTAMPTZ '2026-01-10 09:00:00+00'),
+    ('20523456789', 'Despachos Andinos S.A.C.', 'AA-0102', NULL, NULL, TRUE, TIMESTAMPTZ '2026-01-11 09:00:00+00'),
+    ('20534567890', 'Logística Aduanera Perú S.A.C.', 'AA-0103', NULL, '014002002', TRUE, TIMESTAMPTZ '2026-01-12 09:00:00+00'),
+    ('20545678901', 'Agencia Norte S.A.C.', 'AA-0104', NULL, NULL, FALSE, TIMESTAMPTZ '2026-01-13 09:00:00+00');
+
+INSERT INTO "DeclaracionesAduana" (
+    "Numero", "ExpedienteImportacionId", "AgenteAduaneroId", "Regimen", "ValorAduanero", "TasaArancelaria", "DerechosArancel",
+    "Canal", "Estado", "FechaNumeracion", "FechaLevante", "MotivoAnulacion", "FechaRegistro")
+SELECT datos.numero, expediente."Id", datos.agente, datos.regimen, datos.valor, datos.tasa, ROUND(datos.valor * datos.tasa / 100, 2),
+    datos.canal, datos.estado, datos.numeracion, datos.levante, datos.motivo, datos.registro
+FROM (VALUES
+    ('118-2026-10-000101', 'IMP-2026-001', 1, 'ImportacionConsumo', 50000.00, 6.00, NULL, 'Registrada', NULL::timestamptz, NULL::timestamptz, NULL, TIMESTAMPTZ '2026-10-25 09:00:00+00'),
+    ('118-2026-10-000102', 'IMP-2026-003', 2, 'ImportacionConsumo', 20000.00, 0.00, 'Naranja', 'Numerada', TIMESTAMPTZ '2026-11-04 10:00:00+00', NULL::timestamptz, NULL, TIMESTAMPTZ '2026-10-26 09:00:00+00'),
+    ('118-2026-02-000045', 'IMP-2026-004', 1, 'ImportacionConsumo', 12000.00, 11.00, 'Verde', 'Levantada', TIMESTAMPTZ '2026-02-11 10:00:00+00', TIMESTAMPTZ '2026-02-13 10:00:00+00', NULL, TIMESTAMPTZ '2026-02-08 09:00:00+00'),
+    ('118-2026-10-000103', 'IMP-2026-005', 3, 'AdmisionTemporal', 8000.00, 4.00, NULL, 'Anulada', NULL::timestamptz, NULL::timestamptz, 'Expediente cancelado', TIMESTAMPTZ '2026-10-27 09:00:00+00')
+) AS datos(numero, expediente_numero, agente, regimen, valor, tasa, canal, estado, numeracion, levante, motivo, registro)
+JOIN "ExpedientesImportacion" expediente ON expediente."Numero" = datos.expediente_numero
+ORDER BY CASE datos.numero
+    WHEN '118-2026-10-000101' THEN 1
+    WHEN '118-2026-10-000102' THEN 2
+    WHEN '118-2026-02-000045' THEN 3
+    ELSE 4
+END;
+
+SELECT setval(pg_get_serial_sequence('"AgentesAduaneros"', 'Id'), (SELECT MAX("Id") FROM "AgentesAduaneros"));
+SELECT setval(pg_get_serial_sequence('"DeclaracionesAduana"', 'Id'), (SELECT MAX("Id") FROM "DeclaracionesAduana"));
 
 COMMIT;
