@@ -18,6 +18,7 @@ public static class InfrastructureServicesExtensions
         services.AddDbContext<TitanGlobalDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IEscrituraListaMaterial, EscrituraListaMaterial>();
+        services.AddScoped<IEscrituraInspeccionInsumo, EscrituraInspeccionInsumo>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
         services.AddSingleton<IServicioTokens, ServicioTokens>();

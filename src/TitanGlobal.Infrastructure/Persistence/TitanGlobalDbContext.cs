@@ -87,6 +87,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<InscripcionCurso> InscripcionesCurso { get; set; } = null!;
 
+    public virtual DbSet<InspeccionInsumo> InspeccionesInsumos { get; set; } = null!;
+
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
@@ -768,6 +770,43 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.ProgramacionCurso).WithMany(p => p.InscripcionesCurso)
                 .HasForeignKey(d => d.ProgramacionCursoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<InspeccionInsumo>(entity =>
+        {
+            entity.HasIndex(e => e.Estado, "IX_InspeccionesInsumos_Estado");
+
+            entity.HasIndex(e => e.FechaInspeccion, "IX_InspeccionesInsumos_FechaInspeccion");
+
+            entity.HasIndex(e => e.Numero, "IX_InspeccionesInsumos_Numero").IsUnique();
+
+            entity.HasIndex(e => e.ProductoId, "IX_InspeccionesInsumos_ProductoId");
+
+            entity.HasIndex(e => new { e.ProductoId, e.ProveedorId, e.Lote }, "IX_InspeccionesInsumos_ProductoId_ProveedorId_Lote")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text <> 'Anulada'::text)");
+
+            entity.HasIndex(e => e.ProveedorId, "IX_InspeccionesInsumos_ProveedorId");
+
+            entity.Property(e => e.CantidadDefectuosa).HasPrecision(18, 3);
+            entity.Property(e => e.CantidadMuestra).HasPrecision(18, 3);
+            entity.Property(e => e.CantidadRecibida).HasPrecision(18, 3);
+            entity.Property(e => e.Estado).HasMaxLength(10);
+            entity.Property(e => e.Inspector).HasMaxLength(100);
+            entity.Property(e => e.Lote).HasMaxLength(50);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(250);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.ToleranciaDefectosPorcentaje).HasPrecision(5, 2);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(20);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.InspeccionesInsumos)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.InspeccionesInsumos)
+                .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

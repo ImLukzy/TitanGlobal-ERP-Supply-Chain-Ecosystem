@@ -70,6 +70,14 @@ public partial class Impuesto
     }
 }
 
+public partial class InspeccionInsumo
+{
+    public InspeccionInsumo()
+    {
+        Estado = "Pendiente";
+    }
+}
+
 public partial class ListaPrecios
 {
     public ListaPrecios()

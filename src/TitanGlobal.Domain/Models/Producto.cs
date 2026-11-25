@@ -27,6 +27,8 @@ public partial class Producto
 
     public virtual ICollection<DetalleSolicitudCompra> DetallesSolicitudCompra { get; set; } = new List<DetalleSolicitudCompra>();
 
+    public virtual ICollection<InspeccionInsumo> InspeccionesInsumos { get; set; } = new List<InspeccionInsumo>();
+
     public virtual ICollection<ItemListaPrecios> ItemsListaPrecios { get; set; } = new List<ItemListaPrecios>();
 
     public virtual ListaMateriales? ListaMateriales { get; set; }

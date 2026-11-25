@@ -6,7 +6,7 @@
 
 **Resultado esperado:** el usuario registra la inspección de un lote de insumo de un proveedor, la dictamina como aprobada o rechazada según el porcentaje de defectos y la tolerancia, la anula si fue un error, y consulta la tasa de rechazo por proveedor.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #77, fusionado el 2026-11-24).
 
 **Dependencias:** solo usa `Productos` y `Proveedores`, que ya están en `main`. No depende de ramas abiertas.
 
@@ -152,13 +152,20 @@ En el mensaje de tolerancia, los porcentajes se escriben con 2 decimales y punto
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato.
-- [ ] Commit 1: script SQL 043, pluralizador y entidades generadas.
-- [ ] Commit 2: DTOs, validaciones y casos de uso.
-- [ ] Commit 3: controlador, pruebas, seed y smoke.
-- [ ] Verificar A1–A7 y registrar los resultados.
+- [x] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato (PR #77, 2026-11-24).
+- [x] Commit 1: script SQL 043, pluralizador y entidades generadas.
+- [x] Commit 2: DTOs, validaciones y casos de uso.
+- [x] Commit 3: controlador, pruebas, seed y smoke.
+- [x] Verificar A1–A7 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-25 | A1 | 0 errores, 0 warnings | `dotnet build -warnaserror` dentro de `./scripts/verify.sh` |
+| 2026-11-25 | A2 | En verde | `./scripts/verify.sh` |
+| 2026-11-25 | A3 | 57 de 57 en verde: cada mensaje de §4, las tres transiciones, filtros, paginación y el cambio de día a las 19:00 en Perú | `dotnet test --filter Modulo36_ControlCalidadInsumos` (1669 en total) |
+| 2026-11-25 | A4 | Las siete operaciones presentes y autenticadas | `openapi-inspecciones-insumos` en el smoke |
+| 2026-11-25 | A5 | `porcentajeDefectos`, `superaTolerancia` y resumen por proveedor exactos; aprobar sobre la tolerancia da 409 y rechazar funciona; la anulación libera el lote | Pruebas de integración y smoke |
+| 2026-11-25 | A6 | `SMOKE OK`, con el 409 del índice parcial en dos altas a la vez, dos dictámenes concurrentes que dejan uno solo y las fechas de hoy y mañana en Perú | `./scripts/smoke-postgres.sh` |
+| 2026-11-25 | A7 | Cuatro inspecciones (`Pendiente`, `Aprobada`, `Rechazada` y `Anulada`) tras dos cargas seguidas | `scripts/seed-dev.sql` cargado dos veces con `psql` sobre la base local |

@@ -42,6 +42,7 @@ public class PluralizadorEspanol : IPluralizer
         { "FletesTerceros", "FleteTercero" },
         { "Impuestos", "Impuesto" },
         { "InscripcionesCurso", "InscripcionCurso" },
+        { "InspeccionesInsumos", "InspeccionInsumo" },
         { "IncidentesSst", "IncidenteSst" },
         { "ItemsListaPrecios", "ItemListaPrecios" },
         { "JornadasAsistencia", "JornadaAsistencia" },

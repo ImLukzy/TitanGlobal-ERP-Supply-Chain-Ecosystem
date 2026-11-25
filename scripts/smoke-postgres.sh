@@ -39,6 +39,7 @@ CONTRATO_LABORAL_RENOVADO_ID=""
 EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
+INSPECCION_INSUMO_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -559,6 +560,27 @@ checks = {
     ] == [(6, 0.123456, "unidad")],
     "lista-material-version-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1.",
     "lista-material-edicion-bloqueada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar listas de materiales en borrador.",
+    "openapi-inspecciones-insumos": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/inspecciones-insumos", "get"), ("/api/v1/inspecciones-insumos", "post"),
+        ("/api/v1/inspecciones-insumos/resumen", "get"),
+        ("/api/v1/inspecciones-insumos/{id}", "get"), ("/api/v1/inspecciones-insumos/{id}", "put"),
+        ("/api/v1/inspecciones-insumos/{id}/dictaminar", "post"), ("/api/v1/inspecciones-insumos/{id}/anular", "post"),
+    ]),
+    "inspecciones-insumos-seed": lambda data: data["total"] == 1 and [
+        (item["numero"], item["lote"], item["proveedorRazonSocial"], item["porcentajeDefectos"]) for item in data["items"]
+    ] == [("CCI-000001", "MO-2026-001", "Andes Suministros S.A.C.", None)],
+    "inspecciones-insumos-resumen-seed": lambda data: data["totalInspecciones"] == 4 and data["tasaRechazoPorcentaje"] == 50.0 and [
+        (fila["estado"], fila["total"]) for fila in data["porEstado"]
+    ] == [("Pendiente", 1), ("Aprobada", 1), ("Rechazada", 1), ("Anulada", 1)] and [
+        (fila["proveedorId"], fila["aprobadas"], fila["rechazadas"], fila["tasaRechazoPorcentaje"]) for fila in data["porProveedor"]
+    ] == [(4, 0, 1, 100.0), (2, 1, 0, 0.0)],
+    "inspeccion-insumo-creada": lambda data: isinstance(data.get("id"), int) and re.fullmatch(r"CCI-[0-9]{6}", data["numero"]) is not None,
+    "inspeccion-insumo-creada-detail": lambda data: data["lote"] == "SMOKE-36-A" and data["fechaInspeccion"] == "2026-11-01" and data["cantidadRecibida"] == 120.125 and data["unidadMedida"] == "kg" and data["estado"] == "Pendiente" and data["porcentajeDefectos"] is None and data["superaTolerancia"] is None,
+    "inspeccion-insumo-lote-repetido": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una inspección del lote MO-2026-001 para ese producto y proveedor." and "Detail" not in data,
+    "inspeccion-insumo-proveedor-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El proveedor 5 está inactivo." and "Detail" not in data,
+    "inspeccion-insumo-cantidad-decimales": lambda data: data["StatusCode"] == 400 and data["Message"] == "La cantidad recibida admite como máximo 3 decimales." and "Detail" not in data,
+    "inspeccion-insumo-fecha-futura": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha de inspección no puede ser posterior a hoy." and "Detail" not in data,
+    "inspeccion-insumo-tolerancia": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inspección supera la tolerancia de defectos (20.00 % > 5.00 %) y solo puede rechazarse." and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -762,6 +784,9 @@ request_check() {
     fi
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "inspeccion-insumo-creada" ]]; then
+        INSPECCION_INSUMO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1346,5 +1371,84 @@ estado, lista = peticion("GET", f"/{id_lista}")
 assert estado == 200 and lista["estado"] == "Activa", lista
 assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
 print("Concurrencia de listas de materiales OK")
+PY
+# Módulo 36: inspecciones de calidad de insumos.
+INSPECCION_HOY_PERU="$(date -u -d '-5 hours' +%Y-%m-%d)"
+INSPECCION_MANANA_PERU="$(date -u -d '+19 hours' +%Y-%m-%d)"
+request_check 'OpenAPI de inspecciones de insumos' GET '/openapi/v1.json' 200 openapi-inspecciones-insumos
+request_check 'Inspecciones pendientes del seed' GET '/api/v1/inspecciones-insumos?estado=pendiente' 200 inspecciones-insumos-seed
+request_check 'Resumen de inspecciones del seed' GET '/api/v1/inspecciones-insumos/resumen' 200 inspecciones-insumos-resumen-seed
+request_check 'POST inspección con la fecha como día' POST '/api/v1/inspecciones-insumos' 201 inspeccion-insumo-creada '{"productoId":4,"proveedorId":1,"lote":" smoke-36-a ","fechaInspeccion":"2026-11-01","cantidadRecibida":120.125,"cantidadMuestra":10,"unidadMedida":"kg","toleranciaDefectosPorcentaje":5,"inspector":"Smoke"}'
+request_check 'Detalle de la inspección creada' GET "/api/v1/inspecciones-insumos/${INSPECCION_INSUMO_CREADA_ID}" 200 inspeccion-insumo-creada-detail
+request_check 'POST inspección con lote repetido' POST '/api/v1/inspecciones-insumos' 409 inspeccion-insumo-lote-repetido '{"productoId":3,"proveedorId":1,"lote":"mo-2026-001","fechaInspeccion":"2026-11-01","cantidadRecibida":10,"cantidadMuestra":1,"unidadMedida":"unidad","toleranciaDefectosPorcentaje":5,"inspector":"Smoke"}'
+request_check 'POST inspección de proveedor inactivo' POST '/api/v1/inspecciones-insumos' 409 inspeccion-insumo-proveedor-inactivo '{"productoId":3,"proveedorId":5,"lote":"SMOKE-36-B","fechaInspeccion":"2026-11-01","cantidadRecibida":10,"cantidadMuestra":1,"unidadMedida":"unidad","toleranciaDefectosPorcentaje":5,"inspector":"Smoke"}'
+request_check 'POST inspección con cuatro decimales' POST '/api/v1/inspecciones-insumos' 400 inspeccion-insumo-cantidad-decimales '{"productoId":3,"proveedorId":1,"lote":"SMOKE-36-B","fechaInspeccion":"2026-11-01","cantidadRecibida":10.0001,"cantidadMuestra":1,"unidadMedida":"unidad","toleranciaDefectosPorcentaje":5,"inspector":"Smoke"}'
+request_check 'POST inspección para mañana en Perú' POST '/api/v1/inspecciones-insumos' 400 inspeccion-insumo-fecha-futura '{"productoId":3,"proveedorId":1,"lote":"SMOKE-36-B","fechaInspeccion":"'"${INSPECCION_MANANA_PERU}"'","cantidadRecibida":10,"cantidadMuestra":1,"unidadMedida":"unidad","toleranciaDefectosPorcentaje":5,"inspector":"Smoke"}'
+request_check 'Aprobar sobre la tolerancia' POST "/api/v1/inspecciones-insumos/${INSPECCION_INSUMO_CREADA_ID}/dictaminar" 409 inspeccion-insumo-tolerancia '{"resultado":"Aprobada","cantidadDefectuosa":2}'
+
+TITANGLOBAL_SMOKE_INSPECCION_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/inspecciones-insumos" "$INSPECCION_INSUMO_CREADA_ID" "$INSPECCION_HOY_PERU" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+id_creada = int(sys.argv[2])
+hoy_peru = sys.argv[3]
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_INSPECCION_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, (primera, segunda)))
+
+# Dos dictámenes a la vez sobre la misma inspección: el bloqueo de la fila deja uno solo.
+dictamen = {"resultado": "Rechazada", "cantidadDefectuosa": 2, "observaciones": "Smoke"}
+resultados = en_paralelo(("POST", f"/{id_creada}/dictaminar", dictamen), ("POST", f"/{id_creada}/dictaminar", dictamen))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+bloqueado = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert bloqueado["Message"] == "Solo se pueden dictaminar inspecciones pendientes.", bloqueado
+estado, detalle = peticion("GET", f"/{id_creada}")
+assert estado == 200 and detalle["estado"] == "Rechazada", detalle
+assert detalle["porcentajeDefectos"] == 20.0 and detalle["superaTolerancia"] is True, detalle
+assert detalle["fechaDictamen"].endswith("Z") or "+00:00" in detalle["fechaDictamen"], detalle
+
+# Dos altas a la vez del mismo lote: el índice único parcial deja una sola, con el 409 literal.
+alta = {"productoId": 6, "proveedorId": 2, "lote": "SMOKE-36-C", "fechaInspeccion": hoy_peru, "cantidadRecibida": 50,
+        "cantidadMuestra": 5, "unidadMedida": "unidad", "toleranciaDefectosPorcentaje": 10, "inspector": "Smoke"}
+altas = en_paralelo(("POST", "", alta), ("POST", "", alta))
+assert sorted(estado for estado, _ in altas) == [201, 409], altas
+conflicto = next(cuerpo for estado, cuerpo in altas if estado == 409)
+assert conflicto["Message"] == "Ya existe una inspección del lote SMOKE-36-C para ese producto y proveedor.", conflicto
+id_hoy = next(cuerpo["id"] for estado, cuerpo in altas if estado == 201)
+estado, detalle = peticion("GET", f"/{id_hoy}")
+assert estado == 200 and detalle["fechaInspeccion"] == hoy_peru, detalle
+
+# Una inspección anulada libera su lote.
+estado, respuesta = peticion("POST", f"/{id_hoy}/anular", {"motivo": "Smoke"})
+assert estado == 200, respuesta
+estado, respuesta = peticion("POST", "", alta)
+assert estado == 201, respuesta
+print("Concurrencia de inspecciones de insumos OK")
 PY
 printf 'SMOKE OK\n'
