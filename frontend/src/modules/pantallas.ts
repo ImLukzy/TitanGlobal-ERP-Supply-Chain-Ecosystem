@@ -24,6 +24,7 @@ import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
 import { ConductoresPage } from './conductores/ConductoresPage';
 import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
+import { RutasDespachoPage } from './rutas-despacho/RutasDespachoPage';
 import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
 import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
 import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiometricaPage';
@@ -61,6 +62,7 @@ export const pantallas: Record<string, ComponentType> = {
   '41-vehiculos-flota': VehiculosFlotaPage,
   '42-conductores': ConductoresPage,
   '48-transportistas-terceros': TransportistasTercerosPage,
+  '43-rutas-despacho': RutasDespachoPage,
   '62-contratos-laborales': ContratosLaboralesPage,
   '64-turnos-horarios': TurnosHorariosPage,
   '63-asistencia-biometrica': AsistenciaBiometricaPage,
