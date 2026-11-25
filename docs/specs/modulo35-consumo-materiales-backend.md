@@ -66,7 +66,7 @@ Base `api/v1/consumos-materiales`. JWT obligatorio. JSON en camelCase. Errores `
 
 | Verbo y ruta | Entrada | Respuesta |
 |---|---|---|
-| `GET /` | `busqueda?` (número), `ordenProduccionId?`, `componenteProductoId?`, `estado?`, `desde?`, `hasta?` (día de `FechaRegistro`), `pagina=1`, `tamanoPagina=20` | 200 `PaginaConsumosMaterialesDto` o 400. |
+| `GET /` | `busqueda?` (número), `ordenProduccionId?`, `componenteProductoId?`, `estado?`, `desde?`, `hasta?` (día de `FechaRegistro` en hora de Perú), `pagina=1`, `tamanoPagina=20` | 200 `PaginaConsumosMaterialesDto` o 400. |
 | `GET /resumen` | — | 200 `ResumenConsumosMaterialesDto`. |
 | `GET /ordenes/{ordenProduccionId:int}/balance` | — | 200 `BalanceConsumoOrdenDto` o 404. |
 | `GET /{id:int}` | — | 200 `ConsumoMaterialDetalleDto` o 404. |
@@ -78,11 +78,11 @@ Base `api/v1/consumos-materiales`. JWT obligatorio. JSON en camelCase. Errores `
 - `ConsumoMaterialDetalleDto` = listado + `{ productoFabricadoNombre, responsable, observaciones, fechaAnulacion, motivoAnulacion }`
 - `BalanceConsumoOrdenDto { ordenProduccionId, ordenProduccionNumero, productoNombre, cantidadPlanificada, estadoOrden, lineas: LineaBalanceConsumoDto[] }`
 - `LineaBalanceConsumoDto { componenteProductoId, componenteProductoNombre, unidadMedida, cantidadRequerida, cantidadConsumida, cantidadPendiente, desviacionPorcentaje }`: requerida = cantidad de la lista × `cantidadPlanificada`; consumida = suma de los `Registrado`; pendiente = `max(requerida − consumida, 0)`; desviación = `(consumida − requerida) / requerida × 100`, redondeada a 2 decimales. Ordenado por nombre del componente.
-- `ResumenConsumosMaterialesDto { totalRegistrados, totalAnulados, ordenesConConsumo, consumosUltimos7Dias }`: los dos últimos cuentan solo `Registrado`; «últimos 7 días» = día de `FechaRegistro` de hoy − 6 a hoy (UTC). Se agrega en la consulta, sin `ToListAsync` previo.
+- `ResumenConsumosMaterialesDto { totalRegistrados, totalAnulados, ordenesConConsumo, consumosUltimos7Dias }`: los dos últimos cuentan solo `Registrado`; «últimos 7 días» = día de `FechaRegistro` en hora de Perú de hoy − 6 a hoy, con «hoy» también en hora de Perú. Se agrega en la consulta, sin `ToListAsync` previo.
 - `RegistrarConsumoMaterialRequestDto { ordenProduccionId, componenteProductoId, cantidad, responsable?, observaciones? }`
 - `AnularConsumoMaterialRequestDto { motivo }`
 
-El listado ordena por `FechaRegistro` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los dos valores sin distinguir mayúsculas. Los filtros `desde` y `hasta` se reciben como día (`2026-12-01`) en `DateOnly` y comparan el día UTC de `FechaRegistro`. Las fechas se asignan con `DateTime.UtcNow`. Los textos opcionales en blanco se guardan como `null`.
+El listado ordena por `FechaRegistro` descendente y luego por `Id` descendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los dos valores sin distinguir mayúsculas. Los filtros `desde` y `hasta` se reciben como día (`2026-12-01`) en `DateOnly` y comparan el día de `FechaRegistro` en hora de Perú. Las fechas se asignan con `DateTime.UtcNow`. «Hoy» es el día en hora de Perú: `DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5))` (Perú es UTC−5 y no tiene horario de verano; es la misma regla que `CalculadoraJornada.HoyLocal()` del módulo 63 y que los módulos 36, 37 y 39). Con UTC, un consumo registrado a partir de las 19:00 en Perú contaría como del día siguiente. Para que la consulta use el índice de `FechaRegistro`, un día D de Perú se filtra como el rango UTC `[D 05:00, D + 1 05:00)`: `desde` toma `desde 05:00 UTC` y `hasta` toma `hasta + 1 05:00 UTC` como límite exclusivo. Los textos opcionales en blanco se guardan como `null`.
 
 ### Reglas y mensajes literales
 
@@ -123,7 +123,7 @@ El módulo 34 no cambia su contrato: las órdenes no se borran, así que la FK d
 | A2 | Formato y reglas | `./scripts/verify.sh` | en verde |
 | A3 | Tests | `dotnet test --filter Modulo35_ConsumoMateriales` | Cada mensaje de §4 con su código, la paginación, los filtros y ningún caso inválido crea ni cambia filas. |
 | A4 | Contrato API | `/openapi/v1.json` | Las seis operaciones presentes y autenticadas. |
-| A5 | Comportamiento | Pruebas de integración | El balance calcula requerida, consumida, pendiente y desviación exactas, y no suma los anulados. La unidad se copia de la lista. Un consumo mayor que lo requerido se acepta y da desviación positiva. |
+| A5 | Comportamiento | Pruebas de integración | El balance calcula requerida, consumida, pendiente y desviación exactas, y no suma los anulados. La unidad se copia de la lista. Un consumo mayor que lo requerido se acepta y da desviación positiva. Un consumo registrado a las 19:00 en Perú (00:00 UTC del día siguiente) cuenta para ese día en los filtros `desde` y `hasta` y en «últimos 7 días». |
 | A6 | PostgreSQL | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` y `./scripts/smoke-postgres.sh` | `SMOKE OK`, incluidas una cantidad con 6 decimales guardada sin redondeo y una cantidad con 7 rechazada con 400. |
 | A7 | Seed | `scripts/seed-dev.sql` dos veces | Cuatro consumos (tres `Registrado` y uno `Anulado`) sobre la orden `EnProceso` del seed del 34, sin duplicar filas. |
 
