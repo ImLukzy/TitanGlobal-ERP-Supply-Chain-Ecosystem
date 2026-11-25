@@ -1,0 +1,143 @@
+{
+  "fecha": "2026-11-24",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "navegador": "Microsoft Edge headless",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "escenarios": {
+        "jornadas": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "marcacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "importacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "escenarios": {
+        "jornadas": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "marcacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "importacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "escenarios": {
+        "jornadas": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "marcacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "importacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "escenarios": {
+        "jornadas": {
+          "pasos": [
+            true,
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "marcacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "importacion": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": true,
+          "erroresConsola": []
+        }
+      }
+    }
+  ]
+}
