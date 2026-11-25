@@ -16,7 +16,7 @@ Rama `kelvin/modulo44-consolidacion-carga`, independiente desde origin/main actu
 - No se garantiza resolución de ediciones simultáneas ni cancelación concurrente: no atribuir a las pruebas ese alcance. Las escrituras individuales se guardan atómicamente con UnitOfWork, y el índice SQL protege códigos duplicados concurrentes.
 
 ## 3. Archivos afectados
-`database/014-consolidacion-carga.sql` nuevo (reservas locales 010–013 separadas); modelos `ConsolidacionCarga` y `LineaConsolidacionCarga` y DbContext generados por scaffold; configuración de nombres propia; DTOs y UseCases en `Modulo44_ConsolidacionCarga`; controlador en esa carpeta de Api; pruebas en `tests/TitanGlobal.Api.Tests/Modulo44_ConsolidacionCarga/`; seed al final antes del COMMIT y request_check/validadores del smoke; docs de asignaciones/relevo/evidencia. No modificar middleware, pipeline, dependencias, scripts fusionados ni módulos ajenos.
+`database/014-consolidacion-carga.sql` nuevo (reserva oficial 014 en relevo §8); modelos `ConsolidacionCarga` y `LineaConsolidacionCarga` y DbContext generados por scaffold; configuración de nombres propia; DTOs y UseCases en `Modulo44_ConsolidacionCarga`; controlador en esa carpeta de Api; pruebas en `tests/TitanGlobal.Api.Tests/Modulo44_ConsolidacionCarga/`; seed al final antes del COMMIT y request_check/validadores del smoke; docs de asignaciones/relevo/evidencia. No modificar middleware, pipeline, dependencias, scripts fusionados ni módulos ajenos.
 
 ## 4. Diseño y contrato
 Tabla ConsolidacionesCarga: Id identity, Codigo varchar20 normalizado único lower(btrim), Nombre varchar100 obligatorio, Estado varchar15, Observaciones varchar500 nullable, FechaConfirmacion timestamptz nullable, MotivoCancelacion varchar500 nullable y FechaCancelacion timestamptz nullable. Estados y consistencia de fechas/motivo restringidos en SQL. Fechas de transición del servidor con FechasUtc.
@@ -81,3 +81,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1140 pruebas backend y 599 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Preparación del PR del 44 — 2026-11-25
+
+- Incorporado `origin/main` (a0a5df67698e2ed97c6a33213de53a86405d1a17) después de integrar el PR #73 del módulo 43; se conserva todo lo integrado en main.
+- Conflictos de pantallas, estilos, seed, smoke y pruebas de pluralización resueltos conservando main y los bloques originales del 44. `relevo.md` idéntico a main; asignaciones modifica únicamente la fila propia del 44.
+- Contexto tomado de main, base PostgreSQL local recreada, scripts aplicados, seed cargado y entidades/contexto regenerados con `./scripts/scaffold.sh`, sin edición manual. Script propio: `014-consolidacion-carga.sql`.
+- `./scripts/verify.sh`: exit 0; 1759 pruebas backend y 1455 frontend en 147 archivos; .NET sin warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del 44 y los existentes de main.
+- `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración compartida. Se mantienen los avisos globales de ESLint 9 y tamaño del bundle de Vite.
+- Evidencia visual real del 2026-11-21 conservada, sin cambios al bloque visual propio. Propuesta, pendiente de aprobación de Lukas. El script para la demo lo aplica Lukas; no se ejecutó SQL en producción.
