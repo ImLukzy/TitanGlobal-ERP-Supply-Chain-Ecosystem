@@ -48,11 +48,17 @@
 | A6 | Visual y E2E | capturas (`page.route`) a 375 y 1280 px, claro y oscuro, con detalle abierto y con el diálogo de baja; márgenes ≥ 16 px medidos; sin scroll horizontal ni celdas recortadas; y una pasada contra la API y PostgreSQL reales con el seed (resumen 6 / 4 / 78,72 y filtro `calificacion=excelente` → 2 filas) | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle, formulario (con vista previa) y baja.
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle, formulario (con vista previa) y baja.
 - [ ] Tarea 4: tests, capturas y A1–A6.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
+| 2026-11-25 | A1 | ⚠️ parcial | frontend: `eslint . --max-warnings 0` sin avisos, `tsc -b` limpio, `vite build` correcto y `scripts/check-rules.sh` en 0; `./scripts/verify.sh` completo pendiente de correrlo en macOS antes del PR |
+| 2026-11-25 | A2 | ✅ | `api.test.ts`: 6 tests (URL, método, query y cuerpo exactos; filtros vacíos y `undefined` fuera; selector con `proveedores?tamanoPagina=100`) |
+| 2026-11-25 | A3 | ✅ | `EvaluacionProveedoresPage.test.tsx`: resumen con los 4 conteos en orden fijo y ranking, tabla, filtros en la query, «Quitar», vuelta a página 1, vacío y error |
+| 2026-11-25 | A4 | ✅ | `EvaluacionAcciones.test.tsx` y `puntaje.test.ts`: «Sin observaciones», cada literal de validación sin petición, vista previa 85,50 · Bueno y límites 90/75/60, 409 sin perder lo escrito, edición con PUT y campos de solo lectura, Escape con foco devuelto, baja con refresco |
+| 2026-11-25 | A5 | ✅ | suite completa `vitest run`: 1339 tests pasan (los 25 nuevos más los existentes) sin cambiar lo que comprueban |
+| — | A6 | pendiente | capturas a 375 y 1280 px (claro/oscuro) y pasada contra la API y PostgreSQL reales con el seed |

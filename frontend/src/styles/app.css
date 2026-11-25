@@ -2144,3 +2144,83 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1279px) { .sst-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sst-filters, .sst-filters-tres, .sst-filters-cuatro, .sst-filters-seis, .sst-form, .sst-datos { grid-template-columns: minmax(0, 1fr); } .sst-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .sst-tabs { flex-wrap: wrap; } }
+
+/* Módulo 12: evaluación de proveedores */
+.evaluaciones-page { padding-bottom: 42px; }
+.evaluaciones-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.evaluaciones-summary > article, .evaluaciones-conteos, .evaluaciones-ranking, .evaluaciones-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.evaluaciones-summary > article { display: grid; min-height: 82px; align-content: space-between; padding: 13px; color: var(--ink-soft); font-size: 10px; }
+.evaluaciones-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.evaluaciones-conteos { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 13px 17px; list-style: none; }
+.evaluaciones-conteos li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.evaluaciones-conteos li strong { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.evaluaciones-ranking { grid-column: 1 / -1; padding: 14px 17px; }
+.evaluaciones-ranking h2 { margin: 0 0 9px; color: var(--ink-soft); font-size: 12px; }
+.evaluaciones-ranking-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.evaluaciones-ranking table { width: 100%; min-width: 460px; border-collapse: collapse; }
+.evaluaciones-ranking caption { padding-bottom: 6px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.evaluaciones-ranking th, .evaluaciones-ranking td { padding: 7px 6px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 9px; text-align: left; }
+.evaluaciones-ranking thead th { background: var(--surface-muted); color: var(--ink-soft); font-weight: 700; }
+.evaluaciones-ranking tbody tr:last-child th, .evaluaciones-ranking tbody tr:last-child td { border-bottom: 0; }
+.evaluaciones-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0 14px; }
+.evaluaciones-panel { margin-top: 14px; padding: 17px; }
+.evaluaciones-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.evaluaciones-panel-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; overflow-wrap: anywhere; }
+.evaluaciones-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-bottom: 13px; }
+.evaluaciones-filters label { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.evaluaciones-filter-periodo { display: flex; align-items: flex-end; gap: 7px; min-width: 0; }
+.evaluaciones-filter-periodo > label { flex: 1 1 auto; }
+.evaluaciones-filters input, .evaluaciones-filters select, .evaluacion-form input, .evaluacion-form select, .evaluacion-form textarea { width: 100%; min-width: 0; min-height: 35px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.evaluaciones-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.evaluaciones-table { min-width: 520px; }
+.evaluaciones-table th, .evaluaciones-table td { padding: 8px 7px; font-size: 9px; }
+.evaluacion-row-select { padding: 0; border: 0; background: transparent; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }
+.evaluacion-calificacion { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 20px; font-size: 8px; font-weight: 750; white-space: nowrap; }
+.evaluacion-calificacion.is-excelente { background: var(--good-soft); color: var(--good); }
+.evaluacion-calificacion.is-bueno { background: var(--accent-soft); color: var(--accent-ink); }
+.evaluacion-calificacion.is-regular { background: var(--surface-muted); color: var(--ink-soft); }
+.evaluacion-calificacion.is-deficiente { background: var(--bad-soft); color: var(--bad); }
+.evaluacion-detail-grid, .evaluacion-form-readonly { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.evaluacion-detail-grid > div, .evaluacion-form-readonly > div { min-width: 0; }
+.evaluacion-detail-grid dt, .evaluacion-form-readonly dt { margin-bottom: 4px; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+.evaluacion-detail-grid dd, .evaluacion-form-readonly dd { margin: 0; color: var(--ink); font-size: 10px; overflow-wrap: anywhere; }
+.evaluacion-detail-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.evaluacion-detail-note h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.evaluacion-detail-note p { margin-bottom: 0; color: var(--ink); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.evaluacion-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.evaluaciones-error { margin: 10px 0 0; color: var(--bad); font-size: 10px; line-height: 1.5; }
+.evaluacion-form-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.evaluacion-form-readonly { grid-column: 1 / -1; }
+.evaluacion-form .form-field { min-width: 0; gap: 5px; }
+.evaluacion-form .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.evaluacion-form textarea { resize: vertical; }
+.evaluacion-contador { color: var(--ink-faint); font-size: 9px; text-align: right; }
+.evaluacion-preview { margin: 13px 0 0; padding: 9px 11px; border-radius: 8px; background: var(--surface-muted); color: var(--ink); font-size: 11px; font-weight: 650; }
+.evaluacion-form-actions { display: flex; justify-content: flex-end; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+@media (min-width: 1024px) {
+  .evaluaciones-work-area { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); }
+  .evaluaciones-table { min-width: 0; table-layout: fixed; }
+  .evaluaciones-table th, .evaluaciones-table td { padding: 7px 4px; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 900px) {
+  .evaluaciones-conteos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evaluaciones-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evaluacion-form-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .evaluaciones-page { padding-bottom: 28px; }
+  .evaluaciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .evaluaciones-summary > article { min-height: 76px; padding: 11px; }
+  .evaluaciones-summary > article strong { font-size: 16px; }
+  .evaluaciones-ranking { padding: 12px; }
+  .evaluaciones-panel { margin-top: 12px; padding: 14px; }
+  .evaluaciones-panel-heading h2 { font-size: 14px; }
+  .evaluaciones-filters { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .evaluacion-form-fields { grid-template-columns: minmax(0, 1fr); }
+  .evaluacion-detail-grid, .evaluacion-form-readonly { grid-template-columns: minmax(0, 1fr); }
+  .evaluacion-actions { justify-content: flex-start; }
+  .evaluacion-form-actions .primary-button { width: 100%; }
+}
