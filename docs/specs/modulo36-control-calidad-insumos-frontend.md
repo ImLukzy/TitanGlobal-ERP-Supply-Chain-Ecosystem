@@ -39,7 +39,7 @@ La implementación consume el [contrato del backend del módulo 36](modulo36-con
 ### Detalle, formulario y transiciones
 
 - El detalle muestra todos los campos. Con dictamen muestra el % de defectos frente a la tolerancia y el texto «Supera la tolerancia» o «Dentro de la tolerancia», no solo el color. Si está anulada, el motivo.
-- **Nueva inspección** y **Editar** (solo `Pendiente`) abren el formulario: producto (selector en `GET /productos?busqueda=`), proveedor (selector en `GET /proveedores?busqueda=&activo=true`), lote (se muestra en mayúsculas al escribir), fecha de inspección (por defecto hoy en hora de Lima), cantidad recibida, muestra, unidad, tolerancia en % e inspector.
+- **Nueva inspección** y **Editar** (solo `Pendiente`) abren el formulario: producto (selector en `GET /productos?busqueda=`), proveedor (selector en `GET /proveedores?busqueda=&activo=true`), lote (se muestra en mayúsculas al escribir), fecha de inspección (por defecto hoy en hora de Perú), cantidad recibida, muestra, unidad, tolerancia en % e inspector.
 - **Dictaminar** (solo `Pendiente`) abre `DictamenInsumoDialog` con la cantidad defectuosa, el resultado («Aprobada» o «Rechazada») y observaciones. Mientras se escribe, el diálogo calcula el % de defectos y avisa si supera la tolerancia; en ese caso la opción «Aprobada» queda deshabilitada con la explicación visible. El backend vuelve a validarlo.
 - **Anular** (solo `Pendiente`) abre `AnularInspeccionInsumoDialog` con el motivo.
 - Los diálogos usan `role="dialog"`, `aria-modal="true"`, trampa de foco y cierre con Escape sin enviar la petición. Al cerrar, el foco vuelve al botón de origen; si desaparece tras confirmar, va al encabezado del detalle.
@@ -74,7 +74,7 @@ Mismos mensajes literales que el backend:
 | Lote vacío / de más de 50 caracteres | El lote es obligatorio. / El lote no puede superar 50 caracteres. |
 | Fecha vacía / posterior a hoy | La fecha de inspección es obligatoria. / La fecha de inspección no puede ser posterior a hoy. |
 
-«Hoy» es el día en hora de Lima (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 de Lima ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
+«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 | Cantidad recibida fuera de rango / con más de 3 decimales | La cantidad recibida debe ser mayor que 0 y como máximo 1000000000. / La cantidad recibida admite como máximo 3 decimales. |
 | Muestra ≤ 0 / con más de 3 decimales / mayor que lo recibido | La cantidad de la muestra debe ser mayor que 0. / La cantidad de la muestra admite como máximo 3 decimales. / La muestra no puede superar la cantidad recibida. |
 | Unidad vacía / de más de 20 caracteres | La unidad de medida es obligatoria. / La unidad de medida no puede superar 20 caracteres. |
