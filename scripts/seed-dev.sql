@@ -913,4 +913,22 @@ FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.0000
 JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
 ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
 
+-- Módulo 36: inspecciones de calidad de insumos, una por estado, sobre productos y proveedores del seed.
+TRUNCATE TABLE "InspeccionesInsumos" RESTART IDENTITY;
+
+INSERT INTO "InspeccionesInsumos" (
+    "Id", "Numero", "ProductoId", "ProveedorId", "Lote", "FechaInspeccion", "CantidadRecibida", "CantidadMuestra",
+    "UnidadMedida", "ToleranciaDefectosPorcentaje", "Inspector", "Estado", "CantidadDefectuosa", "FechaDictamen",
+    "Observaciones", "MotivoAnulacion") VALUES
+    (1, 'CCI-000001', 3, 1, 'MO-2026-001', DATE '2026-11-02', 500.000, 50.000, 'unidad', 5.00, 'Rosa Díaz',
+        'Pendiente', NULL, NULL, NULL, NULL),
+    (2, 'CCI-000002', 4, 2, 'TM-2026-014', DATE '2026-10-20', 200.000, 20.000, 'unidad', 5.00, 'Luis Paredes',
+        'Aprobada', 1.000, TIMESTAMPTZ '2026-10-20 15:00:00+00', 'Dentro de la tolerancia', NULL),
+    (3, 'CCI-000003', 6, 4, 'HD-2026-007', DATE '2026-10-25', 1000.000, 80.000, 'unidad', 2.50, 'Rosa Díaz',
+        'Rechazada', 6.000, TIMESTAMPTZ '2026-10-25 16:30:00+00', 'Conectores dañados', NULL),
+    (4, 'CCI-000004', 3, 2, 'MO-2026-002', DATE '2026-10-28', 300.000, 30.000, 'unidad', 5.00, 'Luis Paredes',
+        'Anulada', NULL, NULL, NULL, 'Registro duplicado');
+
+SELECT setval(pg_get_serial_sequence('"InspeccionesInsumos"', 'Id'), (SELECT MAX("Id") FROM "InspeccionesInsumos"));
+
 COMMIT;
