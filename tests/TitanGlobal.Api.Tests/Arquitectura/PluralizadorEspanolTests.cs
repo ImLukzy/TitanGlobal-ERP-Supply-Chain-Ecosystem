@@ -37,6 +37,8 @@ public class PluralizadorEspanolTests
     [Theory]
     [InlineData("MovimientosInventario", "MovimientoInventario")]
     [InlineData("RutasDespacho", "RutaDespacho")]
+    [InlineData("ConsolidacionesCarga", "ConsolidacionCarga")]
+    [InlineData("LineasConsolidacionCarga", "LineaConsolidacionCarga")]
     [InlineData("UnidadesMedida", "UnidadMedida")]
     [InlineData("PerfilesUsuario", "PerfilUsuario")]
     [InlineData("PlanesProduccion", "PlanProduccion")]

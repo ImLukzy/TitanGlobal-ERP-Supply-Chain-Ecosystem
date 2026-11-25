@@ -41,6 +41,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Conductor> Conductores { get; set; } = null!;
 
+    public virtual DbSet<ConsolidacionCarga> ConsolidacionesCarga { get; set; } = null!;
+
     public virtual DbSet<ContratoComercial> ContratosComerciales { get; set; } = null!;
 
     public virtual DbSet<ContratoLaboral> ContratosLaborales { get; set; } = null!;
@@ -90,6 +92,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
+
+    public virtual DbSet<LineaConsolidacionCarga> LineasConsolidacionCarga { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
@@ -373,6 +377,17 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasIndex(e => e.DocumentoLicencia, "IX_Conductores_DocumentoLicencia").IsUnique();
 
             entity.Property(e => e.DocumentoLicencia).HasMaxLength(20);
+            entity.Property(e => e.Nombre).HasMaxLength(100);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<ConsolidacionCarga>(entity =>
+        {
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Borrador'::character varying");
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
             entity.Property(e => e.Nombre).HasMaxLength(100);
             entity.Property(e => e.Observaciones).HasMaxLength(500);
         });
@@ -810,6 +825,22 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.Turno).WithMany(p => p.JornadasAsistencia)
                 .HasForeignKey(d => d.TurnoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<LineaConsolidacionCarga>(entity =>
+        {
+            entity.HasIndex(e => e.ConsolidacionCargaId, "IX_LineasConsolidacionCarga_ConsolidacionCargaId");
+
+            entity.Property(e => e.AltoCm).HasPrecision(6, 2);
+            entity.Property(e => e.AnchoCm).HasPrecision(6, 2);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
+            entity.Property(e => e.LargoCm).HasPrecision(6, 2);
+            entity.Property(e => e.PesoBultoKg).HasPrecision(8, 2);
+            entity.Property(e => e.Sku).HasMaxLength(40);
+
+            entity.HasOne(d => d.ConsolidacionCarga).WithMany(p => p.Lineas)
+                .HasForeignKey(d => d.ConsolidacionCargaId)
+                .HasConstraintName("FK_LineasConsolidacionCarga_Consolidacion");
         });
 
         modelBuilder.Entity<LiquidacionComision>(entity =>

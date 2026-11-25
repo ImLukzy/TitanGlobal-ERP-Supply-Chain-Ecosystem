@@ -190,6 +190,25 @@ checks = {
     "m43-missing": lambda d: d["StatusCode"] == 404 and re.fullmatch(r"La ruta de despacho [0-9]+ no existe\.", d["Message"]) is not None,
     "m43-vacia": lambda d: d["total"] == 6 and d["items"] == [] and d["pagina"] == 2147483647,
     "m43-openapi": lambda d: all(verb in d["paths"]["/api/v1/rutas-despacho" + path] for path, verb in [("", "get"), ("", "post"), ("/{id}", "get"), ("/{id}", "put"), ("/{id}", "delete"), ("/zonas", "get"), ("/resumen", "get")]),
+    'm44-created': lambda d: isinstance(d.get("id"),int) and d["id"] > 0,
+    'm44-baja-created': lambda d: isinstance(d.get("id"),int) and d["id"] > 0,
+    'm44-list': lambda d: d["total"] == 3 and len(d["items"]) == 3 and all(r["volumenM3"] == "0.180000" and r["pesoKg"] == "6.00" for r in d["items"]),
+    'm44-resumen': lambda d: d == {"total":3,"borradores":1,"confirmadas":1,"canceladas":1},
+    'm44-maximos': lambda d: d["volumenM3"] == "999997000002.999999" and d["pesoKg"] == "999999990000.00" and d["totalBultos"] == 1000000 and d["lineas"][0]["largoCm"] == "9999.99",
+    'm44-picking': lambda d: d["StatusCode"] == 409 and d["Message"] == "Completa el picking de todas las líneas antes de confirmar.",
+    'm44-packing': lambda d: d["StatusCode"] == 409 and d["Message"] == "Completa el packing de todas las líneas antes de confirmar.",
+    'm44-confirmada': lambda d: d["estado"] == "Confirmada" and d["fechaConfirmacion"].endswith("Z") and d["totalBultos"] == 3 and d["volumenM3"] == "0.180000" and d["pesoKg"] == "6.00" and len(d["lineas"]) == 1,
+    'm44-cancelada': lambda d: d["estado"] == "Cancelada" and d["fechaConfirmacion"].endswith("Z") and d["fechaCancelacion"].endswith("Z") and d["motivoCancelacion"] == "Cambio de plan" and len(d["lineas"]) == 1,
+    'm44-duplicado': lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe una consolidación con el código smk-44.",
+    'm44-edicion': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede editar una consolidación en borrador.",
+    'm44-baja': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede eliminar una consolidación en borrador.",
+    'm44-confirmacion': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede confirmar una consolidación en borrador.",
+    'm44-motivo': lambda d: d["StatusCode"] == 400 and d["Message"] == "El motivo de cancelación es obligatorio.",
+    'm44-repetida': lambda d: d["StatusCode"] == 409 and d["Message"] == "La consolidación ya está cancelada.",
+    'm44-decimales': lambda d: d["StatusCode"] == 400 and d["Message"] == "Línea 1: el largo no puede tener más de 2 decimales.",
+    'm44-filtro': lambda d: d["total"] == 2 and all(c["estado"] == "Cancelada" for c in d["items"]),
+    'm44-missing': lambda d: d["StatusCode"] == 404 and re.fullmatch(r"La consolidación [0-9]+ no existe\.",d["Message"]) is not None,
+    'm44-openapi': lambda d: all(verb in d["paths"]["/api/v1/consolidaciones-carga"+path] for path,verb in [("","get"),("","post"),("/{id}","get"),("/{id}","put"),("/{id}","delete"),("/{id}/confirmacion","post"),("/{id}/cancelacion","post"),("/resumen","get")]),
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -771,6 +790,14 @@ request_check() {
 
     if [[ "$validation" == "conductor-sin-zona-created" ]]; then
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m44-created" ]]; then
+        CARGA_44_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m44-baja-created" ]]; then
+        BAJA_44_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
     if [[ "$validation" == "m43-created" ]]; then
@@ -1527,4 +1554,54 @@ END $$;
 SQL
 request_check 'M43 eliminar ruta sin asociaciones' DELETE "/api/v1/rutas-despacho/${RUTA_43_ID}" 204 ''
 request_check 'M43 confirmar baja' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 404 m43-missing
+# Módulo 44: picking, packing, precisión e historial real.
+TOKEN_44_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M44 exige sesión' GET '/api/v1/consolidaciones-carga' 401 no-session
+TOKEN_ACTUAL="$TOKEN_44_ADMIN"
+request_check 'M44 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m44-openapi
+request_check 'M44 seed y totales' GET '/api/v1/consolidaciones-carga' 200 m44-list
+request_check 'M44 resumen' GET '/api/v1/consolidaciones-carga/resumen' 200 m44-resumen
+request_check 'M44 máximos exactos' POST '/api/v1/consolidaciones-carga' 200 m44-created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":1000000,"cantidadRecogida":0,"unidadesPorBulto":1,"largoCm":9999.99,"anchoCm":9999.99,"altoCm":9999.99,"pesoBultoKg":999999.99}]}'
+request_check 'M44 exactitud persistida' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-maximos
+request_check 'M44 picking incompleto' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-picking
+request_check 'M44 código normalizado duplicado' POST '/api/v1/consolidaciones-carga' 409 m44-duplicado '{"codigo":"smk-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 editar packing incompleto' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":0,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 packing incompleto' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-packing
+request_check 'M44 no redondea entradas' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 400 m44-decimales '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":1.001,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 reemplazo de líneas completo' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 confirmar sin cuerpo' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 200 created
+request_check 'M44 fecha UTC y packing conservados' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-confirmada
+request_check 'M44 no confirma dos veces' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-confirmacion
+request_check 'M44 no edita terminal' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 409 m44-edicion '{}'
+request_check 'M44 no elimina terminal' DELETE "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 409 m44-baja
+request_check 'M44 exige motivo' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 400 m44-motivo '{"motivo":" "}'
+request_check 'M44 cancela conservando historial' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 200 created '{"motivo":"  Cambio de plan  "}'
+request_check 'M44 historial UTC y líneas' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-cancelada
+request_check 'M44 cancelación repetida' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 409 m44-repetida '{"motivo":"Repetida"}'
+request_check 'M44 filtrar canceladas' GET '/api/v1/consolidaciones-carga?estado=cancelada' 200 m44-filtro
+request_check 'M44 borrador para baja' POST '/api/v1/consolidaciones-carga' 200 m44-baja-created '{"codigo":"SMK-BAJA-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-BAJA-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 baja con cascada' DELETE "/api/v1/consolidaciones-carga/${BAJA_44_ID}" 204 ''
+request_check 'M44 confirmar baja' GET "/api/v1/consolidaciones-carga/${BAJA_44_ID}" 404 m44-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" WHERE "Sku" = 'SMK-BAJA-44') THEN RAISE EXCEPTION 'M44: baja sin cascada'; END IF;
+    BEGIN
+        INSERT INTO "ConsolidacionesCarga" ("Codigo","Nombre") VALUES (' smk-44 ','SQL');
+        RAISE EXCEPTION 'M44: falta unicidad normalizada';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad") VALUES (2147483647,1,'FK','FK',1);
+        RAISE EXCEPTION 'M44: falta FK';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad","CantidadRecogida") SELECT "Id",1,'CHECK','CHECK',1,2 FROM "ConsolidacionesCarga" WHERE "Codigo" = 'SMK-44';
+        RAISE EXCEPTION 'M44: falta límite de recogida';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
 printf 'SMOKE OK\n'
