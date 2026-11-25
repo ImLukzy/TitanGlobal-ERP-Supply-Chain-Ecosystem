@@ -77,14 +77,14 @@ Mismos mensajes literales que el backend:
 |---|---|
 | Orden sin seleccionar | El identificador de la orden de producción debe ser mayor que 0. |
 | Fecha vacía / posterior a hoy | La fecha de inspección es obligatoria. / La fecha de inspección no puede ser posterior a hoy. |
-
-«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 | Unidades inspeccionadas vacías, no enteras o fuera de 1–1000000 | La cantidad inspeccionada debe estar entre 1 y 1000000. |
 | Tolerancia fuera de 0–100 / con más de 2 decimales | La tolerancia de no conformes debe estar entre 0 y 100. / La tolerancia de no conformes admite como máximo 2 decimales. |
 | Inspector vacío / de más de 100 caracteres | El inspector es obligatorio. / El inspector no puede superar 100 caracteres. |
 | No conformes negativas o no enteras / mayores que las inspeccionadas | Las unidades no conformes no pueden ser negativas. / Las unidades no conformes no pueden superar las inspeccionadas. |
 | Observaciones de más de 500 caracteres | Las observaciones no pueden superar 500 caracteres. |
 | Motivo vacío / de más de 250 caracteres | El motivo de anulación es obligatorio. / El motivo de anulación no puede superar 250 caracteres. |
+
+«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 
 Los mensajes de orden no terminada, fecha anterior al fin de la orden, unidades por inspeccionar insuficientes, tolerancia superada y conflictos de estado se muestran tal como los devuelve la API.
 
