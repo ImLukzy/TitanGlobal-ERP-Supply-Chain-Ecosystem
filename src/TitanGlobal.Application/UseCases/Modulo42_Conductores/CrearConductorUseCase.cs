@@ -23,9 +23,10 @@ public class CrearConductorUseCase
         ValidacionConductor.ValidarVencimientoLicenciaFutura(vencimientoLicencia);
         string? observaciones = ValidacionConductor.NormalizarObservaciones(solicitud.Observaciones);
 
+        string documentoNormalizado = documentoLicencia.ToLowerInvariant();
         bool documentoExiste = await _unitOfWork.Repository<Conductor>()
             .AsQueryable()
-            .AnyAsync(conductor => conductor.DocumentoLicencia == documentoLicencia);
+            .AnyAsync(conductor => conductor.DocumentoLicencia.Trim().ToLower() == documentoNormalizado);
 
         if (documentoExiste)
         {
