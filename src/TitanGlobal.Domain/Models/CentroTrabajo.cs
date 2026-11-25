@@ -22,4 +22,6 @@ public partial class CentroTrabajo
     public string? Responsable { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual ICollection<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = new List<OperacionRutaProduccion>();
 }
