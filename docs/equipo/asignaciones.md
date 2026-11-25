@@ -40,7 +40,7 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 09 ReclamosPostventa | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 33, 34 |
 | 10 DevolucionesComerciales | Comercial, Ventas y CRM | Maxi | pantalla integrada; falta QA visual | 35, 36 |
 | 11 Proveedores | Compras y Abastecimiento Global | Lukas Melgar | terminado | 12, 13 |
-| 12 EvaluacionProveedores | Compras y Abastecimiento Global | Sergio | pendiente | — |
+| 12 EvaluacionProveedores | Compras y Abastecimiento Global | Sergio | backend integrado (PR #43, 2026-11-23), pantalla pendiente | modulo12 |
 | 13 SolicitudesCompra | Compras y Abastecimiento Global | Lukas Melgar | terminado | 14, 15 |
 | 14 Licitaciones | Compras y Abastecimiento Global | Sergio | pendiente | — |
 | 15 OrdenesAbastecimiento | Compras y Abastecimiento Global | Lukas Melgar | terminado | 16, 17, 18 |
@@ -69,14 +69,14 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 38 MermasProduccion | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 39 MantenimientoPreventivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
 | 40 MantenimientoCorrectivo | Manufactura y Producción (MRP) | Antony Huayhua | pendiente | — |
-| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo41 |
-| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | backend integrado, pantalla pendiente | modulo42 |
-| 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
+| 41 VehiculosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (pantalla y placa única por el PR #51, 2026-11-23) | modulo41 |
+| 42 Conductores | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (pantalla, licencia única y vigencia por el PR #59, 2026-11-23) | modulo42 |
+| 43 RutasDespacho | Logística, Flota y Distribución (TMS) | Kelvin Pinto | implementado y verificado localmente en rama propia; revisión de Lukas e integración pendientes; salvedad de Vite documentada en evidencia | modulo43 backend/frontend |
 | 44 ConsolidacionCarga | Logística, Flota y Distribución (TMS) | Kelvin Pinto | implementado y verificado localmente en rama propia; revisión de Lukas e integración pendientes; salvedad Vite documentada | modulo44 backend/frontend |
 | 45 GuiasRemision | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 46 MonitoreoEntregas | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 47 ControlCombustible | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
-| 48 TransportistasTerceros | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
+| 48 TransportistasTerceros | Logística, Flota y Distribución (TMS) | Kelvin Pinto | terminado (backend y pantalla por el PR #63, 2026-11-23) | modulo48 |
 | 49 LogisticaInversa | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 50 SiniestrosFlota | Logística, Flota y Distribución (TMS) | Kelvin Pinto | pendiente | — |
 | 51 FacturacionElectronica | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
@@ -90,17 +90,17 @@ Lo que le falta a cada módulo integrado el 2026-11-02 está en [`relevo.md`](re
 | 59 CentrosCosto | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 60 ActivosFijos | Finanzas, Contabilidad y Tesorería | Leonel Portillo | pendiente | — |
 | 61 Empleados | Capital Humano y Nóminas (HCM) | Alexander | backend y pantalla integrados, falta QA visual | modulo61 |
-| 62 ContratosLaborales | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 63 AsistenciaBiometrica | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 64 TurnosHorarios | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 65 VacacionesPermisos | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 66 Planillas | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 67 AdelantosPrestamos | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 68 EvaluacionDesempeno | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 69 Capacitaciones | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
-| 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Alexander | pendiente | — |
+| 62 ContratosLaborales | Capital Humano y Nóminas (HCM) | Alexander | terminado (pantalla por el PR #64, 2026-11-24; backend por el PR #39) | modulo62 |
+| 63 AsistenciaBiometrica | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #66, 2026-11-24) | modulo63 |
+| 64 TurnosHorarios | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #65, 2026-11-24) | modulo64 |
+| 65 VacacionesPermisos | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #67, 2026-11-24) | modulo65 |
+| 66 Planillas | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #69, 2026-11-24) | modulo66 |
+| 67 AdelantosPrestamos | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #68, 2026-11-24) | modulo67 |
+| 68 EvaluacionDesempeno | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #70, 2026-11-24) | modulo68 |
+| 69 Capacitaciones | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #71, 2026-11-24) | modulo69 |
+| 70 SeguridadSaludOcupacional | Capital Humano y Nóminas (HCM) | Alexander | terminado (backend y pantalla por el PR #72, 2026-11-24) | modulo70 |
 | 71 Usuarios | Gobierno Corporativo, Seguridad y Auditoría | Alexander | pantalla integrada, falta QA visual | 43, 44 |
-| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | backend terminado, pantalla parcial: falta matriz y editor | 41, 42 |
+| 72 RolesPermisos | Gobierno Corporativo, Seguridad y Auditoría | Sergio | terminado (matriz y editor por el PR #42, 2026-11-23) | 41, 42 |
 | 73 Sucursales | Gobierno Corporativo, Seguridad y Auditoría | Kelvin Pinto | pendiente | — |
 | 74 MonedasTiposCambio | Gobierno Corporativo, Seguridad y Auditoría | Sergio | pendiente | — |
 | 75 ImpuestosTasas | Gobierno Corporativo, Seguridad y Auditoría | Leonel Portillo | backend integrado, pantalla pendiente | modulo75 |
