@@ -1347,4 +1347,14 @@ assert estado == 200 and lista["estado"] == "Activa", lista
 assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
 print("Concurrencia de listas de materiales OK")
 PY
+# Módulo 22: Reactivar categoría de producto y unicidad
+request_check 'POST crear categoría smoke' POST '/api/v1/categorias-producto' 200 categoria-smoke-creada '{"nombre":"Accesorios Smoke M22","descripcion":"Categoría temporal smoke"}'
+request_check 'POST categoría duplicada sin distinguir mayúsculas' POST '/api/v1/categorias-producto' 409 categoria-smoke-duplicada '{"nombre":"  ACCESORIOS SMOKE M22  "}'
+CATEGORIA_SMOKE_ID=$(python3 -c 'import json; print(json.load(open("/tmp/categoria-smoke-creada.json"))["id"])' 2>/dev/null || true)
+if [ -n "$CATEGORIA_SMOKE_ID" ]; then
+  request_check 'DELETE desactivar categoría smoke' DELETE "/api/v1/categorias-producto/${CATEGORIA_SMOKE_ID}" 204 categoria-smoke-baja
+  request_check 'POST reactivar categoría smoke' POST "/api/v1/categorias-producto/${CATEGORIA_SMOKE_ID}/reactivar" 204 categoria-smoke-reactivada '{}'
+  request_check 'POST reactivar categoría ya activa' POST "/api/v1/categorias-producto/${CATEGORIA_SMOKE_ID}/reactivar" 409 categoria-smoke-reactivada-repetida '{}'
+fi
+
 printf 'SMOKE OK\n'

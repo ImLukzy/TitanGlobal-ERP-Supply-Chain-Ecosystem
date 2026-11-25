@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { ClientesPage } from './clientes/ClientesPage';
 import { OrdenesCompraPage } from './ordenes-compra/OrdenesCompraPage';
 import { ProductosPage } from './productos/ProductosPage';
+import { CategoriasProductoPage } from './categorias-producto/CategoriasProductoPage';
 import { ProveedoresPage } from './proveedores/ProveedoresPage';
 import { SolicitudesCompraPage } from './solicitudes-compra/SolicitudesCompraPage';
 import { OrdenesAbastecimientoPage } from './ordenes-abastecimiento/OrdenesAbastecimientoPage';
@@ -49,6 +50,7 @@ export const pantallas: Record<string, ComponentType> = {
   '13-solicitudes-compra': SolicitudesCompraPage,
   '15-ordenes-abastecimiento': OrdenesAbastecimientoPage,
   '21-productos': ProductosPage,
+  '22-categorias-producto': CategoriasProductoPage,
   '23-almacenes': AlmacenesPage,
   '24-zonas-almacenaje': ZonasAlmacenajePage,
   '09-reclamos-postventa': ReclamosPostventaPage,
