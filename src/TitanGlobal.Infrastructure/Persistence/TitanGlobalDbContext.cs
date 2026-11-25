@@ -97,6 +97,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<MantenimientoPreventivo> MantenimientosPreventivos { get; set; } = null!;
+
     public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
 
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
@@ -848,6 +850,34 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.SegmentoCliente).WithMany(p => p.ListasPrecios)
                 .HasForeignKey(d => d.SegmentoClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MantenimientoPreventivo>(entity =>
+        {
+            entity.HasIndex(e => e.CentroTrabajoId, "IX_MantenimientosPreventivos_CentroTrabajoId");
+
+            entity.HasIndex(e => new { e.CentroTrabajoId, e.FechaProgramada }, "IX_MantenimientosPreventivos_CentroTrabajoId_FechaProgramada")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text <> 'Cancelado'::text)");
+
+            entity.HasIndex(e => e.Estado, "IX_MantenimientosPreventivos_Estado");
+
+            entity.HasIndex(e => e.FechaProgramada, "IX_MantenimientosPreventivos_FechaProgramada");
+
+            entity.HasIndex(e => e.Numero, "IX_MantenimientosPreventivos_Numero").IsUnique();
+
+            entity.Property(e => e.Descripcion).HasMaxLength(250);
+            entity.Property(e => e.DuracionHorasPlanificada).HasPrecision(5, 2);
+            entity.Property(e => e.Estado).HasMaxLength(12);
+            entity.Property(e => e.HorasReales).HasPrecision(5, 2);
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(250);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Responsable).HasMaxLength(100);
+
+            entity.HasOne(d => d.CentroTrabajo).WithMany(p => p.MantenimientosPreventivos)
+                .HasForeignKey(d => d.CentroTrabajoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

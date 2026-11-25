@@ -48,6 +48,7 @@ public class PluralizadorEspanol : IPluralizer
         { "LiquidacionesComisiones", "LiquidacionComision" },
         { "ListasPrecios", "ListaPrecios" },
         { "Marcaciones", "Marcacion" },
+        { "MantenimientosPreventivos", "MantenimientoPreventivo" },
         { "OrdenesAbastecimiento", "OrdenAbastecimiento" },
         { "OrdenesCompra", "OrdenCompra" },
         { "PermisosRoles", "PermisoRol" },

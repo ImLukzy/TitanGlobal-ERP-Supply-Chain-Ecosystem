@@ -22,4 +22,6 @@ public partial class CentroTrabajo
     public string? Responsable { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual ICollection<MantenimientoPreventivo> MantenimientosPreventivos { get; set; } = new List<MantenimientoPreventivo>();
 }
