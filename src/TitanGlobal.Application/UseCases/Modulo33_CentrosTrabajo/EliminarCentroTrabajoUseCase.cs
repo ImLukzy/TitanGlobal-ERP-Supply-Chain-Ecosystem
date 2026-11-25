@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Application.UseCases.Modulo32_RutasProduccion;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
@@ -24,6 +26,16 @@ public class EliminarCentroTrabajoUseCase
         }
 
         _unitOfWork.Repository<CentroTrabajo>().Remove(centro);
-        await _unitOfWork.CompleteAsync();
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException error) when (
+            error.Tipo == TipoViolacionRestriccion.ReferenciaForanea
+            && error.Restriccion == PersistenciaRutaProduccion.ReferenciaCentro)
+        {
+            throw new ReglaNegocioException(CodigosEstado.Status409Conflict,
+                $"No se puede eliminar el centro de trabajo {id} porque está en uso en una ruta de producción.");
+        }
     }
 }

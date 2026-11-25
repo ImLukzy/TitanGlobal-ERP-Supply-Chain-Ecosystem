@@ -402,6 +402,51 @@ public class VehiculosFlotaApiTests
         Assert.True(vehiculo.Activo);
     }
 
+    [Theory]
+    [InlineData("abc-123")]
+    [InlineData("aBc-123")]
+    [InlineData("  ABC-123  ")]
+    public async Task CreateRejectsPlateWithoutDistinguishingCase(string placa)
+    {
+        GuardarVehiculoFlotaRequestDto solicitud = CrearSolicitud();
+        solicitud.Placa = placa;
+
+        HttpResponseMessage respuesta = await _clienteHttp.PostAsJsonAsync("/api/v1/vehiculos-flota", solicitud);
+
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.Conflict, 409,
+            $"Ya existe un vehículo con la placa {placa.Trim()}.");
+    }
+
+    [Theory]
+    [InlineData("abc-123")]
+    [InlineData("AbC-123")]
+    [InlineData("  abc-123  ")]
+    public async Task UpdateRejectsAnotherVehiclesPlateWithoutDistinguishingCase(string placa)
+    {
+        GuardarVehiculoFlotaRequestDto solicitud = CrearSolicitud();
+        solicitud.Placa = placa;
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync("/api/v1/vehiculos-flota/2", solicitud);
+
+        await AssertBusinessErrorAsync(respuesta, HttpStatusCode.Conflict, 409,
+            $"Ya existe un vehículo con la placa {placa.Trim()}.");
+        VehiculoFlota vehiculo = await ObtenerGuardadoAsync(2);
+        Assert.Equal("DEF-456", vehiculo.Placa);
+    }
+
+    [Fact]
+    public async Task UpdateMayChangeCaseOfItsOwnPlate()
+    {
+        GuardarVehiculoFlotaRequestDto solicitud = CrearSolicitud();
+        solicitud.Placa = "  abc-123  ";
+
+        HttpResponseMessage respuesta = await _clienteHttp.PutAsJsonAsync("/api/v1/vehiculos-flota/1", solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        VehiculoFlota vehiculo = await ObtenerGuardadoAsync(1);
+        Assert.Equal("abc-123", vehiculo.Placa);
+    }
+
     [Fact]
     public async Task DuplicatePlateReturnsConflictWithLiteralMessage()
     {
