@@ -39,6 +39,7 @@ CONTRATO_LABORAL_RENOVADO_ID=""
 EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
+RUTA_PRODUCCION_CREADA_ID=""
 LICITACION_CREADA_ID=""
 OFERTA_LICITACION_CREADA_ID=""
 LICITACION_BORRABLE_ID=""
@@ -571,6 +572,29 @@ checks = {
     ] == [(6, 0.123456, "unidad")],
     "lista-material-version-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1.",
     "lista-material-edicion-bloqueada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar listas de materiales en borrador.",
+    "openapi-rutas-produccion": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/rutas-produccion", "get"), ("/api/v1/rutas-produccion", "post"),
+        ("/api/v1/rutas-produccion/{id}", "get"), ("/api/v1/rutas-produccion/{id}", "put"),
+        ("/api/v1/rutas-produccion/{id}/activar", "post"), ("/api/v1/rutas-produccion/{id}/retirar", "post"),
+    ]),
+    "rutas-produccion-seed": lambda data: data["total"] == 2 and [
+        (item["version"], item["estado"], item["totalOperaciones"]) for item in data["items"]
+    ] == [(2, "Borrador", 2), (1, "Activa", 2)],
+    "ruta-produccion-creada": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "ruta-produccion-retirada": lambda data: data["estado"] == "Retirada" and data["version"] == 1 and [
+        (op["secuencia"], op["centroTrabajoNombre"], op["minutosPreparacion"], op["minutosPorUnidad"])
+        for op in data["operaciones"]
+    ] == [(1, "Celda de ensamblaje", 0.25, 2.75)],
+    "ruta-produccion-version-duplicada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1."
+    ),
+    "ruta-produccion-edicion-bloqueada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar rutas de producción en borrador."
+    ),
+    "centro-en-uso-ruta": lambda data: data["StatusCode"] == 409 and re.fullmatch(
+        r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
+        data["Message"],
+    ) is not None and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -786,6 +810,9 @@ request_check() {
     fi
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "ruta-produccion-creada" ]]; then
+        RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1381,5 +1408,91 @@ estado, lista = peticion("GET", f"/{id_lista}")
 assert estado == 200 and lista["estado"] == "Activa", lista
 assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
 print("Concurrencia de listas de materiales OK")
+PY
+
+
+request_check 'OpenAPI de rutas de producción' GET '/openapi/v1.json' 200 openapi-rutas-produccion
+request_check 'Versiones de ruta del producto 1' GET '/api/v1/rutas-produccion?productoId=1' 200 rutas-produccion-seed
+OPERACION_RUTA_SMOKE='{"secuencia":1,"nombre":"Ensamblar","centroTrabajoId":'"${CENTRO_TRABAJO_SEED_ID}"',"minutosPreparacion":0.25,"minutosPorUnidad":2.75}'
+request_check 'Rechazar versión duplicada de ruta' POST '/api/v1/rutas-produccion' 409 ruta-produccion-version-duplicada '{"productoId":1,"version":1,"operaciones":['"$OPERACION_RUTA_SMOKE"']}'
+request_check 'Crear borrador de ruta' POST '/api/v1/rutas-produccion' 201 ruta-produccion-creada '{"productoId":3,"version":1,"operaciones":[{"secuencia":1,"nombre":"Ensamblar","centroTrabajoId":'"${CENTRO_TRABAJO_SEED_ID}"',"minutosPreparacion":0,"minutosPorUnidad":1}]}'
+RUTA_PRODUCCION_SMOKE="/api/v1/rutas-produccion/${RUTA_PRODUCCION_CREADA_ID}"
+RUTA_PRODUCCION_EDICION='{"operaciones":['"$OPERACION_RUTA_SMOKE"']}'
+request_check 'Editar operaciones del borrador' PUT "$RUTA_PRODUCCION_SMOKE" 200 created "$RUTA_PRODUCCION_EDICION"
+request_check 'Activar ruta de producción' POST "$RUTA_PRODUCCION_SMOKE/activar" 200 created
+request_check 'Bloquear edición de ruta activa' PUT "$RUTA_PRODUCCION_SMOKE" 409 ruta-produccion-edicion-bloqueada "$RUTA_PRODUCCION_EDICION"
+request_check 'Retirar ruta de producción' POST "$RUTA_PRODUCCION_SMOKE/retirar" 200 created
+request_check 'Consultar la ruta retirada' GET "$RUTA_PRODUCCION_SMOKE" 200 ruta-produccion-retirada
+request_check 'Proteger el centro usado por rutas' DELETE "/api/v1/centros-trabajo/${CENTRO_TRABAJO_SEED_ID}" 409 centro-en-uso-ruta
+
+TITANGLOBAL_SMOKE_RUTAS_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/rutas-produccion" "$CENTRO_TRABAJO_SEED_ID" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+centro_id = int(sys.argv[2])
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_RUTAS_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def operaciones(minutos):
+    return [{
+        "secuencia": 1, "nombre": "Montar", "centroTrabajoId": centro_id,
+        "minutosPreparacion": 0, "minutosPorUnidad": minutos,
+    }]
+
+def crear(producto, version):
+    estado, respuesta = peticion("POST", datos={
+        "productoId": producto, "version": version, "operaciones": operaciones(1),
+    })
+    assert estado == 201, respuesta
+    return respuesta["id"]
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, (primera, segunda)))
+
+primera = crear(2, 1)
+segunda = crear(2, 2)
+resultados = en_paralelo(("POST", f"/{primera}/activar"), ("POST", f"/{segunda}/activar"))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "El producto 2 ya tiene una ruta de producción activa.", conflicto
+estado, activas = peticion("GET", "?productoId=2&estado=Activa")
+assert estado == 200 and activas["total"] == 1, activas
+
+id_ruta = crear(4, 1)
+activacion, edicion = en_paralelo(
+    ("POST", f"/{id_ruta}/activar"),
+    ("PUT", f"/{id_ruta}", {"operaciones": operaciones(2)}),
+)
+assert activacion[0] == 200 and edicion[0] in (200, 409), (activacion, edicion)
+if edicion[0] == 409:
+    assert edicion[1]["Message"] == "Solo se pueden editar rutas de producción en borrador.", edicion
+estado, ruta = peticion("GET", f"/{id_ruta}")
+assert estado == 200 and ruta["estado"] == "Activa", ruta
+assert [op["minutosPorUnidad"] for op in ruta["operaciones"]] == [2 if edicion[0] == 200 else 1], ruta
+print("Concurrencia de rutas de producción OK")
 PY
 printf 'SMOKE OK\n'
