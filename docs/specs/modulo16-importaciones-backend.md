@@ -153,12 +153,15 @@ Resumen esperado del seed: 5 expedientes, 3 en curso y conteo por estado Program
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionExpedienteImportacion`, casos de uso y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
+- [x] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, `ValidacionExpedienteImportacion`, casos de uso y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| — | — | pendiente | spec sin aprobar |
+| 2026-11-25 | A1, A2 | cumple | `./scripts/verify.sh` en verde (formato, reglas de código, compilación con `-warnaserror`, tests de backend y frontend) |
+| 2026-11-25 | A3, A4, A5, A6 | cumple | `ImportacionesApiTests` dentro de `./scripts/verify.sh` |
+| 2026-11-25 | A7 | cumple | `./scripts/aplicar-bd.sh --reiniciar`, `./scripts/scaffold.sh` y `./scripts/smoke-postgres.sh` terminan en `SMOKE OK` |
+| 2026-11-25 | A8 | cumple | el humo valida las 10 operaciones en `/openapi/v1.json` (`openapi-importaciones`) |

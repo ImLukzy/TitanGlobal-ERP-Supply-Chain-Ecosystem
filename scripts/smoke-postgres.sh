@@ -82,7 +82,12 @@ check_port_is_free() {
     local port="$1"
     local listener
 
-    listener="$(ss -H -ltn "sport = :${port}")"
+    if command -v ss >/dev/null 2>&1; then
+        listener="$(ss -H -ltn "sport = :${port}")"
+    else
+        # macOS no trae ss: lsof lista quién escucha en el puerto (sale con 1 si nadie).
+        listener="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+    fi
     if [[ -n "$listener" ]]; then
         printf 'ERROR: el puerto %s ya está ocupado; no se iniciará el smoke\n' "$port" >&2
         printf '%s\n' "$listener" >&2
@@ -551,6 +556,13 @@ checks = {
         ("/api/v1/listas-materiales/{id}", "get"), ("/api/v1/listas-materiales/{id}", "put"),
         ("/api/v1/listas-materiales/{id}/activar", "post"), ("/api/v1/listas-materiales/{id}/retirar", "post"),
     ]),
+    "openapi-importaciones": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/importaciones", "get"), ("/api/v1/importaciones", "post"),
+        ("/api/v1/importaciones/resumen", "get"), ("/api/v1/importaciones/{id}", "get"),
+        ("/api/v1/importaciones/{id}", "put"), ("/api/v1/importaciones/{id}", "delete"),
+        ("/api/v1/importaciones/{id}/embarcar", "post"), ("/api/v1/importaciones/{id}/arribar", "post"),
+        ("/api/v1/importaciones/{id}/liberar", "post"), ("/api/v1/importaciones/{id}/cancelar", "post"),
+    ]),
     "listas-materiales-seed": lambda data: data["total"] == 2 and [
         (item["version"], item["estado"], item["totalComponentes"]) for item in data["items"]
     ] == [(2, "Borrador", 2), (1, "Activa", 2)],
@@ -583,6 +595,33 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "importaciones-resumen": lambda data: data["totalExpedientes"] == 5 and data["enCurso"] == 3 and [
+        (item["estado"], item["total"]) for item in data["porEstado"]
+    ] == [("Programado", 1), ("EnTransito", 1), ("EnAduana", 1), ("Liberado", 1), ("Cancelado", 1)],
+    "importaciones-filtro-estado": lambda data: data["total"] == 1 and [
+        (item["numero"], item["ordenNumero"], item["estado"]) for item in data["items"]
+    ] == [("IMP-2026-001", "OA-DEV-001", "EnTransito")],
+    "importaciones-lista-orden": lambda data: data["total"] == 5 and [item["numero"] for item in data["items"]][0] == "IMP-2026-004",
+    "importaciones-detalle-1": lambda data: (
+        data["numero"] == "IMP-2026-001" and data["ordenNumero"] == "OA-DEV-001" and data["incoterm"] == "CIF"
+        and data["medioTransporte"] == "Maritimo" and data["estado"] == "EnTransito"
+        and data["documentoTransporte"] == "MSKU1234567" and data["fechaLlegadaReal"] is None
+    ),
+    "importacion-created-6": lambda data: data["id"] == 6,
+    "importacion-id-6": lambda data: data["id"] == 6,
+    "importacion-id-2": lambda data: data["id"] == 2,
+    "importacion-liberada": lambda data: (
+        data["numero"] == "IMP-SMOKE-001" and data["estado"] == "Liberado" and data["documentoTransporte"] == "SMK-DOC-01"
+        and data["fechaEmbarque"] is not None and data["fechaLlegadaReal"] is not None
+    ),
+    "importacion-cancelada": lambda data: data["estado"] == "Cancelado" and data["motivoCancelacion"] == "Cambio de proveedor",
+    "importacion-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un expediente con el número IMP-SMOKE-001." and "Detail" not in data,
+    "importacion-orden-anulada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La orden de abastecimiento 4 está anulada.",
+    "importacion-incoterm-aereo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El Incoterm FOB solo aplica al transporte marítimo.",
+    "importacion-liberar-programado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 6 no está en aduana.",
+    "importacion-arribo-programado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 6 no está en tránsito.",
+    "importacion-cancelar-liberado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 4 no se puede cancelar porque está Liberado.",
+    "importacion-motivo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de cancelación es obligatorio.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1237,10 +1276,14 @@ request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calc
 request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
 request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
 # Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
-SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
-SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
-SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
-SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+# Fecha UTC relativa a hoy; date -d no existe en macOS, python3 funciona igual en todos los sistemas.
+smoke_fecha_relativa() {
+    python3 -c 'import datetime, sys; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=int(sys.argv[1]))).strftime("%Y-%m-%d"))' "$1"
+}
+SMOKE_INICIO_PERIODO="$(smoke_fecha_relativa -169)"
+SMOKE_FIN_PERIODO="$(smoke_fecha_relativa +10)"
+SMOKE_APERTURA_CICLO="$(smoke_fecha_relativa -5)"
+SMOKE_CIERRE_CICLO="$(smoke_fecha_relativa +30)"
 request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
 request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
 request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle
@@ -1298,6 +1341,26 @@ request_check 'POST cierre del incidente 2' POST '/api/v1/incidentes-sst/2/cierr
 request_check 'POST accion en un incidente cerrado' POST '/api/v1/incidentes-sst/2/acciones' 409 incidente-cerrado-sin-cambios '{"descripcion":"Otra accion","responsable":"Jefe","fechaCompromiso":"2099-12-31"}'
 request_check 'Incidente 2 cerrado' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-cerrado
 
+# Modulo 16: importaciones; las fechas de humo salen de hoy.
+request_check 'OpenAPI de importaciones' GET '/openapi/v1.json' 200 openapi-importaciones
+request_check 'Resumen de expedientes de importacion' GET '/api/v1/importaciones/resumen' 200 importaciones-resumen
+request_check 'Expedientes en transito' GET '/api/v1/importaciones?estado=EnTransito' 200 importaciones-filtro-estado
+request_check 'Listado de expedientes por llegada estimada' GET '/api/v1/importaciones?tamanoPagina=100' 200 importaciones-lista-orden
+request_check 'Expediente 1 en transito' GET '/api/v1/importaciones/1' 200 importaciones-detalle-1
+request_check 'POST expediente sobre una orden anulada' POST '/api/v1/importaciones' 409 importacion-orden-anulada '{"numero":"imp-smoke-001","ordenAbastecimientoId":4,"incoterm":"fob","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente aereo con Incoterm maritimo' POST '/api/v1/importaciones' 400 importacion-incoterm-aereo '{"numero":"imp-smoke-001","ordenAbastecimientoId":1,"incoterm":"FOB","medioTransporte":"Aereo","paisOrigen":"Chile","lugarOrigen":"Santiago","lugarDestino":"Lima","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente' POST '/api/v1/importaciones' 200 importacion-created-6 '{"numero":"imp-smoke-001","ordenAbastecimientoId":1,"incoterm":"fob","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente con numero repetido' POST '/api/v1/importaciones' 409 importacion-duplicada '{"numero":"IMP-SMOKE-001","ordenAbastecimientoId":1,"incoterm":"FOB","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST liberar un expediente programado' POST '/api/v1/importaciones/6/liberar' 409 importacion-liberar-programado
+request_check 'POST arribo de un expediente programado' POST '/api/v1/importaciones/6/arribar' 409 importacion-arribo-programado "{\"fechaLlegadaReal\":\"${SMOKE_HOY}\"}"
+request_check 'POST embarque' POST '/api/v1/importaciones/6/embarcar' 200 importacion-id-6 "{\"documentoTransporte\":\"SMK-DOC-01\",\"fechaEmbarque\":\"${SMOKE_HOY}\"}"
+request_check 'POST arribo' POST '/api/v1/importaciones/6/arribar' 200 importacion-id-6 "{\"fechaLlegadaReal\":\"${SMOKE_HOY}\"}"
+request_check 'POST liberacion' POST '/api/v1/importaciones/6/liberar' 200 importacion-id-6
+request_check 'Expediente liberado' GET '/api/v1/importaciones/6' 200 importacion-liberada
+request_check 'POST cancelar un expediente liberado' POST '/api/v1/importaciones/4/cancelar' 409 importacion-cancelar-liberado '{"motivo":"Ya no aplica"}'
+request_check 'POST cancelar sin motivo' POST '/api/v1/importaciones/2/cancelar' 400 importacion-motivo '{"motivo":"  "}'
+request_check 'POST cancelar expediente programado' POST '/api/v1/importaciones/2/cancelar' 200 importacion-id-2 '{"motivo":"Cambio de proveedor"}'
+request_check 'Expediente cancelado' GET '/api/v1/importaciones/2' 200 importacion-cancelada
 request_check 'OpenAPI de listas de materiales' GET '/openapi/v1.json' 200 openapi-listas-materiales
 request_check 'Versiones de la lista de materiales del producto 1' GET '/api/v1/listas-materiales?productoId=1' 200 listas-materiales-seed
 request_check 'Rechazar versión repetida' POST '/api/v1/listas-materiales' 409 lista-material-version-duplicada '{"productoId":1,"version":1,"componentes":[{"componenteProductoId":3,"cantidad":1,"unidadMedida":"unidad"}]}'
