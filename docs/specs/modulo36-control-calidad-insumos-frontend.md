@@ -4,7 +4,7 @@
 
 Habilitar la pantalla de Control de Calidad de Insumos en Manufactura (`/modulos/36-control-calidad-insumos`, que hoy muestra «Pantalla pendiente»). El usuario podrá consultar las inspecciones de lotes de insumos, registrar y editar una inspección pendiente, dictaminarla como aprobada o rechazada viendo si supera la tolerancia, anularla con motivo y ver la tasa de rechazo por proveedor.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #76, fusionado el 2026-11-24).
 
 La implementación consume el [contrato del backend del módulo 36](modulo36-control-calidad-insumos-backend.md) y, para elegir producto y proveedor, los listados de los módulos 21 y 11. Las pruebas de la pantalla simulan la API; la prueba con la API real (A5) requiere el backend del 36 en el entorno de desarrollo.
 
@@ -73,8 +73,6 @@ Mismos mensajes literales que el backend:
 | Proveedor sin seleccionar | El identificador del proveedor debe ser mayor que 0. |
 | Lote vacío / de más de 50 caracteres | El lote es obligatorio. / El lote no puede superar 50 caracteres. |
 | Fecha vacía / posterior a hoy | La fecha de inspección es obligatoria. / La fecha de inspección no puede ser posterior a hoy. |
-
-«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 | Cantidad recibida fuera de rango / con más de 3 decimales | La cantidad recibida debe ser mayor que 0 y como máximo 1000000000. / La cantidad recibida admite como máximo 3 decimales. |
 | Muestra ≤ 0 / con más de 3 decimales / mayor que lo recibido | La cantidad de la muestra debe ser mayor que 0. / La cantidad de la muestra admite como máximo 3 decimales. / La muestra no puede superar la cantidad recibida. |
 | Unidad vacía / de más de 20 caracteres | La unidad de medida es obligatoria. / La unidad de medida no puede superar 20 caracteres. |
@@ -83,6 +81,8 @@ Mismos mensajes literales que el backend:
 | Defectuosa negativa / con más de 3 decimales / mayor que la muestra | La cantidad defectuosa no puede ser negativa. / La cantidad defectuosa admite como máximo 3 decimales. / La cantidad defectuosa no puede superar la muestra. |
 | Observaciones de más de 500 caracteres | Las observaciones no pueden superar 500 caracteres. |
 | Motivo vacío / de más de 250 caracteres | El motivo de anulación es obligatorio. / El motivo de anulación no puede superar 250 caracteres. |
+
+«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 
 Los mensajes de proveedor inactivo, lote repetido, tolerancia superada y conflictos de estado se muestran tal como los devuelve la API.
 
@@ -99,13 +99,19 @@ Los mensajes de proveedor inactivo, lote repetido, tolerancia superada y conflic
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance y el diseño.
-- [ ] Backend del 36 integrado en `main`, y rama actualizada.
-- [ ] Commit 2: tipos, cliente HTTP y sus pruebas.
-- [ ] Commit 3: pantalla, componentes, registro en `pantallas.ts`, estilos y pruebas de la página.
+- [x] Aprobación de Lukas sobre el alcance y el diseño (PR #76, 2026-11-24).
+- [ ] Backend del 36 integrado en `main` (PR #89), y rama actualizada.
+- [x] Commit 2: tipos, cliente HTTP y sus pruebas.
+- [x] Commit 3: pantalla, componentes, registro en `pantallas.ts`, estilos y pruebas de la página.
 - [ ] Verificar A1–A6 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-25 | A1 | En verde, sin advertencias | `npm --prefix frontend run verify` y `./scripts/verify.sh` (1337 pruebas de frontend) |
+| 2026-11-25 | A2 | Las nueve peticiones con URL, método, query sin filtros vacíos y cuerpos exactos | `api.test.ts` (6 pruebas) |
+| 2026-11-25 | A3 | Carga inicial con una sola petición, espera de 300 ms con temporizadores falsos, filtros combinados, reinicio de página, rango invertido sin petición, vacío, error con reintento y tabla por proveedor | `ControlCalidadInsumosPage.test.tsx` |
+| 2026-11-25 | A4 | Validación local sin petición, «hoy» en hora de Perú a las 19:00, edición solo en `Pendiente`, 409 que conserva el formulario, porcentaje del dictamen con «Aprobada» deshabilitada, anulación, Escape y foco. 10 de 10 ejecuciones seguidas en verde | `ControlCalidadInsumosFormulario.test.tsx` |
+| — | A5 | Pendiente: necesita el backend del PR #89 en el entorno | — |
+| — | A6 | Pendiente: capturas a 375 px y 1280 px en claro y oscuro | — |
