@@ -28,6 +28,8 @@ Sigue el patrón de `Modulo11_Proveedores` (catálogo con activar y desactivar) 
 7. **Conversión:** el que llama indica si usa la tasa `Compra` o `Venta`; convierte pasando siempre por la moneda base y redondea a 2 decimales.
 8. **Solo se elimina una moneda sin tasas y que no sea la base;** si no, se desactiva. La base no se desactiva.
 9. **Corregir una tasa** (editar o eliminar) está permitido: aún no hay documentos que las referencien.
+10. **«Hoy» es la fecha de Lima** (`America/Lima`, UTC−5): vale para la fecha por defecto de `vigente` y `convertir` y para rechazar tasas con fecha futura (decisión 5). Se calcula con un reloj inyectable (`TimeProvider`) convertido con `TimeZoneInfo.FindSystemTimeZoneById("America/Lima")`.
+11. **Solo el rol `ADMIN` escribe:** todos los `POST`, `PUT`, `DELETE` y las acciones activar y desactivar de monedas y tipos de cambio llevan `[Authorize(Roles = "ADMIN")]`. Sin sesión → 401; con sesión sin ese rol → 403 «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.». Las lecturas (`GET`, incluidos `vigente` y `convertir`) quedan como en el resto de módulos.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -39,7 +41,7 @@ Sigue el patrón de `Modulo11_Proveedores` (catálogo con activar y desactivar) 
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold nombra mal las entidades (`Moneda`, `TipoCambio`) |
 | `src/TitanGlobal.Application/DTOs/Modulo74_MonedasTiposCambio/*.cs` | crear | DTOs de entrada y salida (§4) |
 | `src/TitanGlobal.Application/UseCases/Modulo74_MonedasTiposCambio/*.cs` | crear | un caso de uso por operación y `ValidacionMoneda` / `ValidacionTipoCambio` |
-| `src/TitanGlobal.Api/Controllers/Modulo74_MonedasTiposCambio/MonedasController.cs`, `TiposCambioController.cs` | crear | controladores delgados; las acciones sin cuerpo llevan `[PermitirCuerpoVacio]` |
+| `src/TitanGlobal.Api/Controllers/Modulo74_MonedasTiposCambio/MonedasController.cs`, `TiposCambioController.cs` | crear | controladores delgados; las acciones de escritura llevan `[Authorize(Roles = "ADMIN")]` (decisión 11); las acciones sin cuerpo llevan `[PermitirCuerpoVacio]` |
 | `tests/TitanGlobal.Api.Tests/Modulo74_MonedasTiposCambio/MonedasApiTests.cs`, `TiposCambioApiTests.cs` | crear | pruebas de integración con InMemory, datos propios del test |
 | `scripts/seed-dev.sql` | modificar | 4 monedas y 4 tasas idempotentes al final (§4) |
 | `scripts/smoke-postgres.sh` | modificar | rutas del módulo (§5 A7) |
@@ -131,11 +133,12 @@ Resumen esperado del seed: 4 monedas, 3 activas, base `PEN`, 4 tasas y última f
 | A1 | Compilación | `dotnet build -warnaserror` | 0 errores, 0 warnings |
 | A2 | Gate | `./scripts/verify.sh` (formato, reglas de código y capas) | en verde |
 | A3 | Monedas | tests: cada mensaje de alta, edición, activación y baja de §4 con su código, literal y sin `Detail`; código en mayúsculas; una sola base | pasan |
-| A4 | Tipos de cambio | tests: cada mensaje del alta y la edición; moneda base, inactiva, fecha futura, duplicado por moneda y fecha, venta menor que compra | pasan |
+| A4 | Tipos de cambio | tests: cada mensaje del alta y la edición; moneda base, inactiva, fecha futura (con el reloj fijado a las 23:30 de Lima, que en UTC ya es el día siguiente: la fecha de ese día de Lima se acepta y la del día siguiente se rechaza), duplicado por moneda y fecha, venta menor que compra | pasan |
 | A5 | Vigente | tests: el 2026-11-22 devuelve la tasa del 2026-11-20; sin tasa anterior devuelve 404 con el literal | pasan |
 | A6 | Conversión | tests con números conocidos: 100 USD → PEN con `Venta` = 376.10; 376.10 PEN → USD = 100.00; USD → EUR pasando por la base; misma moneda; tasa inválida; redondeo | pasan |
 | A7 | Datos y PostgreSQL | el script aplica con `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` no da diferencias y `./scripts/smoke-postgres.sh` prueba listados, vigente, convertir, altas y duplicados | `SMOKE OK` |
 | A8 | OpenAPI | `/openapi/v1.json` incluye las 14 operaciones | presentes |
+| A9 | Rol ADMIN | tests y smoke: con el token de `admin` las escrituras responden 200/204; con el token de `invitado` (sin roles) cada escritura responde 403 con el literal de la decisión 11; sin token 401; los `GET` siguen respondiendo | pasan |
 
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
@@ -143,7 +146,7 @@ Resumen esperado del seed: 4 monedas, 3 activas, base `PEN`, 4 tasas y última f
 - [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
 - [ ] Tarea 2: DTOs, validaciones, casos de uso y controladores.
 - [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
+- [ ] Tarea 4: verificar A1–A9 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |

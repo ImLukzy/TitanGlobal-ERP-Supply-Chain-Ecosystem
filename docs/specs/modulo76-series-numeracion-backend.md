@@ -26,8 +26,16 @@ Sigue el patrón de `Modulo11_Proveedores` (catálogo con activar y desactivar).
 4. **El número inicial** se puede indicar al crear la serie (para continuar una numeración que ya existía); por defecto empieza en 0 y el primer número entregado es el 1. Después **no se edita**: solo avanza al pedir el siguiente.
 5. **Solo series activas** entregan números.
 6. **Solo se elimina una serie que no ha emitido ningún número** (`ultimoNumero = 0`); si ya emitió, se desactiva.
-7. **Concurrencia:** el incremento es atómico y se confirma contra PostgreSQL en el smoke. La forma de configurarlo sin editar el `TitanGlobalDbContext.cs` generado se define al implementar y se acuerda con el integrador.
+7. **Incremento atómico en una sola sentencia SQL**, dentro de un método de repositorio de Infrastructure (no en el caso de uso ni en el `DbContext` generado):
+   ```sql
+   UPDATE "SeriesNumeracion"
+   SET "UltimoNumero" = "UltimoNumero" + 1
+   WHERE "Id" = {id} AND "Activa" AND "UltimoNumero" < 99999999
+   RETURNING "UltimoNumero";
+   ```
+   Sigue el precedente de `EscrituraListaMaterial`: interfaz `ISerieNumeracionRepository` en `TitanGlobal.Domain/Repositories` con `Task<int?> ReservarSiguienteAsync(int serieId)` (devuelve el número reservado, o `null` si la sentencia no actualizó ninguna fila) e implementación en `TitanGlobal.Infrastructure/Repositories/Implementation`, registrada en `InfrastructureServicesExtensions`. PostgreSQL bloquea la fila durante el `UPDATE`, por lo que dos peticiones simultáneas nunca reciben el mismo número y **no hay reintentos**. Con el proveedor InMemory de los tests (no relacional) el método usa una ruta equivalente de leer, incrementar y guardar, que solo prueba la lógica, no la concurrencia; la concurrencia se prueba contra PostgreSQL en el smoke (A6).
 8. **Pedir el siguiente número consume ese número** aunque el documento no se llegue a emitir; no hay forma de devolverlo.
+9. **Solo el rol `ADMIN` escribe:** `POST`, `PUT`, `DELETE`, activar, desactivar y `siguiente` llevan `[Authorize(Roles = "ADMIN")]`. Sin sesión → 401; con sesión sin ese rol → 403 «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.» (el literal que ya devuelve la API). Las lecturas (`GET`) quedan como en el resto de módulos.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -36,10 +44,13 @@ Sigue el patrón de `Modulo11_Proveedores` (catálogo con activar y desactivar).
 | `docs/equipo/relevo.md` | modificar | solo añadir la fila 032, sin reescribir la tabla |
 | `src/TitanGlobal.Domain/Models/SerieNumeracion.cs` | regenerar | entidad `partial` generada por `./scripts/scaffold.sh`, sin editarla a mano |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerar | `DbSet<SerieNumeracion>`, generado |
+| `src/TitanGlobal.Domain/Repositories/ISerieNumeracionRepository.cs` | crear | `ReservarSiguienteAsync(int serieId)` (decisión 7) |
+| `src/TitanGlobal.Infrastructure/Repositories/Implementation/SerieNumeracionRepository.cs` | crear | `UPDATE … RETURNING` de la decisión 7 |
+| `src/TitanGlobal.Infrastructure/Configuration/InfrastructureServicesExtensions.cs` | modificar | solo registrar `ISerieNumeracionRepository` (`AddScoped`) |
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold nombra mal la entidad (`SerieNumeracion` / `SeriesNumeracion`) |
 | `src/TitanGlobal.Application/DTOs/Modulo76_SeriesNumeracion/*.cs` | crear | DTOs de entrada y salida (§4) |
 | `src/TitanGlobal.Application/UseCases/Modulo76_SeriesNumeracion/*.cs` | crear | un caso de uso por operación y `ValidacionSerieNumeracion` |
-| `src/TitanGlobal.Api/Controllers/Modulo76_SeriesNumeracion/SeriesNumeracionController.cs` | crear | `[Route("api/v1/series-numeracion")]`, controlador delgado; las acciones sin cuerpo llevan `[PermitirCuerpoVacio]` |
+| `src/TitanGlobal.Api/Controllers/Modulo76_SeriesNumeracion/SeriesNumeracionController.cs` | crear | `[Route("api/v1/series-numeracion")]`, controlador delgado; las acciones de escritura llevan `[Authorize(Roles = "ADMIN")]` (decisión 9); las acciones sin cuerpo llevan `[PermitirCuerpoVacio]` |
 | `tests/TitanGlobal.Api.Tests/Modulo76_SeriesNumeracion/SeriesNumeracionApiTests.cs` | crear | pruebas de integración con InMemory, datos propios del test |
 | `scripts/seed-dev.sql` | modificar | 6 series idempotentes al final (§4) |
 | `scripts/smoke-postgres.sh` | modificar | rutas del módulo (§5 A6) |
@@ -91,7 +102,7 @@ La serie nace activa.
 
 *PUT serie:* 404 «La serie {id} no existe.»; `descripcion` más de 100 → 400 (mismo mensaje). Solo cambia la descripción.
 *Activar / desactivar:* 404; activar una activa → 409 «La serie {id} ya está activa.»; desactivar una inactiva → 409 «La serie {id} ya está inactiva.»
-*POST siguiente:* 404 «La serie {id} no existe.»; inactiva → 409 «La serie {serie} de {tipoDocumento} está inactiva.»; `ultimoNumero` ya en 99999999 → 409 «La serie {serie} de {tipoDocumento} llegó a su número máximo.» Si el incremento choca con otro simultáneo, se reintenta hasta 3 veces; si aun así falla → 409 «No se pudo reservar el número; intente nuevamente.»
+*POST siguiente:* llama a `ReservarSiguienteAsync` (decisión 7). Si devuelve un número, responde con él. Si devuelve `null`, el caso de uso lee la serie **solo para elegir el error**: no existe → 404 «La serie {id} no existe.»; inactiva → 409 «La serie {serie} de {tipoDocumento} está inactiva.»; `ultimoNumero` ya en 99999999 → 409 «La serie {serie} de {tipoDocumento} llegó a su número máximo.»
 *DELETE:* 404; `ultimoNumero` mayor que 0 → 409 «La serie {id} ya emitió números y no se puede eliminar; desactívela.»
 *GET detalle:* 404 «La serie {id} no existe.» *Listado:* 400 «La página debe ser mayor o igual a 1.», «El tamaño de página debe estar entre 1 y 100.», 400 con el mensaje del tipo de documento. Orden: tipo de documento y luego serie.
 
@@ -116,18 +127,19 @@ Resumen esperado del seed: 6 series, 5 activas, por tipo Factura 2 / Boleta 2 / 
 | A1 | Compilación | `dotnet build -warnaserror` | 0 errores, 0 warnings |
 | A2 | Gate | `./scripts/verify.sh` (formato, reglas de código y capas) | en verde |
 | A3 | Reglas de la serie | tests: cada mensaje de alta, edición, activación y baja de §4 con su código, literal y sin `Detail`; serie guardada en mayúsculas; misma serie en tipos distintos | pasan |
-| A4 | Siguiente número | tests: de 1250 entrega 1251 con correlativo `F001-00001251`; de 0 entrega 1; la vista previa no consume; serie inactiva; serie en el máximo; 20 peticiones en paralelo reciben 20 números distintos y consecutivos | pasan |
+| A4 | Siguiente número | tests: de 1250 entrega 1251 con correlativo `F001-00001251`; de 0 entrega 1; la vista previa no consume; serie inactiva; serie en el máximo; la ruta InMemory entrega números consecutivos en secuencia | pasan |
 | A5 | Consultas | tests con datos conocidos: filtros, búsqueda, paginación con `total` y resumen exacto del seed | pasan |
-| A6 | Datos y PostgreSQL | el script aplica con `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` no da diferencias y `./scripts/smoke-postgres.sh` prueba listado, detalle, alta, siguiente (dos veces seguidas con números consecutivos), desactivar y duplicado | `SMOKE OK` |
+| A6 | Datos y PostgreSQL | el script aplica con `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` no da diferencias y `./scripts/smoke-postgres.sh` prueba listado, detalle, alta, siguiente (dos veces seguidas con números consecutivos), desactivar y duplicado, y la **concurrencia**: sobre una serie creada por el propio smoke (no las del seed) lanza 20 `POST …/siguiente` simultáneos (`curl` en segundo plano y `wait`) y comprueba que las 20 respuestas son 200, que los números son 20 distintos, que forman el rango consecutivo `1..20` y que el detalle de la serie queda con `ultimoNumero = 20` | `SMOKE OK` |
+| A8 | Rol ADMIN | tests y smoke: con el token de `admin` las escrituras responden 200/204; con el token de `invitado` (sin roles) `POST`, `PUT`, `DELETE`, activar, desactivar y `siguiente` responden 403 con el literal de la decisión 9; sin token 401; los `GET` siguen respondiendo | pasan |
 | A7 | OpenAPI | `/openapi/v1.json` incluye las 9 operaciones | presentes |
 
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
 - [ ] Tarea 1: script SQL, aplicarlo y generar la entidad con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionSerieNumeracion`, casos de uso y controlador.
+- [ ] Tarea 2: DTOs, `ValidacionSerieNumeracion`, repositorio `ISerieNumeracionRepository`, casos de uso y controlador.
 - [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A7 y anotar resultados en §7.
+- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |

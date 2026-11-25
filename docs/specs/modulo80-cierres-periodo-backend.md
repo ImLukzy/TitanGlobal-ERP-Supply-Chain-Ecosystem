@@ -21,13 +21,14 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas). 
 **Decisiones de producto que requieren aprobación antes de ejecutar:**
 1. **Dos tipos de periodo:** `Mensual` (año y mes) y `Anual` (solo año).
 2. **Estados:** `Cerrado` y `Reabierto`. Un periodo sin fila nunca se ha cerrado. Cerrar uno `Reabierto` lo vuelve a `Cerrado`.
-3. **Solo se cierra un periodo ya terminado:** su último día debe ser anterior a hoy (UTC).
+3. **Solo se cierra un periodo ya terminado:** su último día debe ser anterior a **hoy en hora de Lima** (`America/Lima`, UTC−5, sin horario de verano), no en UTC. «Hoy» se calcula una sola vez por petición a partir de un reloj inyectable (`TimeProvider`) convertido con `TimeZoneInfo.FindSystemTimeZoneById("America/Lima")`, para que los tests puedan fijar la hora. Las columnas de fecha-hora (`FechaCierre`, `FechaReapertura`) siguen guardándose en UTC.
 4. **Los meses se cierran en orden:** para cerrar un mes, el mes anterior debe estar `Cerrado`. La excepción es el primer cierre mensual del sistema, que puede ser de cualquier mes.
 5. **El cierre anual exige** los 12 meses del año `Cerrados`.
 6. **Reabrir exige motivo** y se hace de atrás hacia adelante: no se reabre un mes si el siguiente sigue cerrado, ni un mes si el año está cerrado.
 7. **Una fecha está cerrada** si su mes está `Cerrado` o si su año está `Cerrado`.
 8. **No hay baja:** los cierres no se eliminan, solo se reabren.
 9. **El rango de años** admitido es 2000–2100.
+10. **Solo el rol `ADMIN` escribe:** `POST` de cierre y de reapertura llevan `[Authorize(Roles = "ADMIN")]`. Sin sesión → 401; con sesión sin ese rol → 403 «Acceso denegado: Su rol no tiene permisos para ejecutar esta operación.». Las lecturas (`GET`) quedan como en el resto de módulos.
 
 ## 3. Archivos afectados
 | Archivo | Acción | Nota |
@@ -39,7 +40,7 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas). 
 | `src/TitanGlobal.Api/Configuration/run/PluralizadorEspanol.cs` | modificar | solo si el scaffold nombra mal la entidad (`CierrePeriodo` / `CierresPeriodo`) |
 | `src/TitanGlobal.Application/DTOs/Modulo80_CierresPeriodo/*.cs` | crear | DTOs de entrada y salida (§4) |
 | `src/TitanGlobal.Application/UseCases/Modulo80_CierresPeriodo/*.cs` | crear | un caso de uso por operación y `ValidacionCierrePeriodo` |
-| `src/TitanGlobal.Api/Controllers/Modulo80_CierresPeriodo/CierresPeriodoController.cs` | crear | `[Route("api/v1/cierres-periodo")]`, controlador delgado |
+| `src/TitanGlobal.Api/Controllers/Modulo80_CierresPeriodo/CierresPeriodoController.cs` | crear | `[Route("api/v1/cierres-periodo")]`, controlador delgado; las acciones de escritura llevan `[Authorize(Roles = "ADMIN")]` (decisión 10) |
 | `tests/TitanGlobal.Api.Tests/Modulo80_CierresPeriodo/CierresPeriodoApiTests.cs` | crear | pruebas de integración con InMemory, datos propios del test |
 | `scripts/seed-dev.sql` | modificar | 11 cierres idempotentes al final (§4) |
 | `scripts/smoke-postgres.sh` | modificar | rutas del módulo (§5 A6) |
@@ -86,7 +87,7 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas). 
 2. `anio` fuera de 2000–2100 → 400 «El año debe estar entre 2000 y 2100.»
 3. `Mensual` sin `mes` o fuera de 1–12 → 400 «El mes debe estar entre 1 y 12.»; `Anual` con `mes` → 400 «El cierre anual no lleva mes.»
 4. `observaciones` más de 500 → 400 «Las observaciones no pueden superar 500 caracteres.» (en blanco → `null`).
-5. periodo no terminado (último día no anterior a hoy) → 409 «El periodo {periodo} aún no termina.»
+5. periodo no terminado (último día no anterior a hoy en hora de Lima) → 409 «El periodo {periodo} aún no termina.»
 6. periodo ya `Cerrado` → 409 «El periodo {periodo} ya está cerrado.»
 7. `Mensual` con mes anterior no `Cerrado`, salvo que no exista ningún cierre mensual → 409 «Primero debe cerrarse el periodo {anterior}.» (el anterior de enero es diciembre del año previo).
 8. `Anual` con meses del año sin cerrar → 409 «El año {anio} tiene meses sin cerrar: {lista}.» (meses separados por coma, por ejemplo `2026-10, 2026-11`).
@@ -113,11 +114,12 @@ Resumen esperado del seed: 11 cierres, 10 cerrados, 1 reabierto y último mes ce
 |---|---|---|---|
 | A1 | Compilación | `dotnet build -warnaserror` | 0 errores, 0 warnings |
 | A2 | Gate | `./scripts/verify.sh` (formato, reglas de código y capas) | en verde |
-| A3 | Reglas de cierre | tests: cada mensaje del cierre de §4 con su código, literal y sin `Detail`; periodo no terminado; cierre en orden y primer cierre libre; cierre anual con meses faltantes y su lista | pasan |
+| A3 | Reglas de cierre | tests: cada mensaje del cierre de §4 con su código, literal y sin `Detail`; periodo no terminado **con el reloj fijado en el borde de la zona horaria** (el 2026-10-31 a las 23:30 de Lima, que en UTC ya es el 2026-11-01: cerrar 2026-10 → 409 «El periodo 2026-10 aún no termina.»; el 2026-11-01 a las 00:30 de Lima: sí cierra); cierre en orden y primer cierre libre; cierre anual con meses faltantes y su lista | pasan |
 | A4 | Reapertura | tests: motivo obligatorio, mes siguiente cerrado, año cerrado, ya reabierto, y volver a cerrar un periodo reabierto | pasan |
 | A5 | Estado de una fecha | tests con las cuatro fechas del seed y el resultado esperado de cada una | pasan |
 | A6 | Datos y PostgreSQL | el script aplica con `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` no da diferencias y `./scripts/smoke-postgres.sh` prueba listado, estado de fechas, resumen, cierre de 2026-10 y su reapertura | `SMOKE OK` |
 | A7 | OpenAPI | `/openapi/v1.json` incluye las 6 operaciones | presentes |
+| A8 | Rol ADMIN | tests y smoke: con el token de `admin` cerrar y reabrir responden 200; con el token de `invitado` (sin roles) responden 403 con el literal de la decisión 10; sin token 401; los `GET` siguen respondiendo | pasan |
 
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
@@ -125,7 +127,7 @@ Resumen esperado del seed: 11 cierres, 10 cerrados, 1 reabierto y último mes ce
 - [ ] Tarea 1: script SQL, aplicarlo y generar la entidad con scaffold.
 - [ ] Tarea 2: DTOs, `ValidacionCierrePeriodo`, casos de uso y controlador.
 - [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A7 y anotar resultados en §7.
+- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
