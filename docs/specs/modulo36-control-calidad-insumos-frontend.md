@@ -73,8 +73,6 @@ Mismos mensajes literales que el backend:
 | Proveedor sin seleccionar | El identificador del proveedor debe ser mayor que 0. |
 | Lote vacío / de más de 50 caracteres | El lote es obligatorio. / El lote no puede superar 50 caracteres. |
 | Fecha vacía / posterior a hoy | La fecha de inspección es obligatoria. / La fecha de inspección no puede ser posterior a hoy. |
-
-«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 | Cantidad recibida fuera de rango / con más de 3 decimales | La cantidad recibida debe ser mayor que 0 y como máximo 1000000000. / La cantidad recibida admite como máximo 3 decimales. |
 | Muestra ≤ 0 / con más de 3 decimales / mayor que lo recibido | La cantidad de la muestra debe ser mayor que 0. / La cantidad de la muestra admite como máximo 3 decimales. / La muestra no puede superar la cantidad recibida. |
 | Unidad vacía / de más de 20 caracteres | La unidad de medida es obligatoria. / La unidad de medida no puede superar 20 caracteres. |
@@ -83,6 +81,8 @@ Mismos mensajes literales que el backend:
 | Defectuosa negativa / con más de 3 decimales / mayor que la muestra | La cantidad defectuosa no puede ser negativa. / La cantidad defectuosa admite como máximo 3 decimales. / La cantidad defectuosa no puede superar la muestra. |
 | Observaciones de más de 500 caracteres | Las observaciones no pueden superar 500 caracteres. |
 | Motivo vacío / de más de 250 caracteres | El motivo de anulación es obligatorio. / El motivo de anulación no puede superar 250 caracteres. |
+
+«Hoy» es el día en hora de Perú (UTC−5, sin horario de verano), igual que en el backend: se calcula restando 5 horas al instante UTC y tomando `yyyy-MM-dd`, no con la fecha local del navegador ni con `toISOString()`, que da el día UTC y a partir de las 19:00 en Perú ya es mañana. Se usa para el valor por defecto del campo y para la validación local.
 
 Los mensajes de proveedor inactivo, lote repetido, tolerancia superada y conflictos de estado se muestran tal como los devuelve la API.
 
