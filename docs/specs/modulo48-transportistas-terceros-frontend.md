@@ -1,6 +1,6 @@
 # Especificación propuesta: módulo 48 — Transportistas terceros (frontend)
 
-**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #63 y desplegada en la demo.
 
 ## 1. Objetivo
 Sustituir la pantalla pendiente de `/modulos/48-transportistas-terceros` por un maestro de transportistas y un registro de fletes, siguiendo Proveedores, Centros de Trabajo y las guías del equipo.
@@ -58,6 +58,7 @@ Las pruebas existentes se conservan. Las capturas simuladas, si se usan durante 
 |---|---|---|
 | 2026-11-21 | Propuesta; implementación y pruebas pendientes | Contrato backend redactado para revisión y patrón de componentes contrastado con las pantallas existentes |
 | 2026-11-21 | Implementación local y QA real ejecutados; revisión de Lukas pendiente | Pruebas de API, validaciones y pantalla; cuatro escenarios 375/1280 claro/oscuro y 16 capturas con PostgreSQL real en `docs/evidencias/modulo48/` |
+| 2026-11-23 | Integración y producción | Spec aprobada por Lukas. `012` aplicado en la demo con copia y ensayo (6 scripts registrados, filas de las 41 tablas existentes sin cambios). PR #63 fusionado con merge commit (`b95dfc7`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción la pantalla está publicada y `/api/v1/transportistas-terceros` y `/api/v1/fletes-terceros` responden 200 |
 
 ### Preparación de revisión — 2026-11-22
 
