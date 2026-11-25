@@ -25,6 +25,8 @@ public partial class OrdenAbastecimiento
 
     public string? MotivoAnulacion { get; set; }
 
+    public virtual ICollection<CuentaPorPagar> CuentasPorPagar { get; set; } = new List<CuentaPorPagar>();
+
     public virtual ICollection<DetalleOrdenAbastecimiento> Detalles { get; set; } = new List<DetalleOrdenAbastecimiento>();
 
     public virtual Proveedor Proveedor { get; set; } = null!;

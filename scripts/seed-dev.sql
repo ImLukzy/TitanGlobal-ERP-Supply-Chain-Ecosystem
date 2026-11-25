@@ -96,14 +96,16 @@ INSERT INTO "DetallesSolicitudCompra" ("SolicitudCompraId", "ProductoId", "Canti
 SELECT setval(pg_get_serial_sequence('"SolicitudesCompra"', 'Id'), (SELECT MAX("Id") FROM "SolicitudesCompra"));
 SELECT setval(pg_get_serial_sequence('"DetallesSolicitudCompra"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "DetallesSolicitudCompra"));
 
-TRUNCATE TABLE "DetallesOrdenesAbastecimiento", "OrdenesAbastecimiento" RESTART IDENTITY;
+-- Conservar los identificadores de las órdenes referenciadas por las facturas del módulo 54.
+TRUNCATE TABLE "DetallesOrdenesAbastecimiento" RESTART IDENTITY;
 
 INSERT INTO "OrdenesAbastecimiento" (
     "Numero", "Fecha", "ProveedorId", "SolicitudCompraId", "Estado", "FechaEntregaEstimada", "FechaRecepcion", "Observaciones", "MotivoAnulacion") VALUES
     ('OA-DEV-001', TIMESTAMPTZ '2026-03-12 09:00:00+00', 1, (SELECT "Id" FROM "SolicitudesCompra" WHERE "Numero" = 'SC-DEV-003'), 'Emitida', TIMESTAMPTZ '2099-12-31 00:00:00+00', NULL, 'Abastecimiento desde solicitud aprobada', NULL),
     ('OA-DEV-002', TIMESTAMPTZ '2026-01-20 09:00:00+00', 2, NULL, 'Emitida', TIMESTAMPTZ '2026-02-01 00:00:00+00', NULL, 'Orden atrasada', NULL),
     ('OA-DEV-003', TIMESTAMPTZ '2026-02-20 09:00:00+00', 3, NULL, 'Recibida', TIMESTAMPTZ '2026-03-01 00:00:00+00', TIMESTAMPTZ '2026-02-28 12:00:00+00', NULL, NULL),
-    ('OA-DEV-004', TIMESTAMPTZ '2026-04-20 09:00:00+00', 1, NULL, 'Anulada', TIMESTAMPTZ '2026-05-01 00:00:00+00', NULL, NULL, 'Orden duplicada');
+    ('OA-DEV-004', TIMESTAMPTZ '2026-04-20 09:00:00+00', 1, NULL, 'Anulada', TIMESTAMPTZ '2026-05-01 00:00:00+00', NULL, NULL, 'Orden duplicada')
+ON CONFLICT ("Numero") DO NOTHING;
 
 INSERT INTO "DetallesOrdenesAbastecimiento" ("OrdenAbastecimientoId", "ProductoId", "Cantidad", "PrecioUnitario") VALUES
     ((SELECT "Id" FROM "OrdenesAbastecimiento" WHERE "Numero" = 'OA-DEV-001'), 7, 3, 2900.00),
@@ -912,5 +914,43 @@ FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.0000
     AS datos(version, componente_id, cantidad)
 JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
 ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
+
+-- Módulo 54: cartera de ejemplo, pagos históricos y saldos por moneda.
+INSERT INTO "CuentasPorPagar" (
+    "ProveedorId", "OrdenAbastecimientoId", "Serie", "NumeroDocumento", "FechaDocumento", "FechaVencimiento",
+    "Moneda", "BaseImponible", "ImporteImpuesto", "Total", "FechaAnulacion", "MotivoAnulacion"
+)
+SELECT proveedor."Id", orden."Id", 'F540', datos.numero, DATE '2026-11-01', datos.vencimiento,
+    datos.moneda, datos.base, datos.impuesto, datos.base + datos.impuesto,
+    CASE WHEN datos.anulada THEN TIMESTAMPTZ '2026-11-09 15:00:00+00' END,
+    CASE WHEN datos.anulada THEN 'Factura de prueba duplicada' END
+FROM (VALUES
+    ('20600000001', 'OA-DEV-001', '000001', DATE '2026-11-10', 'PEN', 100.00, 18.00, FALSE),
+    ('20600000001', NULL,         '000002', DATE '2099-12-31', 'PEN', 200.00,  0.00, FALSE),
+    ('20600000002', NULL,         '000003', DATE '2026-11-20', 'USD', 120.00,  0.00, FALSE),
+    ('20600000002', NULL,         '000004', DATE '2026-11-16', 'USD',  90.00,  0.00, TRUE),
+    ('20600000002', NULL,         '000005', DATE '2099-12-31', 'USD', 100.00, 18.00, FALSE)
+) AS datos(ruc, orden, numero, vencimiento, moneda, base, impuesto, anulada)
+JOIN "Proveedores" proveedor ON proveedor."Ruc" = datos.ruc AND proveedor."Activo"
+LEFT JOIN "OrdenesAbastecimiento" orden ON orden."Numero" = datos.orden AND orden."ProveedorId" = proveedor."Id"
+ON CONFLICT ("ProveedorId", "Serie", "NumeroDocumento") DO NOTHING;
+
+INSERT INTO "AplicacionesPago" ("CuentaPorPagarId", "Importe", "FechaPago", "FechaReversion", "MotivoReversion")
+SELECT cuenta."Id", datos.importe, DATE '2026-11-05',
+    CASE WHEN datos.revertido THEN TIMESTAMPTZ '2026-11-08 15:00:00+00' END,
+    CASE WHEN datos.revertido THEN 'Reversión de ejemplo' END
+FROM (VALUES
+    ('20600000001', '000002',  50.00, FALSE),
+    ('20600000002', '000003', 120.00, FALSE),
+    ('20600000002', '000004',  20.00, TRUE),
+    ('20600000002', '000005',  40.00, TRUE)
+) AS datos(ruc, numero, importe, revertido)
+JOIN "Proveedores" proveedor ON proveedor."Ruc" = datos.ruc AND proveedor."Activo"
+JOIN "CuentasPorPagar" cuenta ON cuenta."ProveedorId" = proveedor."Id" AND cuenta."Serie" = 'F540'
+    AND cuenta."NumeroDocumento" = datos.numero
+WHERE NOT EXISTS (
+    SELECT 1 FROM "AplicacionesPago" pago WHERE pago."CuentaPorPagarId" = cuenta."Id"
+      AND pago."Importe" = datos.importe AND pago."FechaPago" = DATE '2026-11-05'
+);
 
 COMMIT;
