@@ -21,6 +21,7 @@ public static class InfrastructureServicesExtensions
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
         services.AddSingleton<IServicioTokens, ServicioTokens>();
+        services.AddScoped<IEscrituraMantenimientoPreventivo, EscrituraMantenimientoPreventivo>();
 
         return services;
     }
