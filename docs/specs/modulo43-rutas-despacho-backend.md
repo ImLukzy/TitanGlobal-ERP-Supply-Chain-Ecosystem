@@ -161,3 +161,13 @@ No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se
 - `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del módulo 43 y los módulos existentes.
 - `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint 9 y tamaño del bundle de Vite.
 - Se conserva la evidencia visual del 2026-11-21 y el bloque visual del 43. Propuesta, pendiente de aprobación de Lukas; la aprobación del 48 no sustituye la del 43. No se ejecutó SQL contra producción.
+
+### Resolución de conflictos del PR #73 — 2026-11-25
+
+- Incorporado `origin/main` (8f2dcf20d9256a22268fbbd70516a5e35624603b) con los módulos integrados de RRHH y manufactura, conservando también 41, 42 y 48.
+- Conflictos resueltos en pantallas, estilos y smoke conservando main completo y los bloques originales del 43. Seed combinado sin eliminar datos; `relevo.md` idéntico a main.
+- Se aceptó el contexto de main, se recreó PostgreSQL local, se aplicaron los scripts, se cargó el seed y se regeneró con `./scripts/scaffold.sh`; sin edición manual de archivos generados. Script propio: `013-rutas-despacho.sql`.
+- `./scripts/verify.sh`: exit 0, 1702 pruebas backend y 1399 frontend en 142 archivos; .NET con cero warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del 43 y todos los existentes de main.
+- `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración del repositorio. Se conservan los avisos globales de ESLint 9 y Vite.
+- Evidencia visual del 2026-11-21 conservada; bloque visual del 43 sin cambios. Spec propuesta, pendiente de aprobación de Lukas. SQL de producción exclusivamente a cargo de Lukas.
