@@ -134,6 +134,14 @@ public partial class TasaImpuesto
     }
 }
 
+public partial class Turno
+{
+    public Turno()
+    {
+        Activo = true;
+    }
+}
+
 public partial class VehiculoFlota
 {
     public VehiculoFlota()
