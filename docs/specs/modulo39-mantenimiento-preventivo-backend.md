@@ -23,7 +23,7 @@ Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas
 2. Los estados son `Programado` → `EnEjecucion` → `Completado`, más `Cancelado` desde `Programado`. Una parada en ejecución no se cancela: se completa con las horas reales.
 3. Un centro no puede tener dos paradas no canceladas el mismo día. Lo garantiza un índice único parcial.
 4. Solo se programa en centros activos. Las paradas no se borran: se cancelan, con motivo. Solo se edita una parada `Programado`, y no se cambia de centro.
-5. La fecha programada no puede ser anterior a hoy en hora de Lima (UTC−5), ni al crear ni al editar. Con UTC, a partir de las 19:00 de Lima ya sería el día siguiente y no se podría programar para hoy.
+5. La fecha programada no puede ser anterior a hoy en hora de Perú (UTC−5), ni al crear ni al editar. Con UTC, a partir de las 19:00 en Perú ya sería el día siguiente y no se podría programar para hoy.
 
 ## 3. Archivos afectados
 
@@ -80,14 +80,14 @@ Base `api/v1/mantenimientos-preventivos`. JWT obligatorio. JSON en camelCase. Er
 | `POST /{id:int}/cancelar` | `CancelarMantenimientoPreventivoRequestDto` | 200 `{ id }`, 400, 404 o 409. |
 
 - `PaginaMantenimientosPreventivosDto { items: MantenimientoPreventivoListadoDto[], total, pagina, tamanoPagina }`
-- `MantenimientoPreventivoListadoDto { id, numero, centroTrabajoId, centroTrabajoCodigo, centroTrabajoNombre, descripcion, fechaProgramada, duracionHorasPlanificada, estado, vencido }`: `vencido` es `true` si está `Programado` y su fecha es anterior a hoy (hora de Lima).
+- `MantenimientoPreventivoListadoDto { id, numero, centroTrabajoId, centroTrabajoCodigo, centroTrabajoNombre, descripcion, fechaProgramada, duracionHorasPlanificada, estado, vencido }`: `vencido` es `true` si está `Programado` y su fecha es anterior a hoy (hora de Perú).
 - `MantenimientoPreventivoDetalleDto` = listado + `{ frecuenciaDias, responsable, fechaInicioReal, fechaFinReal, horasReales, observaciones, motivoCancelacion, fechaSiguienteSugerida }`: `fechaSiguienteSugerida` = día de `FechaFinReal` + `FrecuenciaDias` si está `Completado` y tiene frecuencia; si no, `null`.
 - `ResumenMantenimientosPreventivosDto { totalMantenimientos, porEstado: { estado, total }[], vencidos, proximos7Dias, horasPlanificadasPendientes }`: `proximos7Dias` son los `Programado` con fecha de hoy a hoy + 6; `horasPlanificadasPendientes` suma `Programado` y `EnEjecucion`. `porEstado` sigue el orden del ciclo y solo incluye estados con filas. Se agrega en la consulta, sin `ToListAsync` previo.
 - `CrearMantenimientoPreventivoRequestDto { centroTrabajoId, descripcion, fechaProgramada, duracionHorasPlanificada, frecuenciaDias?, responsable? }`
 - `EditarMantenimientoPreventivoRequestDto { descripcion, fechaProgramada, duracionHorasPlanificada, frecuenciaDias?, responsable? }`
 - `CompletarMantenimientoPreventivoRequestDto { horasReales, observaciones? }` y `CancelarMantenimientoPreventivoRequestDto { motivo }`
 
-El listado ordena por `FechaProgramada` ascendente y luego por `Id` ascendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los cuatro valores sin distinguir mayúsculas. Las fechas programadas y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada, así que no cambian de día por la zona horaria. `FechaInicioReal` y `FechaFinReal` se asignan con `DateTime.UtcNow`. «Hoy» es el día en hora de Lima: `DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5))` (Perú es UTC−5 y no tiene horario de verano; es la misma regla que `CalculadoraJornada.HoyLocal()` del módulo 63). Se calcula en un único método del módulo y se usa en la validación de la fecha programada, en `vencido` y en `proximos7Dias`. Los textos opcionales en blanco se guardan como `null`.
+El listado ordena por `FechaProgramada` ascendente y luego por `Id` ascendente. La búsqueda no distingue mayúsculas. El filtro de estado acepta los cuatro valores sin distinguir mayúsculas. Las fechas programadas y los filtros se reciben como día (`2026-12-01`) en `DateOnly`, igual que la columna `date` generada, así que no cambian de día por la zona horaria. `FechaInicioReal` y `FechaFinReal` se asignan con `DateTime.UtcNow`. «Hoy» es el día en hora de Perú: `DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5))` (Perú es UTC−5 y no tiene horario de verano; es la misma regla que `CalculadoraJornada.HoyLocal()` del módulo 63). Se calcula en un único método del módulo y se usa en la validación de la fecha programada, en `vencido` y en `proximos7Dias`. Los textos opcionales en blanco se guardan como `null`.
 
 ### Reglas y mensajes literales
 
@@ -104,7 +104,7 @@ Orden de validación: el listado valida página, tamaño, búsqueda, centro, est
 | Descripción vacía tras recortar espacios | 400 | La descripción del mantenimiento es obligatoria. |
 | Descripción de más de 250 caracteres | 400 | La descripción del mantenimiento no puede superar 250 caracteres. |
 | Fecha programada ausente | 400 | La fecha programada es obligatoria. |
-| Fecha programada anterior a hoy (hora de Lima) | 400 | La fecha programada no puede ser anterior a hoy. |
+| Fecha programada anterior a hoy (hora de Perú) | 400 | La fecha programada no puede ser anterior a hoy. |
 | Duración fuera de (0, 168] | 400 | La duración debe ser mayor que 0 y como máximo 168 horas. |
 | Duración con más de 2 decimales | 400 | La duración admite como máximo 2 decimales. |
 | Frecuencia fuera de 1–3650 | 400 | La frecuencia debe estar entre 1 y 3650 días. |
@@ -135,7 +135,7 @@ La edición que mantiene su propia fecha es válida. La fecha repetida se compru
 | A2 | Formato y reglas | `./scripts/verify.sh` | en verde |
 | A3 | Tests | `dotnet test --filter Modulo39_MantenimientoPreventivo` | Cada mensaje de §4 con su código, las cuatro transiciones, la paginación, los filtros y ningún caso inválido crea ni cambia filas. |
 | A4 | Contrato API | `/openapi/v1.json` | Las ocho operaciones presentes y autenticadas. |
-| A5 | Comportamiento | Pruebas de integración | `vencido`, `fechaSiguienteSugerida` y el resumen exactos. «Hoy» se toma en hora de Lima: a las 19:00 de Lima (00:00 UTC del día siguiente) se puede programar para ese mismo día. Una parada cancelada libera su fecha. El DELETE de un centro con paradas devuelve el 409 literal. |
+| A5 | Comportamiento | Pruebas de integración | `vencido`, `fechaSiguienteSugerida` y el resumen exactos. «Hoy» se toma en hora de Perú: a las 19:00 en Perú (00:00 UTC del día siguiente) se puede programar para ese mismo día. Una parada cancelada libera su fecha. El DELETE de un centro con paradas devuelve el 409 literal. |
 | A6 | PostgreSQL | `./scripts/aplicar-bd.sh`, `./scripts/scaffold.sh --comprobar` y `./scripts/smoke-postgres.sh` | `SMOKE OK`, incluidas fechas programadas enviadas como día que se devuelven sin cambiar de día, el 409 de fecha repetida por el índice parcial y dos transiciones concurrentes de la misma parada que dejan un único cambio de estado. |
 | A7 | Seed | `scripts/seed-dev.sql` dos veces | Cuatro paradas (`Programado` ×2, `EnEjecucion` y `Completado`) sobre centros del seed del 33, sin duplicar filas. |
 
