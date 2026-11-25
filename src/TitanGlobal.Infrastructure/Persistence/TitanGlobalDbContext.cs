@@ -29,6 +29,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
 
+    public virtual DbSet<CuentaBancaria> CuentasBancarias { get; set; } = null!;
+
     public virtual DbSet<DetalleCotizacion> DetallesCotizacion { get; set; } = null!;
 
     public virtual DbSet<DetalleDevolucion> DetallesDevolucion { get; set; } = null!;
@@ -55,6 +57,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<MovimientoBancario> MovimientosBancarios { get; set; } = null!;
+
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
     public virtual DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
@@ -78,6 +82,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<SolicitudCompra> SolicitudesCompra { get; set; } = null!;
 
     public virtual DbSet<TasaImpuesto> TasasImpuestos { get; set; } = null!;
+
+    public virtual DbSet<TransferenciaBancaria> TransferenciasBancarias { get; set; } = null!;
 
     public virtual DbSet<TransportistaTercero> TransportistasTerceros { get; set; } = null!;
 
@@ -243,6 +249,22 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.OrdenCompra).WithMany(p => p.Cotizaciones)
                 .HasForeignKey(d => d.OrdenCompraId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CuentaBancaria>(entity =>
+        {
+            entity.HasIndex(e => new { e.Banco, e.Numero }, "IX_CuentasBancarias_BancoNumero").IsUnique();
+
+            entity.HasIndex(e => new { e.Moneda, e.Tipo }, "IX_CuentasBancarias_MonedaTipo");
+
+            entity.Property(e => e.Banco).HasMaxLength(120);
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.Moneda)
+                .HasMaxLength(3)
+                .IsFixedLength();
+            entity.Property(e => e.Nombre).HasMaxLength(120);
+            entity.Property(e => e.Numero).HasMaxLength(40);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
         });
 
         modelBuilder.Entity<DetalleCotizacion>(entity =>
@@ -462,6 +484,29 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<MovimientoBancario>(entity =>
+        {
+            entity.HasIndex(e => new { e.CuentaBancariaId, e.FechaOperacion, e.Id }, "IX_MovimientosBancarios_CuentaFechaId").IsDescending(false, true, true);
+
+            entity.HasIndex(e => new { e.TransferenciaBancariaId, e.Tipo }, "IX_MovimientosBancarios_TransferenciaTipo").IsUnique();
+
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.Importe).HasPrecision(18, 2);
+            entity.Property(e => e.MotivoReversion).HasMaxLength(300);
+            entity.Property(e => e.Referencia).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
+
+            entity.HasOne(d => d.CuentaBancaria).WithMany(p => p.MovimientosBancarios)
+                .HasForeignKey(d => d.CuentaBancariaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_MovimientosBancarios_CuentaBancaria");
+
+            entity.HasOne(d => d.TransferenciaBancaria).WithMany(p => p.MovimientosBancarios)
+                .HasForeignKey(d => d.TransferenciaBancariaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_MovimientosBancarios_TransferenciaBancaria");
+        });
+
         modelBuilder.Entity<OrdenAbastecimiento>(entity =>
         {
             entity.HasIndex(e => e.Numero, "IX_OrdenesAbastecimiento_Numero").IsUnique();
@@ -631,6 +676,27 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Porcentaje).HasPrecision(18, 6);
 
             entity.HasOne(d => d.Impuesto).WithMany(p => p.Tasas).HasForeignKey(d => d.ImpuestoId);
+        });
+
+        modelBuilder.Entity<TransferenciaBancaria>(entity =>
+        {
+            entity.HasIndex(e => e.CuentaDestinoId, "IX_TransferenciasBancarias_CuentaDestinoId");
+
+            entity.HasIndex(e => e.CuentaOrigenId, "IX_TransferenciasBancarias_CuentaOrigenId");
+
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.Importe).HasPrecision(18, 2);
+            entity.Property(e => e.Referencia).HasMaxLength(100);
+
+            entity.HasOne(d => d.CuentaDestino).WithMany(p => p.TransferenciasBancariaCuentaDestino)
+                .HasForeignKey(d => d.CuentaDestinoId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_TransferenciasBancarias_CuentaDestino");
+
+            entity.HasOne(d => d.CuentaOrigen).WithMany(p => p.TransferenciasBancariaCuentaOrigen)
+                .HasForeignKey(d => d.CuentaOrigenId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_TransferenciasBancarias_CuentaOrigen");
         });
 
         modelBuilder.Entity<TransportistaTercero>(entity =>

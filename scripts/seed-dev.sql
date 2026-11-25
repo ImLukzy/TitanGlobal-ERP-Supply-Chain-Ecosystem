@@ -658,4 +658,50 @@ ON CONFLICT ("TransportistaTerceroId", lower(btrim("Referencia"))) DO NOTHING;
 SELECT setval(pg_get_serial_sequence('"TransportistasTerceros"', 'Id'), (SELECT MAX("Id") FROM "TransportistasTerceros"));
 SELECT setval(pg_get_serial_sequence('"FletesTerceros"', 'Id'), (SELECT MAX("Id") FROM "FletesTerceros"));
 
+-- Módulo 55: cuentas de ejemplo con saldos derivados de sus movimientos.
+INSERT INTO "CuentasBancarias" ("Banco", "Numero", "Nombre", "Tipo", "Moneda") VALUES
+    ('BANCO DEMO 55', '00055001', 'Operaciones PEN', 'Corriente', 'PEN'),
+    ('BANCO DEMO 55', '00055002', 'Reservas PEN', 'Ahorros', 'PEN'),
+    ('BANCO DEMO 55', '00055003', 'Operaciones USD', 'Corriente', 'USD')
+ON CONFLICT ("Banco", "Numero") DO NOTHING;
+
+INSERT INTO "MovimientosBancarios" ("CuentaBancariaId", "Tipo", "Importe", "FechaOperacion", "Referencia")
+SELECT cuenta."Id", datos.tipo, datos.importe, DATE '2026-11-10', datos.referencia
+FROM (VALUES
+    ('00055001', 'Ingreso', 100.00, 'SEED55-PEN-APERTURA'),
+    ('00055001', 'Egreso', 15.00, 'SEED55-PEN-EGRESO'),
+    ('00055002', 'Ingreso', 20.00, 'SEED55-RESERVAS-APERTURA'),
+    ('00055003', 'Ingreso', 80.00, 'SEED55-USD-APERTURA'),
+    ('00055003', 'Egreso', 5.00, 'SEED55-USD-EGRESO')
+) AS datos(numero, tipo, importe, referencia)
+JOIN "CuentasBancarias" cuenta ON cuenta."Banco" = 'BANCO DEMO 55' AND cuenta."Numero" = datos.numero
+WHERE NOT EXISTS (
+    SELECT 1 FROM "MovimientosBancarios" movimiento
+    WHERE movimiento."CuentaBancariaId" = cuenta."Id" AND movimiento."Referencia" = datos.referencia
+      AND movimiento."TransferenciaBancariaId" IS NULL
+);
+
+INSERT INTO "TransferenciasBancarias" ("CuentaOrigenId", "CuentaDestinoId", "Importe", "FechaOperacion", "Referencia")
+SELECT origen."Id", destino."Id", 30.00, DATE '2026-11-11', 'SEED55-TRANSFERENCIA'
+FROM "CuentasBancarias" origen CROSS JOIN "CuentasBancarias" destino
+WHERE origen."Banco" = 'BANCO DEMO 55' AND origen."Numero" = '00055001'
+  AND destino."Banco" = 'BANCO DEMO 55' AND destino."Numero" = '00055002'
+  AND NOT EXISTS (
+    SELECT 1 FROM "TransferenciasBancarias" transferencia
+    WHERE transferencia."CuentaOrigenId" = origen."Id" AND transferencia."CuentaDestinoId" = destino."Id"
+      AND transferencia."Referencia" = 'SEED55-TRANSFERENCIA'
+);
+
+INSERT INTO "MovimientosBancarios" ("CuentaBancariaId", "Tipo", "Importe", "FechaOperacion", "Referencia", "TransferenciaBancariaId")
+SELECT CASE datos.tipo WHEN 'Egreso' THEN transferencia."CuentaOrigenId" ELSE transferencia."CuentaDestinoId" END,
+    datos.tipo, transferencia."Importe", transferencia."FechaOperacion", transferencia."Referencia", transferencia."Id"
+FROM "TransferenciasBancarias" transferencia
+JOIN "CuentasBancarias" origen ON origen."Id" = transferencia."CuentaOrigenId"
+JOIN "CuentasBancarias" destino ON destino."Id" = transferencia."CuentaDestinoId"
+CROSS JOIN (VALUES ('Egreso'), ('Ingreso')) AS datos(tipo)
+WHERE transferencia."Referencia" = 'SEED55-TRANSFERENCIA'
+  AND origen."Banco" = 'BANCO DEMO 55' AND origen."Numero" = '00055001'
+  AND destino."Banco" = 'BANCO DEMO 55' AND destino."Numero" = '00055002'
+ON CONFLICT ("TransferenciaBancariaId", "Tipo") DO NOTHING;
+
 COMMIT;
