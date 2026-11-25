@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TitanGlobal.Application.Services;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -17,6 +18,8 @@ public static class InfrastructureServicesExtensions
             ?? throw new InvalidOperationException("Falta ConnectionStrings:DefaultConnection.");
         services.AddDbContext<TitanGlobalDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWorkCuentasPorPagar, UnitOfWorkCuentasPorPagar>();
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IEscrituraListaMaterial, EscrituraListaMaterial>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
