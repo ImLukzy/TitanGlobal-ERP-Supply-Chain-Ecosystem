@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo54_CuentasPorPagar;
 using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -10,11 +11,10 @@ internal static class ValidacionCuentasPorPagar
 {
     private const decimal ImporteMaximo = 9999999999999999.99m;
     internal const string FacturaDuplicada = "La factura del proveedor ya está registrada.";
-    private static readonly TimeZoneInfo Lima = TimeZoneInfo.FindSystemTimeZoneById("America/Lima");
 
     internal static DateOnly CorteLima(TimeProvider reloj)
     {
-        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(reloj.GetUtcNow(), Lima).DateTime);
+        return FechaNegocioPeru.DesdeUtc(reloj.GetUtcNow().UtcDateTime);
     }
 
     internal static CuentaPorPagar DatosCuenta(RegistrarCuentaPorPagarRequestDto solicitud, DateOnly corte)

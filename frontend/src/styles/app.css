@@ -2144,3 +2144,166 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1279px) { .sst-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sst-filters, .sst-filters-tres, .sst-filters-cuatro, .sst-filters-seis, .sst-form, .sst-datos { grid-template-columns: minmax(0, 1fr); } .sst-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .sst-tabs { flex-wrap: wrap; } }
+
+.listas-materiales-area { display: grid; gap: 16px; align-items: start; }
+.listas-materiales-tarjeta {
+  min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.listas-materiales-tarjeta h2, .listas-materiales-tarjeta h3 { margin: 0 0 12px; color: var(--ink); }
+.listas-materiales-encabezado, .listas-materiales-acciones, .listas-materiales-selector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.listas-materiales-encabezado { justify-content: space-between; margin-bottom: 16px; }
+.listas-materiales-encabezado h2 { margin: 0; }
+.listas-materiales-filtros, .listas-materiales-cabecera-formulario, .listas-materiales-linea-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.listas-materiales-filtros { margin-bottom: 16px; }
+.listas-materiales-filtros select {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font: inherit;
+}
+.listas-materiales-tabla { width: 100%; min-width: 330px; text-align: left; }
+.listas-materiales-tabla th, .listas-materiales-tabla td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.listas-materiales-tabla thead { background: var(--surface-muted); }
+.listas-materiales-seleccion { background: var(--accent-soft); }
+.listas-materiales-enlace { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.listas-materiales-identidad { display: grid; gap: 4px; }
+.listas-materiales-identidad span { color: var(--ink-soft); }
+.listas-materiales-componentes, .listas-materiales-opciones { list-style: none; padding: 0; }
+.listas-materiales-componentes li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; border-top: 1px solid var(--line); padding: 10px 0; }
+.listas-materiales-componentes li span:last-child { font-variant-numeric: tabular-nums; }
+.listas-materiales-catalogo, .listas-materiales-linea {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.listas-materiales-catalogo { background: var(--surface-muted); }
+.listas-materiales-busqueda { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.listas-materiales-busqueda .form-field { flex: 1 1 145px; min-width: 0; }
+.listas-materiales-opciones { display: grid; gap: 4px; }
+.listas-materiales-opciones button { width: 100%; text-align: left; }
+.listas-materiales-page button { max-width: 100%; white-space: normal; }
+.listas-materiales-campos { display: grid; gap: 12px; min-width: 0; margin: 0 0 16px; padding: 0; border: 0; }
+.listas-materiales-campos h3 { margin: 8px 0 0; }
+.listas-materiales-campos > button { justify-self: start; }
+.listas-materiales-linea { margin: 0; }
+.listas-materiales-linea legend { padding-inline: 4px; }
+.listas-materiales-linea-campos > button { align-self: end; justify-self: start; }
+.listas-materiales-aviso, .listas-materiales-error { margin-bottom: 12px; }
+.listas-materiales-aviso { padding: 10px 14px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+.listas-materiales-dialogo { width: min(460px, 100%); max-height: 90vh; overflow: auto; }
+
+@media (max-width: 420px) {
+  .app-shell:has(.listas-materiales-page) .topbar-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .app-shell:has(.listas-materiales-page) .topbar-actions .role-picker { min-width: 0; }
+  .app-shell:has(.listas-materiales-page) .topbar-actions .role-picker select { width: 100%; max-width: 112px; }
+  .listas-materiales-tabla { min-width: 0; table-layout: fixed; }
+  .listas-materiales-tabla th, .listas-materiales-tabla td { padding-inline: 4px; }
+  .listas-materiales-tabla thead th:nth-child(1) { width: 34%; }
+  .listas-materiales-tabla thead th:nth-child(2) { width: 16%; }
+  .listas-materiales-tabla thead th:nth-child(3) { width: 20%; }
+  .listas-materiales-tabla thead th:nth-child(4) { width: 30%; }
+}
+
+@media (min-width: 720px) {
+  .listas-materiales-filtros, .listas-materiales-cabecera-formulario { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .listas-materiales-linea-campos { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+}
+
+@media (min-width: 1024px) {
+  .listas-materiales-area { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+
+/* Módulo 43: rutas de despacho */
+.rutas-despacho-page { min-width: 0; }
+.rutas-despacho-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.rutas-despacho-stat, .rutas-despacho-card, .rutas-despacho-zonas { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+.rutas-despacho-stat { display: grid; gap: 10px; }
+.rutas-despacho-stat strong { font-size: 30px; color: var(--ink); }
+.rutas-despacho-stat span, .rutas-despacho-muted { color: var(--ink-soft); }
+.rutas-despacho-zonas { grid-column: 1 / -1; }
+.rutas-despacho-zonas h2 { font-size: 16px; margin: 0 0 16px; }
+.rutas-despacho-zonas ul { list-style: none; display: flex; gap: 16px; flex-wrap: wrap; padding: 0; margin: 0; }
+.rutas-despacho-zonas li { display: flex; gap: 12px; align-items: center; border-radius: 8px; padding: 10px 12px; background: var(--surface-muted); color: var(--ink); }
+.rutas-despacho-zonas small { color: var(--ink-soft); }
+.rutas-despacho-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 16px; }
+.rutas-despacho-filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.rutas-despacho-filters label { display: grid; gap: 8px; }
+.rutas-despacho-page input:not([type=checkbox]), .rutas-despacho-page select { width: 100%; min-width: 0; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.rutas-despacho-layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
+.rutas-despacho-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+.rutas-despacho-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.rutas-despacho-details div { border-bottom: 1px solid var(--line); padding: 10px 0; overflow-wrap: anywhere; }
+.rutas-despacho-details dt { color: var(--ink-soft); font-size: 13px; }
+.rutas-despacho-details dd { margin: 6px 0 0; }
+.rutas-despacho-muted { display: block; margin-top: 6px; font-weight: 400; }
+.rutas-despacho-badge { display: inline-flex; white-space: nowrap; padding: 5px 9px; border-radius: 6px; color: var(--ink); background: var(--good-soft); }
+.rutas-despacho-inactive { color: var(--ink-soft); background: var(--surface-muted); }
+.rutas-despacho-number, .rutas-despacho-table thead th { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rutas-despacho-table tbody .rutas-despacho-selected > td, .rutas-despacho-table tbody .rutas-despacho-selected > th { background: var(--accent-soft); }
+@media (max-width: 1100px) { .rutas-despacho-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .rutas-despacho-filters { grid-template-columns: minmax(0, 1fr); }
+  .rutas-despacho-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rutas-despacho-toolbar { align-items: stretch; flex-direction: column; }
+  .rutas-despacho-card, .rutas-despacho-stat, .rutas-despacho-zonas { padding: 16px; }
+  .rutas-despacho-actions > button { flex: 1 1 auto; }
+}
+
+/* Módulo 44: consolidación de carga */
+.consolidacion-carga-page { min-width: 0; }
+.consolidacion-carga-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.consolidacion-carga-summary article, .consolidacion-carga-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.consolidacion-carga-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.consolidacion-carga-summary strong { color: var(--ink); font-size: 30px; }
+.consolidacion-carga-toolbar, .consolidacion-carga-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.consolidacion-carga-toolbar { justify-content: space-between; }
+.consolidacion-carga-filters { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 12px; margin: 20px 0; }
+.consolidacion-carga-filters label { display: grid; gap: 8px; }
+.consolidacion-carga-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.consolidacion-carga-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.consolidacion-carga-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.consolidacion-carga-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.consolidacion-carga-page input, .consolidacion-carga-page select, .consolidacion-carga-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.consolidacion-carga-table thead th, .consolidacion-carga-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.consolidacion-carga-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.consolidacion-carga-table tbody .consolidacion-carga-selected > th, .consolidacion-carga-table tbody .consolidacion-carga-selected > td { background: var(--accent-soft); }
+.consolidacion-carga-totales { padding: 12px; background: var(--surface-muted); color: var(--ink); border-radius: 8px; overflow-wrap: normal; font-variant-numeric: tabular-nums; }
+.consolidacion-carga-details dt { color: var(--ink-soft); margin-top: 14px; }
+.consolidacion-carga-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.consolidacion-carga-dialog { max-height: 90vh; overflow-y: auto; }
+.consolidacion-carga-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.consolidacion-carga-confirmada { background: var(--good-soft); }
+.consolidacion-carga-cancelada { background: var(--bad-soft); }
+@media (max-width: 1100px) { .consolidacion-carga-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .consolidacion-carga-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .consolidacion-carga-filters, .consolidacion-carga-editor { grid-template-columns: minmax(0,1fr); }
+  .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
+  .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
+}

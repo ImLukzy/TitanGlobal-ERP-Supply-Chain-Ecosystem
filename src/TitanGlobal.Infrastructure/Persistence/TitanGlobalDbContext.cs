@@ -43,6 +43,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Conductor> Conductores { get; set; } = null!;
 
+    public virtual DbSet<ConsolidacionCarga> ConsolidacionesCarga { get; set; } = null!;
+
     public virtual DbSet<ContratoComercial> ContratosComerciales { get; set; } = null!;
 
     public virtual DbSet<ContratoLaboral> ContratosLaborales { get; set; } = null!;
@@ -95,6 +97,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
 
+    public virtual DbSet<LineaConsolidacionCarga> LineasConsolidacionCarga { get; set; } = null!;
+
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
 
     public virtual DbSet<ListaMateriales> ListasMateriales { get; set; } = null!;
@@ -102,6 +106,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
     public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
+
+    public virtual DbSet<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = null!;
 
     public virtual DbSet<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = null!;
 
@@ -132,6 +138,10 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; } = null!;
 
     public virtual DbSet<Rol> Roles { get; set; } = null!;
+
+    public virtual DbSet<RutaDespacho> RutasDespacho { get; set; } = null!;
+
+    public virtual DbSet<RutaProduccion> RutasProduccion { get; set; } = null!;
 
     public virtual DbSet<SegmentoCliente> SegmentosClientes { get; set; } = null!;
 
@@ -385,6 +395,17 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasIndex(e => e.DocumentoLicencia, "IX_Conductores_DocumentoLicencia").IsUnique();
 
             entity.Property(e => e.DocumentoLicencia).HasMaxLength(20);
+            entity.Property(e => e.Nombre).HasMaxLength(100);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<ConsolidacionCarga>(entity =>
+        {
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("'Borrador'::character varying");
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
             entity.Property(e => e.Nombre).HasMaxLength(100);
             entity.Property(e => e.Observaciones).HasMaxLength(500);
         });
@@ -856,6 +877,22 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<LineaConsolidacionCarga>(entity =>
+        {
+            entity.HasIndex(e => e.ConsolidacionCargaId, "IX_LineasConsolidacionCarga_ConsolidacionCargaId");
+
+            entity.Property(e => e.AltoCm).HasPrecision(6, 2);
+            entity.Property(e => e.AnchoCm).HasPrecision(6, 2);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
+            entity.Property(e => e.LargoCm).HasPrecision(6, 2);
+            entity.Property(e => e.PesoBultoKg).HasPrecision(8, 2);
+            entity.Property(e => e.Sku).HasMaxLength(40);
+
+            entity.HasOne(d => d.ConsolidacionCarga).WithMany(p => p.Lineas)
+                .HasForeignKey(d => d.ConsolidacionCargaId)
+                .HasConstraintName("FK_LineasConsolidacionCarga_Consolidacion");
+        });
+
         modelBuilder.Entity<LiquidacionComision>(entity =>
         {
             entity.HasIndex(e => new { e.VendedorId, e.Anio, e.Mes }, "IX_LiquidacionesComisiones_VendedorId_Anio_Mes").IsUnique();
@@ -916,6 +953,23 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.Empleado).WithMany(p => p.Marcaciones)
                 .HasForeignKey(d => d.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OperacionRutaProduccion>(entity =>
+        {
+            entity.HasIndex(e => e.CentroTrabajoId, "IX_OperacionesRutaProduccion_CentroTrabajoId");
+
+            entity.HasIndex(e => new { e.RutaProduccionId, e.Secuencia }, "IX_OperacionesRutaProduccion_RutaProduccionId_Secuencia").IsUnique();
+
+            entity.Property(e => e.MinutosPorUnidad).HasPrecision(10, 2);
+            entity.Property(e => e.MinutosPreparacion).HasPrecision(10, 2);
+            entity.Property(e => e.Nombre).HasMaxLength(120);
+
+            entity.HasOne(d => d.CentroTrabajo).WithMany(p => p.OperacionesRutaProduccion)
+                .HasForeignKey(d => d.CentroTrabajoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.RutaProduccion).WithMany(p => p.OperacionesRutaProduccion).HasForeignKey(d => d.RutaProduccionId);
         });
 
         modelBuilder.Entity<OrdenAbastecimiento>(entity =>
@@ -1158,6 +1212,37 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Codigo).HasMaxLength(30);
             entity.Property(e => e.Descripcion).HasMaxLength(300);
             entity.Property(e => e.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<RutaDespacho>(entity =>
+        {
+            entity.HasIndex(e => e.Zona, "IX_RutasDespacho_Zona");
+
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Destino).HasMaxLength(120);
+            entity.Property(e => e.DistanciaKm).HasPrecision(10, 2);
+            entity.Property(e => e.Moneda).HasMaxLength(3);
+            entity.Property(e => e.Nombre).HasMaxLength(100);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Origen).HasMaxLength(120);
+            entity.Property(e => e.PeajeEstimado).HasPrecision(18, 2);
+            entity.Property(e => e.Zona).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<RutaProduccion>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProductoId, e.Estado }, "IX_RutasProduccion_ProductoId_Activa")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text = 'Activa'::text)");
+
+            entity.HasIndex(e => new { e.ProductoId, e.Version }, "IX_RutasProduccion_ProductoId_Version").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(8);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.RutasProduccion)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<SegmentoCliente>(entity =>

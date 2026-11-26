@@ -1,6 +1,6 @@
 # Especificación: modulo54-cuentas-por-pagar-backend — Cuentas por pagar
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 quedaron integradas por el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -152,3 +152,11 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 | 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
 | 2026-11-24 | A1–A5 | Compilación sin advertencias ni errores. Reglas y gate correctos. | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `scripts/verify.sh`. Pasaron 57 pruebas del 54 dentro de 1.669 pruebas de backend y 1.314 del frontend. |
 | 2026-11-24 | A6 | `SCAFFOLD AL DÍA` y `SMOKE OK`. | PostgreSQL 16 desechable. Repetir el seed conservó cinco facturas, cuatro pagos, sus saldos y la referencia a la orden. Las cuatro carreras y el rollback por FK pasaron. |
+
+## Actualización del 2026-11-26
+
+El despliegue requiere el catálogo `FINANZAS` (Id 7) que crea el SQL 024 del PR #83. Las pruebas de la rama pueden usar ADMIN y tokens de prueba de FINANZAS. La dependencia de despliegue sigue el orden indicado por Lukas.
+
+El mismo corte de Perú se aplica a fecha documentaria, pagos y reportes. El día cambia a las 05:00 UTC. Los vencimientos futuros válidos y los instantes UTC de auditoría conservan su tratamiento.
+
+Árbol sobre main 1835648. `git diff --check`, `dotnet build -warnaserror` (0 advertencias) y `check-rules.sh` correctos. `verify.sh` pasó 1818 pruebas backend, 59 del módulo, y 1455 frontend. PostgreSQL 16 desechable confirmó reconstrucción de 19 scripts, scaffold al día, dos cargas idempotentes del seed, concurrencia, rollback, límites de vencimiento y `SMOKE OK`.

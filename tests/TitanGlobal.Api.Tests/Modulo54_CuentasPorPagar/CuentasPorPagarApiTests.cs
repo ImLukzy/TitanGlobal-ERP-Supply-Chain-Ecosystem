@@ -372,14 +372,18 @@ public class CuentasPorPagarApiTests : IDisposable
         Assert.Equal(22m, Assert.Single(resumen.Grupos, fila => fila.ProveedorId == 2).SaldoAlDia);
     }
 
-    [Fact]
-    public async Task CorteCambiaALaMedianocheDeLima()
+    [Theory]
+    [InlineData(24, 23, 59, 59)]
+    [InlineData(25, 0, 0, 0)]
+    [InlineData(25, 4, 59, 59)]
+    public async Task CorteCambiaALaMedianocheDeLima(int dia, int hora, int minuto, int segundo)
     {
+        _factory.Reloj.Instante = new DateTimeOffset(2026, 11, dia, hora, minuto, segundo, TimeSpan.Zero);
         CuentaPorPagarDetalleDto cuenta = await CrearAsync("HOY", vencimiento: HoyLima);
         Assert.False(cuenta.Vencida);
         Assert.Equal(HoyLima, (await ResumenAsync()).FechaCorte);
 
-        _factory.Reloj.Instante = _factory.Reloj.Instante.AddSeconds(1);
+        _factory.Reloj.Instante = new DateTimeOffset(2026, 11, 25, 5, 0, 0, TimeSpan.Zero);
         ResumenCuentasPorPagarDto posterior = await ResumenAsync();
         Assert.Equal(HoyLima.AddDays(1), posterior.FechaCorte);
         Assert.Equal(cuenta.Total, Assert.Single(posterior.Grupos).Vencido0A30);
