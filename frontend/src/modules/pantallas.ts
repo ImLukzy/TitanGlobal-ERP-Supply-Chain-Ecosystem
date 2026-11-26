@@ -22,6 +22,21 @@ import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
+import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
+import { ConductoresPage } from './conductores/ConductoresPage';
+import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
+import { RutasDespachoPage } from './rutas-despacho/RutasDespachoPage';
+import { ConsolidacionCargaPage } from './consolidacion-carga/ConsolidacionCargaPage';
+import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
+import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
+import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiometricaPage';
+import { VacacionesPermisosPage } from './vacaciones-permisos/VacacionesPermisosPage';
+import { AdelantosPrestamosPage } from './adelantos-prestamos/AdelantosPrestamosPage';
+import { PlanillasPage } from './planillas/PlanillasPage';
+import { EvaluacionDesempenoPage } from './evaluacion-desempeno/EvaluacionDesempenoPage';
+import { CapacitacionesPage } from './capacitaciones/CapacitacionesPage';
+import { SeguridadSaludOcupacionalPage } from './seguridad-salud-ocupacional/SeguridadSaludOcupacionalPage';
+import { ListasMaterialesPage } from './listas-materiales/ListasMaterialesPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '45-guias-remision': GuiasRemisionPage,
@@ -47,4 +62,19 @@ export const pantallas: Record<string, ComponentType> = {
   '71-usuarios': UsuariosPage,
   '61-empleados': EmpleadosPage,
   '33-centros-trabajo': CentrosTrabajoPage,
+  '41-vehiculos-flota': VehiculosFlotaPage,
+  '42-conductores': ConductoresPage,
+  '48-transportistas-terceros': TransportistasTercerosPage,
+  '43-rutas-despacho': RutasDespachoPage,
+  '44-consolidacion-carga': ConsolidacionCargaPage,
+  '62-contratos-laborales': ContratosLaboralesPage,
+  '64-turnos-horarios': TurnosHorariosPage,
+  '63-asistencia-biometrica': AsistenciaBiometricaPage,
+  '65-vacaciones-permisos': VacacionesPermisosPage,
+  '67-adelantos-prestamos': AdelantosPrestamosPage,
+  '66-planillas': PlanillasPage,
+  '68-evaluacion-desempeno': EvaluacionDesempenoPage,
+  '69-capacitaciones': CapacitacionesPage,
+  '70-seguridad-salud-ocupacional': SeguridadSaludOcupacionalPage,
+  '31-listas-materiales': ListasMaterialesPage,
 };

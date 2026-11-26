@@ -1,0 +1,158 @@
+{
+  "fecha": "2026-11-21",
+  "origen": "API y PostgreSQL locales, sin respuestas simuladas",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "altaConDosLineas": true,
+      "cubicajeExacto": "0.180001",
+      "pesoEstimadoKg": "6.50",
+      "pickingIncompletoRechazado": true,
+      "edicionPicking": true,
+      "confirmacion": true,
+      "cancelacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".consolidacion-carga-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".consolidacion-carga-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".consolidacion-carga-table small",
+          "contraste": 4.98103373080793
+        },
+        {
+          "selector": ".consolidacion-carga-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "altaConDosLineas": true,
+      "cubicajeExacto": "0.180001",
+      "pesoEstimadoKg": "6.50",
+      "pickingIncompletoRechazado": true,
+      "edicionPicking": true,
+      "confirmacion": true,
+      "cancelacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".consolidacion-carga-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".consolidacion-carga-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".consolidacion-carga-table small",
+          "contraste": 5.104174024344071
+        },
+        {
+          "selector": ".consolidacion-carga-badge",
+          "contraste": 9.960419518951863
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "altaConDosLineas": true,
+      "cubicajeExacto": "0.180001",
+      "pesoEstimadoKg": "6.50",
+      "pickingIncompletoRechazado": true,
+      "edicionPicking": true,
+      "confirmacion": true,
+      "cancelacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".consolidacion-carga-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".consolidacion-carga-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".consolidacion-carga-table small",
+          "contraste": 4.98103373080793
+        },
+        {
+          "selector": ".consolidacion-carga-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "altaConDosLineas": true,
+      "cubicajeExacto": "0.180001",
+      "pesoEstimadoKg": "6.50",
+      "pickingIncompletoRechazado": true,
+      "edicionPicking": true,
+      "confirmacion": true,
+      "cancelacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".consolidacion-carga-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".consolidacion-carga-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".consolidacion-carga-table small",
+          "contraste": 5.104174024344071
+        },
+        {
+          "selector": ".consolidacion-carga-badge",
+          "contraste": 9.960419518951863
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    }
+  ]
+}
