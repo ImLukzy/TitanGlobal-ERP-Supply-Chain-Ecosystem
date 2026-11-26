@@ -41,6 +41,7 @@ TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 RUTA_PRODUCCION_CREADA_ID=""
 ORDEN_PRODUCCION_CREADA_ID=""
+CONSUMO_MATERIAL_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -661,6 +662,46 @@ checks = {
     "orden-produccion-terminada": lambda data: data["estado"] == "Terminada" and data["cantidadProducida"] == 5
         and data["fechaInicioReal"].endswith("Z") and data["fechaFinReal"].endswith("Z")
         and data["fechaFinReal"] >= data["fechaInicioReal"],
+    "openapi-consumos-materiales": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/consumos-materiales", "get"), ("/api/v1/consumos-materiales", "post"),
+        ("/api/v1/consumos-materiales/resumen", "get"),
+        ("/api/v1/consumos-materiales/ordenes/{ordenProduccionId}/balance", "get"),
+        ("/api/v1/consumos-materiales/{id}", "get"), ("/api/v1/consumos-materiales/{id}/anular", "post"),
+    ]),
+    "consumos-materiales-seed": lambda data: data["total"] == 4 and [
+        (item["numero"], item["estado"], item["cantidad"], item["unidadMedida"]) for item in data["items"]
+    ] == [
+        ("CM-000004", "Registrado", 4.5, "unidad"), ("CM-000003", "Anulado", 3, "unidad"),
+        ("CM-000002", "Registrado", 5, "unidad"), ("CM-000001", "Registrado", 8, "unidad"),
+    ],
+    "consumos-materiales-dia-peru": lambda data: [item["numero"] for item in data["items"]] == [
+        "CM-000004", "CM-000003", "CM-000002",
+    ],
+    "consumos-materiales-balance": lambda data: data["ordenProduccionNumero"] == "OP-000002"
+        and data["estadoOrden"] == "EnProceso" and [
+            (linea["componenteProductoId"], linea["cantidadRequerida"], linea["cantidadConsumida"],
+             linea["cantidadPendiente"], linea["desviacionPorcentaje"])
+            for linea in data["lineas"]
+        ] == [(3, 20, 12.5, 7.5, -37.5), (4, 20, 5, 15, -75)],
+    "consumo-material-creado": lambda data: isinstance(data.get("id"), int)
+        and data["numero"] == f"CM-{data['id']:06d}",
+    "consumo-material-seis-decimales": lambda data: data["cantidad"] == 0.123456
+        and data["unidadMedida"] == "unidad" and data["estado"] == "Registrado"
+        and data["fechaRegistro"].endswith("Z") and data["responsable"] is None,
+    "consumo-material-siete-decimales": lambda data: (
+        data["StatusCode"] == 400 and data["Message"] == "La cantidad consumida admite como máximo 6 decimales."
+    ),
+    "consumo-material-fuera-de-lista": lambda data: data["StatusCode"] == 409 and data["Message"] == (
+        "El producto 6 no forma parte de la lista de materiales de la orden OP-000002."
+    ),
+    "consumo-material-orden-terminada": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "Solo se pueden registrar consumos en órdenes de producción en proceso.",
+    "consumo-material-anulado": lambda data: data["estado"] == "Anulado"
+        and data["motivoAnulacion"] == "Prueba de anulación" and data["fechaAnulacion"].endswith("Z"),
+    "consumo-material-ya-anulado": lambda data: data["StatusCode"] == 409
+        and re.fullmatch(r"El consumo de materiales CM-[0-9]{6} ya está anulado\.", data["Message"]) is not None,
+    "consumos-materiales-resumen": lambda data: data["totalRegistrados"] == 3 and data["totalAnulados"] == 2
+        and data["ordenesConConsumo"] == 1 and isinstance(data["consumosUltimos7Dias"], int),
 }
 
 if validation not in checks or not checks[validation](body):
@@ -882,6 +923,9 @@ request_check() {
     fi
     if [[ "$validation" == "orden-produccion-creada" ]]; then
         ORDEN_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "consumo-material-creado" ]]; then
+        CONSUMO_MATERIAL_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1729,4 +1773,19 @@ assert (detalle["fechaInicioReal"] is None) == (esperado == "Cancelada"), detall
 assert (detalle["motivoCancelacion"] == "Cambio de plan") == (esperado == "Cancelada"), detalle
 print("Concurrencia de órdenes de producción OK")
 PY
+# Módulo 35: consumos de materiales de la orden en proceso OP-000002 del seed.
+request_check 'OpenAPI de consumos de materiales' GET '/openapi/v1.json' 200 openapi-consumos-materiales
+request_check 'Consumos de materiales del seed' GET '/api/v1/consumos-materiales?ordenProduccionId=2' 200 consumos-materiales-seed
+request_check 'Consumos del día en hora de Perú' GET '/api/v1/consumos-materiales?desde=2026-11-25&hasta=2026-11-25' 200 consumos-materiales-dia-peru
+request_check 'Balance de la orden en proceso' GET '/api/v1/consumos-materiales/ordenes/2/balance' 200 consumos-materiales-balance
+request_check 'Rechazar cantidad con 7 decimales' POST '/api/v1/consumos-materiales' 400 consumo-material-siete-decimales '{"ordenProduccionId":2,"componenteProductoId":3,"cantidad":0.1234567}'
+request_check 'Rechazar componente fuera de la lista' POST '/api/v1/consumos-materiales' 409 consumo-material-fuera-de-lista '{"ordenProduccionId":2,"componenteProductoId":6,"cantidad":1}'
+request_check 'Rechazar consumo en orden terminada' POST '/api/v1/consumos-materiales' 409 consumo-material-orden-terminada '{"ordenProduccionId":3,"componenteProductoId":3,"cantidad":1}'
+request_check 'Registrar consumo con 6 decimales' POST '/api/v1/consumos-materiales' 201 consumo-material-creado '{"ordenProduccionId":2,"componenteProductoId":3,"cantidad":0.123456,"responsable":"  ","observaciones":"Smoke"}'
+CONSUMO_MATERIAL_SMOKE="/api/v1/consumos-materiales/${CONSUMO_MATERIAL_CREADO_ID}"
+request_check 'Cantidad guardada sin redondeo' GET "$CONSUMO_MATERIAL_SMOKE" 200 consumo-material-seis-decimales
+request_check 'Anular consumo de materiales' POST "$CONSUMO_MATERIAL_SMOKE/anular" 200 created '{"motivo":"  Prueba de anulación  "}'
+request_check 'Consultar el consumo anulado' GET "$CONSUMO_MATERIAL_SMOKE" 200 consumo-material-anulado
+request_check 'Rechazar anulación repetida' POST "$CONSUMO_MATERIAL_SMOKE/anular" 409 consumo-material-ya-anulado '{"motivo":"Otra vez"}'
+request_check 'Resumen de consumos de materiales' GET '/api/v1/consumos-materiales/resumen' 200 consumos-materiales-resumen
 printf 'SMOKE OK\n'

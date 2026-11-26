@@ -987,4 +987,34 @@ ON CONFLICT ("Numero") DO UPDATE SET
     "MotivoCancelacion" = NULL;
 SELECT setval(pg_get_serial_sequence('"OrdenesProduccion"', 'Id'), (SELECT MAX("Id") FROM "OrdenesProduccion"));
 
+-- Módulo 35: cuatro consumos (tres registrados y uno anulado) de la orden en proceso OP-000002.
+-- CM-000004 se registró el 2026-11-26 00:30 UTC, que en Perú es el 2026-11-25 a las 19:30.
+INSERT INTO "ConsumosMateriales" (
+    "Id", "Numero", "OrdenProduccionId", "ComponenteProductoId", "Cantidad", "UnidadMedida", "FechaRegistro",
+    "Responsable", "Observaciones", "Estado", "FechaAnulacion", "MotivoAnulacion")
+SELECT datos.id, datos.numero, orden."Id", datos.componente_id, datos.cantidad, detalle."UnidadMedida",
+    datos.fecha, datos.responsable, NULL, datos.estado, datos.fecha_anulacion, datos.motivo
+FROM (VALUES
+    (1, 'CM-000001', 3, 8.000000, TIMESTAMPTZ '2026-11-24T15:00:00Z', 'Ana Torres', 'Registrado',
+        NULL::timestamptz, NULL),
+    (2, 'CM-000002', 4, 5.000000, TIMESTAMPTZ '2026-11-25T14:00:00Z', NULL, 'Registrado',
+        NULL::timestamptz, NULL),
+    (3, 'CM-000003', 3, 3.000000, TIMESTAMPTZ '2026-11-25T16:00:00Z', NULL, 'Anulado',
+        TIMESTAMPTZ '2026-11-25T16:30:00Z', 'Cantidad duplicada'),
+    (4, 'CM-000004', 3, 4.500000, TIMESTAMPTZ '2026-11-26T00:30:00Z', 'Luis Rojas', 'Registrado',
+        NULL::timestamptz, NULL)
+) AS datos(id, numero, componente_id, cantidad, fecha, responsable, estado, fecha_anulacion, motivo)
+JOIN "OrdenesProduccion" orden ON orden."Numero" = 'OP-000002'
+JOIN "DetallesListaMaterial" detalle
+    ON detalle."ListaMaterialId" = orden."ListaMaterialesId" AND detalle."ComponenteProductoId" = datos.componente_id
+ON CONFLICT ("Numero") DO UPDATE SET
+    "Cantidad" = EXCLUDED."Cantidad",
+    "UnidadMedida" = EXCLUDED."UnidadMedida",
+    "FechaRegistro" = EXCLUDED."FechaRegistro",
+    "Responsable" = EXCLUDED."Responsable",
+    "Estado" = EXCLUDED."Estado",
+    "FechaAnulacion" = EXCLUDED."FechaAnulacion",
+    "MotivoAnulacion" = EXCLUDED."MotivoAnulacion";
+SELECT setval(pg_get_serial_sequence('"ConsumosMateriales"', 'Id'), (SELECT MAX("Id") FROM "ConsumosMateriales"));
+
 COMMIT;
