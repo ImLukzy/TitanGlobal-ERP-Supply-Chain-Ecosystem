@@ -15,6 +15,8 @@ public partial class Producto
 
     public string? Descripcion { get; set; }
 
+    public virtual ICollection<AjusteInventario> AjustesInventario { get; set; } = new List<AjusteInventario>();
+
     public virtual ICollection<DetalleCotizacion> DetallesCotizacion { get; set; } = new List<DetalleCotizacion>();
 
     public virtual ICollection<DetalleDevolucion> DetallesDevolucion { get; set; } = new List<DetalleDevolucion>();

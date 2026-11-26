@@ -13,6 +13,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<AfiliacionPension> AfiliacionesPension { get; set; } = null!;
 
+    public virtual DbSet<AjusteInventario> AjustesInventario { get; set; } = null!;
+
     public virtual DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
 
     public virtual DbSet<Almacen> Almacenes { get; set; } = null!;
@@ -213,6 +215,32 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.ParametroPension).WithMany(p => p.AfiliacionesPension)
                 .HasForeignKey(d => d.ParametroPensionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AjusteInventario>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenId, "IX_AjustesInventario_AlmacenId");
+
+            entity.HasIndex(e => e.Codigo, "IX_AjustesInventario_Codigo").IsUnique();
+
+            entity.HasIndex(e => e.Fecha, "IX_AjustesInventario_Fecha");
+
+            entity.HasIndex(e => e.ProductoId, "IX_AjustesInventario_ProductoId");
+
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
+            entity.Property(e => e.Motivo).HasMaxLength(30);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Responsable).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(15);
+
+            entity.HasOne(d => d.Almacen).WithMany(p => p.AjustesInventario)
+                .HasForeignKey(d => d.AlmacenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.AjustesInventario)
+                .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -946,6 +974,8 @@ public partial class TitanGlobalDbContext : DbContext
 
         modelBuilder.Entity<MovimientoKardex>(entity =>
         {
+            entity.HasIndex(e => e.AjusteInventarioId, "IX_MovimientosKardex_AjusteInventarioId");
+
             entity.HasIndex(e => e.AlmacenId, "IX_MovimientosKardex_AlmacenId");
 
             entity.HasIndex(e => e.LoteId, "IX_MovimientosKardex_LoteId");
@@ -957,6 +987,10 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
             entity.Property(e => e.Referencia).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(10);
+
+            entity.HasOne(d => d.AjusteInventario).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.AjusteInventarioId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(d => d.Almacen).WithMany(p => p.MovimientosKardex)
                 .HasForeignKey(d => d.AlmacenId)
