@@ -1,3 +1,4 @@
+using TitanGlobal.Api.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo30_ReabastecimientoAutomatico;
 using TitanGlobal.Application.UseCases.Modulo30_ReabastecimientoAutomatico;
@@ -121,6 +122,7 @@ public class ReabastecimientoAutomaticoController : ControllerBase
     }
 
     [HttpPost("sugerencias/{id:int}/generar-solicitud")]
+    [PermitirCuerpoVacio]
     public async Task<IActionResult> GenerarSolicitud(int id)
     {
         EjecucionReabastecimientoItemDto resultado = await _generarSolicitudUseCase.ExecuteAsync(id);

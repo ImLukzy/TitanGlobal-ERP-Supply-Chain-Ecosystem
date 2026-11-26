@@ -255,6 +255,8 @@ public class ReabastecimientoAutomaticoApiTests
 
         contexto.SaveChanges();
 
+        foreach (Almacen alm in contexto.Almacenes.Where(a => a.Id == 1 || a.Id == 2)) { alm.Activo = true; }
+        foreach (Proveedor prov in contexto.Proveedores.Where(pr => pr.Id == 1 || pr.Id == 2)) { prov.Activo = true; }
         if (!contexto.Almacenes.Any(a => a.Id == 1))
         {
             contexto.Almacenes.Add(new Almacen { Id = 1, Codigo = "ALM-LIM-01", Nombre = "Almacén Central Lima", Tipo = "Central", Direccion = "Av. Industrial 100", Ciudad = "Lima", CapacidadM3 = 500m, Responsable = "QA", Activo = true });
