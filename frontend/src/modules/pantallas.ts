@@ -36,6 +36,7 @@ import { EvaluacionDesempenoPage } from './evaluacion-desempeno/EvaluacionDesemp
 import { CapacitacionesPage } from './capacitaciones/CapacitacionesPage';
 import { SeguridadSaludOcupacionalPage } from './seguridad-salud-ocupacional/SeguridadSaludOcupacionalPage';
 import { ListasMaterialesPage } from './listas-materiales/ListasMaterialesPage';
+import { CategoriasProductoPage } from './categorias-producto/CategoriasProductoPage';
 
 export const pantallas: Record<string, ComponentType> = {
   '01-clientes': ClientesPage,
@@ -75,4 +76,5 @@ export const pantallas: Record<string, ComponentType> = {
   '69-capacitaciones': CapacitacionesPage,
   '70-seguridad-salud-ocupacional': SeguridadSaludOcupacionalPage,
   '31-listas-materiales': ListasMaterialesPage,
+  '22-categorias-producto': CategoriasProductoPage,
 };
