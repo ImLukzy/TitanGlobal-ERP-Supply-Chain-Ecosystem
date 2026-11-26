@@ -9,7 +9,7 @@ Registrar facturas de proveedores activos como cuentas por pagar, mantener saldo
 ### Base comprobada y dependencias
 
 - **Disponibles en `main`.** [Proveedores (11)](12-modulo11-proveedores-backend.md) aporta `ProveedorId` y `Activo`. [Órdenes de abastecimiento (15)](16-modulo15-ordenes-abastecimiento-backend.md) aporta una referencia con `ProveedorId` para el vínculo opcional.
-- **Transversal.** El rol `FINANZAS` (Id 7) se incorpora con el seed del 52. Las pruebas emiten JWT de ese rol con la infraestructura existente. El 54 registra componentes documentarios sin consultar tasas del 75 y aplica la misma convención de reporte que el 53.
+- **Transversal.** El rol `FINANZAS` (Id 7) se provisiona con el SQL 024 del módulo 52. Las pruebas emiten JWT de ese rol con la infraestructura existente. El 54 registra componentes documentarios sin consultar tasas del 75 y aplica la misma convención de reporte que el 53.
 
 ## 2. Fuera de alcance
 
@@ -45,7 +45,7 @@ Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan e
 
 ### Convenciones y permisos
 
-Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, SQL 024 del módulo 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
 
 La moneda `PEN` o `USD` se captura del documento externo y se hereda en los pagos. La serie y el número del proveedor identifican un documento externo y conservan su clave con ceros a la izquierda. G5 rige folios internos y no sustituye esa referencia. El 54 usa importes `numeric(18,2)` y los tramos y corte de Lima del 53.
 
