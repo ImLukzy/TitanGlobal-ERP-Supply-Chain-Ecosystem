@@ -19,6 +19,7 @@ import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 import { NotificacionesAlertasPage } from './notificaciones-alertas/NotificacionesAlertasPage';
 import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
+import { CuentasPorPagarPage } from './cuentas-por-pagar/CuentasPorPagarPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
@@ -58,6 +59,7 @@ export const pantallas: Record<string, ComponentType> = {
   '78-notificaciones-alertas': NotificacionesAlertasPage,
   '72-roles-permisos': RolesPermisosPage,
   '71-usuarios': UsuariosPage,
+  '54-cuentas-por-pagar': CuentasPorPagarPage,
   '61-empleados': EmpleadosPage,
   '33-centros-trabajo': CentrosTrabajoPage,
   '41-vehiculos-flota': VehiculosFlotaPage,
