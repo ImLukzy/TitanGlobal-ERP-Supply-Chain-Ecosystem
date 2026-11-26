@@ -43,6 +43,8 @@ public partial class Producto
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();
 
+    public virtual ICollection<ReglaReabastecimiento> ReglasReabastecimiento { get; set; } = new List<ReglaReabastecimiento>();
+
     public virtual ICollection<RutaProduccion> RutasProduccion { get; set; } = new List<RutaProduccion>();
 
     public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacen { get; set; } = new List<TransferenciaAlmacen>();
