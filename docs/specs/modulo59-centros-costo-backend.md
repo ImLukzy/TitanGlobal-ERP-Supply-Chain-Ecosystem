@@ -1,6 +1,6 @@
 # Especificación: modulo59-centros-costo-backend — Centros de costo
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 quedaron integradas por el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -140,3 +140,13 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 | 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
 | 2026-11-24 | A1–A4 | Compilación con cero advertencias. Reglas y gate correctos. | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `scripts/verify.sh`. Pasaron 41 pruebas HTTP del 59 dentro de 1.232 pruebas de backend y 695 del frontend. |
 | 2026-11-24 | A5 | `SCAFFOLD AL DÍA` y `SMOKE OK`. | PostgreSQL 16 desechable. El seed repetido conservó ids y relaciones. El smoke verificó restricciones, ciclos concurrentes, alta frente a desactivación y pérdida de FK con HTTP 409. |
+
+## Actualización del 2026-11-26
+
+El despliegue requiere el catálogo `FINANZAS` (Id 7) que crea el SQL 024 del PR #83. Las pruebas de la rama pueden usar ADMIN y tokens de prueba de FINANZAS. La dependencia de despliegue sigue el orden indicado por Lukas.
+
+### Verificación vigente
+
+- Base `1835648`. Compilación sin advertencias, check-rules y verify en verde con 1.800 backend (41 del módulo), 1.455 frontend.
+- SQL 045 aplicado, `SCAFFOLD AL DÍA`, `SMOKE OK` y dos cargas de seed con los mismos centros, empleados y roles. El smoke comprobó las carreras de jerarquía y la pérdida de la referencia de empleado.
+- Fecha de registro y fecha de desactivación representan instantes UTC.
