@@ -34,4 +34,6 @@ public partial class Producto
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();
+
+    public virtual ICollection<RutaProduccion> RutasProduccion { get; set; } = new List<RutaProduccion>();
 }

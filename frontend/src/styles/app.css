@@ -2144,3 +2144,97 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 @media (max-width: 1279px) { .sst-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sst-filters, .sst-filters-tres, .sst-filters-cuatro, .sst-filters-seis, .sst-form, .sst-datos { grid-template-columns: minmax(0, 1fr); } .sst-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 @media (max-width: 520px) { .sst-tabs { flex-wrap: wrap; } }
+
+.listas-materiales-area { display: grid; gap: 16px; align-items: start; }
+.listas-materiales-tarjeta {
+  min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.listas-materiales-tarjeta h2, .listas-materiales-tarjeta h3 { margin: 0 0 12px; color: var(--ink); }
+.listas-materiales-encabezado, .listas-materiales-acciones, .listas-materiales-selector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.listas-materiales-encabezado { justify-content: space-between; margin-bottom: 16px; }
+.listas-materiales-encabezado h2 { margin: 0; }
+.listas-materiales-filtros, .listas-materiales-cabecera-formulario, .listas-materiales-linea-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.listas-materiales-filtros { margin-bottom: 16px; }
+.listas-materiales-filtros select {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font: inherit;
+}
+.listas-materiales-tabla { width: 100%; min-width: 330px; text-align: left; }
+.listas-materiales-tabla th, .listas-materiales-tabla td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.listas-materiales-tabla thead { background: var(--surface-muted); }
+.listas-materiales-seleccion { background: var(--accent-soft); }
+.listas-materiales-enlace { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.listas-materiales-identidad { display: grid; gap: 4px; }
+.listas-materiales-identidad span { color: var(--ink-soft); }
+.listas-materiales-componentes, .listas-materiales-opciones { list-style: none; padding: 0; }
+.listas-materiales-componentes li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; border-top: 1px solid var(--line); padding: 10px 0; }
+.listas-materiales-componentes li span:last-child { font-variant-numeric: tabular-nums; }
+.listas-materiales-catalogo, .listas-materiales-linea {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.listas-materiales-catalogo { background: var(--surface-muted); }
+.listas-materiales-busqueda { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.listas-materiales-busqueda .form-field { flex: 1 1 145px; min-width: 0; }
+.listas-materiales-opciones { display: grid; gap: 4px; }
+.listas-materiales-opciones button { width: 100%; text-align: left; }
+.listas-materiales-page button { max-width: 100%; white-space: normal; }
+.listas-materiales-campos { display: grid; gap: 12px; min-width: 0; margin: 0 0 16px; padding: 0; border: 0; }
+.listas-materiales-campos h3 { margin: 8px 0 0; }
+.listas-materiales-campos > button { justify-self: start; }
+.listas-materiales-linea { margin: 0; }
+.listas-materiales-linea legend { padding-inline: 4px; }
+.listas-materiales-linea-campos > button { align-self: end; justify-self: start; }
+.listas-materiales-aviso, .listas-materiales-error { margin-bottom: 12px; }
+.listas-materiales-aviso { padding: 10px 14px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+.listas-materiales-dialogo { width: min(460px, 100%); max-height: 90vh; overflow: auto; }
+
+@media (max-width: 420px) {
+  .app-shell:has(.listas-materiales-page) .topbar-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .app-shell:has(.listas-materiales-page) .topbar-actions .role-picker { min-width: 0; }
+  .app-shell:has(.listas-materiales-page) .topbar-actions .role-picker select { width: 100%; max-width: 112px; }
+  .listas-materiales-tabla { min-width: 0; table-layout: fixed; }
+  .listas-materiales-tabla th, .listas-materiales-tabla td { padding-inline: 4px; }
+  .listas-materiales-tabla thead th:nth-child(1) { width: 34%; }
+  .listas-materiales-tabla thead th:nth-child(2) { width: 16%; }
+  .listas-materiales-tabla thead th:nth-child(3) { width: 20%; }
+  .listas-materiales-tabla thead th:nth-child(4) { width: 30%; }
+}
+
+@media (min-width: 720px) {
+  .listas-materiales-filtros, .listas-materiales-cabecera-formulario { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .listas-materiales-linea-campos { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+}
+
+@media (min-width: 1024px) {
+  .listas-materiales-area { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}

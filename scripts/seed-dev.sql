@@ -913,6 +913,28 @@ FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.0000
 JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
 ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
 
+INSERT INTO "RutasProduccion" ("ProductoId", "Version", "Estado") VALUES
+    (1, 1, 'Activa'),
+    (1, 2, 'Borrador')
+ON CONFLICT ("ProductoId", "Version") DO UPDATE SET "Estado" = EXCLUDED."Estado";
+
+INSERT INTO "OperacionesRutaProduccion" (
+    "RutaProduccionId", "Secuencia", "Nombre", "CentroTrabajoId", "MinutosPreparacion", "MinutosPorUnidad")
+SELECT ruta."Id", datos.secuencia, datos.nombre, centro."Id", datos.preparacion, datos.por_unidad
+FROM (VALUES
+    (1, 1, 'Ensamblaje', 'CT-LIM-C01', 10.00, 5.50),
+    (1, 2, 'Envasado', 'CT-LIM-L01', 4.25, 1.00),
+    (2, 1, 'Ensamblaje', 'CT-LIM-C01', 8.00, 4.75),
+    (2, 2, 'Envasado', 'CT-LIM-L02', 3.00, 0.80)
+) AS datos(version, secuencia, nombre, codigo_centro, preparacion, por_unidad)
+JOIN "RutasProduccion" ruta ON ruta."ProductoId" = 1 AND ruta."Version" = datos.version
+JOIN "CentrosTrabajo" centro ON centro."Codigo" = datos.codigo_centro
+ON CONFLICT ("RutaProduccionId", "Secuencia") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "CentroTrabajoId" = EXCLUDED."CentroTrabajoId",
+    "MinutosPreparacion" = EXCLUDED."MinutosPreparacion",
+    "MinutosPorUnidad" = EXCLUDED."MinutosPorUnidad";
+
 -- Módulo 39: paradas de mantenimiento preventivo. No usa CT-LIM-C01, que el smoke del módulo 32 protege por sus rutas.
 TRUNCATE TABLE "MantenimientosPreventivos" RESTART IDENTITY;
 
