@@ -23,5 +23,11 @@ public partial class Almacen
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<MovimientoKardex> MovimientosKardex { get; set; } = new List<MovimientoKardex>();
+
+    public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacenAlmacenDestino { get; set; } = new List<TransferenciaAlmacen>();
+
+    public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacenAlmacenOrigen { get; set; } = new List<TransferenciaAlmacen>();
+
     public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();
 }
