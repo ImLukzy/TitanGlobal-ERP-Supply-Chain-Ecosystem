@@ -234,6 +234,112 @@ public sealed class InspeccionesProductoTerminadoApiTests
         await VerificarErrorAsync(respuesta, estado, mensaje);
     }
 
+    [Fact]
+    public async Task AprobarSobreLaToleranciaDa409YRechazarFunciona()
+    {
+        using HttpResponseMessage aprobar = await DictaminarAsync(3, "aprobada", 1, null);
+        await VerificarErrorAsync(aprobar, HttpStatusCode.Conflict,
+            "La inspección supera la tolerancia de no conformes (5.00 % > 2.50 %) y solo puede rechazarse.");
+        Assert.Equal("Pendiente", (await ObtenerAsync(3)).Estado);
+
+        DateTime antes = DateTime.UtcNow;
+        using HttpResponseMessage rechazar = await DictaminarAsync(3, " RECHAZADA ", 1, "  Golpe en la tapa  ");
+        Assert.Equal(HttpStatusCode.OK, rechazar.StatusCode);
+        InspeccionProductoTerminadoDetalleDto detalle = await ObtenerAsync(3);
+        Assert.Equal("Rechazada", detalle.Estado);
+        Assert.Equal(1, detalle.CantidadNoConforme);
+        Assert.Equal(19, detalle.CantidadConforme);
+        Assert.Equal(5m, detalle.PorcentajeNoConforme);
+        Assert.True(detalle.SuperaTolerancia);
+        Assert.Equal("Golpe en la tapa", detalle.Observaciones);
+        Assert.NotNull(detalle.FechaDictamen);
+        Assert.InRange(detalle.FechaDictamen.Value, antes, DateTime.UtcNow);
+
+        using HttpResponseMessage otra = await DictaminarAsync(3, "Aprobada", 0, null);
+        await VerificarErrorAsync(otra, HttpStatusCode.Conflict, "Solo se pueden dictaminar inspecciones pendientes.");
+    }
+
+    [Fact]
+    public async Task AprobarJustoEnLaToleranciaSePermite()
+    {
+        using HttpResponseMessage alta = await _cliente.PostAsJsonAsync(Ruta,
+            new CrearInspeccionProductoTerminadoRequestDto(2, new DateOnly(2026, 11, 25), 20, 5m, "Ana Torres"));
+        InspeccionProductoTerminadoCreadaDto? creada =
+            await alta.Content.ReadFromJsonAsync<InspeccionProductoTerminadoCreadaDto>();
+        Assert.NotNull(creada);
+
+        using HttpResponseMessage aprobar = await DictaminarAsync(creada.Id, "Aprobada", 1, null);
+        Assert.Equal(HttpStatusCode.OK, aprobar.StatusCode);
+        InspeccionProductoTerminadoDetalleDto detalle = await ObtenerAsync(creada.Id);
+        Assert.Equal("Aprobada", detalle.Estado);
+        Assert.False(detalle.SuperaTolerancia);
+        Assert.Null(detalle.Observaciones);
+        Assert.Equal(new AvanceInspeccionOrdenDto(2, "OP-000002", "Producto dos", "Terminada", 50, 45, 5, 44, 1),
+            await _cliente.GetFromJsonAsync<AvanceInspeccionOrdenDto>($"{Ruta}/ordenes/2/avance"));
+    }
+
+    [Theory]
+    [InlineData(99, "Aprobada", 0, HttpStatusCode.NotFound, "La inspección de producto terminado 99 no existe.")]
+    [InlineData(1, "Otro", -1, HttpStatusCode.Conflict, "Solo se pueden dictaminar inspecciones pendientes.")]
+    [InlineData(5, "Otro", -1, HttpStatusCode.Conflict, "Solo se pueden dictaminar inspecciones pendientes.")]
+    [InlineData(3, "Otro", -1, HttpStatusCode.BadRequest, "El resultado debe ser Aprobada o Rechazada.")]
+    [InlineData(3, null, 0, HttpStatusCode.BadRequest, "El resultado debe ser Aprobada o Rechazada.")]
+    [InlineData(3, "Rechazada", null, HttpStatusCode.BadRequest, "Las unidades no conformes no pueden ser negativas.")]
+    [InlineData(3, "Rechazada", -1, HttpStatusCode.BadRequest, "Las unidades no conformes no pueden ser negativas.")]
+    [InlineData(3, "Rechazada", 21, HttpStatusCode.BadRequest, "Las unidades no conformes no pueden superar las inspeccionadas.")]
+    public async Task DictamenVerificaExistenciaEstadoYCampos(
+        int id, string? resultado, int? noConforme, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await DictaminarAsync(id, resultado, noConforme, null);
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    [Fact]
+    public async Task DictamenRechazaObservacionesDeMasDe500Caracteres()
+    {
+        using HttpResponseMessage respuesta = await DictaminarAsync(3, "Rechazada", 20, new string('o', 501));
+        await VerificarErrorAsync(respuesta, HttpStatusCode.BadRequest, "Las observaciones no pueden superar 500 caracteres.");
+        Assert.Equal("Pendiente", (await ObtenerAsync(3)).Estado);
+    }
+
+    [Fact]
+    public async Task AnulacionGuardaElMotivoYLiberaLasUnidades()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/3/anular", new AnularInspeccionProductoTerminadoRequestDto("  Tanda repetida  "));
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        InspeccionProductoTerminadoDetalleDto anulada = await ObtenerAsync(3);
+        Assert.Equal("Anulada", anulada.Estado);
+        Assert.Equal("Tanda repetida", anulada.MotivoAnulacion);
+        AvanceInspeccionOrdenDto? avance =
+            await _cliente.GetFromJsonAsync<AvanceInspeccionOrdenDto>($"{Ruta}/ordenes/1/avance");
+        Assert.NotNull(avance);
+        Assert.Equal(70, avance.UnidadesInspeccionadas);
+        Assert.Equal(30, avance.UnidadesPorInspeccionar);
+    }
+
+    [Theory]
+    [InlineData(99, "Motivo", HttpStatusCode.NotFound, "La inspección de producto terminado 99 no existe.")]
+    [InlineData(2, "Motivo", HttpStatusCode.Conflict, "Solo se pueden anular inspecciones pendientes.")]
+    [InlineData(5, "Motivo", HttpStatusCode.Conflict, "Solo se pueden anular inspecciones pendientes.")]
+    [InlineData(3, null, HttpStatusCode.BadRequest, "El motivo de anulación es obligatorio.")]
+    [InlineData(3, "   ", HttpStatusCode.BadRequest, "El motivo de anulación es obligatorio.")]
+    [InlineData(3, "LARGO", HttpStatusCode.BadRequest, "El motivo de anulación no puede superar 250 caracteres.")]
+    public async Task AnulacionVerificaExistenciaEstadoYMotivo(
+        int id, string? motivo, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync($"{Ruta}/{id}/anular",
+            new AnularInspeccionProductoTerminadoRequestDto(motivo == "LARGO" ? new string('m', 251) : motivo));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    private Task<HttpResponseMessage> DictaminarAsync(int id, string? resultado, int? noConforme, string? observaciones)
+    {
+        return _cliente.PostAsJsonAsync($"{Ruta}/{id}/dictaminar",
+            new DictaminarInspeccionProductoTerminadoRequestDto(resultado, noConforme, observaciones));
+    }
+
     private static DateOnly? Fecha(string? valor)
     {
         if (valor == null)

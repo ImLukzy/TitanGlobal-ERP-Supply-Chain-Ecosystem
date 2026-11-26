@@ -14,6 +14,8 @@ public class InspeccionesProductoTerminadoController : ControllerBase
     private readonly ObtenerInspeccionProductoTerminadoUseCase _obtener;
     private readonly CrearInspeccionProductoTerminadoUseCase _crear;
     private readonly EditarInspeccionProductoTerminadoUseCase _editar;
+    private readonly DictaminarInspeccionProductoTerminadoUseCase _dictaminar;
+    private readonly AnularInspeccionProductoTerminadoUseCase _anular;
 
     public InspeccionesProductoTerminadoController(
         ListarInspeccionesProductoTerminadoUseCase listar,
@@ -21,7 +23,9 @@ public class InspeccionesProductoTerminadoController : ControllerBase
         AvanceInspeccionOrdenUseCase avance,
         ObtenerInspeccionProductoTerminadoUseCase obtener,
         CrearInspeccionProductoTerminadoUseCase crear,
-        EditarInspeccionProductoTerminadoUseCase editar)
+        EditarInspeccionProductoTerminadoUseCase editar,
+        DictaminarInspeccionProductoTerminadoUseCase dictaminar,
+        AnularInspeccionProductoTerminadoUseCase anular)
     {
         _listar = listar;
         _resumen = resumen;
@@ -29,6 +33,8 @@ public class InspeccionesProductoTerminadoController : ControllerBase
         _obtener = obtener;
         _crear = crear;
         _editar = editar;
+        _dictaminar = dictaminar;
+        _anular = anular;
     }
 
     [HttpGet]
@@ -79,6 +85,21 @@ public class InspeccionesProductoTerminadoController : ControllerBase
     public async Task<IActionResult> Editar(int id, [FromBody] EditarInspeccionProductoTerminadoRequestDto solicitud)
     {
         int resultado = await _editar.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/dictaminar")]
+    public async Task<IActionResult> Dictaminar(
+        int id, [FromBody] DictaminarInspeccionProductoTerminadoRequestDto solicitud)
+    {
+        int resultado = await _dictaminar.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/anular")]
+    public async Task<IActionResult> Anular(int id, [FromBody] AnularInspeccionProductoTerminadoRequestDto solicitud)
+    {
+        int resultado = await _anular.ExecuteAsync(id, solicitud);
         return Ok(new { Id = resultado });
     }
 }
