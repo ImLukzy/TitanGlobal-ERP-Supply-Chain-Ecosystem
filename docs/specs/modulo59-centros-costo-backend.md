@@ -45,7 +45,7 @@ Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan e
 
 ### Convenciones y permisos
 
-Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. El catálogo solo registra instantes del servidor en `timestamptz`, normalizados con `FechasUtc`.
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, SQL 024 del módulo 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. El catálogo solo registra instantes del servidor en `timestamptz`, normalizados con `FechasUtc`.
 
 El código de catálogo es capturado y validado en mayúsculas. Es una identidad maestra y no un folio transaccional de G5. G2 y G4 no tienen objeto en este catálogo. La reactivación expresa la excepción de G7 para la vigencia del maestro.
 
