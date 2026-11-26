@@ -6,9 +6,9 @@
 
 **Resultado esperado:** el usuario registra los consumos de cada componente de la lista de materiales en una orden en proceso, anula los registros equivocados con un motivo y consulta, por orden, el balance entre lo requerido, lo consumido y lo pendiente, con su desviación.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #79, fusionado el 2026-11-25).
 
-**Dependencias:** usa `OrdenesProduccion` (módulo 34, script 025) y `DetallesListaMaterial` (módulo 31, PR #40, script 023). La implementación empieza cuando ambos estén integrados en `main`.
+**Dependencias:** usa `OrdenesProduccion` (módulo 34, script 025) y `DetallesListaMaterial` (módulo 31, PR #40, script 023). Actualizado el 2026-11-26: el 31 ya está en `main`; el 34 aún no, así que la rama parte de `antony/modulo34-ordenes-produccion` y se actualiza con `main` cuando el 34 se integre.
 
 ## 2. Fuera de alcance
 
@@ -129,14 +129,23 @@ El módulo 34 no cambia su contrato: las órdenes no se borran, así que la FK d
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato.
-- [ ] Módulos 31 y 34 integrados en `main`, y rama actualizada.
-- [ ] Commit 1: script SQL 042, pluralizador y entidades generadas.
-- [ ] Commit 2: DTOs, validaciones y casos de uso.
-- [ ] Commit 3: controlador, pruebas, seed y smoke.
-- [ ] Verificar A1–A7 y registrar los resultados.
+- [x] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato (PR #79, 2026-11-25).
+- [ ] Módulos 31 y 34 integrados en `main`, y rama actualizada (el 31 sí; el 34 está pendiente y la rama parte de la suya).
+- [x] Commit 1: script SQL 042, pluralizador y entidades generadas (la fila del 042 en `relevo.md` ya estaba en `main`).
+- [x] Commit 2: UseCase de consulta (listado, resumen, balance y detalle) y sus endpoints GET.
+- [x] Commit 3: registro con bloqueo de la fila de la orden.
+- [x] Commit 4: anulación de consumos.
+- [x] Commit 5: seed y comprobaciones del smoke.
+- [x] Verificar A1–A7 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-26 | A1 | 0 errores, 0 warnings | `dotnet build -warnaserror` dentro de `./scripts/verify.sh` |
+| 2026-11-26 | A2 | En verde | `./scripts/verify.sh` |
+| 2026-11-26 | A3 | 34 de 34 en verde: cada mensaje de §4, la paginación, los filtros y ningún caso inválido crea ni cambia filas | `dotnet test --filter Modulo35_ConsumoMateriales` (1844 en total) |
+| 2026-11-26 | A4 | Las seis operaciones presentes y autenticadas | `openapi-consumos-materiales` en el smoke |
+| 2026-11-26 | A5 | Balance exacto sin anulados, unidad copiada de la lista, exceso con desviación positiva y consumo de las 19:00 en Perú contado en su día | Pruebas de integración y smoke |
+| 2026-11-26 | A6 | `SMOKE OK`, con 0.123456 guardado sin redondeo y 0.1234567 rechazado con 400 | `./scripts/smoke-postgres.sh` |
+| 2026-11-26 | A7 | Cuatro consumos (tres `Registrado` y uno `Anulado`) de `OP-000002` tras dos cargas seguidas | `scripts/seed-dev.sql` cargado dos veces con `psql` sobre la base local |
