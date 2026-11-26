@@ -89,6 +89,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<InscripcionCurso> InscripcionesCurso { get; set; } = null!;
 
+    public virtual DbSet<InspeccionProductoTerminado> InspeccionesProductoTerminado { get; set; } = null!;
+
     public virtual DbSet<ItemListaPrecios> ItemsListaPrecios { get; set; } = null!;
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
@@ -792,6 +794,29 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.ProgramacionCurso).WithMany(p => p.InscripcionesCurso)
                 .HasForeignKey(d => d.ProgramacionCursoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<InspeccionProductoTerminado>(entity =>
+        {
+            entity.HasIndex(e => e.Estado, "IX_InspeccionesProductoTerminado_Estado");
+
+            entity.HasIndex(e => e.FechaInspeccion, "IX_InspeccionesProductoTerminado_FechaInspeccion");
+
+            entity.HasIndex(e => e.Numero, "IX_InspeccionesProductoTerminado_Numero").IsUnique();
+
+            entity.HasIndex(e => e.OrdenProduccionId, "IX_InspeccionesProductoTerminado_OrdenProduccionId");
+
+            entity.Property(e => e.Estado).HasMaxLength(10);
+            entity.Property(e => e.Inspector).HasMaxLength(100);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(250);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.ToleranciaNoConformesPorcentaje).HasPrecision(5, 2);
+
+            entity.HasOne(d => d.OrdenProduccion).WithMany(p => p.InspeccionesProductoTerminado)
+                .HasForeignKey(d => d.OrdenProduccionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_InspeccionesProductoTerminado_OrdenesProduccion_OrdenProducc");
         });
 
         modelBuilder.Entity<ItemListaPrecios>(entity =>

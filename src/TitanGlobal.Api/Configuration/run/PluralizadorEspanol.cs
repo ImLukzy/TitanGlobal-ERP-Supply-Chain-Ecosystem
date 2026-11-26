@@ -43,6 +43,7 @@ public class PluralizadorEspanol : IPluralizer
         { "Impuestos", "Impuesto" },
         { "InscripcionesCurso", "InscripcionCurso" },
         { "IncidentesSst", "IncidenteSst" },
+        { "InspeccionesProductoTerminado", "InspeccionProductoTerminado" },
         { "ItemsListaPrecios", "ItemListaPrecios" },
         { "JornadasAsistencia", "JornadaAsistencia" },
         { "LiquidacionesComisiones", "LiquidacionComision" },
