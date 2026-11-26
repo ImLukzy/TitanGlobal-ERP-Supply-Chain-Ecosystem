@@ -69,7 +69,7 @@ public sealed class FacturasApiTests : IClassFixture<FacturasApiFactory>, IDispo
     {
         FacturaDetalleDto creada = await CrearAsync(Solicitud());
         GuardarFacturaRequestDto cambio = Solicitud();
-        cambio.FechaEmision = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+        cambio.FechaEmision = new DateTime(2026, 7, 1, 5, 0, 0, DateTimeKind.Utc);
         cambio.Detalles.Add(new GuardarDetalleFacturaRequestDto
         {
             ProductoId = 2,
@@ -89,6 +89,22 @@ public sealed class FacturasApiTests : IClassFixture<FacturasApiFactory>, IDispo
         Assert.Null(editada.Detalles[1].ImpuestoId);
         Assert.Equal(0m, editada.Detalles[1].ImporteImpuesto);
         Assert.Equal(33.40m, editada.Total);
+    }
+
+    [Theory]
+    [InlineData(30, 23, 59, 59, 18)]
+    [InlineData(1, 0, 0, 0, 18)]
+    [InlineData(1, 4, 59, 59, 18)]
+    [InlineData(1, 5, 0, 0, 17)]
+    public async Task VigenciaDelIgvCambiaAMedianocheDePeru(int dia, int hora, int minuto, int segundo, int tasa)
+    {
+        GuardarFacturaRequestDto solicitud = Solicitud();
+        solicitud.FechaEmision = new DateTime(2026, dia == 30 ? 6 : 7, dia, hora, minuto, segundo, DateTimeKind.Utc);
+
+        FacturaDetalleDto factura = await CrearAsync(solicitud);
+
+        Assert.Equal(solicitud.FechaEmision.Value, factura.FechaEmision);
+        Assert.Equal((decimal)tasa, Assert.Single(factura.Detalles).PorcentajeImpuesto);
     }
 
     [Theory]

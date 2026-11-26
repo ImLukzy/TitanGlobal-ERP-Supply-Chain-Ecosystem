@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo51_FacturacionElectronica;
 using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -86,9 +87,8 @@ public class CalculoFactura
                         "Por el momento solo se admite el IGV como impuesto de facturación.");
                 }
 
-                DateTime fechaOperacion = DateTime.SpecifyKind(
-                    request.FechaEmision!.Value.Date,
-                    DateTimeKind.Utc);
+                DateOnly diaEmision = FechaNegocioPeru.DesdeUtc(request.FechaEmision!.Value);
+                DateTime fechaOperacion = diaEmision.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
                 TasaImpuesto? tasa = await repositorioTasas
                     .AsQueryable()
