@@ -31,6 +31,8 @@ public partial class OrdenProduccion
 
     public string? MotivoCancelacion { get; set; }
 
+    public virtual ICollection<ConsumoMaterial> ConsumosMateriales { get; set; } = new List<ConsumoMaterial>();
+
     public virtual ListaMateriales ListaMateriales { get; set; } = null!;
 
     public virtual Producto Producto { get; set; } = null!;

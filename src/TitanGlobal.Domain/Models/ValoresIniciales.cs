@@ -36,6 +36,14 @@ public partial class Conductor
     }
 }
 
+public partial class ConsumoMaterial
+{
+    public ConsumoMaterial()
+    {
+        Estado = "Registrado";
+    }
+}
+
 public partial class ContratoComercial
 {
     public ContratoComercial()
