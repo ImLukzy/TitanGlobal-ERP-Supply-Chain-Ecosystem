@@ -36,4 +36,6 @@ public partial class ContratoLaboral
     public virtual Empleado Empleado { get; set; } = null!;
 
     public virtual ICollection<ContratoLaboral> InverseContratoAnterior { get; set; } = new List<ContratoLaboral>();
+
+    public virtual ICollection<PlanillaDetalle> PlanillaDetalles { get; set; } = new List<PlanillaDetalle>();
 }
