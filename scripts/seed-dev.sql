@@ -987,4 +987,30 @@ ON CONFLICT ("Numero") DO UPDATE SET
     "MotivoCancelacion" = NULL;
 SELECT setval(pg_get_serial_sequence('"OrdenesProduccion"', 'Id'), (SELECT MAX("Id") FROM "OrdenesProduccion"));
 
+-- Módulo 37: tres inspecciones (pendiente, aprobada y rechazada) de la orden terminada OP-000003 (29 unidades).
+INSERT INTO "InspeccionesProductoTerminado" (
+    "Id", "Numero", "OrdenProduccionId", "FechaInspeccion", "CantidadInspeccionada",
+    "ToleranciaNoConformesPorcentaje", "Inspector", "Estado", "CantidadNoConforme", "FechaDictamen",
+    "Observaciones", "MotivoAnulacion")
+SELECT datos.id, datos.numero, orden."Id", datos.fecha, datos.cantidad, 5.00, 'María Quispe', datos.estado,
+    datos.no_conforme, datos.dictamen, datos.observaciones, NULL
+FROM (VALUES
+    (1, 'CCP-000001', DATE '2026-11-20', 10, 'Aprobada', 0, TIMESTAMPTZ '2026-11-20T15:00:00Z', NULL),
+    (2, 'CCP-000002', DATE '2026-11-21', 10, 'Rechazada', 2, TIMESTAMPTZ '2026-11-21T15:00:00Z', 'Rayas en la carcasa'),
+    (3, 'CCP-000003', DATE '2026-11-22', 5, 'Pendiente', NULL::integer, NULL::timestamptz, NULL)
+) AS datos(id, numero, fecha, cantidad, estado, no_conforme, dictamen, observaciones)
+JOIN "OrdenesProduccion" orden ON orden."Numero" = 'OP-000003'
+ON CONFLICT ("Numero") DO UPDATE SET
+    "FechaInspeccion" = EXCLUDED."FechaInspeccion",
+    "CantidadInspeccionada" = EXCLUDED."CantidadInspeccionada",
+    "ToleranciaNoConformesPorcentaje" = EXCLUDED."ToleranciaNoConformesPorcentaje",
+    "Inspector" = EXCLUDED."Inspector",
+    "Estado" = EXCLUDED."Estado",
+    "CantidadNoConforme" = EXCLUDED."CantidadNoConforme",
+    "FechaDictamen" = EXCLUDED."FechaDictamen",
+    "Observaciones" = EXCLUDED."Observaciones",
+    "MotivoAnulacion" = NULL;
+SELECT setval(pg_get_serial_sequence('"InspeccionesProductoTerminado"', 'Id'),
+    (SELECT MAX("Id") FROM "InspeccionesProductoTerminado"));
+
 COMMIT;

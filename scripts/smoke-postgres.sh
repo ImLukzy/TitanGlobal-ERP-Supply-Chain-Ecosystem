@@ -41,6 +41,7 @@ TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 RUTA_PRODUCCION_CREADA_ID=""
 ORDEN_PRODUCCION_CREADA_ID=""
+INSPECCION_PRODUCTO_TERMINADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -661,6 +662,45 @@ checks = {
     "orden-produccion-terminada": lambda data: data["estado"] == "Terminada" and data["cantidadProducida"] == 5
         and data["fechaInicioReal"].endswith("Z") and data["fechaFinReal"].endswith("Z")
         and data["fechaFinReal"] >= data["fechaInicioReal"],
+    "openapi-inspecciones-producto-terminado": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/inspecciones-producto-terminado", "get"), ("/api/v1/inspecciones-producto-terminado", "post"),
+        ("/api/v1/inspecciones-producto-terminado/resumen", "get"),
+        ("/api/v1/inspecciones-producto-terminado/ordenes/{ordenProduccionId}/avance", "get"),
+        ("/api/v1/inspecciones-producto-terminado/{id}", "get"),
+        ("/api/v1/inspecciones-producto-terminado/{id}", "put"),
+        ("/api/v1/inspecciones-producto-terminado/{id}/dictaminar", "post"),
+        ("/api/v1/inspecciones-producto-terminado/{id}/anular", "post"),
+    ]),
+    "inspecciones-producto-terminado-seed": lambda data: data["total"] == 3 and [
+        (item["numero"], item["estado"], item["porcentajeNoConforme"], item["fechaInspeccion"])
+        for item in data["items"]
+    ] == [
+        ("CCP-000003", "Pendiente", None, "2026-11-22"),
+        ("CCP-000002", "Rechazada", 20, "2026-11-21"),
+        ("CCP-000001", "Aprobada", 0, "2026-11-20"),
+    ],
+    "inspecciones-producto-terminado-avance": lambda data: data["ordenProduccionNumero"] == "OP-000003" and [
+        data["cantidadProducida"], data["unidadesInspeccionadas"], data["unidadesPorInspeccionar"],
+        data["unidadesConformesAprobadas"], data["unidadesNoConformes"],
+    ] == [29, 25, 4, 10, 2],
+    "inspeccion-producto-terminado-sin-unidades": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "La orden OP-000003 solo tiene 4 unidades por inspeccionar.",
+    "inspeccion-producto-terminado-orden-abierta": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "Solo se pueden inspeccionar órdenes de producción terminadas.",
+    "inspeccion-producto-terminado-futura": lambda data: data["StatusCode"] == 400
+        and data["Message"] == "La fecha de inspección no puede ser posterior a hoy.",
+    "inspeccion-producto-terminado-creada": lambda data: isinstance(data.get("id"), int)
+        and data["numero"] == f"CCP-{data['id']:06d}",
+    "inspeccion-producto-terminado-anulada": lambda data: data["estado"] == "Anulada"
+        and data["motivoAnulacion"] == "Tanda repetida" and data["inspector"] == "Smoke"
+        and data["porcentajeNoConforme"] is None,
+    "inspeccion-producto-terminado-no-pendiente": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "Solo se pueden anular inspecciones pendientes.",
+    "inspecciones-producto-terminado-resumen": lambda data: data["totalInspecciones"] == 5 and [
+        (grupo["estado"], grupo["total"]) for grupo in data["porEstado"]
+    ] == [("Aprobada", 1), ("Rechazada", 2), ("Anulada", 2)] and data["tasaRechazoPorcentaje"] == 66.67
+        and data["unidadesInspeccionadas"] == 23 and data["unidadesNoConformes"] == 3
+        and data["ordenesTerminadasSinInspeccion"] == 1,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -882,6 +922,9 @@ request_check() {
     fi
     if [[ "$validation" == "orden-produccion-creada" ]]; then
         ORDEN_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "inspeccion-producto-terminado-creada" ]]; then
+        INSPECCION_PRODUCTO_TERMINADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1729,4 +1772,73 @@ assert (detalle["fechaInicioReal"] is None) == (esperado == "Cancelada"), detall
 assert (detalle["motivoCancelacion"] == "Cambio de plan") == (esperado == "Cancelada"), detalle
 print("Concurrencia de órdenes de producción OK")
 PY
+# Módulo 37: inspecciones de producto terminado de la orden terminada OP-000003 del seed.
+request_check 'OpenAPI de inspecciones de producto terminado' GET '/openapi/v1.json' 200 openapi-inspecciones-producto-terminado
+request_check 'Inspecciones del seed' GET '/api/v1/inspecciones-producto-terminado?ordenProduccionId=3' 200 inspecciones-producto-terminado-seed
+request_check 'Avance de inspección de la orden' GET '/api/v1/inspecciones-producto-terminado/ordenes/3/avance' 200 inspecciones-producto-terminado-avance
+request_check 'Rechazar unidades por encima de lo producido' POST '/api/v1/inspecciones-producto-terminado' 409 inspeccion-producto-terminado-sin-unidades '{"ordenProduccionId":3,"fechaInspeccion":"2026-11-25","cantidadInspeccionada":5,"toleranciaNoConformesPorcentaje":5,"inspector":"Smoke"}'
+request_check 'Rechazar orden no terminada' POST '/api/v1/inspecciones-producto-terminado' 409 inspeccion-producto-terminado-orden-abierta '{"ordenProduccionId":1,"fechaInspeccion":"2026-11-25","cantidadInspeccionada":1,"toleranciaNoConformesPorcentaje":5,"inspector":"Smoke"}'
+request_check 'Rechazar fecha de inspección futura' POST '/api/v1/inspecciones-producto-terminado' 400 inspeccion-producto-terminado-futura '{"ordenProduccionId":3,"fechaInspeccion":"2099-01-01","cantidadInspeccionada":1,"toleranciaNoConformesPorcentaje":5,"inspector":"Smoke"}'
+
+TITANGLOBAL_SMOKE_INSPECCIONES_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/inspecciones-producto-terminado" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_INSPECCIONES_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def ejecutar(argumentos):
+    barrera.wait(timeout=10)
+    return peticion(*argumentos)
+
+alta = ("POST", "", {
+    "ordenProduccionId": 3, "fechaInspeccion": "2026-11-25", "cantidadInspeccionada": 3,
+    "toleranciaNoConformesPorcentaje": 5, "inspector": "Smoke concurrente",
+})
+barrera = Barrier(2)
+with ThreadPoolExecutor(max_workers=2) as ejecutor:
+    resultados = list(ejecutor.map(ejecutar, (alta, alta)))
+assert sorted(estado for estado, _ in resultados) == [201, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "La orden OP-000003 solo tiene 1 unidades por inspeccionar.", conflicto
+estado, avance = peticion("GET", "/ordenes/3/avance")
+assert estado == 200 and avance["unidadesInspeccionadas"] == 28 and avance["unidadesPorInspeccionar"] == 1, avance
+
+creada = next(cuerpo for estado, cuerpo in resultados if estado == 201)
+estado, cuerpo = peticion("POST", f"/{creada['id']}/dictaminar", {"resultado": "Aprobada", "cantidadNoConforme": 1})
+assert estado == 409 and cuerpo["Message"] == (
+    "La inspección supera la tolerancia de no conformes (33.33 % > 5.00 %) y solo puede rechazarse."
+), cuerpo
+estado, cuerpo = peticion("POST", f"/{creada['id']}/dictaminar", {"resultado": "rechazada", "cantidadNoConforme": 1})
+assert estado == 200, cuerpo
+estado, detalle = peticion("GET", f"/{creada['id']}")
+assert estado == 200 and detalle["estado"] == "Rechazada" and detalle["cantidadConforme"] == 2, detalle
+assert detalle["porcentajeNoConforme"] == 33.33 and detalle["superaTolerancia"] is True, detalle
+assert detalle["fechaDictamen"].endswith("Z") and detalle["inspector"] == "Smoke concurrente", detalle
+print("Concurrencia de inspecciones de producto terminado OK")
+PY
+request_check 'Crear inspección con la unidad restante' POST '/api/v1/inspecciones-producto-terminado' 201 inspeccion-producto-terminado-creada '{"ordenProduccionId":3,"fechaInspeccion":"2026-11-25","cantidadInspeccionada":1,"toleranciaNoConformesPorcentaje":5,"inspector":"  Smoke  "}'
+INSPECCION_PRODUCTO_TERMINADO_SMOKE="/api/v1/inspecciones-producto-terminado/${INSPECCION_PRODUCTO_TERMINADO_ID}"
+request_check 'Anular la inspección pendiente' POST "$INSPECCION_PRODUCTO_TERMINADO_SMOKE/anular" 200 created '{"motivo":"  Tanda repetida  "}'
+request_check 'Consultar la inspección anulada' GET "$INSPECCION_PRODUCTO_TERMINADO_SMOKE" 200 inspeccion-producto-terminado-anulada
+request_check 'Rechazar anulación repetida' POST "$INSPECCION_PRODUCTO_TERMINADO_SMOKE/anular" 409 inspeccion-producto-terminado-no-pendiente '{"motivo":"Otra vez"}'
+request_check 'Anular la inspección pendiente del seed' POST '/api/v1/inspecciones-producto-terminado/3/anular' 200 created '{"motivo":"Muestra extraviada"}'
+request_check 'Resumen de inspecciones de producto terminado' GET '/api/v1/inspecciones-producto-terminado/resumen' 200 inspecciones-producto-terminado-resumen
 printf 'SMOKE OK\n'
