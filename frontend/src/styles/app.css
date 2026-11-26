@@ -2307,3 +2307,42 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* Módulo 28: Conteo físico (Tomas de inventario) */
+.conteo-page { padding-bottom: 42px; }
+.conteo-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.conteo-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.conteo-list-panel, .conteo-detail-panel, .conteo-form-panel { min-width: 0; }
+.conteo-form-panel { margin-bottom: 16px; }
+.conteo-filters { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px 10px; margin-bottom: 14px; }
+.conteo-table { width: 100%; min-width: 560px; border-collapse: collapse; text-align: left; }
+.conteo-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.conteo-table th { padding: 9px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.conteo-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.conteo-table tbody tr.is-selected { background: var(--accent-soft); }
+.conteo-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.conteo-numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.conteo-status { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.conteo-status.is-abierta { background: var(--accent-soft); color: var(--accent-ink); }
+.conteo-status.is-cerrada { background: var(--good-soft); color: var(--good); }
+.conteo-status.is-anulada { background: var(--bad-soft); color: var(--bad); }
+.conteo-detail-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.conteo-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 14px; }
+.conteo-detail-grid dt { color: var(--ink-soft); font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.conteo-detail-grid dd { margin: 0; color: var(--ink); }
+.conteo-span-full { grid-column: 1 / -1; }
+.conteo-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.conteo-lineas-box { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); }
+.conteo-lineas-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.conteo-linea-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) auto; align-items: end; gap: 8px; }
+.conteo-form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+@media (min-width: 1024px) {
+  .conteo-work-area { grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); }
+  .conteo-table { min-width: 0; table-layout: fixed; }
+}
+
+@media (max-width: 720px) {
+  .conteo-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .conteo-filters, .conteo-form, .conteo-detail-grid, .conteo-linea-row { grid-template-columns: minmax(0, 1fr); }
+}
