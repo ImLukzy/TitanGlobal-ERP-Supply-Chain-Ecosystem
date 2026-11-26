@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 **Problema:** cuando el stock de un producto en un almacén cae en o por debajo de su punto de reorden, el área de abastecimiento necesita reglas configurables por producto y almacén que calculen automáticamente las cantidades sugeridas (respetando lotes mínimos de compra) y generen solicitudes de compra trazables.
-**Resultado esperado:** entidades `ReglaReabastecimiento` y `EjecucionReabastecimiento` (`database/036-reabastecimiento-automatico.sql`) y controlador `api/v1/reabastecimiento-automatico` siguiendo la arquitectura en 4 capas (`Domain`, `Application`, `Infrastructure`, `Api`):
+**Resultado esperado:** entidades `ReglaReabastecimiento` y `EjecucionReabastecimiento` (`database/050-reabastecimiento-automatico.sql`) y controlador `api/v1/reabastecimiento-automatico` siguiendo la arquitectura en 4 capas (`Domain`, `Application`, `Infrastructure`, `Api`):
 - gestión de reglas por producto y almacén (`GET`, `GET/{id}`, `POST`, `PUT/{id}`);
 - evaluación automática de reglas activas (`POST /evaluar`) con cálculo de cantidad sugerida redondeada a múltiplos de `CantidadLoteCompra`;
 - bandeja de sugerencias (`GET /sugerencias`) y conversión atómica en `SolicitudCompra` (`POST /sugerencias/{id}/generar-solicitud`) o descarte (`POST /sugerencias/{id}/descartar`);
@@ -11,7 +11,7 @@
 ## 2. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/036-reabastecimiento-automatico.sql` | tablas `ReglasReabastecimiento` y `EjecucionesReabastecimiento`, restricciones `CHECK` e índices únicos |
+| `database/050-reabastecimiento-automatico.sql` | tablas `ReglasReabastecimiento` y `EjecucionesReabastecimiento`, restricciones `CHECK` e índices únicos |
 | `src/TitanGlobal.Domain/Models/ReglaReabastecimiento.cs` | generado mediante `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Domain/Models/EjecucionReabastecimiento.cs` | generado mediante `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerado mediante `./scripts/scaffold.sh` |

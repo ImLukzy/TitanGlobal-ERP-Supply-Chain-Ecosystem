@@ -1,4 +1,4 @@
--- Script: 036-reabastecimiento-automatico.sql
+-- Script: 050-reabastecimiento-automatico.sql
 -- Módulo: 30 - ReabastecimientoAutomatico
 -- Responsable: Maxi
 
