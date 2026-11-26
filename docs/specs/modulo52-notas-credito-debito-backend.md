@@ -89,7 +89,7 @@ Ruta base `/api/v1/notas-credito-debito`. Las rutas de consulta proyectan con `A
 2. **Existencia.** Cargar la nota para consulta o transición, el comprobante y sus detalles. Cada línea pertenece a la factura de la cabecera.
 3. **Estado.** Alta en `Borrador` y emisión con comprobante `Emitida`. Edición únicamente para una nota `Borrador`. Anulación únicamente desde `Emitida`, con motivo. La guarda por aplicación al 53 entra cuando el 53 exponga sus aplicaciones.
 4. **Tope.** Al emitir un crédito, sumar por `DetalleFacturaId` la cantidad y el total de las notas en `Emitida` y las líneas de esta nota. Rechazar si la cantidad o el importe superan `DetalleFactura.Cantidad` o `DetalleFactura.Total`, respectivamente. Un crédito anulado deja de contar. Para débito se conservan las validaciones de forma, origen y estado.
-5. **Concurrencia.** La emisión, el cálculo acumulado y el cambio de estado se confirman en una transacción con bloqueo por factura. La anulación del 51 adquiere el mismo bloqueo, comprueba la condición de notas `Emitida` y conserva su código HTTP 409. La aplicación del 53 y la anulación de la nota deberán compartir esa garantía cuando exista ese módulo.
+5. **Concurrencia.** La emisión, el cálculo acumulado y el cambio de estado se confirman en una transacción con bloqueo por factura. La edición y la emisión del 51 adquieren el mismo bloqueo antes de leer el estado. La anulación del 51 comparte ese bloqueo, comprueba la condición de notas `Emitida` y conserva su código HTTP 409. La aplicación del 53 y la anulación de la nota deberán compartir esa garantía cuando exista ese módulo. El [anexo provisional](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/7a2057f4e1d34abdc8a74a2d1605b529b320e063/docs/specs/modulo52-notas-credito-debito-implementacion.md#edición-concurrente-del-comprobante-pendiente-de-coordinar) registra la carrera original y el [anexo de implementación](modulo52-notas-credito-debito-implementacion.md#concurrencia-del-51-y-el-52) documenta su resolución y cobertura en PostgreSQL.
 
 Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
 
@@ -118,11 +118,10 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 
 - **Precio y descuentos.** La respuesta fija la fórmula y la tasa histórica. Falta precisar si `precioUnitario` se informa, se hereda del precio nominal o refleja el descuento de la línea. Un crédito completo a precio nominal puede exceder `DetalleFactura.Total` cuando hubo descuento. El DTO anterior define una entrada de revisión. Confirmar también que el impuesto toma la base ya redondeada.
 - **Datos editables.** El contrato de revisión conserva tipo, comprobante y número al editar. Lukas no precisó qué hacer con el folio si se permite cambiar el tipo o el origen de un borrador.
-- **Carrera preexistente del 51.** Una edición que ya leyó `Borrador` puede guardarse después de la emisión del comprobante y de una nota. Coordinar el bloqueo de edición y emisión del 51. El caso se mantiene documentado en el [anexo del backend provisional](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/7a2057f4e1d34abdc8a74a2d1605b529b320e063/docs/specs/modulo52-notas-credito-debito-implementacion.md#edición-concurrente-del-comprobante-pendiente-de-coordinar).
 
 ### Seed, pruebas y smoke
 
-**Seed.** Añadir en el seed del 52 el rol `FINANZAS` con `Id = 7`, sin reasignar usuarios existentes. Revisar la secuencia de `Roles` y los checks de roles del smoke. Usar claves naturales del 51 para obtener los comprobantes y líneas de prueba. Cargar en forma idempotente una factura PEN y una boleta USD emitidas, una nota por tipo, una línea con tasa de origen y un crédito ya emitido debajo del tope. Alinear las secuencias NC y ND con los números del seed.
+**Seed.** El SQL 024 crea `FINANZAS` con `Id = 7` y sincroniza su secuencia cuando corresponde. El smoke comprueba el catálogo antes de cargar el seed. El seed reproduce el catálogo de desarrollo para las pruebas, con el mismo identificador. Usar claves naturales del 51 para obtener los comprobantes y líneas de prueba. Cargar en forma idempotente una factura PEN y una boleta USD emitidas, una nota por tipo, una línea con tasa de origen y un crédito ya emitido debajo del tope. Alinear las secuencias NC y ND con los números del seed.
 
 **Pruebas de integración.**
 
@@ -148,9 +147,10 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 ## 6. Checklist de ejecución
 
 - [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
-- [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
-- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
-- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
+- [x] Integrar las decisiones de documentación mediante el PR #52.
+- [ ] Cerrar las precisiones de §4 durante la revisión de #83.
+- [x] Confirmar dependencias, aplicar el SQL en PostgreSQL desechable y generar entidades y DbContext.
+- [x] Implementar API, pruebas, seed y smoke. Registrar en §7 los resultados de §5.
 
 ## 7. Registro de verificación
 
