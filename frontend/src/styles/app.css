@@ -2307,3 +2307,31 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* Módulo 26: Kárdex valorizado */
+.kardex-page { padding-bottom: 42px; }
+.kardex-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.kardex-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.kardex-tab { padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink-soft); font-weight: 600; cursor: pointer; }
+.kardex-tab.is-active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.kardex-form-panel { margin-bottom: 16px; }
+.kardex-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.kardex-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.kardex-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
+.kardex-date-field { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 12px; }
+.kardex-consulta-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: 10px; margin-bottom: 16px; }
+.kardex-resultado-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); color: var(--ink); }
+.kardex-table { width: 100%; min-width: 620px; border-collapse: collapse; text-align: left; }
+.kardex-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.kardex-table th { padding: 9px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.kardex-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); color: var(--ink); }
+.kardex-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kardex-numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kardex-badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.kardex-badge.is-entrada { background: var(--good-soft); color: var(--good); }
+.kardex-badge.is-salida { background: var(--bad-soft); color: var(--bad); }
+
+@media (max-width: 720px) {
+  .kardex-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kardex-form, .kardex-consulta-form { grid-template-columns: minmax(0, 1fr); }
+}
