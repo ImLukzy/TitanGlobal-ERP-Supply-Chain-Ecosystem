@@ -618,6 +618,52 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "m51-openapi": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/facturas", "get"), ("/api/v1/facturas", "post"),
+        ("/api/v1/facturas/resumen", "get"), ("/api/v1/facturas/{id}", "get"),
+        ("/api/v1/facturas/{id}", "put"), ("/api/v1/facturas/{id}/emitir", "post"),
+        ("/api/v1/facturas/{id}/anular", "post"),
+    ]),
+    "m51-seed": lambda data: data["totalRegistros"] == 3 and {
+        (item["serie"], item["tipoComprobante"], item["estado"], item["moneda"], item["total"], item["cantidadDetalles"])
+        for item in data["items"]
+    } == {
+        ("F51B", "Factura", "Borrador", "PEN", 2500, 1),
+        ("F51E", "Factura", "Emitida", "PEN", 106.20, 1),
+        ("B51A", "Boleta", "Anulada", "USD", 200, 1),
+    },
+    "m51-creada": lambda data: (
+        data["id"] > 0 and data["estado"] == "Borrador" and data["numeroComprobante"] == "S51F-00000001"
+        and data["fechaEmision"] == "2026-11-19T12:00:00Z" and data["total"] == 21.24
+    ),
+    "m51-editada": lambda data: (
+        data["estado"] == "Borrador" and data["numeroOrdenCompra"] == "OC-001" and len(data["detalles"]) == 1
+        and (data["subtotal"], data["totalDescuento"], data["totalImpuesto"], data["total"]) == (30, 3, 4.86, 31.86)
+        and (data["detalles"][0]["cantidad"], data["detalles"][0]["porcentajeImpuesto"],
+             data["detalles"][0]["baseImponible"]) == (3, 18, 27)
+    ),
+    "m51-emitida": lambda data: data["estado"] == "Emitida" and data["total"] == 31.86,
+    "m51-filtrada": lambda data: (
+        data["totalRegistros"] == 1 and len(data["items"]) == 1 and data["items"][0]["estado"] == "Emitida"
+        and data["items"][0]["numeroComprobante"] == "S51F-00000001"
+    ),
+    "m51-resumen": lambda data: (
+        data["moneda"] == "PEN" and data["totalComprobantes"] == 1 and data["totalEmitidas"] == 1
+        and (data["subtotalFacturado"], data["totalDescuentos"], data["totalImpuestos"], data["totalFacturado"])
+        == (30, 3, 4.86, 31.86)
+    ),
+    "m51-anulada": lambda data: (
+        data["estado"] == "Anulada" and data["motivoAnulacion"] == "Corrección de smoke"
+        and data["fechaAnulacion"] is not None and data["total"] == 31.86
+    ),
+    "m51-duplicada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Ya existe un comprobante con la misma serie y número."
+    ),
+    "m51-sin-motivo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de anulación es obligatorio.",
+    "m51-emitida-no-editable": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Solo se pueden modificar facturas en estado Borrador."
+    ),
+    "m51-no-existe": lambda data: data["StatusCode"] == 404 and data["Message"] == "La factura solicitada no existe.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -711,6 +757,10 @@ request_check() {
 
     if [[ "$validation" == "impuesto-created" ]]; then
         IMPUESTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m51-creada" ]]; then
+        FACTURA_51_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
     if [[ "$validation" == "provider-created" ]]; then
@@ -1604,4 +1654,74 @@ BEGIN
     END;
 END $$;
 SQL
+
+# Módulo 51: contrato HTTP y persistencia del ciclo del comprobante.
+TOKEN_51_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M51 exige sesión' GET '/api/v1/facturas' 401 no-session
+TOKEN_ACTUAL="$TOKEN_51_ADMIN"
+request_check 'M51 OpenAPI siete operaciones' GET '/openapi/v1.json' 200 m51-openapi
+request_check 'M51 seed en los tres estados' GET '/api/v1/facturas' 200 m51-seed
+FACTURA_51_JSON='{"clienteId":1,"ordenCompraId":1,"tipoComprobante":"factura","serie":" s51f ","numero":1,"fechaEmision":"2026-11-19T12:00:00","moneda":"pen","detalles":[{"productoId":3,"impuestoId":1,"descripcion":"Mouse de smoke","cantidad":2,"precioUnitario":10,"descuentoPorcentaje":10}]}'
+FACTURA_51_EDITADA="${FACTURA_51_JSON/\"cantidad\":2/\"cantidad\":3}"
+request_check 'M51 crear borrador' POST '/api/v1/facturas' 201 m51-creada "$FACTURA_51_JSON"
+request_check 'M51 editar borrador' PUT "/api/v1/facturas/$FACTURA_51_ID" 200 m51-editada "$FACTURA_51_EDITADA"
+request_check 'M51 consultar detalle editado' GET "/api/v1/facturas/$FACTURA_51_ID" 200 m51-editada
+request_check 'M51 emitir sin cuerpo' POST "/api/v1/facturas/$FACTURA_51_ID/emitir" 200 m51-emitida
+request_check 'M51 impide editar emitida' PUT "/api/v1/facturas/$FACTURA_51_ID" 409 m51-emitida-no-editable "$FACTURA_51_EDITADA"
+request_check 'M51 filtrar emitidas' GET '/api/v1/facturas?busqueda=s51f-00000001&clienteId=1&estado=emitida&moneda=pen&tamanoPagina=1' 200 m51-filtrada
+request_check 'M51 resumen en PEN por fecha' GET '/api/v1/facturas/resumen?moneda=pen&fechaDesde=2026-11-19&fechaHasta=2026-11-20' 200 m51-resumen
+request_check 'M51 exige motivo' POST "/api/v1/facturas/$FACTURA_51_ID/anular" 400 m51-sin-motivo '{"motivo":" "}'
+request_check 'M51 anular emitida' POST "/api/v1/facturas/$FACTURA_51_ID/anular" 200 m51-anulada '{"motivo":" Corrección de smoke "}'
+request_check 'M51 consulta historial de anulación' GET "/api/v1/facturas/$FACTURA_51_ID" 200 m51-anulada
+request_check 'M51 numeración anulada permanece reservada' POST '/api/v1/facturas' 409 m51-duplicada "$FACTURA_51_JSON"
+request_check 'M51 comprobante inexistente' GET '/api/v1/facturas/2147483647' 404 m51-no-existe
+
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+DECLARE
+    comprobante_id integer;
+    restriccion text;
+BEGIN
+    SELECT factura."Id" INTO STRICT comprobante_id
+    FROM "Facturas" factura
+    JOIN "DetallesFactura" detalle ON detalle."FacturaId" = factura."Id"
+    WHERE factura."TipoComprobante" = 'Factura' AND factura."Serie" = 'S51F' AND factura."Numero" = 1
+        AND factura."Estado" = 'Anulada' AND factura."MotivoAnulacion" = 'Corrección de smoke'
+        AND factura."FechaAnulacion" IS NOT NULL AND factura."Total" = 31.86
+        AND detalle."ProductoId" = 3 AND detalle."ImpuestoId" = 1
+        AND detalle."Cantidad" = 3 AND detalle."PorcentajeImpuesto" = 18 AND detalle."Total" = 31.86;
+
+    BEGIN
+        INSERT INTO "Facturas" ("ClienteId", "TipoComprobante", "Serie", "Numero", "FechaEmision", "Moneda")
+        VALUES (1, 'Factura', 'S51F', 1, CURRENT_TIMESTAMP, 'PEN');
+        RAISE EXCEPTION 'M51: falta unicidad de la numeración';
+    EXCEPTION WHEN unique_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion <> 'IX_Facturas_TipoComprobante_Serie_Numero' THEN RAISE; END IF;
+    END;
+    BEGIN
+        UPDATE "DetallesFactura" SET "ImpuestoId" = 2147483647 WHERE "FacturaId" = comprobante_id;
+        RAISE EXCEPTION 'M51: falta clave foránea del impuesto';
+    EXCEPTION WHEN foreign_key_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion <> 'FK_DetallesFactura_Impuestos_ImpuestoId' THEN RAISE; END IF;
+    END;
+    BEGIN
+        UPDATE "DetallesFactura" SET "Total" = 0 WHERE "FacturaId" = comprobante_id;
+        RAISE EXCEPTION 'M51: PostgreSQL aceptó un total de línea incorrecto';
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion <> 'CK_DetallesFactura_Total' THEN RAISE; END IF;
+    END;
+    BEGIN
+        UPDATE "Facturas" SET "MotivoAnulacion" = NULL WHERE "Id" = comprobante_id;
+        RAISE EXCEPTION 'M51: PostgreSQL aceptó una anulación sin motivo';
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion <> 'CK_Facturas_Anulacion' THEN RAISE; END IF;
+    END;
+END $$;
+SQL
+printf 'M51 persistencia y restricciones PostgreSQL OK\n'
 printf 'SMOKE OK\n'

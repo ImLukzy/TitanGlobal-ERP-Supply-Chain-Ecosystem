@@ -21,5 +21,7 @@ public partial class Impuesto
 
     public DateTime FechaCreacion { get; set; }
 
+    public virtual ICollection<DetalleFactura> DetallesFactura { get; set; } = new List<DetalleFactura>();
+
     public virtual ICollection<TasaImpuesto> Tasas { get; set; } = new List<TasaImpuesto>();
 }

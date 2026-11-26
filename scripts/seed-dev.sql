@@ -959,4 +959,35 @@ AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."Consolidacio
 SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
 SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
 
+-- Módulo 51: comprobantes de referencia en sus tres estados.
+INSERT INTO "Facturas" (
+    "ClienteId", "OrdenCompraId", "TipoComprobante", "Serie", "Numero", "FechaEmision", "FechaVencimiento",
+    "Moneda", "Estado", "Subtotal", "TotalDescuento", "TotalImpuesto", "Total", "Observaciones",
+    "FechaCreacion", "FechaAnulacion", "MotivoAnulacion")
+VALUES
+    (1, 1, 'Factura', 'F51B', 1, TIMESTAMPTZ '2026-08-01 12:00:00+00', NULL,
+     'PEN', 'Borrador', 2500.00, 0, 0, 2500.00, 'Factura de ejemplo en borrador',
+     TIMESTAMPTZ '2026-08-01 12:00:00+00', NULL, NULL),
+    (2, 5, 'Factura', 'F51E', 1, TIMESTAMPTZ '2026-08-02 12:00:00+00', TIMESTAMPTZ '2026-08-31 12:00:00+00',
+     'PEN', 'Emitida', 100.00, 10.00, 16.20, 106.20, 'Factura de ejemplo con descuento e IGV',
+     TIMESTAMPTZ '2026-08-02 12:00:00+00', NULL, NULL),
+    (3, NULL, 'Boleta', 'B51A', 1, TIMESTAMPTZ '2026-08-03 12:00:00+00', NULL,
+     'USD', 'Anulada', 200.00, 0, 0, 200.00, 'Boleta de ejemplo anulada',
+     TIMESTAMPTZ '2026-08-03 12:00:00+00', TIMESTAMPTZ '2026-08-04 12:00:00+00', 'Corrección del comprobante de ejemplo')
+ON CONFLICT ("TipoComprobante", "Serie", "Numero") DO NOTHING;
+
+INSERT INTO "DetallesFactura" (
+    "FacturaId", "ProductoId", "ImpuestoId", "Descripcion", "Cantidad", "PrecioUnitario", "DescuentoPorcentaje",
+    "PorcentajeImpuesto", "Subtotal", "ImporteDescuento", "BaseImponible", "ImporteImpuesto", "Total")
+SELECT factura."Id", datos.producto_id, datos.impuesto_id, datos.descripcion, datos.cantidad, datos.precio,
+       datos.descuento, datos.tasa, datos.subtotal, datos.importe_descuento, datos.base_imponible, datos.impuesto, datos.total
+FROM (VALUES
+    ('Factura', 'F51B', 1, NULL, 'Laptop Pro', 1, 2500.00, 0, 0, 2500.00, 0, 2500.00, 0, 2500.00),
+    ('Factura', 'F51E', 3, 1, 'Mouse Óptico', 2, 50.00, 10, 18, 100.00, 10.00, 90.00, 16.20, 106.20),
+    ('Boleta', 'B51A', 4, NULL, 'Teclado Mecánico', 1, 200.00, 0, 0, 200.00, 0, 200.00, 0, 200.00)
+) AS datos(tipo, serie, producto_id, impuesto_id, descripcion, cantidad, precio, descuento, tasa, subtotal,
+           importe_descuento, base_imponible, impuesto, total)
+JOIN "Facturas" factura ON factura."TipoComprobante" = datos.tipo AND factura."Serie" = datos.serie AND factura."Numero" = 1
+WHERE NOT EXISTS (SELECT 1 FROM "DetallesFactura" detalle WHERE detalle."FacturaId" = factura."Id");
+
 COMMIT;
