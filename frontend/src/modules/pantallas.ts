@@ -17,6 +17,7 @@ import { ReclamosPostventaPage } from './reclamos-postventa/ReclamosPostventaPag
 import { DevolucionesComercialesPage } from './devoluciones-comerciales/DevolucionesComercialesPage';
 import { AuditoriaPage } from './auditoria-transaccional/AuditoriaPage';
 import { NotificacionesAlertasPage } from './notificaciones-alertas/NotificacionesAlertasPage';
+import { ImpuestosTasasPage } from './impuestos-tasas/ImpuestosTasasPage';
 import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
@@ -56,6 +57,7 @@ export const pantallas: Record<string, ComponentType> = {
   '24-zonas-almacenaje': ZonasAlmacenajePage,
   '09-reclamos-postventa': ReclamosPostventaPage,
   '78-notificaciones-alertas': NotificacionesAlertasPage,
+  '75-impuestos-tasas': ImpuestosTasasPage,
   '72-roles-permisos': RolesPermisosPage,
   '71-usuarios': UsuariosPage,
   '61-empleados': EmpleadosPage,
