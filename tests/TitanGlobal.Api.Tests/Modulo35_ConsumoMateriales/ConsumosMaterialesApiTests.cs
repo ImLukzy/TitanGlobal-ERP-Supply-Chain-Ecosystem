@@ -149,6 +149,82 @@ public sealed class ConsumosMaterialesApiTests : IClassFixture<ConsumosMateriale
         await VerificarErrorAsync(respuesta, HttpStatusCode.NotFound, "El consumo de materiales 99 no existe.");
     }
 
+    [Fact]
+    public async Task RegistroCopiaLaUnidadAsignaNumeroYAceptaExceso()
+    {
+        DateTime antes = DateTime.UtcNow;
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(1, 3, 9.123456m, "  Luis Rojas  ", "   "));
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        ConsumoMaterialRegistradoDto? registrado = await respuesta.Content.ReadFromJsonAsync<ConsumoMaterialRegistradoDto>();
+        Assert.NotNull(registrado);
+        Assert.Equal($"CM-{registrado.Id:D6}", registrado.Numero);
+        Assert.EndsWith($"{Ruta}/{registrado.Id}", respuesta.Headers.Location?.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        ConsumoMaterialDetalleDto detalle = await ObtenerAsync(registrado.Id);
+        Assert.Equal("Registrado", detalle.Estado);
+        Assert.Equal("unidad", detalle.UnidadMedida);
+        Assert.Equal(9.123456m, detalle.Cantidad);
+        Assert.Equal("Luis Rojas", detalle.Responsable);
+        Assert.Null(detalle.Observaciones);
+        Assert.InRange(detalle.FechaRegistro, antes, DateTime.UtcNow);
+
+        BalanceConsumoOrdenDto? balance =
+            await _cliente.GetFromJsonAsync<BalanceConsumoOrdenDto>($"{Ruta}/ordenes/1/balance");
+        Assert.NotNull(balance);
+        LineaBalanceConsumoDto tornillo = balance.Lineas.Single(linea => linea.ComponenteProductoId == 3);
+        Assert.Equal(21.123456m, tornillo.CantidadConsumida);
+        Assert.Equal(0m, tornillo.CantidadPendiente);
+        Assert.Equal(5.62m, tornillo.DesviacionPorcentaje);
+    }
+
+    [Theory]
+    [InlineData(0, 0, "0", "El identificador de la orden de producción debe ser mayor que 0.")]
+    [InlineData(99, 0, "0", "El identificador del componente debe ser mayor que 0.")]
+    [InlineData(99, 6, "0", "La cantidad consumida debe ser mayor que 0 y como máximo 1000000.")]
+    [InlineData(99, 6, "1000000.000001", "La cantidad consumida debe ser mayor que 0 y como máximo 1000000.")]
+    [InlineData(99, 6, "0.0000001", "La cantidad consumida admite como máximo 6 decimales.")]
+    [InlineData(99, 6, "1", "La orden de producción 99 no existe.")]
+    public async Task RegistroValidaCamposAntesQueLaOrden(int ordenId, int componenteId, string cantidad, string mensaje)
+    {
+        decimal valor = decimal.Parse(cantidad, System.Globalization.CultureInfo.InvariantCulture);
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(ordenId, componenteId, valor, null, null));
+
+        await VerificarErrorAsync(respuesta, HttpStatusCode.BadRequest, mensaje);
+        Assert.Equal(5, (await ListarAsync(string.Empty)).Total);
+    }
+
+    [Fact]
+    public async Task RegistroValidaLongitudesDeTextos()
+    {
+        using HttpResponseMessage responsable = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(99, 3, 1m, new string('r', 101), new string('o', 251)));
+        using HttpResponseMessage observaciones = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(99, 3, 1m, new string('r', 100), new string('o', 251)));
+        using HttpResponseMessage cantidadNula = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(1, 3, null, null, null));
+
+        await VerificarErrorAsync(responsable, HttpStatusCode.BadRequest, "El responsable no puede superar 100 caracteres.");
+        await VerificarErrorAsync(observaciones, HttpStatusCode.BadRequest, "Las observaciones no pueden superar 250 caracteres.");
+        await VerificarErrorAsync(cantidadNula, HttpStatusCode.BadRequest,
+            "La cantidad consumida debe ser mayor que 0 y como máximo 1000000.");
+    }
+
+    [Theory]
+    [InlineData(2, 3, "Solo se pueden registrar consumos en órdenes de producción en proceso.")]
+    [InlineData(3, 6, "Solo se pueden registrar consumos en órdenes de producción en proceso.")]
+    [InlineData(1, 6, "El producto 6 no forma parte de la lista de materiales de la orden OP-000001.")]
+    public async Task RegistroExigeOrdenEnProcesoYComponenteDeLaLista(int ordenId, int componenteId, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new RegistrarConsumoMaterialRequestDto(ordenId, componenteId, 1000000m, null, new string('o', 250)));
+
+        await VerificarErrorAsync(respuesta, HttpStatusCode.Conflict, mensaje);
+        Assert.Equal(5, (await ListarAsync(string.Empty)).Total);
+    }
+
     private async Task<PaginaConsumosMaterialesDto> ListarAsync(string filtros)
     {
         PaginaConsumosMaterialesDto? pagina = await _cliente.GetFromJsonAsync<PaginaConsumosMaterialesDto>(Ruta + filtros);

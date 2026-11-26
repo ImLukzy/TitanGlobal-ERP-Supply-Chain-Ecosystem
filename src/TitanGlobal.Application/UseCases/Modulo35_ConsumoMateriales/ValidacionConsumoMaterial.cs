@@ -7,6 +7,9 @@ internal static class ValidacionConsumoMaterial
     public const string Registrado = "Registrado";
     public const string Anulado = "Anulado";
     public const string OrdenEnProceso = "EnProceso";
+    public const decimal MaximaCantidad = 1000000m;
+    public const string ReferenciaOrden = "FK_ConsumosMateriales_OrdenesProduccion_OrdenProduccionId";
+    public const string ReferenciaComponente = "FK_ConsumosMateriales_Productos_ComponenteProductoId";
 
     // Perú es UTC−5 y no tiene horario de verano: el día D de Perú va de D 05:00 UTC a D + 1 05:00 UTC.
     private const int DesfasePeruHoras = 5;
@@ -87,6 +90,59 @@ internal static class ValidacionConsumoMaterial
         {
             throw Invalida("La fecha desde no puede ser posterior a la fecha hasta.");
         }
+    }
+
+    public static decimal ValidarCantidad(decimal? cantidad)
+    {
+        decimal valor = cantidad ?? 0m;
+        if (valor <= 0m || valor > MaximaCantidad)
+        {
+            throw Invalida("La cantidad consumida debe ser mayor que 0 y como máximo 1000000.");
+        }
+
+        if (decimal.Round(valor, 6) != valor)
+        {
+            throw Invalida("La cantidad consumida admite como máximo 6 decimales.");
+        }
+
+        return valor;
+    }
+
+    public static string? NormalizarTextoOpcional(string? texto, int maximo, string mensaje)
+    {
+        string? valor = texto?.Trim();
+        if (string.IsNullOrEmpty(valor))
+        {
+            return null;
+        }
+
+        if (valor.Length > maximo)
+        {
+            throw Invalida(mensaje);
+        }
+
+        return valor;
+    }
+
+    public static string NumeroTemporal()
+    {
+        return $"TMP-{Guid.NewGuid().ToString("N").Substring(0, 16)}";
+    }
+
+    public static string NumeroDefinitivo(int id)
+    {
+        return $"CM-{id:D6}";
+    }
+
+    public static ReglaNegocioException OrdenInexistenteEnRegistro(int ordenProduccionId)
+    {
+        return Invalida($"La orden de producción {ordenProduccionId} no existe.");
+    }
+
+    public static ReglaNegocioException ComponenteFueraDeLista(int componenteProductoId, string numeroOrden)
+    {
+        return Conflicto(
+            $"El producto {componenteProductoId} no forma parte de la lista de materiales de la orden {numeroOrden}.");
     }
 
     public static ReglaNegocioException OrdenNoEncontrada(int ordenProduccionId)
