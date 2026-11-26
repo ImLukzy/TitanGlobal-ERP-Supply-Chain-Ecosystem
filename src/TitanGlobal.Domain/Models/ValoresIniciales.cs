@@ -157,3 +157,11 @@ public partial class ZonaAlmacenaje
         Activa = true;
     }
 }
+
+public partial class TomaInventario
+{
+    public TomaInventario()
+    {
+        Estado = "Abierta";
+    }
+}
