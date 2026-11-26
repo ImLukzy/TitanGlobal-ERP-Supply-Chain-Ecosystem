@@ -2311,6 +2311,7 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 /* Módulo 39 · Mantenimiento preventivo */
 .mantenimiento-preventivo-page { padding-bottom: 42px; }
 .mantenimiento-preventivo-page button { max-width: 100%; white-space: normal; }
+.mantenimiento-preventivo-page .mantenimiento-preventivo-enlace { white-space: nowrap; }
 .mantenimiento-preventivo-resumen { display: grid; gap: 12px; margin-bottom: 16px; }
 .mantenimiento-preventivo-metricas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .mantenimiento-preventivo-area { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -2392,5 +2393,8 @@ html:has(.comisiones-page) { overflow-x: hidden; }
 }
 
 @media (min-width: 1024px) {
-  .mantenimiento-preventivo-area { grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr); }
+  .mantenimiento-preventivo-area { grid-template-columns: minmax(0, 1.6fr) minmax(280px, .65fr); }
+  .mantenimiento-preventivo-tabla { min-width: 0; }
+  .mantenimiento-preventivo-tabla th, .mantenimiento-preventivo-tabla td { padding: 8px 6px; }
+  .mantenimiento-preventivo-centro-nombre { display: block; color: var(--ink-soft); }
 }

@@ -53,7 +53,8 @@ export function MantenimientosTabla({ datos, seleccion, seleccionar, cambiarPagi
             </button>
           </th>
           <td>
-            <span className="mantenimiento-preventivo-cifra">{fila.centroTrabajoCodigo}</span> {fila.centroTrabajoNombre}
+            <span className="mantenimiento-preventivo-cifra">{fila.centroTrabajoCodigo}</span>{' '}
+            <span className="mantenimiento-preventivo-centro-nombre">{fila.centroTrabajoNombre}</span>
           </td>
           <td>{fila.descripcion}</td>
           <td className="mantenimiento-preventivo-cifra">{formatearDia(fila.fechaProgramada)}</td>

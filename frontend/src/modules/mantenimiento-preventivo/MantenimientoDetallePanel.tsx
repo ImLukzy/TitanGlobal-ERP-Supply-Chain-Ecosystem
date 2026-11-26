@@ -22,7 +22,7 @@ export function MantenimientoDetallePanel(props: DetalleProps) {
   return (
     <PanelDetalle ariaLabelledBy="mantenimiento-preventivo-detalle" className="mantenimiento-preventivo-tarjeta">
       <h2 id="mantenimiento-preventivo-detalle" tabIndex={-1}>
-        {mantenimiento ? `Mantenimiento ${mantenimiento.numero}` : 'Detalle del mantenimiento'}
+        {mantenimiento ? <>Mantenimiento <span className="mantenimiento-preventivo-cifra">{mantenimiento.numero}</span></> : 'Detalle del mantenimiento'}
       </h2>
       {seleccion === null && <p>Selecciona un mantenimiento para ver su detalle.</p>}
       {seleccion !== null && mantenimiento === undefined && error === undefined && <p role="status">Cargando detalle…</p>}
