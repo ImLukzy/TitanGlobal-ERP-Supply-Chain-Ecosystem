@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo34_OrdenesProduccion;
 using TitanGlobal.Application.UseCases.Modulo34_OrdenesProduccion;
 
@@ -13,19 +14,31 @@ public class OrdenesProduccionController : ControllerBase
     private readonly ObtenerOrdenProduccionUseCase _obtener;
     private readonly CrearOrdenProduccionUseCase _crear;
     private readonly EditarOrdenProduccionUseCase _editar;
+    private readonly LiberarOrdenProduccionUseCase _liberar;
+    private readonly IniciarOrdenProduccionUseCase _iniciar;
+    private readonly TerminarOrdenProduccionUseCase _terminar;
+    private readonly CancelarOrdenProduccionUseCase _cancelar;
 
     public OrdenesProduccionController(
         ListarOrdenesProduccionUseCase listar,
         ResumenOrdenesProduccionUseCase resumen,
         ObtenerOrdenProduccionUseCase obtener,
         CrearOrdenProduccionUseCase crear,
-        EditarOrdenProduccionUseCase editar)
+        EditarOrdenProduccionUseCase editar,
+        LiberarOrdenProduccionUseCase liberar,
+        IniciarOrdenProduccionUseCase iniciar,
+        TerminarOrdenProduccionUseCase terminar,
+        CancelarOrdenProduccionUseCase cancelar)
     {
         _listar = listar;
         _resumen = resumen;
         _obtener = obtener;
         _crear = crear;
         _editar = editar;
+        _liberar = liberar;
+        _iniciar = iniciar;
+        _terminar = terminar;
+        _cancelar = cancelar;
     }
 
     [HttpGet]
@@ -68,6 +81,36 @@ public class OrdenesProduccionController : ControllerBase
     public async Task<IActionResult> Editar(int id, [FromBody] EditarOrdenProduccionRequestDto solicitud)
     {
         int resultado = await _editar.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/liberar")]
+    [PermitirCuerpoVacio]
+    public async Task<IActionResult> Liberar(int id)
+    {
+        int resultado = await _liberar.ExecuteAsync(id);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/iniciar")]
+    [PermitirCuerpoVacio]
+    public async Task<IActionResult> Iniciar(int id)
+    {
+        int resultado = await _iniciar.ExecuteAsync(id);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/terminar")]
+    public async Task<IActionResult> Terminar(int id, [FromBody] TerminarOrdenProduccionRequestDto solicitud)
+    {
+        int resultado = await _terminar.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
+    }
+
+    [HttpPost("{id:int}/cancelar")]
+    public async Task<IActionResult> Cancelar(int id, [FromBody] CancelarOrdenProduccionRequestDto solicitud)
+    {
+        int resultado = await _cancelar.ExecuteAsync(id, solicitud);
         return Ok(new { Id = resultado });
     }
 }

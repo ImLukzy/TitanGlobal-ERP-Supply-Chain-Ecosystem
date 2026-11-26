@@ -238,6 +238,148 @@ public sealed class OrdenesProduccionApiTests : IClassFixture<OrdenesProduccionA
         Assert.Equal(10, (await ObtenerAsync(1)).CantidadPlanificada);
     }
 
+    [Fact]
+    public async Task CicloCompletoRegistraFechasRealesYCantidadProducida()
+    {
+        DateTime antes = DateTime.UtcNow;
+        await VerificarTransicionAsync(1, "liberar");
+        Assert.Equal("Liberada", (await ObtenerAsync(1)).Estado);
+        await VerificarTransicionAsync(1, "iniciar");
+        OrdenProduccionDetalleDto enProceso = await ObtenerAsync(1);
+        Assert.Equal("EnProceso", enProceso.Estado);
+        Assert.NotNull(enProceso.FechaInicioReal);
+        Assert.InRange(enProceso.FechaInicioReal.Value, antes, DateTime.UtcNow);
+
+        using HttpResponseMessage terminada = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/terminar", new TerminarOrdenProduccionRequestDto(0));
+        Assert.Equal(HttpStatusCode.OK, terminada.StatusCode);
+        Assert.Equal(1, (await terminada.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32());
+        OrdenProduccionDetalleDto final = await ObtenerAsync(1);
+        Assert.Equal("Terminada", final.Estado);
+        Assert.Equal(0, final.CantidadProducida);
+        Assert.NotNull(final.FechaFinReal);
+        Assert.True(final.FechaFinReal.Value >= final.FechaInicioReal!.Value);
+    }
+
+    [Theory]
+    [InlineData(1, "iniciar", "Solo se pueden iniciar órdenes de producción liberadas.")]
+    [InlineData(2, "liberar", "Solo se pueden liberar órdenes de producción planificadas.")]
+    [InlineData(2, "iniciar", "Solo se pueden iniciar órdenes de producción liberadas.")]
+    [InlineData(3, "liberar", "Solo se pueden liberar órdenes de producción planificadas.")]
+    [InlineData(4, "iniciar", "Solo se pueden iniciar órdenes de producción liberadas.")]
+    public async Task TransicionFueraDeEstadoDevuelve409(int id, string accion, string mensaje)
+    {
+        await VerificarTransicionAsync(id, accion, HttpStatusCode.Conflict, mensaje);
+    }
+
+    [Theory]
+    [InlineData("liberar")]
+    [InlineData("iniciar")]
+    public async Task TransicionDeOrdenInexistenteDevuelve404(string accion)
+    {
+        await VerificarTransicionAsync(99, accion, HttpStatusCode.NotFound, "La orden de producción 99 no existe.");
+    }
+
+    [Theory]
+    [InlineData(99, null, HttpStatusCode.NotFound, "La orden de producción 99 no existe.")]
+    [InlineData(1, null, HttpStatusCode.Conflict, "Solo se pueden terminar órdenes de producción en proceso.")]
+    [InlineData(3, 5, HttpStatusCode.Conflict, "Solo se pueden terminar órdenes de producción en proceso.")]
+    [InlineData(2, null, HttpStatusCode.BadRequest, "La cantidad producida debe estar entre 0 y 1000000.")]
+    [InlineData(2, -1, HttpStatusCode.BadRequest, "La cantidad producida debe estar entre 0 y 1000000.")]
+    [InlineData(2, 1000001, HttpStatusCode.BadRequest, "La cantidad producida debe estar entre 0 y 1000000.")]
+    public async Task TerminarVerificaExistenciaEstadoYCantidad(
+        int id, int? cantidad, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/{id}/terminar", new TerminarOrdenProduccionRequestDto(cantidad));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+        if (id == 2)
+        {
+            Assert.Equal("EnProceso", (await ObtenerAsync(2)).Estado);
+        }
+    }
+
+    [Fact]
+    public async Task TerminarAceptaElMaximoDeUnidades()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/2/terminar", new TerminarOrdenProduccionRequestDto(1000000));
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(1000000, (await ObtenerAsync(2)).CantidadProducida);
+
+        ResumenOrdenesProduccionDto? resumen = await _cliente.GetFromJsonAsync<ResumenOrdenesProduccionDto>($"{Ruta}/resumen");
+        Assert.NotNull(resumen);
+        Assert.Equal(1000007, resumen.UnidadesProducidas);
+        Assert.Equal(10, resumen.UnidadesPlanificadasAbiertas);
+    }
+
+    [Fact]
+    public async Task CancelarPlanificadaOLiberadaGuardaElMotivoRecortado()
+    {
+        await VerificarTransicionAsync(1, "liberar");
+        using HttpResponseMessage liberada = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/cancelar", new CancelarOrdenProduccionRequestDto("  Falta de insumos  "));
+        Assert.Equal(HttpStatusCode.OK, liberada.StatusCode);
+        OrdenProduccionDetalleDto cancelada = await ObtenerAsync(1);
+        Assert.Equal("Cancelada", cancelada.Estado);
+        Assert.Equal("Falta de insumos", cancelada.MotivoCancelacion);
+
+        int nueva = await CrearOrdenAsync();
+        using HttpResponseMessage planificada = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/{nueva}/cancelar", new CancelarOrdenProduccionRequestDto(new string('m', 250)));
+        Assert.Equal(HttpStatusCode.OK, planificada.StatusCode);
+        Assert.Equal(250, (await ObtenerAsync(nueva)).MotivoCancelacion?.Length);
+        await VerificarTransicionAsync(nueva, "liberar", HttpStatusCode.Conflict,
+            "Solo se pueden liberar órdenes de producción planificadas.");
+    }
+
+    [Theory]
+    [InlineData(99, "", HttpStatusCode.NotFound, "La orden de producción 99 no existe.")]
+    [InlineData(2, "", HttpStatusCode.Conflict, "Solo se pueden cancelar órdenes de producción planificadas o liberadas.")]
+    [InlineData(3, "Motivo", HttpStatusCode.Conflict, "Solo se pueden cancelar órdenes de producción planificadas o liberadas.")]
+    [InlineData(4, "Motivo", HttpStatusCode.Conflict, "Solo se pueden cancelar órdenes de producción planificadas o liberadas.")]
+    [InlineData(1, null, HttpStatusCode.BadRequest, "El motivo de cancelación es obligatorio.")]
+    [InlineData(1, "   ", HttpStatusCode.BadRequest, "El motivo de cancelación es obligatorio.")]
+    public async Task CancelarVerificaExistenciaEstadoYMotivo(
+        int id, string? motivo, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/{id}/cancelar", new CancelarOrdenProduccionRequestDto(motivo));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    [Fact]
+    public async Task CancelarRechazaMotivoDeMasDe250Caracteres()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/cancelar", new CancelarOrdenProduccionRequestDto(new string('m', 251)));
+        await VerificarErrorAsync(respuesta, HttpStatusCode.BadRequest, "El motivo de cancelación no puede superar 250 caracteres.");
+        Assert.Equal("Planificada", (await ObtenerAsync(1)).Estado);
+    }
+
+    private async Task<int> CrearOrdenAsync()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            Ruta, new CrearOrdenProduccionRequestDto(1, 2, Inicio, Fin));
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        OrdenProduccionCreadaDto? creada = await respuesta.Content.ReadFromJsonAsync<OrdenProduccionCreadaDto>();
+        Assert.NotNull(creada);
+        return creada.Id;
+    }
+
+    private async Task VerificarTransicionAsync(
+        int id, string accion, HttpStatusCode estado = HttpStatusCode.OK, string? mensaje = null)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsync($"{Ruta}/{id}/{accion}", null);
+        if (mensaje == null)
+        {
+            Assert.Equal(estado, respuesta.StatusCode);
+            return;
+        }
+
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
     private static DateOnly? Fecha(string? valor)
     {
         if (valor == null)
