@@ -2307,3 +2307,90 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* Módulo 39 · Mantenimiento preventivo */
+.mantenimiento-preventivo-page { padding-bottom: 42px; }
+.mantenimiento-preventivo-page button { max-width: 100%; white-space: normal; }
+.mantenimiento-preventivo-resumen { display: grid; gap: 12px; margin-bottom: 16px; }
+.mantenimiento-preventivo-metricas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mantenimiento-preventivo-area { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.mantenimiento-preventivo-tarjeta {
+  min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.mantenimiento-preventivo-tarjeta h2 { margin: 0 0 12px; color: var(--ink); }
+.mantenimiento-preventivo-encabezado, .mantenimiento-preventivo-acciones, .mantenimiento-preventivo-selector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.mantenimiento-preventivo-encabezado { justify-content: space-between; margin-bottom: 16px; }
+.mantenimiento-preventivo-encabezado h2 { margin: 0; }
+.mantenimiento-preventivo-filtros, .mantenimiento-preventivo-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.mantenimiento-preventivo-filtros { margin-bottom: 16px; }
+.mantenimiento-preventivo-campos { min-width: 0; margin: 0 0 16px; padding: 0; border: 0; }
+.mantenimiento-preventivo-filtros select, .mantenimiento-preventivo-filtros input,
+.mantenimiento-preventivo-campos input, .mantenimiento-preventivo-campos textarea,
+.mantenimiento-preventivo-dialogo input, .mantenimiento-preventivo-dialogo textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font: inherit;
+}
+.mantenimiento-preventivo-fijo { margin: 0; padding: 8px 0; color: var(--ink-soft); }
+.mantenimiento-preventivo-tabla-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.mantenimiento-preventivo-tabla { width: 100%; min-width: 680px; border-collapse: collapse; text-align: left; }
+.mantenimiento-preventivo-tabla caption { padding-bottom: 8px; color: var(--ink-soft); text-align: left; }
+.mantenimiento-preventivo-tabla th, .mantenimiento-preventivo-tabla td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.mantenimiento-preventivo-tabla thead { background: var(--surface-muted); }
+.mantenimiento-preventivo-tabla thead th { color: var(--ink-soft); white-space: nowrap; }
+.mantenimiento-preventivo-tabla tbody tr.is-selected { background: var(--accent-soft); }
+.mantenimiento-preventivo-cifra { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mantenimiento-preventivo-enlace { border: 0; padding: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; white-space: nowrap; }
+.mantenimiento-preventivo-estados { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.mantenimiento-preventivo-estado { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.mantenimiento-preventivo-estado.is-programado { background: var(--accent-soft); color: var(--accent-ink); }
+.mantenimiento-preventivo-estado.is-enejecucion { background: var(--surface-muted); color: var(--ink); }
+.mantenimiento-preventivo-estado.is-completado { background: var(--good-soft); color: var(--good); }
+.mantenimiento-preventivo-estado.is-cancelado { background: var(--surface-muted); color: var(--ink-soft); }
+.mantenimiento-preventivo-estado.is-vencido { background: var(--bad-soft); color: var(--bad); }
+.mantenimiento-preventivo-datos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 12px; margin: 0 0 16px; }
+.mantenimiento-preventivo-datos dt { color: var(--ink-faint); font-size: 12px; font-weight: 650; }
+.mantenimiento-preventivo-datos dd { margin: 0 0 8px; color: var(--ink); }
+.mantenimiento-preventivo-catalogo { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+.mantenimiento-preventivo-busqueda-centro { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.mantenimiento-preventivo-busqueda-centro .form-field { flex: 1 1 145px; min-width: 0; }
+.mantenimiento-preventivo-opciones { display: grid; gap: 4px; list-style: none; padding: 0; }
+.mantenimiento-preventivo-opciones button { width: 100%; text-align: left; }
+.mantenimiento-preventivo-nota { margin: 0; color: var(--ink-soft); font-size: 12px; }
+.mantenimiento-preventivo-aviso, .mantenimiento-preventivo-error { margin-bottom: 12px; }
+.mantenimiento-preventivo-aviso { padding: 10px 14px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+.mantenimiento-preventivo-dialogo { display: grid; gap: 10px; width: min(480px, 100%); max-height: 90vh; overflow: auto; }
+.mantenimiento-preventivo-dialogo h2, .mantenimiento-preventivo-dialogo p { margin: 0; }
+
+@media (min-width: 720px) {
+  .mantenimiento-preventivo-metricas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mantenimiento-preventivo-filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mantenimiento-preventivo-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mantenimiento-preventivo-datos { grid-template-columns: max-content minmax(0, 1fr); }
+  .mantenimiento-preventivo-datos dd { margin-bottom: 0; }
+}
+
+@media (min-width: 1024px) {
+  .mantenimiento-preventivo-area { grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr); }
+}
