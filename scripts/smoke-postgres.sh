@@ -41,6 +41,9 @@ CONTRATO_LABORAL_EMPLEADO_ID=""
 CONTRATO_LABORAL_CREADO_ID=""
 CONTRATO_LABORAL_RENOVADO_ID=""
 EVALUACION_CREADA_ID=""
+TURNO_CREADO_ID=""
+ASIGNACION_TURNO_CREADA_ID=""
+RUTA_PRODUCCION_CREADA_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -156,6 +159,60 @@ with open(sys.argv[1], encoding="utf-8") as archivo:
     body = json.load(archivo)
 validation = sys.argv[2]
 checks = {
+    "m48-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m48-flete-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m48-list": lambda d: d["total"] == 6 and len(d["items"]) == 6,
+    "m48-inactivos": lambda d: d["total"] == 1 and d["items"][0]["activo"] is False,
+    "m48-resumen": lambda d: d["totalTransportistas"] == 6 and d["activos"] == 5 and d["inactivos"] == 1 and sum(t["totalTransportistas"] for t in d["porTipoServicio"]) == 6,
+    "m48-fletes": lambda d: d["total"] == 4 and all(isinstance(f["importe"], str) for f in d["items"]) and set(f["moneda"] for f in d["items"]) == {"PEN", "USD"},
+    "m48-flete-detail": lambda d: d["referencia"] == "SMOKE-48" and d["importe"] == "9999999999999999.99" and d["moneda"] == "USD" and d["fecha"] == "2026-11-21T00:00:00Z" and d["estado"] == "Registrado",
+    "m48-cancelado": lambda d: d["estado"] == "Cancelado" and d["motivoCancelacion"] == "Ruta suspendida" and d["fechaCancelacion"].endswith("Z"),
+    "m48-filtro": lambda d: d["total"] == 1 and d["items"][0]["referencia"] == "SMOKE-48" and d["items"][0]["estado"] == "Cancelado",
+    "m48-inactivo-detail": lambda d: d["activo"] is False and d["tipoServicio"] == "Ambos" and d["contacto"] is None,
+    "m48-duplicate": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe un transportista con el documento fiscal smoke-48 en perú.",
+    "m48-historial": lambda d: d["StatusCode"] == 409 and d["Message"] == "No se puede eliminar un transportista con fletes registrados.",
+    "m48-inactivo": lambda d: d["StatusCode"] == 409 and d["Message"] == "No se pueden registrar fletes para un transportista inactivo.",
+    "m48-referencia": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe un flete con la referencia smoke-48 para este transportista.",
+    "m48-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "El importe no puede tener más de 2 decimales.",
+    "m48-motivo": lambda d: d["StatusCode"] == 400 and d["Message"] == "El motivo de cancelación es obligatorio.",
+    "m48-repetida": lambda d: d["StatusCode"] == 409 and re.fullmatch(r"El flete [0-9]+ ya está cancelado\.", d["Message"]) is not None,
+    "m48-missing": lambda d: d["StatusCode"] == 404 and d["Message"] == "El transportista 999999 no existe.",
+    "m48-openapi": lambda d: all(verb in d["paths"][path] for path, verb in [("/api/v1/transportistas-terceros", "get"), ("/api/v1/transportistas-terceros", "post"), ("/api/v1/transportistas-terceros/{id}", "get"), ("/api/v1/transportistas-terceros/{id}", "put"), ("/api/v1/transportistas-terceros/{id}", "delete"), ("/api/v1/transportistas-terceros/resumen", "get"), ("/api/v1/fletes-terceros", "get"), ("/api/v1/fletes-terceros", "post"), ("/api/v1/fletes-terceros/{id}", "get"), ("/api/v1/fletes-terceros/{id}/cancelacion", "post")]) and "delete" not in d["paths"]["/api/v1/fletes-terceros/{id}"] and "put" not in d["paths"]["/api/v1/fletes-terceros/{id}"],
+    "m43-created": lambda d: isinstance(d.get("id"), int) and d["id"] > 0,
+    "m43-list": lambda d: d["total"] == 6 and len(d["items"]) == 6 and all(isinstance(r["distanciaKm"], str) and isinstance(r["peajeEstimado"], str) for r in d["items"]),
+    "m43-inactivas": lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "RTA-43005" and d["items"][0]["activo"] is False,
+    "m43-zonas": lambda d: d == ["Centro", "Norte", "Sur"],
+    "m43-resumen": lambda d: d["totalRutas"] == 6 and d["activas"] == 5 and d["inactivas"] == 1 and len(d["porZona"]) == 3 and all(z["totalRutas"] == 2 for z in d["porZona"]),
+    "m43-filtro": lambda d: d["total"] == 1 and d["items"][0]["codigo"] == "RTA-43004" and d["items"][0]["moneda"] == "USD",
+    "m43-maximos": lambda d: d["codigo"] == "SMK-43" and d["distanciaKm"] == "99999999.99" and d["peajeEstimado"] == "9999999999999999.99" and d["moneda"] == "USD" and d["activo"] is False and d["observaciones"] is None,
+    "m43-cero": lambda d: d["distanciaKm"] == "25.50" and d["peajeEstimado"] == "0.00" and d["activo"] is True and d["observaciones"] == "Editada",
+    "m43-duplicate": lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe una ruta de despacho con el código smk-43." and "Detail" not in d,
+    "m43-distancia": lambda d: d["StatusCode"] == 400 and d["Message"] == "La distancia debe ser mayor que cero.",
+    "m43-distancia-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "La distancia no puede tener más de 2 decimales.",
+    "m43-peaje-decimales": lambda d: d["StatusCode"] == 400 and d["Message"] == "El peaje estimado no puede tener más de 2 decimales.",
+    "m43-peaje-negativo": lambda d: d["StatusCode"] == 400 and d["Message"] == "El peaje estimado no puede ser negativo.",
+    "m43-missing": lambda d: d["StatusCode"] == 404 and re.fullmatch(r"La ruta de despacho [0-9]+ no existe\.", d["Message"]) is not None,
+    "m43-vacia": lambda d: d["total"] == 6 and d["items"] == [] and d["pagina"] == 2147483647,
+    "m43-openapi": lambda d: all(verb in d["paths"]["/api/v1/rutas-despacho" + path] for path, verb in [("", "get"), ("", "post"), ("/{id}", "get"), ("/{id}", "put"), ("/{id}", "delete"), ("/zonas", "get"), ("/resumen", "get")]),
+    'm44-created': lambda d: isinstance(d.get("id"),int) and d["id"] > 0,
+    'm44-baja-created': lambda d: isinstance(d.get("id"),int) and d["id"] > 0,
+    'm44-list': lambda d: d["total"] == 3 and len(d["items"]) == 3 and all(r["volumenM3"] == "0.180000" and r["pesoKg"] == "6.00" for r in d["items"]),
+    'm44-resumen': lambda d: d == {"total":3,"borradores":1,"confirmadas":1,"canceladas":1},
+    'm44-maximos': lambda d: d["volumenM3"] == "999997000002.999999" and d["pesoKg"] == "999999990000.00" and d["totalBultos"] == 1000000 and d["lineas"][0]["largoCm"] == "9999.99",
+    'm44-picking': lambda d: d["StatusCode"] == 409 and d["Message"] == "Completa el picking de todas las líneas antes de confirmar.",
+    'm44-packing': lambda d: d["StatusCode"] == 409 and d["Message"] == "Completa el packing de todas las líneas antes de confirmar.",
+    'm44-confirmada': lambda d: d["estado"] == "Confirmada" and d["fechaConfirmacion"].endswith("Z") and d["totalBultos"] == 3 and d["volumenM3"] == "0.180000" and d["pesoKg"] == "6.00" and len(d["lineas"]) == 1,
+    'm44-cancelada': lambda d: d["estado"] == "Cancelada" and d["fechaConfirmacion"].endswith("Z") and d["fechaCancelacion"].endswith("Z") and d["motivoCancelacion"] == "Cambio de plan" and len(d["lineas"]) == 1,
+    'm44-duplicado': lambda d: d["StatusCode"] == 409 and d["Message"] == "Ya existe una consolidación con el código smk-44.",
+    'm44-edicion': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede editar una consolidación en borrador.",
+    'm44-baja': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede eliminar una consolidación en borrador.",
+    'm44-confirmacion': lambda d: d["StatusCode"] == 409 and d["Message"] == "Solo se puede confirmar una consolidación en borrador.",
+    'm44-motivo': lambda d: d["StatusCode"] == 400 and d["Message"] == "El motivo de cancelación es obligatorio.",
+    'm44-repetida': lambda d: d["StatusCode"] == 409 and d["Message"] == "La consolidación ya está cancelada.",
+    'm44-decimales': lambda d: d["StatusCode"] == 400 and d["Message"] == "Línea 1: el largo no puede tener más de 2 decimales.",
+    'm44-filtro': lambda d: d["total"] == 2 and all(c["estado"] == "Cancelada" for c in d["items"]),
+    'm44-missing': lambda d: d["StatusCode"] == 404 and re.fullmatch(r"La consolidación [0-9]+ no existe\.",d["Message"]) is not None,
+    'm44-openapi': lambda d: all(verb in d["paths"]["/api/v1/consolidaciones-carga"+path] for path,verb in [("","get"),("","post"),("/{id}","get"),("/{id}","put"),("/{id}","delete"),("/{id}/confirmacion","post"),("/{id}/cancelacion","post"),("/resumen","get")]),
     "filter": lambda data: [item["id"] for item in data] == [1, 2, 7],
     "sum": lambda data: data["totalVentas"] == 10750.0,
     "top": lambda data: data["id"] == 7 and data["nombre"] == "Laptop Air" and data["precio"] == 3200.0,
@@ -465,6 +522,136 @@ checks = {
     "contrato-laboral-renovacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede renovar\.", data["Message"]) is not None and "Detail" not in data,
     "contrato-laboral-anulacion-repetida": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El contrato CTR-[0-9]{6} no está vigente y no se puede anular\.", data["Message"]) is not None and "Detail" not in data,
     "contrato-laboral-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
+    "openapi-turnos": lambda data: all(path in data["paths"] for path in ["/api/v1/turnos", "/api/v1/turnos/resumen", "/api/v1/turnos/{id}", "/api/v1/turnos/{id}/desactivacion", "/api/v1/turnos/{id}/activacion", "/api/v1/asignaciones-turno", "/api/v1/asignaciones-turno/programacion", "/api/v1/asignaciones-turno/{id}/finalizacion", "/api/v1/asignaciones-turno/{id}"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/turnos", "get"), ("/api/v1/turnos", "post"), ("/api/v1/turnos/resumen", "get"), ("/api/v1/turnos/{id}", "get"), ("/api/v1/turnos/{id}", "put"), ("/api/v1/turnos/{id}/desactivacion", "post"), ("/api/v1/turnos/{id}/activacion", "post"), ("/api/v1/asignaciones-turno", "get"), ("/api/v1/asignaciones-turno", "post"), ("/api/v1/asignaciones-turno/programacion", "get"), ("/api/v1/asignaciones-turno/{id}/finalizacion", "post"), ("/api/v1/asignaciones-turno/{id}", "delete")]),
+    "turnos-rotativos": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "ROT4X2" and data["items"][0]["diasTrabajo"] == 4 and data["items"][0]["diasDescanso"] == 2,
+    "turnos-resumen": lambda data: data["totalTurnos"] == 4 and data["activos"] == 3 and data["fijos"] == 3 and data["rotativos"] == 1,
+    "programacion-empleado-2": lambda data: len(data) == 6 and all(dia["laborable"] and dia["observacion"] is None for dia in data[:4]) and all((not dia["laborable"]) and dia["observacion"] == "Descanso" for dia in data[4:]) and data[0]["fecha"] == "2026-01-05" and data[0]["horaEntrada"] == "07:00:00",
+    "turno-codigo-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un turno con el código DIA." and "Detail" not in data,
+    "turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "asignacion-turno-created": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "asignacion-turno-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado y no admite turnos." and "Detail" not in data,
+    "openapi-asistencia": lambda data: all(path in data["paths"] for path in ["/api/v1/marcaciones", "/api/v1/marcaciones/importacion", "/api/v1/marcaciones/{id}", "/api/v1/jornadas-asistencia", "/api/v1/jornadas-asistencia/resumen", "/api/v1/jornadas-asistencia/calculo", "/api/v1/jornadas-asistencia/{id}/horas-extra/aprobacion", "/api/v1/jornadas-asistencia/{id}/horas-extra/rechazo"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/marcaciones", "get"), ("/api/v1/marcaciones", "post"), ("/api/v1/marcaciones/importacion", "post"), ("/api/v1/marcaciones/{id}", "delete"), ("/api/v1/jornadas-asistencia", "get"), ("/api/v1/jornadas-asistencia/resumen", "get"), ("/api/v1/jornadas-asistencia/calculo", "post"), ("/api/v1/jornadas-asistencia/{id}/horas-extra/aprobacion", "post"), ("/api/v1/jornadas-asistencia/{id}/horas-extra/rechazo", "post")]),
+    "asistencia-resumen": lambda data: data["jornadas"] == 13 and data["asistencias"] == 11 and data["tardanzas"] == 1 and data["sinMarcacion"] == 1 and data["faltas"] == 0 and data["minutosTardanza"] == 15 and data["minutosExtraPendientes"] == 90 and data["minutosExtraAprobados"] == 150,
+    "marcaciones-importadas": lambda data: data["recibidos"] == 2 and data["importados"] == 2 and data["yaImportados"] == 0 and data["duplicados"] == 0 and data["rechazados"] == [],
+    "marcaciones-ya-importadas": lambda data: data["recibidos"] == 2 and data["importados"] == 0 and data["yaImportados"] == 2 and data["duplicados"] == 0 and data["rechazados"] == [],
+    "marcacion-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 no está activo en esa fecha." and "Detail" not in data,
+    "asistencia-calculo": lambda data: data["calculadas"] == 12 and data["conservadas"] == 1 and data["eliminadas"] == 0,
+    "jornada-id-8": lambda data: data["id"] == 8,
+    "jornada-sin-horas-extra-pendientes": lambda data: data["StatusCode"] == 409 and data["Message"] == "La jornada 8 no tiene horas extra pendientes." and "Detail" not in data,
+    "openapi-ausencias": lambda data: all(path in data["paths"] for path in ["/api/v1/ausencias", "/api/v1/ausencias/resumen", "/api/v1/ausencias/{id}", "/api/v1/ausencias/saldo-vacacional/{empleadoId}", "/api/v1/ausencias/{id}/aprobacion", "/api/v1/ausencias/{id}/rechazo", "/api/v1/ausencias/{id}/cancelacion"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/ausencias", "get"), ("/api/v1/ausencias", "post"), ("/api/v1/ausencias/resumen", "get"), ("/api/v1/ausencias/{id}", "get"), ("/api/v1/ausencias/saldo-vacacional/{empleadoId}", "get"), ("/api/v1/ausencias/{id}/aprobacion", "post"), ("/api/v1/ausencias/{id}/rechazo", "post"), ("/api/v1/ausencias/{id}/cancelacion", "post")]),
+    "ausencias-resumen": lambda data: all(isinstance(data[clave], int) for clave in ["pendientes", "ausentesHoy", "vacacionesHoy", "descansosMedicosHoy", "aprobadasMes"]) and data["pendientes"] == 1,
+    "saldo-empleado-1": lambda data: data["empleadoId"] == 1 and data["mesesServicio"] == 68 and data["diasDevengados"] == 170 and data["diasGozados"] == 12 and data["diasProgramados"] == 7 and data["saldo"] == 151,
+    "ausencia-saldo-insuficiente": lambda data: data["StatusCode"] == 409 and data["Message"] == "El saldo vacacional es de 180.0 días y la solicitud pide 358." and "Detail" not in data,
+    "ausencia-created-8": lambda data: data["id"] == 8 and data["numero"] == "AUS-000008",
+    "ausencia-id-8": lambda data: data["id"] == 8,
+    "ausencia-no-pendiente": lambda data: data["StatusCode"] == 409 and data["Message"] == "La ausencia AUS-000008 no está pendiente." and "Detail" not in data,
+    "openapi-prestamos": lambda data: all(path in data["paths"] for path in ["/api/v1/prestamos", "/api/v1/prestamos/resumen", "/api/v1/prestamos/{id}", "/api/v1/prestamos/capacidad/{empleadoId}", "/api/v1/prestamos/{id}/anulacion"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/prestamos", "get"), ("/api/v1/prestamos", "post"), ("/api/v1/prestamos/resumen", "get"), ("/api/v1/prestamos/{id}", "get"), ("/api/v1/prestamos/capacidad/{empleadoId}", "get"), ("/api/v1/prestamos/{id}/anulacion", "post")]),
+    "prestamos-resumen": lambda data: data["activos"] == 1 and data["saldoPendienteTotal"] == 400 and isinstance(data["otorgadoMes"], (int, float)) and isinstance(data["cuotasDelMes"], (int, float)),
+    "prestamos-capacidad-1": lambda data: data["sueldoVigente"] == 9500 and data["netoEstimado"] == 8265 and data["cuotaMaxima"] == 2479.5 and [(fila["anio"], fila["mes"], fila["monto"]) for fila in data["cuotasComprometidasPorMes"]] == [(2026, 11, 100), (2026, 12, 100), (2027, 1, 100), (2027, 2, 100)],
+    "prestamo-supera-tope": lambda data: data["StatusCode"] == 409 and data["Message"] == "La cuota de 11/2026 sería 2500.00 y supera el máximo de 2479.50 (30 % del neto estimado)." and "Detail" not in data,
+    "prestamo-created-4": lambda data: data["id"] == 4 and data["numero"] == "PRE-000004",
+    "prestamo-con-descuentos": lambda data: data["StatusCode"] == 409 and data["Message"] == "El préstamo PRE-000001 ya tiene descuentos y no se puede anular." and "Detail" not in data,
+    "prestamo-id-4": lambda data: data["id"] == 4,
+    "openapi-planillas": lambda data: all(path in data["paths"] for path in ["/api/v1/planillas", "/api/v1/planillas/resumen", "/api/v1/planillas/parametros", "/api/v1/planillas/{id}", "/api/v1/planillas/{id}/detalles", "/api/v1/planillas/boletas/{detalleId}", "/api/v1/planillas/{id}/calculo", "/api/v1/planillas/{id}/aprobacion", "/api/v1/planillas/{id}/pago", "/api/v1/bonos-planilla", "/api/v1/bonos-planilla/{id}", "/api/v1/afiliaciones-pension", "/api/v1/afiliaciones-pension/{empleadoId}"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/planillas", "get"), ("/api/v1/planillas", "post"), ("/api/v1/planillas/{id}/calculo", "post"), ("/api/v1/planillas/{id}/aprobacion", "post"), ("/api/v1/planillas/{id}/pago", "post"), ("/api/v1/bonos-planilla", "post"), ("/api/v1/bonos-planilla/{id}", "delete"), ("/api/v1/afiliaciones-pension/{empleadoId}", "put")]),
+    "planillas-parametros": lambda data: len(data["parametros"]) == 7 and len(data["pensiones"]) == 5 and [tramo["hastaUit"] for tramo in data["tramos"]] == [5, 20, 35, 45, None] and [parametro["valor"] for parametro in data["parametros"] if parametro["clave"] == "UIT"] == [5350],
+    "planilla-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la planilla Mensual del periodo 11/2026." and "Detail" not in data,
+    "planilla-calculada": lambda data: data["id"] == 2 and data["empleados"] == 2 and data["incidencias"] == 0,
+    "planilla-2-calculada": lambda data: data["numero"] == "PLA-202611-M" and data["estado"] == "Calculada" and data["totalIngresos"] == 13578.49 and data["totalDescuentos"] == 2701 and data["totalNeto"] == 10877.49 and data["totalAportesEmpleador"] == 1222.06 and data["calculadoPor"] == "admin",
+    "planilla-id-2": lambda data: data["id"] == 2,
+    "planilla-aprobada-no-modificable": lambda data: data["StatusCode"] == 409 and data["Message"] == "La planilla PLA-202611-M está aprobada y no se modifica." and "Detail" not in data,
+    "planilla-boleta": lambda data: data["empresa"] == "TitanGlobal" and data["numeroBoleta"] == "BOL-202611-M-000001" and data["empleadoId"] == 1 and data["neto"] == 7505.11,
+    "planilla-pagada": lambda data: data["id"] == 2,
+    "ausencia-created-9":lambda data: data["id"] == 9 and data["numero"] == "AUS-000009",
+    "ausencia-id-9": lambda data: data["id"] == 9,
+    "openapi-evaluaciones": lambda data: all(path in data["paths"] for path in ["/api/v1/ciclos-evaluacion", "/api/v1/ciclos-evaluacion/{id}", "/api/v1/ciclos-evaluacion/{id}/resultados", "/api/v1/ciclos-evaluacion/{id}/competencias", "/api/v1/ciclos-evaluacion/{id}/competencias/{competenciaId}", "/api/v1/ciclos-evaluacion/{id}/apertura", "/api/v1/ciclos-evaluacion/{id}/cierre", "/api/v1/evaluaciones", "/api/v1/evaluaciones/{id}", "/api/v1/evaluaciones/{id}/calificaciones", "/api/v1/evaluaciones/{id}/envio", "/api/v1/evaluaciones/{id}/cierre"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/ciclos-evaluacion", "post"), ("/api/v1/ciclos-evaluacion/{id}/competencias/{competenciaId}", "delete"), ("/api/v1/ciclos-evaluacion/{id}/apertura", "post"), ("/api/v1/evaluaciones", "post"), ("/api/v1/evaluaciones/{id}/calificaciones", "put"), ("/api/v1/evaluaciones/{id}/envio", "post")]),
+    "evaluacion-resultados-s1": lambda data: data["evaluadas"] == 3 and data["puntajePromedio"] == 3.63 and [(fila["etiqueta"], fila["cantidad"]) for fila in data["distribucion"]] == [("Insuficiente", 0), ("En desarrollo", 1), ("Competente", 1), ("Destacado", 0), ("Excepcional", 1)] and [(fila["competencia"], fila["promedio"]) for fila in data["porCompetencia"]] == [("Calidad del trabajo", 4), ("Trabajo en equipo", 3.33), ("Cumplimiento de objetivos", 3.67), ("Iniciativa", 3.33)],
+    "evaluacion-4-detalle": lambda data: data["cicloCodigo"] == "2026-S2" and data["estado"] == "Enviada" and data["puntajeFinal"] == 4.1 and data["etiqueta"] == "Destacado" and [fila["calificacion"] for fila in data["calificaciones"]] == [4, 5, 4, 3],
+    "ciclo-evaluacion-created-3": lambda data: data["id"] == 3,
+    "ciclo-evaluacion-id-3": lambda data: data["id"] == 3,
+    "competencia-evaluacion-created-9": lambda data: data["id"] == 9,
+    "competencia-evaluacion-created-10": lambda data: data["id"] == 10,
+    "ciclo-evaluacion-pesos-incompletos": lambda data: data["StatusCode"] == 409 and data["Message"] == "Los pesos de las competencias suman 60.00 y deben sumar 100." and "Detail" not in data,
+    "evaluacion-created-6": lambda data: data["id"] == 6,
+    "evaluacion-id-6": lambda data: data["id"] == 6,
+    "evaluacion-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 1 ya tiene una evaluación en el ciclo SMK-2026." and "Detail" not in data,
+    "evaluacion-6-enviada": lambda data: data["estado"] == "Enviada" and data["puntajeFinal"] == 4.4 and data["etiqueta"] == "Destacado",
+    "evaluacion-resultados-smk": lambda data: data["evaluadas"] == 1 and data["puntajePromedio"] == 4.4,
+    "openapi-capacitaciones": lambda data: all(path in data["paths"] for path in ["/api/v1/cursos", "/api/v1/cursos/{id}", "/api/v1/cursos/{id}/desactivacion", "/api/v1/cursos/{id}/activacion", "/api/v1/programaciones-curso", "/api/v1/programaciones-curso/{id}", "/api/v1/programaciones-curso/{id}/inscripciones", "/api/v1/programaciones-curso/{id}/inscripciones/{inscripcionId}/retiro", "/api/v1/programaciones-curso/{id}/inscripciones/{inscripcionId}/certificacion", "/api/v1/programaciones-curso/{id}/realizacion", "/api/v1/programaciones-curso/{id}/cancelacion", "/api/v1/programaciones-curso/{id}/resultados", "/api/v1/capacitaciones/horas", "/api/v1/capacitaciones/empleados/{empleadoId}", "/api/v1/capacitaciones/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/cursos", "post"), ("/api/v1/cursos/{id}", "put"), ("/api/v1/programaciones-curso", "post"), ("/api/v1/programaciones-curso/{id}/inscripciones", "post"), ("/api/v1/capacitaciones/resumen", "get")]),
+    "capacitaciones-resumen-2026": lambda data: data["anio"] == 2026 and data["cursosActivos"] == 3 and data["programadas"] == 0 and data["realizadas"] == 1 and data["inscritos"] == 4 and data["horasTotales"] == 24 and data["certificacionesVencidas"] == 1,
+    "capacitaciones-resumen-2027": lambda data: data["anio"] == 2027 and data["programadas"] == 1 and data["realizadas"] == 0 and data["inscritos"] == 2 and data["horasTotales"] == 0,
+    "capacitaciones-horas-2026": lambda data: data["anio"] == 2026 and {fila["empleadoId"]: fila["horas"] for fila in data["items"] if fila["empleadoId"] in (1, 2, 3)} == {1: 8, 2: 8, 3: 0} and all(fila["empleadoId"] != 4 for fila in data["items"]),
+    "capacitaciones-empleado-2": lambda data: data["empleadoId"] == 2 and data["horas"] == 8 and [fila["cursoCodigo"] for fila in data["cursos"]] == ["SEG-001"] and [(fila["codigo"], fila["vencida"]) for fila in data["certificaciones"]] == [("CERT-SEG-0002", True)],
+    "curso-created-5": lambda data: data["id"] == 5,
+    "curso-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un curso con el código SMK-001." and "Detail" not in data,
+    "curso-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El curso ISO-900 está inactivo y no admite programaciones." and "Detail" not in data,
+    "programacion-created-4": lambda data: data["id"] == 4,
+    "programacion-id-4": lambda data: data["id"] == 4,
+    "programacion-id-1": lambda data: data["id"] == 1,
+    "inscripcion-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado y no se puede inscribir." and "Detail" not in data,
+    "inscripcion-created-8": lambda data: data["id"] == 8,
+    "inscripcion-id-8": lambda data: data["id"] == 8,
+    "inscripcion-created-9": lambda data: data["id"] == 9,
+    "inscripcion-sin-cupo": lambda data: data["StatusCode"] == 409 and data["Message"] == "La programación 4 no tiene cupo libre." and "Detail" not in data,
+    "programacion-no-realizable": lambda data: data["StatusCode"] == 409 and data["Message"] == "La programación 4 termina el 2099-06-02 y aún no se puede marcar como realizada." and "Detail" not in data,
+    "certificacion-no-aprobada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inscripción 5 no está aprobada y no admite certificación." and "Detail" not in data,
+    "certificacion-created-3": lambda data: data["id"] == 3,
+    "certificacion-repetida": lambda data: data["StatusCode"] == 409 and data["Message"] == "La inscripción 4 ya tiene certificación." and "Detail" not in data,
+    "programacion-1-detalle": lambda data: data["estado"] == "Realizada" and data["inscritos"] == 4 and data["cupoLibre"] == 6 and [fila["estado"] for fila in data["inscripciones"]] == ["Aprobado", "Aprobado", "Aprobado", "Aprobado"] and [fila["nota"] for fila in data["inscripciones"]] == [17, 15.5, 12.5, 14] and [(fila["certificacion"]["codigo"], fila["certificacion"]["vencida"]) if fila["certificacion"] else None for fila in data["inscripciones"]] == [("CERT-SEG-0001", False), ("CERT-SEG-0002", True), None, ("SMK-0001", False)],
+    "openapi-sst": lambda data: all(path in data["paths"] for path in ["/api/v1/equipos-proteccion", "/api/v1/equipos-proteccion/{id}", "/api/v1/equipos-proteccion/{id}/desactivacion", "/api/v1/equipos-proteccion/{id}/activacion", "/api/v1/entregas-epp", "/api/v1/examenes-medicos", "/api/v1/incidentes-sst", "/api/v1/incidentes-sst/{id}", "/api/v1/incidentes-sst/resumen", "/api/v1/incidentes-sst/{id}/acciones", "/api/v1/incidentes-sst/{id}/acciones/{accionId}/completar", "/api/v1/incidentes-sst/{id}/cierre"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/equipos-proteccion", "post"), ("/api/v1/equipos-proteccion/{id}", "put"), ("/api/v1/entregas-epp", "post"), ("/api/v1/examenes-medicos", "post"), ("/api/v1/incidentes-sst", "post"), ("/api/v1/incidentes-sst/resumen", "get")]),
+    "sst-resumen-2026": lambda data: data["anio"] == 2026 and data["incidentesAbiertos"] == 1 and data["incidentesAnio"] == 2 and data["accidentesConBaja"] == 1 and data["diasBajaAnio"] == 5 and data["entregasEppVencidas"] == 1 and data["examenesVencidos"] == 1 and data["empleadosNoAptos"] == 0,
+    "sst-incidente-2-abierto": lambda data: data["numero"] == "INC-000002" and data["estado"] == "Abierto" and data["fechaCierre"] is None and [(accion["id"], accion["completada"]) for accion in data["acciones"]] == [(2, False)],
+    "equipo-proteccion-created-5": lambda data: data["id"] == 5,
+    "equipo-proteccion-duplicado": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un equipo de protección con el código SMK-EPP." and "Detail" not in data,
+    "epp-equipo-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El equipo de protección ARN-004 está inactivo y no se entrega." and "Detail" not in data,
+    "epp-empleado-cesado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El empleado 4 está cesado." and "Detail" not in data,
+    "entrega-epp-created-4": lambda data: data["id"] == 4,
+    "examen-retiro-fuera-de-plazo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El examen de retiro se registra hasta 30 días después del cese del empleado 4." and "Detail" not in data,
+    "examen-medico-created-5": lambda data: data["id"] == 5,
+    "incidente-sst-created-3": lambda data: data["id"] == 3 and data["numero"] == "INC-000003",
+    "accion-correctiva-created-3": lambda data: data["id"] == 3,
+    "incidente-cierre-pendientes": lambda data: data["StatusCode"] == 409 and data["Message"] == "El incidente INC-000002 tiene 1 acciones correctivas sin completar." and "Detail" not in data,
+    "accion-correctiva-id-2": lambda data: data["id"] == 2,
+    "incidente-sst-id-2": lambda data: data["id"] == 2,
+    "incidente-cerrado-sin-cambios": lambda data: data["StatusCode"] == 409 and data["Message"] == "El incidente INC-000002 está cerrado y no admite cambios." and "Detail" not in data,
+    "sst-incidente-2-cerrado": lambda data: data["estado"] == "Cerrado" and data["fechaCierre"] is not None and [accion["completada"] for accion in data["acciones"]] == [True],
+
+    "openapi-listas-materiales": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/listas-materiales", "get"), ("/api/v1/listas-materiales", "post"),
+        ("/api/v1/listas-materiales/{id}", "get"), ("/api/v1/listas-materiales/{id}", "put"),
+        ("/api/v1/listas-materiales/{id}/activar", "post"), ("/api/v1/listas-materiales/{id}/retirar", "post"),
+    ]),
+    "listas-materiales-seed": lambda data: data["total"] == 2 and [
+        (item["version"], item["estado"], item["totalComponentes"]) for item in data["items"]
+    ] == [(2, "Borrador", 2), (1, "Activa", 2)],
+    "lista-material-creada": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "lista-material-retirada": lambda data: data["estado"] == "Retirada" and [
+        (item["componenteProductoId"], item["cantidad"], item["unidadMedida"]) for item in data["componentes"]
+    ] == [(6, 0.123456, "unidad")],
+    "lista-material-version-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1.",
+    "lista-material-edicion-bloqueada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar listas de materiales en borrador.",
+    "openapi-rutas-produccion": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/rutas-produccion", "get"), ("/api/v1/rutas-produccion", "post"),
+        ("/api/v1/rutas-produccion/{id}", "get"), ("/api/v1/rutas-produccion/{id}", "put"),
+        ("/api/v1/rutas-produccion/{id}/activar", "post"), ("/api/v1/rutas-produccion/{id}/retirar", "post"),
+    ]),
+    "rutas-produccion-seed": lambda data: data["total"] == 2 and [
+        (item["version"], item["estado"], item["totalOperaciones"]) for item in data["items"]
+    ] == [(2, "Borrador", 2), (1, "Activa", 2)],
+    "ruta-produccion-creada": lambda data: isinstance(data.get("id"), int) and data["id"] > 0,
+    "ruta-produccion-retirada": lambda data: data["estado"] == "Retirada" and data["version"] == 1 and [
+        (op["secuencia"], op["centroTrabajoNombre"], op["minutosPreparacion"], op["minutosPorUnidad"])
+        for op in data["operaciones"]
+    ] == [(1, "Celda de ensamblaje", 0.25, 2.75)],
+    "ruta-produccion-version-duplicada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Ya existe la versión 1 para el producto 1."
+    ),
+    "ruta-produccion-edicion-bloqueada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar rutas de producción en borrador."
+    ),
+    "centro-en-uso-ruta": lambda data: data["StatusCode"] == 409 and re.fullmatch(
+        r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
+        data["Message"],
+    ) is not None and "Detail" not in data,
 }
 
 if validation not in checks or not checks[validation](body):
@@ -651,6 +838,24 @@ request_check() {
         CONDUCTOR_SIN_ZONA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "m44-created" ]]; then
+        CARGA_44_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m44-baja-created" ]]; then
+        BAJA_44_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m43-created" ]]; then
+        RUTA_43_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "m48-created" ]]; then
+        TRANSPORTISTA_48_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m48-flete-created" ]]; then
+        FLETE_48_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
     if [[ "$validation" == "conductor-created" ]]; then
         CONDUCTOR_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -665,6 +870,18 @@ request_check() {
     fi
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "turno-created" ]]; then
+        TURNO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "asignacion-turno-created" ]]; then
+        ASIGNACION_TURNO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "lista-material-creada" ]]; then
+        LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "ruta-produccion-creada" ]]; then
+        RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1047,4 +1264,422 @@ request_check 'Detalle del contrato cerrado por cese (E4)' GET "/api/v1/contrato
 request_check 'POST contrato laboral para empleado cesado' POST '/api/v1/contratos-laborales' 409 contrato-laboral-empleado-cesado '{"empleadoId":'"${EMPLEADO_CREADO_ID}"',"modalidad":"PlazoFijo","fechaInicio":"2026-11-01","fechaFin":"2027-10-31","sueldoBasico":2000.00,"cargo":"Analista de Pruebas"}'
 request_check 'Editar empleado cesado' PUT '/api/v1/empleados/4' 409 empleado-ceased-edit '{"tipoDocumento":"Pasaporte","numeroDocumento":"P1234567","nombres":"Carlos","apellidos":"Diaz Soto","fechaNacimiento":"1982-07-30","fechaIngreso":"2018-05-02","cargo":"Auxiliar de Logistica","area":"Logistica"}'
 request_check 'Cesar empleado ya cesado' POST "/api/v1/empleados/${EMPLEADO_CREADO_ID}/cese" 409 empleado-cese-repeated '{"fechaCese":"2026-10-31","motivo":"Renuncia de smoke"}'
+# Módulo 48: contratos y persistencia real, sin modificar módulos ajenos.
+TOKEN_48_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M48 exige sesión' GET '/api/v1/transportistas-terceros' 401 no-session
+request_check 'M48 fletes exige sesión' GET '/api/v1/fletes-terceros' 401 no-session
+TOKEN_ACTUAL="$TOKEN_48_ADMIN"
+request_check 'M48 OpenAPI diez operaciones' GET '/openapi/v1.json' 200 m48-openapi
+request_check 'M48 maestro del seed' GET '/api/v1/transportistas-terceros' 200 m48-list
+request_check 'M48 inactivos' GET '/api/v1/transportistas-terceros?activo=false' 200 m48-inactivos
+request_check 'M48 resumen' GET '/api/v1/transportistas-terceros/resumen' 200 m48-resumen
+request_check 'M48 fletes en monedas originales' GET '/api/v1/fletes-terceros' 200 m48-fletes
+request_check 'M48 crear inactivo' POST '/api/v1/transportistas-terceros' 200 m48-created '{"razonSocial":"Smoke 48","documentoFiscal":"SMOKE-48","pais":"Perú","tipoServicio":"ambos","contacto":" ","activo":false}'
+request_check 'M48 false y normalización persistidos' GET "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 200 m48-inactivo-detail
+request_check 'M48 duplicado normalizado' POST '/api/v1/transportistas-terceros' 409 m48-duplicate '{"razonSocial":"Otro","documentoFiscal":" smoke-48 ","pais":" perú ","tipoServicio":"Flete"}'
+FLETE_48_JSON='{"transportistaId":'"${TRANSPORTISTA_48_ID}"',"referencia":"SMOKE-48","fecha":"2026-11-21","origen":"Lima","destino":"Callao","importe":9999999999999999.99,"moneda":"usd"}'
+request_check 'M48 impide flete de inactivo' POST '/api/v1/fletes-terceros' 409 m48-inactivo "$FLETE_48_JSON"
+request_check 'M48 activar transportista' PUT "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 200 created '{"razonSocial":"Smoke 48","documentoFiscal":"SMOKE-48","pais":"Perú","tipoServicio":"Ambos","activo":true}'
+request_check 'M48 flete sin Z y decimal máximo' POST '/api/v1/fletes-terceros' 200 m48-flete-created "$FLETE_48_JSON"
+request_check 'M48 fecha UTC e importe exacto' GET "/api/v1/fletes-terceros/${FLETE_48_ID}" 200 m48-flete-detail
+request_check 'M48 impide baja con historial' DELETE "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 409 m48-historial
+request_check 'M48 no redondea' POST '/api/v1/fletes-terceros' 400 m48-decimales '{"transportistaId":1,"referencia":"DEC-48","fecha":"2026-11-21","origen":"Lima","destino":"Callao","importe":1.001,"moneda":"PEN"}'
+request_check 'M48 exige motivo' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 400 m48-motivo '{"motivo":" "}'
+request_check 'M48 cancelar con motivo' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 200 created '{"motivo":"  Ruta suspendida  "}'
+request_check 'M48 historial de cancelación' GET "/api/v1/fletes-terceros/${FLETE_48_ID}" 200 m48-cancelado
+request_check 'M48 no permite doble cancelación' POST "/api/v1/fletes-terceros/${FLETE_48_ID}/cancelacion" 409 m48-repetida '{"motivo":"Repetida"}'
+request_check 'M48 cancelado reserva referencia' POST '/api/v1/fletes-terceros' 409 m48-referencia "${FLETE_48_JSON/SMOKE-48/smoke-48}"
+request_check 'M48 filtrar historial' GET "/api/v1/fletes-terceros?transportistaId=${TRANSPORTISTA_48_ID}&estado=Cancelado&busqueda=callao" 200 m48-filtro
+request_check 'M48 cancelado impide baja' DELETE "/api/v1/transportistas-terceros/${TRANSPORTISTA_48_ID}" 409 m48-historial
+request_check 'M48 inexistente' GET '/api/v1/transportistas-terceros/999999' 404 m48-missing
+# Deshacer únicamente los datos de esta comprobación después de validar su historial.
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO "TransportistasTerceros" ("RazonSocial", "DocumentoFiscal", "Pais", "TipoServicio")
+        VALUES ('Duplicado SQL', ' smoke-48 ', ' perú ', 'Flete');
+        RAISE EXCEPTION 'M48: falta unicidad normalizada del transportista';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "FletesTerceros" ("TransportistaTerceroId", "Referencia", "Fecha", "Origen", "Destino", "Importe", "Moneda")
+        SELECT "TransportistaTerceroId", ' smoke-48 ', now(), 'Lima', 'Callao', 1, 'PEN'
+        FROM "FletesTerceros" WHERE "Referencia" = 'SMOKE-48';
+        RAISE EXCEPTION 'M48: falta unicidad normalizada de la referencia';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        DELETE FROM "TransportistasTerceros" WHERE "DocumentoFiscal" = 'SMOKE-48';
+        RAISE EXCEPTION 'M48: falta protección de historial por clave foránea';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+END $$;
+DELETE FROM "FletesTerceros" WHERE "Referencia" = 'SMOKE-48';
+DELETE FROM "TransportistasTerceros" WHERE "DocumentoFiscal" = 'SMOKE-48';
+SQL
+request_check 'OpenAPI de turnos y asignaciones' GET '/openapi/v1.json' 200 openapi-turnos
+request_check 'Turnos rotativos' GET '/api/v1/turnos?tipo=Rotativo' 200 turnos-rotativos
+request_check 'Resumen de turnos' GET '/api/v1/turnos/resumen' 200 turnos-resumen
+request_check 'Programación del empleado 2' GET '/api/v1/asignaciones-turno/programacion?empleadoId=2&desde=2026-01-05&hasta=2026-01-10' 200 programacion-empleado-2
+request_check 'POST turno con código repetido' POST '/api/v1/turnos' 409 turno-codigo-duplicado '{"codigo":"DIA","nombre":"Duplicado","tipo":"Fijo","horaEntrada":"08:00:00","horaSalida":"17:00:00","cruzaMedianoche":false,"toleranciaMinutos":10,"diasLaborables":[1,2,3,4,5]}'
+request_check 'POST turno válido' POST '/api/v1/turnos' 200 turno-created '{"codigo":"SMOKE","nombre":"Turno de smoke","tipo":"Fijo","horaEntrada":"09:00:00","horaSalida":"18:00:00","cruzaMedianoche":false,"toleranciaMinutos":5,"diasLaborables":[1,2,3,4,5]}'
+request_check 'POST asignación futura del empleado 3' POST '/api/v1/asignaciones-turno' 200 asignacion-turno-created '{"empleadoId":3,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
+request_check 'DELETE asignación futura' DELETE "/api/v1/asignaciones-turno/${ASIGNACION_TURNO_CREADA_ID}" 204 ''
+request_check 'POST asignación al empleado cesado' POST '/api/v1/asignaciones-turno' 409 asignacion-turno-empleado-cesado '{"empleadoId":4,"turnoId":'"${TURNO_CREADO_ID}"',"fechaInicio":"2030-01-01"}'
+request_check 'OpenAPI de marcaciones y jornadas de asistencia' GET '/openapi/v1.json' 200 openapi-asistencia
+request_check 'Resumen de asistencia del 2 al 6 de noviembre' GET '/api/v1/jornadas-asistencia/resumen?desde=2026-11-02&hasta=2026-11-06' 200 asistencia-resumen
+request_check 'POST importación de dos marcaciones del reloj' POST '/api/v1/marcaciones/importacion' 200 marcaciones-importadas '{"dispositivo":"RELOJ-01","registros":[{"numeroRegistro":"SMOKE-0001","legajo":"EMP-000001","tipo":"Entrada","instante":"2026-11-09T13:00:00Z"},{"numeroRegistro":"SMOKE-0002","legajo":"EMP-000001","tipo":"Salida","instante":"2026-11-09T22:00:00Z"}]}'
+request_check 'POST importación repetida' POST '/api/v1/marcaciones/importacion' 200 marcaciones-ya-importadas '{"dispositivo":"RELOJ-01","registros":[{"numeroRegistro":"SMOKE-0001","legajo":"EMP-000001","tipo":"Entrada","instante":"2026-11-09T13:00:00Z"},{"numeroRegistro":"SMOKE-0002","legajo":"EMP-000001","tipo":"Salida","instante":"2026-11-09T22:00:00Z"}]}'
+request_check 'POST marcación manual del empleado cesado' POST '/api/v1/marcaciones' 409 marcacion-empleado-cesado '{"empleadoId":4,"tipo":"Entrada","instante":"2026-11-10T13:00:00Z","observacion":"Marcación de smoke"}'
+request_check 'POST cálculo de jornadas del 2 al 6 de noviembre' POST '/api/v1/jornadas-asistencia/calculo' 200 asistencia-calculo '{"desde":"2026-11-02","hasta":"2026-11-06"}'
+request_check 'POST aprobar horas extra pendientes' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 200 jornada-id-8
+request_check 'POST aprobar horas extra repetido' POST '/api/v1/jornadas-asistencia/8/horas-extra/aprobacion' 409 jornada-sin-horas-extra-pendientes
+request_check 'OpenAPI de ausencias' GET '/openapi/v1.json' 200 openapi-ausencias
+request_check 'Resumen de ausencias' GET '/api/v1/ausencias/resumen' 200 ausencias-resumen
+request_check 'Saldo vacacional del empleado 1' GET '/api/v1/ausencias/saldo-vacacional/1?fecha=2026-11-22' 200 saldo-empleado-1
+request_check 'POST vacaciones que superan el saldo' POST '/api/v1/ausencias' 409 ausencia-saldo-insuficiente '{"empleadoId":3,"tipo":"Vacaciones","fechaInicio":"2030-01-08","fechaFin":"2030-12-31"}'
+request_check 'POST permiso con goce' POST '/api/v1/ausencias' 200 ausencia-created-8 '{"empleadoId":2,"tipo":"PermisoConGoce","fechaInicio":"2030-02-04","fechaFin":"2030-02-05","motivo":"Tramite de smoke"}'
+request_check 'POST aprobar ausencia' POST '/api/v1/ausencias/8/aprobacion' 200 ausencia-id-8
+request_check 'POST aprobar ausencia repetido' POST '/api/v1/ausencias/8/aprobacion' 409 ausencia-no-pendiente
+request_check 'POST segundo permiso con goce' POST '/api/v1/ausencias' 200 ausencia-created-9 '{"empleadoId":2,"tipo":"PermisoConGoce","fechaInicio":"2030-03-04","fechaFin":"2030-03-05","motivo":"Tramite de smoke"}'
+request_check 'POST cancelar ausencia futura' POST '/api/v1/ausencias/9/cancelacion' 200 ausencia-id-9
+request_check 'OpenAPI de prestamos' GET '/openapi/v1.json' 200 openapi-prestamos
+request_check 'Resumen de prestamos' GET '/api/v1/prestamos/resumen' 200 prestamos-resumen
+request_check 'Capacidad del empleado 1' GET '/api/v1/prestamos/capacidad/1?fecha=2026-11-22' 200 prestamos-capacidad-1
+request_check 'POST adelanto que supera el tope' POST '/api/v1/prestamos' 409 prestamo-supera-tope '{"empleadoId":1,"tipo":"Adelanto","monto":2400,"fechaOtorgamiento":"2026-11-22","primerAnio":2026,"primerMes":11,"motivo":"Adelanto de smoke"}'
+request_check 'POST prestamo valido' POST '/api/v1/prestamos' 200 prestamo-created-4 '{"empleadoId":2,"tipo":"Prestamo","monto":300,"numeroCuotas":3,"fechaOtorgamiento":"2026-11-22","primerAnio":2026,"primerMes":12,"motivo":"Prestamo de smoke"}'
+request_check 'POST anular prestamo con descuentos' POST '/api/v1/prestamos/1/anulacion' 409 prestamo-con-descuentos '{"motivo":"Prueba de smoke"}'
+request_check 'POST anular prestamo sin descuentos' POST '/api/v1/prestamos/4/anulacion' 200 prestamo-id-4 '{"motivo":"Prueba de smoke"}'
+request_check 'OpenAPI de planillas' GET '/openapi/v1.json' 200 openapi-planillas
+request_check 'Parametros de planilla' GET '/api/v1/planillas/parametros' 200 planillas-parametros
+request_check 'POST planilla duplicada del seed' POST '/api/v1/planillas' 409 planilla-duplicada '{"anio":2026,"mes":11,"tipo":"Mensual"}'
+request_check 'POST calcular planilla 2026-11' POST '/api/v1/planillas/2/calculo' 200 planilla-calculada
+request_check 'Planilla 2026-11 calculada' GET '/api/v1/planillas/2' 200 planilla-2-calculada
+request_check 'POST aprobar planilla 2026-11' POST '/api/v1/planillas/2/aprobacion' 200 planilla-id-2
+request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calculo' 409 planilla-aprobada-no-modificable
+request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
+request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
+# Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
+SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
+SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
+SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
+SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
+request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
+request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle
+request_check 'POST ciclo de evaluacion' POST '/api/v1/ciclos-evaluacion' 200 ciclo-evaluacion-created-3 "{\"codigo\":\"smk-2026\",\"nombre\":\"Ciclo de smoke\",\"periodo\":\"Semestral\",\"fechaInicioPeriodo\":\"${SMOKE_INICIO_PERIODO}\",\"fechaFinPeriodo\":\"${SMOKE_FIN_PERIODO}\",\"fechaApertura\":\"${SMOKE_APERTURA_CICLO}\",\"fechaCierre\":\"${SMOKE_CIERRE_CICLO}\"}"
+request_check 'POST primera competencia (60)' POST '/api/v1/ciclos-evaluacion/3/competencias' 200 competencia-evaluacion-created-9 '{"nombre":"Calidad","descripcion":"Calidad de smoke","peso":60}'
+request_check 'POST abrir ciclo con pesos que no suman 100' POST '/api/v1/ciclos-evaluacion/3/apertura' 409 ciclo-evaluacion-pesos-incompletos
+request_check 'POST segunda competencia (40)' POST '/api/v1/ciclos-evaluacion/3/competencias' 200 competencia-evaluacion-created-10 '{"nombre":"Equipo","peso":40}'
+request_check 'POST abrir ciclo' POST '/api/v1/ciclos-evaluacion/3/apertura' 200 ciclo-evaluacion-id-3
+request_check 'POST evaluacion del empleado 1' POST '/api/v1/evaluaciones' 200 evaluacion-created-6 '{"cicloId":3,"empleadoId":1,"evaluadorId":2}'
+request_check 'POST segunda evaluacion del mismo empleado' POST '/api/v1/evaluaciones' 409 evaluacion-duplicada '{"cicloId":3,"empleadoId":1,"evaluadorId":2}'
+request_check 'PUT calificaciones completas' PUT '/api/v1/evaluaciones/6/calificaciones' 200 evaluacion-id-6 '{"calificaciones":[{"competenciaId":9,"calificacion":4},{"competenciaId":10,"calificacion":5}],"comentario":"Evaluacion de smoke"}'
+request_check 'POST enviar evaluacion' POST '/api/v1/evaluaciones/6/envio' 200 evaluacion-id-6
+request_check 'Evaluacion enviada con puntaje' GET '/api/v1/evaluaciones/6' 200 evaluacion-6-enviada
+request_check 'POST cerrar ciclo de humo' POST '/api/v1/ciclos-evaluacion/3/cierre' 200 ciclo-evaluacion-id-3
+request_check 'Resultados del ciclo de humo' GET '/api/v1/ciclos-evaluacion/3/resultados' 200 evaluacion-resultados-smk
+# Modulo 69: las programaciones de humo usan fechas de 2099 para que no dependan del calendario.
+request_check 'OpenAPI de capacitaciones' GET '/openapi/v1.json' 200 openapi-capacitaciones
+request_check 'Resumen de capacitaciones 2026' GET '/api/v1/capacitaciones/resumen?anio=2026' 200 capacitaciones-resumen-2026
+request_check 'Resumen de capacitaciones 2027' GET '/api/v1/capacitaciones/resumen?anio=2027' 200 capacitaciones-resumen-2027
+request_check 'Horas de capacitacion 2026' GET '/api/v1/capacitaciones/horas?anio=2026' 200 capacitaciones-horas-2026
+request_check 'Capacitacion del empleado 2' GET '/api/v1/capacitaciones/empleados/2?anio=2026' 200 capacitaciones-empleado-2
+request_check 'POST curso' POST '/api/v1/cursos' 200 curso-created-5 '{"codigo":"smk-001","nombre":"Curso de smoke","horas":4.5,"tipo":"Interno"}'
+request_check 'POST curso con codigo repetido' POST '/api/v1/cursos' 409 curso-duplicado '{"codigo":"SMK-001","nombre":"Otro curso","horas":4.5,"tipo":"Virtual"}'
+request_check 'POST programacion de un curso inactivo' POST '/api/v1/programaciones-curso' 409 curso-inactivo '{"cursoId":4,"fechaInicio":"2099-06-01","fechaFin":"2099-06-02","cupo":1}'
+request_check 'POST programacion con cupo 1' POST '/api/v1/programaciones-curso' 200 programacion-created-4 '{"cursoId":5,"fechaInicio":"2099-06-01","fechaFin":"2099-06-02","cupo":1,"lugar":"Sala de smoke"}'
+request_check 'POST inscripcion de un empleado cesado' POST '/api/v1/programaciones-curso/4/inscripciones' 409 inscripcion-cesado '{"empleadoId":4}'
+request_check 'POST primera inscripcion' POST '/api/v1/programaciones-curso/4/inscripciones' 200 inscripcion-created-8 '{"empleadoId":1}'
+request_check 'POST inscripcion que supera el cupo' POST '/api/v1/programaciones-curso/4/inscripciones' 409 inscripcion-sin-cupo '{"empleadoId":2}'
+request_check 'POST realizar una programacion futura' POST '/api/v1/programaciones-curso/4/realizacion' 409 programacion-no-realizable
+request_check 'POST retiro de la inscripcion' POST '/api/v1/programaciones-curso/4/inscripciones/8/retiro' 200 inscripcion-id-8
+request_check 'POST inscripcion tras el retiro' POST '/api/v1/programaciones-curso/4/inscripciones' 200 inscripcion-created-9 '{"empleadoId":2}'
+request_check 'POST cancelar programacion' POST '/api/v1/programaciones-curso/4/cancelacion' 200 programacion-id-4
+request_check 'POST resultados de la programacion 1' POST '/api/v1/programaciones-curso/1/resultados' 200 programacion-id-1 '{"resultados":[{"inscripcionId":3,"aprobado":true,"nota":12.5}]}'
+request_check 'POST certificacion de inscripcion no aprobada' POST '/api/v1/programaciones-curso/2/inscripciones/5/certificacion' 409 certificacion-no-aprobada '{"codigo":"SMK-0001","fechaEmision":"2026-03-11"}'
+request_check 'POST certificacion' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 200 certificacion-created-3 '{"codigo":"smk-0001","fechaEmision":"2026-03-11","fechaVencimiento":null}'
+request_check 'POST certificacion repetida' POST '/api/v1/programaciones-curso/1/inscripciones/4/certificacion' 409 certificacion-repetida '{"codigo":"SMK-0002","fechaEmision":"2026-03-11"}'
+request_check 'Programacion 1 con inscritos y certificaciones' GET '/api/v1/programaciones-curso/1' 200 programacion-1-detalle
+# Modulo 70: las fechas de humo salen de hoy para que no dependan del calendario.
+SMOKE_HOY="$(date -u +%Y-%m-%d)"
+request_check 'OpenAPI de seguridad y salud ocupacional' GET '/openapi/v1.json' 200 openapi-sst
+request_check 'Resumen SST 2026' GET '/api/v1/incidentes-sst/resumen?anio=2026' 200 sst-resumen-2026
+request_check 'Incidente 2 abierto con una accion pendiente' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-abierto
+request_check 'POST equipo de proteccion' POST '/api/v1/equipos-proteccion' 200 equipo-proteccion-created-5 '{"codigo":"smk-epp","nombre":"Equipo de smoke","vidaUtilDias":30}'
+request_check 'POST equipo con codigo repetido' POST '/api/v1/equipos-proteccion' 409 equipo-proteccion-duplicado '{"codigo":"SMK-EPP","nombre":"Otro equipo","vidaUtilDias":30}'
+request_check 'POST entrega de un equipo inactivo' POST '/api/v1/entregas-epp' 409 epp-equipo-inactivo "{\"equipoId\":4,\"empleadoId\":1,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":1}"
+request_check 'POST entrega a un empleado cesado' POST '/api/v1/entregas-epp' 409 epp-empleado-cesado "{\"equipoId\":5,\"empleadoId\":4,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":1}"
+request_check 'POST entrega de EPP' POST '/api/v1/entregas-epp' 200 entrega-epp-created-4 "{\"equipoId\":5,\"empleadoId\":1,\"fechaEntrega\":\"${SMOKE_HOY}\",\"cantidad\":2}"
+request_check 'POST examen de retiro fuera de plazo' POST '/api/v1/examenes-medicos' 409 examen-retiro-fuera-de-plazo "{\"empleadoId\":4,\"tipo\":\"Retiro\",\"fecha\":\"${SMOKE_HOY}\",\"resultado\":\"Apto\"}"
+request_check 'POST examen periodico' POST '/api/v1/examenes-medicos' 200 examen-medico-created-5 "{\"empleadoId\":1,\"tipo\":\"Periodico\",\"fecha\":\"${SMOKE_HOY}\",\"resultado\":\"Apto\",\"fechaVencimiento\":\"2099-12-31\",\"clinica\":\"Clinica de smoke\"}"
+request_check 'POST incidente' POST '/api/v1/incidentes-sst' 200 incidente-sst-created-3 "{\"empleadoId\":1,\"tipo\":\"IncidenteSinLesion\",\"severidad\":\"Leve\",\"fecha\":\"${SMOKE_HOY}\",\"lugar\":\"Planta de smoke\",\"descripcion\":\"Incidente de smoke\"}"
+request_check 'POST accion correctiva' POST '/api/v1/incidentes-sst/3/acciones' 200 accion-correctiva-created-3 '{"descripcion":"Revisar la zona","responsable":"Jefe de smoke","fechaCompromiso":"2099-12-31"}'
+request_check 'POST cierre con una accion pendiente' POST '/api/v1/incidentes-sst/2/cierre' 409 incidente-cierre-pendientes
+request_check 'POST completar la accion pendiente' POST '/api/v1/incidentes-sst/2/acciones/2/completar' 200 accion-correctiva-id-2 "{\"fechaCompletada\":\"${SMOKE_HOY}\"}"
+request_check 'POST cierre del incidente 2' POST '/api/v1/incidentes-sst/2/cierre' 200 incidente-sst-id-2
+request_check 'POST accion en un incidente cerrado' POST '/api/v1/incidentes-sst/2/acciones' 409 incidente-cerrado-sin-cambios '{"descripcion":"Otra accion","responsable":"Jefe","fechaCompromiso":"2099-12-31"}'
+request_check 'Incidente 2 cerrado' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-cerrado
+
+request_check 'OpenAPI de listas de materiales' GET '/openapi/v1.json' 200 openapi-listas-materiales
+request_check 'Versiones de la lista de materiales del producto 1' GET '/api/v1/listas-materiales?productoId=1' 200 listas-materiales-seed
+request_check 'Rechazar versión repetida' POST '/api/v1/listas-materiales' 409 lista-material-version-duplicada '{"productoId":1,"version":1,"componentes":[{"componenteProductoId":3,"cantidad":1,"unidadMedida":"unidad"}]}'
+request_check 'Crear lista de materiales en borrador' POST '/api/v1/listas-materiales' 201 lista-material-creada '{"productoId":3,"version":1,"componentes":[{"componenteProductoId":5,"cantidad":1,"unidadMedida":"unidad"}]}'
+LISTA_MATERIAL_SMOKE="/api/v1/listas-materiales/${LISTA_MATERIAL_CREADA_ID}"
+LISTA_MATERIAL_EDICION='{"componentes":[{"componenteProductoId":6,"cantidad":0.123456,"unidadMedida":"unidad"}]}'
+request_check 'Editar lista de materiales en borrador' PUT "$LISTA_MATERIAL_SMOKE" 200 '' "$LISTA_MATERIAL_EDICION"
+request_check 'Activar lista de materiales' POST "$LISTA_MATERIAL_SMOKE/activar" 200 ''
+request_check 'Bloquear edición de lista activa' PUT "$LISTA_MATERIAL_SMOKE" 409 lista-material-edicion-bloqueada "$LISTA_MATERIAL_EDICION"
+request_check 'Retirar lista de materiales' POST "$LISTA_MATERIAL_SMOKE/retirar" 200 ''
+request_check 'Consultar lista de materiales retirada' GET "$LISTA_MATERIAL_SMOKE" 200 lista-material-retirada
+
+TITANGLOBAL_SMOKE_BOM_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/listas-materiales" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_BOM_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=10) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def componentes(cantidad):
+    return [{"componenteProductoId": 6, "cantidad": cantidad, "unidadMedida": "unidad"}]
+
+def crear(producto, version):
+    estado, respuesta = peticion("POST", datos={
+        "productoId": producto, "version": version, "componentes": componentes(1),
+    })
+    assert estado == 201, respuesta
+    return respuesta["id"]
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, [primera, segunda]))
+
+primera = crear(2, 1)
+segunda = crear(2, 2)
+resultados = en_paralelo(("POST", f"/{primera}/activar"), ("POST", f"/{segunda}/activar"))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "El producto 2 ya tiene una lista de materiales activa.", conflicto
+estado, activas = peticion("GET", "?productoId=2&estado=Activa")
+assert estado == 200 and activas["total"] == 1, activas
+
+id_lista = crear(4, 1)
+activacion, edicion = en_paralelo(
+    ("POST", f"/{id_lista}/activar"),
+    ("PUT", f"/{id_lista}", {"componentes": componentes(2)}),
+)
+assert activacion[0] == 200 and edicion[0] in (200, 409), (activacion, edicion)
+if edicion[0] == 409:
+    assert edicion[1]["Message"] == "Solo se pueden editar listas de materiales en borrador.", edicion
+estado, lista = peticion("GET", f"/{id_lista}")
+assert estado == 200 and lista["estado"] == "Activa", lista
+assert [detalle["cantidad"] for detalle in lista["componentes"]] == [2 if edicion[0] == 200 else 1], lista
+print("Concurrencia de listas de materiales OK")
+PY
+
+
+request_check 'OpenAPI de rutas de producción' GET '/openapi/v1.json' 200 openapi-rutas-produccion
+request_check 'Versiones de ruta del producto 1' GET '/api/v1/rutas-produccion?productoId=1' 200 rutas-produccion-seed
+OPERACION_RUTA_SMOKE='{"secuencia":1,"nombre":"Ensamblar","centroTrabajoId":'"${CENTRO_TRABAJO_SEED_ID}"',"minutosPreparacion":0.25,"minutosPorUnidad":2.75}'
+request_check 'Rechazar versión duplicada de ruta' POST '/api/v1/rutas-produccion' 409 ruta-produccion-version-duplicada '{"productoId":1,"version":1,"operaciones":['"$OPERACION_RUTA_SMOKE"']}'
+request_check 'Crear borrador de ruta' POST '/api/v1/rutas-produccion' 201 ruta-produccion-creada '{"productoId":3,"version":1,"operaciones":[{"secuencia":1,"nombre":"Ensamblar","centroTrabajoId":'"${CENTRO_TRABAJO_SEED_ID}"',"minutosPreparacion":0,"minutosPorUnidad":1}]}'
+RUTA_PRODUCCION_SMOKE="/api/v1/rutas-produccion/${RUTA_PRODUCCION_CREADA_ID}"
+RUTA_PRODUCCION_EDICION='{"operaciones":['"$OPERACION_RUTA_SMOKE"']}'
+request_check 'Editar operaciones del borrador' PUT "$RUTA_PRODUCCION_SMOKE" 200 created "$RUTA_PRODUCCION_EDICION"
+request_check 'Activar ruta de producción' POST "$RUTA_PRODUCCION_SMOKE/activar" 200 created
+request_check 'Bloquear edición de ruta activa' PUT "$RUTA_PRODUCCION_SMOKE" 409 ruta-produccion-edicion-bloqueada "$RUTA_PRODUCCION_EDICION"
+request_check 'Retirar ruta de producción' POST "$RUTA_PRODUCCION_SMOKE/retirar" 200 created
+request_check 'Consultar la ruta retirada' GET "$RUTA_PRODUCCION_SMOKE" 200 ruta-produccion-retirada
+request_check 'Proteger el centro usado por rutas' DELETE "/api/v1/centros-trabajo/${CENTRO_TRABAJO_SEED_ID}" 409 centro-en-uso-ruta
+
+TITANGLOBAL_SMOKE_RUTAS_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/rutas-produccion" "$CENTRO_TRABAJO_SEED_ID" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+centro_id = int(sys.argv[2])
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_RUTAS_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def operaciones(minutos):
+    return [{
+        "secuencia": 1, "nombre": "Montar", "centroTrabajoId": centro_id,
+        "minutosPreparacion": 0, "minutosPorUnidad": minutos,
+    }]
+
+def crear(producto, version):
+    estado, respuesta = peticion("POST", datos={
+        "productoId": producto, "version": version, "operaciones": operaciones(1),
+    })
+    assert estado == 201, respuesta
+    return respuesta["id"]
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, (primera, segunda)))
+
+primera = crear(2, 1)
+segunda = crear(2, 2)
+resultados = en_paralelo(("POST", f"/{primera}/activar"), ("POST", f"/{segunda}/activar"))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "El producto 2 ya tiene una ruta de producción activa.", conflicto
+estado, activas = peticion("GET", "?productoId=2&estado=Activa")
+assert estado == 200 and activas["total"] == 1, activas
+
+id_ruta = crear(4, 1)
+activacion, edicion = en_paralelo(
+    ("POST", f"/{id_ruta}/activar"),
+    ("PUT", f"/{id_ruta}", {"operaciones": operaciones(2)}),
+)
+assert activacion[0] == 200 and edicion[0] in (200, 409), (activacion, edicion)
+if edicion[0] == 409:
+    assert edicion[1]["Message"] == "Solo se pueden editar rutas de producción en borrador.", edicion
+estado, ruta = peticion("GET", f"/{id_ruta}")
+assert estado == 200 and ruta["estado"] == "Activa", ruta
+assert [op["minutosPorUnidad"] for op in ruta["operaciones"]] == [2 if edicion[0] == 200 else 1], ruta
+print("Concurrencia de rutas de producción OK")
+PY
+# Módulo 43: maestro independiente de rutas, sin modificar el resto de módulos.
+TOKEN_43_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M43 exige sesión' GET '/api/v1/rutas-despacho' 401 no-session
+TOKEN_ACTUAL="$TOKEN_43_ADMIN"
+request_check 'M43 OpenAPI siete operaciones' GET '/openapi/v1.json' 200 m43-openapi
+request_check 'M43 rutas del seed' GET '/api/v1/rutas-despacho' 200 m43-list
+request_check 'M43 filtro false' GET '/api/v1/rutas-despacho?activo=false' 200 m43-inactivas
+request_check 'M43 zonas distintas' GET '/api/v1/rutas-despacho/zonas' 200 m43-zonas
+request_check 'M43 resumen sin mezclar monedas' GET '/api/v1/rutas-despacho/resumen' 200 m43-resumen
+request_check 'M43 filtros combinados' GET '/api/v1/rutas-despacho?zona=norte&activo=true&busqueda=GUAYAQUIL' 200 m43-filtro
+request_check 'M43 página enorme sin desbordar' GET '/api/v1/rutas-despacho?pagina=2147483647' 200 m43-vacia
+request_check 'M43 crear con máximos y false' POST '/api/v1/rutas-despacho' 200 m43-created '{"codigo":" SMK-43 ","nombre":"Ruta Smoke","zona":"Prueba","origen":"Lima","destino":"Callao","distanciaKm":99999999.99,"peajeEstimado":9999999999999999.99,"moneda":" usd ","activo":false,"observaciones":" "}'
+request_check 'M43 precisión y normalización persistidas' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 m43-maximos
+request_check 'M43 código duplicado normalizado' POST '/api/v1/rutas-despacho' 409 m43-duplicate '{"codigo":" smk-43 ","nombre":"Duplicada","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 editar código propio y peaje cero' PUT "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 created '{"codigo":"SMK-43","nombre":"Ruta Smoke editada","zona":"Prueba","origen":"Lima","destino":"Callao","distanciaKm":25.50,"peajeEstimado":0,"moneda":"USD","activo":true,"observaciones":" Editada "}'
+request_check 'M43 peaje cero conservado' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 200 m43-cero
+request_check 'M43 distancia positiva' POST '/api/v1/rutas-despacho' 400 m43-distancia '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":0,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 distancia sin redondeo' POST '/api/v1/rutas-despacho' 400 m43-distancia-decimales '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1.001,"peajeEstimado":0,"moneda":"PEN"}'
+request_check 'M43 peaje sin redondeo' POST '/api/v1/rutas-despacho' 400 m43-peaje-decimales '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":0.001,"moneda":"PEN"}'
+request_check 'M43 peaje no negativo' POST '/api/v1/rutas-despacho' 400 m43-peaje-negativo '{"codigo":"INVALIDA","nombre":"Ruta","zona":"Centro","origen":"Lima","destino":"Callao","distanciaKm":1,"peajeEstimado":-1,"moneda":"PEN"}'
+# Verificar restricciones sin pasar por las prevalidaciones de Application.
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES (' smk-43 ', 'SQL', 'Centro', 'Lima', 'Callao', 1, 0, 'PEN');
+        RAISE EXCEPTION 'M43: falta unicidad normalizada del código';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES ('SQL-INVALIDA', 'SQL', 'Centro', 'Lima', 'Callao', 0, 0, 'PEN');
+        RAISE EXCEPTION 'M43: falta restricción de distancia positiva';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda")
+        VALUES ('SQL-INVALIDA', 'SQL', 'Centro', 'Lima', 'Callao', 1, -1, 'PEN');
+        RAISE EXCEPTION 'M43: falta restricción de peaje no negativo';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
+request_check 'M43 eliminar ruta sin asociaciones' DELETE "/api/v1/rutas-despacho/${RUTA_43_ID}" 204 ''
+request_check 'M43 confirmar baja' GET "/api/v1/rutas-despacho/${RUTA_43_ID}" 404 m43-missing
+# Módulo 44: picking, packing, precisión e historial real.
+TOKEN_44_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M44 exige sesión' GET '/api/v1/consolidaciones-carga' 401 no-session
+TOKEN_ACTUAL="$TOKEN_44_ADMIN"
+request_check 'M44 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m44-openapi
+request_check 'M44 seed y totales' GET '/api/v1/consolidaciones-carga' 200 m44-list
+request_check 'M44 resumen' GET '/api/v1/consolidaciones-carga/resumen' 200 m44-resumen
+request_check 'M44 máximos exactos' POST '/api/v1/consolidaciones-carga' 200 m44-created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":1000000,"cantidadRecogida":0,"unidadesPorBulto":1,"largoCm":9999.99,"anchoCm":9999.99,"altoCm":9999.99,"pesoBultoKg":999999.99}]}'
+request_check 'M44 exactitud persistida' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-maximos
+request_check 'M44 picking incompleto' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-picking
+request_check 'M44 código normalizado duplicado' POST '/api/v1/consolidaciones-carga' 409 m44-duplicado '{"codigo":"smk-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 editar packing incompleto' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":0,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 packing incompleto' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-packing
+request_check 'M44 no redondea entradas' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 400 m44-decimales '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":1.001,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 reemplazo de líneas completo' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 created '{"codigo":"SMK-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 confirmar sin cuerpo' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 200 created
+request_check 'M44 fecha UTC y packing conservados' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-confirmada
+request_check 'M44 no confirma dos veces' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/confirmacion" 409 m44-confirmacion
+request_check 'M44 no edita terminal' PUT "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 409 m44-edicion '{}'
+request_check 'M44 no elimina terminal' DELETE "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 409 m44-baja
+request_check 'M44 exige motivo' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 400 m44-motivo '{"motivo":" "}'
+request_check 'M44 cancela conservando historial' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 200 created '{"motivo":"  Cambio de plan  "}'
+request_check 'M44 historial UTC y líneas' GET "/api/v1/consolidaciones-carga/${CARGA_44_ID}" 200 m44-cancelada
+request_check 'M44 cancelación repetida' POST "/api/v1/consolidaciones-carga/${CARGA_44_ID}/cancelacion" 409 m44-repetida '{"motivo":"Repetida"}'
+request_check 'M44 filtrar canceladas' GET '/api/v1/consolidaciones-carga?estado=cancelada' 200 m44-filtro
+request_check 'M44 borrador para baja' POST '/api/v1/consolidaciones-carga' 200 m44-baja-created '{"codigo":"SMK-BAJA-44","nombre":"Carga smoke","lineas":[{"sku":"SMK-BAJA-44","descripcion":"Manual","cantidad":10,"cantidadRecogida":10,"unidadesPorBulto":4,"largoCm":50,"anchoCm":40,"altoCm":30,"pesoBultoKg":2}]}'
+request_check 'M44 baja con cascada' DELETE "/api/v1/consolidaciones-carga/${BAJA_44_ID}" 204 ''
+request_check 'M44 confirmar baja' GET "/api/v1/consolidaciones-carga/${BAJA_44_ID}" 404 m44-missing
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" WHERE "Sku" = 'SMK-BAJA-44') THEN RAISE EXCEPTION 'M44: baja sin cascada'; END IF;
+    BEGIN
+        INSERT INTO "ConsolidacionesCarga" ("Codigo","Nombre") VALUES (' smk-44 ','SQL');
+        RAISE EXCEPTION 'M44: falta unicidad normalizada';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad") VALUES (2147483647,1,'FK','FK',1);
+        RAISE EXCEPTION 'M44: falta FK';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad","CantidadRecogida") SELECT "Id",1,'CHECK','CHECK',1,2 FROM "ConsolidacionesCarga" WHERE "Codigo" = 'SMK-44';
+        RAISE EXCEPTION 'M44: falta límite de recogida';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+END $$;
+SQL
 printf 'SMOKE OK\n'

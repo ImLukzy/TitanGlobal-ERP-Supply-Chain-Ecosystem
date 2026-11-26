@@ -1,6 +1,6 @@
 # Especificación: módulo 42 — pantalla de Conductores
 
-**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #59 y desplegada en la demo.
 
 ## 1. Objetivo
 Completar `/modulos/42-conductores` con búsqueda, filtro administrativo de habilitación, paginación, detalle, alta, edición y baja, siguiendo Proveedores, Centros de Trabajo y `crear-pantalla.md`. Responsable: Kelvin Pinto.
@@ -52,6 +52,7 @@ Otros módulos, relación con vehículos, entidades base, middleware, pipeline, 
 | 2026-11-21 | A2–A4 | 39 pruebas del módulo aprobadas | contratos HTTP, fechas UTC, paginación, búsqueda/filtros, detalle obsoleto, errores, alta/edición/baja, prevención de envíos duplicados y foco |
 | 2026-11-21 | A6 | Aprobado con datos reales | Edge, API y PostgreSQL locales, seed real, 375/1280 px claro/oscuro; sin desbordamiento ni errores JavaScript; conflicto por licencia en minúsculas, CRUD real y desactivación/reactivación de licencia vencida conservando su instante UTC |
 | 2026-11-21 | PostgreSQL | Aprobado | `SCAFFOLD AL DÍA` y `SMOKE OK`, sin cambios a pruebas ajenas ni archivos generados editados a mano |
+| 2026-11-23 | Integración y producción | Aprobado | Spec aprobada por Lukas. `022` aplicado en la demo con copia y ensayo (5 scripts registrados, filas de las 41 tablas sin cambios). PR #59 fusionado con merge commit (`0b0324f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/conductores` responde 200 y la pantalla está publicada |
 
 La implementación y verificación local están completas. Revisión de Lukas, PR, integración y despliegue pendientes; no se presentan como concedidos.
 
