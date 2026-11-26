@@ -15,5 +15,7 @@ public partial class ListaMateriales
 
     public virtual ICollection<DetalleListaMaterial> DetallesListaMaterial { get; set; } = new List<DetalleListaMaterial>();
 
+    public virtual ICollection<OrdenProduccion> OrdenesProduccion { get; set; } = new List<OrdenProduccion>();
+
     public virtual Producto Producto { get; set; } = null!;
 }

@@ -6,7 +6,7 @@
 
 **Resultado esperado:** el usuario registra una orden para fabricar una cantidad de un producto con la lista de materiales y la ruta activas, consulta los materiales y el tiempo que requiere, y la lleva por sus estados hasta terminarla o cancelarla.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #75, fusionado el 2026-11-25).
 
 **Dependencias:** usa las tablas `ListasMateriales` (PR #40, script 023) y `RutasProduccion` (PR #49, script 011). La implementación empieza cuando ambos PR estén integrados en `main`.
 
@@ -131,14 +131,23 @@ Los módulos 31 y 32 no cambian su contrato. Una lista de materiales o ruta usad
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato.
-- [ ] PR #40 (31) y #49 (32) integrados en `main`, y rama actualizada.
-- [ ] Commit 1: script SQL 025, fila en `relevo.md` y entidades generadas.
-- [ ] Commit 2: DTOs, validaciones y casos de uso.
-- [ ] Commit 3: controlador, pruebas, seed y smoke.
-- [ ] Verificar A1–A7 y registrar los resultados.
+- [x] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato (PR #75, 2026-11-25).
+- [x] PR #40 (31) y #49 (32) integrados en `main`, y rama actualizada.
+- [x] Commit 1: script SQL 025 y entidades generadas (la fila del 025 en `relevo.md` ya estaba en `main`).
+- [x] Commit 2: UseCase de consulta (listado, resumen y detalle) y sus endpoints GET.
+- [x] Commit 3: alta y edición con bloqueo de fila.
+- [x] Commit 4: liberar, iniciar, terminar y cancelar.
+- [x] Commit 5: seed y comprobaciones del smoke.
+- [x] Verificar A1–A7 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-26 | A1 | 0 errores, 0 warnings | `dotnet build -warnaserror` dentro de `./scripts/verify.sh` |
+| 2026-11-26 | A2 | En verde | `./scripts/verify.sh` |
+| 2026-11-26 | A3 | 51 de 51 en verde: cada mensaje de §4, las cinco transiciones y la paginación | `dotnet test --filter Modulo34_OrdenesProduccion` (1810 en total) |
+| 2026-11-26 | A4 | Las nueve operaciones presentes y autenticadas | `openapi-ordenes-produccion` en el smoke |
+| 2026-11-26 | A5 | Materiales (lista × cantidad), tiempo estimado, versión de lista y ruta conservada tras retirarlas y resumen por estado | Pruebas de integración y smoke |
+| 2026-11-26 | A6 | `SMOKE OK`, con las fechas planificadas como día sin cambio, fechas reales en UTC y dos transiciones concurrentes con un único cambio de estado | `./scripts/smoke-postgres.sh` |
+| 2026-11-26 | A7 | Tres órdenes del producto 1 (`Planificada`, `EnProceso` y `Terminada`) tras dos cargas seguidas | `scripts/seed-dev.sql` cargado dos veces con `psql` sobre la base local |

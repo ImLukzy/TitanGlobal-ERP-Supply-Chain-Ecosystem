@@ -86,6 +86,14 @@ public partial class OrdenAbastecimiento
     }
 }
 
+public partial class OrdenProduccion
+{
+    public OrdenProduccion()
+    {
+        Estado = "Planificada";
+    }
+}
+
 public partial class Promocion
 {
     public Promocion()
