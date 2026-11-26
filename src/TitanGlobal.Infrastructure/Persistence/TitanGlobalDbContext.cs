@@ -357,6 +357,9 @@ public partial class TitanGlobalDbContext : DbContext
         modelBuilder.Entity<Cliente>(entity =>
         {
             entity.HasIndex(e => e.Ruc, "IX_Clientes_Ruc").IsUnique();
+
+            entity.Property(e => e.Nombre).HasMaxLength(200);
+            entity.Property(e => e.Ruc).HasMaxLength(11);
         });
 
         modelBuilder.Entity<CompetenciaEvaluacion>(entity =>
@@ -1060,6 +1063,8 @@ public partial class TitanGlobalDbContext : DbContext
 
         modelBuilder.Entity<Producto>(entity =>
         {
+            entity.Property(e => e.Categoria).HasMaxLength(100);
+            entity.Property(e => e.Nombre).HasMaxLength(200);
             entity.Property(e => e.Precio).HasPrecision(18, 2);
         });
 
