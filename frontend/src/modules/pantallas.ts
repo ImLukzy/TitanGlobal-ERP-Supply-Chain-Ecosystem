@@ -25,6 +25,7 @@ import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
 import { ConductoresPage } from './conductores/ConductoresPage';
 import { TransportistasTercerosPage } from './transportistas-terceros/TransportistasTercerosPage';
 import { RutasDespachoPage } from './rutas-despacho/RutasDespachoPage';
+import { TesoreriaBancosPage } from './tesoreria-bancos/TesoreriaBancosPage';
 import { ConsolidacionCargaPage } from './consolidacion-carga/ConsolidacionCargaPage';
 import { ContratosLaboralesPage } from './contratos-laborales/ContratosLaboralesPage';
 import { TurnosHorariosPage } from './turnos-horarios/TurnosHorariosPage';
@@ -64,6 +65,7 @@ export const pantallas: Record<string, ComponentType> = {
   '42-conductores': ConductoresPage,
   '48-transportistas-terceros': TransportistasTercerosPage,
   '43-rutas-despacho': RutasDespachoPage,
+  '55-tesoreria-bancos': TesoreriaBancosPage,
   '44-consolidacion-carga': ConsolidacionCargaPage,
   '62-contratos-laborales': ContratosLaboralesPage,
   '64-turnos-horarios': TurnosHorariosPage,
