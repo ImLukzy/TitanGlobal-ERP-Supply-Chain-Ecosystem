@@ -1,5 +1,7 @@
 # Especificación: modulo12-evaluacion-proveedores-backend — Evaluación de proveedores
 
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #43 y desplegada en la demo. La pantalla tendrá su propia spec.
+
 ## 1. Objetivo
 **Problema:** el dominio de Compras tiene el padrón de proveedores (módulo 11) pero no hay forma de medir qué tan bien cumple cada uno. Sin esa medida no se pueden comparar proveedores ni apoyar las licitaciones (módulo 14) y los acuerdos de abastecimiento (módulo 20).
 **Resultado esperado:** una entidad nueva `EvaluacionProveedor` con su tabla y `Modulo12_EvaluacionProveedores` en `api/v1/evaluaciones-proveedores`:
@@ -141,6 +143,7 @@ Resumen esperado del seed: 6 evaluaciones, 4 proveedores evaluados, promedio gen
 | 2026-11-15 | A5 Consultas | OK | filtros por proveedor, periodo y calificación sin distinguir mayúsculas, paginación con `total`, orden por periodo descendente y resumen exacto del seed (78.72; ranking 6, 1, 4, 2) |
 | 2026-11-15 | A6 Datos y PostgreSQL | OK | `./scripts/aplicar-bd.sh` aplica `005`; `./scripts/scaffold.sh --comprobar` → «SCAFFOLD AL DÍA» y `git status` limpio; `./scripts/smoke-postgres.sh` → `SMOKE OK` |
 | 2026-11-15 | A7 OpenAPI | OK | `OpenApiContainsSixEvaluationOperations` |
+| 2026-11-23 | Integración y producción | OK | Spec aprobada por Lukas. `005` aplicado en la demo con copia y ensayo (4 scripts registrados, filas de las 40 tablas sin cambios, tabla nueva `EvaluacionesProveedor` vacía). PR #43 fusionado con merge commit (`fc740b8`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/evaluaciones-proveedores` responde 200 |
 
 `dotnet test` completo: 981 correctas, 0 con error (942 previas + 39 del módulo 12).
 

@@ -12,13 +12,16 @@ public class NombresNavegacion : CandidateNamingService
     private static readonly Dictionary<string, string> Colecciones = new Dictionary<string, string>
     {
         { "Almacen.ZonaAlmacenaje", "Zonas" },
+        { "ConsolidacionCarga.LineaConsolidacionCarga", "Lineas" },
         { "Cotizacion.DetalleCotizacion", "Detalles" },
         { "DevolucionComercial.DetalleDevolucion", "Detalles" },
         { "Impuesto.TasaImpuesto", "Tasas" },
         { "ListaPrecios.ItemListaPrecios", "Items" },
         { "OrdenAbastecimiento.DetalleOrdenAbastecimiento", "Detalles" },
         { "OrdenCompra.DetalleOrdenCompra", "Detalles" },
+        { "Planilla.PlanillaDetalle", "Detalles" },
         { "SolicitudCompra.DetalleSolicitudCompra", "Detalles" },
+        { "TransportistaTercero.FleteTercero", "Fletes" },
         { "Usuario.UsuarioRol", "Roles" },
         { "Rol.UsuarioRol", "Usuarios" }
     };
