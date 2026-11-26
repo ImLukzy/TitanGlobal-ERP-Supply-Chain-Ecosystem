@@ -606,6 +606,27 @@ INSERT INTO "Empleados" ("Id", "Legajo", "TipoDocumento", "NumeroDocumento", "No
 
 SELECT setval(pg_get_serial_sequence('"Empleados"', 'Id'), (SELECT MAX("Id") FROM "Empleados"));
 
+INSERT INTO "Lotes" ("ProductoId", "Codigo", "FechaFabricacion", "FechaVencimiento", "Cantidad", "Estado") VALUES
+    (1, 'LOT-2026-001', date_trunc('day', now()) - interval '60 days', date_trunc('day', now()) + interval '300 days', 100, 'Disponible'),
+    (1, 'LOT-2026-002', date_trunc('day', now()) - interval '90 days', date_trunc('day', now()) - interval '10 days', 50, 'Disponible'),
+    (2, 'LOT-2026-003', date_trunc('day', now()) - interval '30 days', date_trunc('day', now()) + interval '20 days', 80, 'Cuarentena'),
+    (3, 'LOT-2026-004', NULL, NULL, 20, 'Bloqueado')
+    ON CONFLICT ("ProductoId", "Codigo") DO UPDATE SET
+    "FechaFabricacion" = EXCLUDED."FechaFabricacion",
+    "FechaVencimiento" = EXCLUDED."FechaVencimiento",
+    "Cantidad" = EXCLUDED."Cantidad",
+    "Estado" = EXCLUDED."Estado";
+
+INSERT INTO "UnidadesSerie" ("ProductoId", "LoteId", "NumeroSerie", "Estado") VALUES
+    (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0001', 'Disponible'),
+    (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0002', 'Asignada'),
+    (1, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), 'SN-0003', 'Disponible'),
+    (2, (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 2 AND "Codigo" = 'LOT-2026-003'), 'SN-1001', 'Disponible'),
+    (3, NULL, 'SN-2001', 'Baja')
+    ON CONFLICT ("ProductoId", "NumeroSerie") DO UPDATE SET
+    "LoteId" = EXCLUDED."LoteId",
+    "Estado" = EXCLUDED."Estado";
+DELETE FROM "MovimientosKardex" WHERE "Referencia" LIKE 'SEED-KARDEX-%';
 TRUNCATE TABLE "AdendasContrato", "ContratosLaborales" RESTART IDENTITY CASCADE;
 
 INSERT INTO "ContratosLaborales" ("Id", "Numero", "EmpleadoId", "Modalidad", "FechaInicio", "FechaFin", "SueldoBasico", "Cargo", "Estado", "ContratoAnteriorId", "FechaCierre", "MotivoCierre") VALUES
@@ -623,6 +644,28 @@ INSERT INTO "AdendasContrato" ("Id", "ContratoLaboralId", "FechaVigencia", "Carg
 SELECT setval(pg_get_serial_sequence('"ContratosLaborales"', 'Id'), (SELECT MAX("Id") FROM "ContratosLaborales"));
 SELECT setval(pg_get_serial_sequence('"AdendasContrato"', 'Id'), (SELECT MAX("Id") FROM "AdendasContrato"));
 
+INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "LoteId", "Fecha", "Tipo", "Cantidad", "CostoUnitario", "Referencia") VALUES
+    (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), (SELECT "Id" FROM "Lotes" WHERE "ProductoId" = 1 AND "Codigo" = 'LOT-2026-001'), now() - interval '30 days', 'Entrada', 100, 10.0000, 'SEED-KARDEX-01'),
+    (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '20 days', 'Entrada', 50, 12.0000, 'SEED-KARDEX-02'),
+    (1, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '10 days', 'Salida', 80, NULL, 'SEED-KARDEX-03'),
+    (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '15 days', 'Entrada', 40, 25.5000, 'SEED-KARDEX-04');
+
+DELETE FROM "MovimientosKardex" WHERE "Referencia" LIKE 'SEED-TRF-%';
+DELETE FROM "TransferenciasAlmacen" WHERE "Observaciones" LIKE 'SEED-TRF-%';
+
+WITH nueva AS (
+INSERT INTO "TransferenciasAlmacen" ("ProductoId", "AlmacenOrigenId", "AlmacenDestinoId", "Cantidad", "CostoUnitario", "Fecha", "Observaciones")
+VALUES (
+    2,
+    (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'),
+    (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-ARE-01'),
+    10, 25.5000, now() - interval '5 days', 'SEED-TRF-01')
+    RETURNING "Id", "ProductoId", "AlmacenOrigenId", "AlmacenDestinoId", "Cantidad", "CostoUnitario", "Fecha"
+    )
+INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "Fecha", "Tipo", "Cantidad", "CostoUnitario", "Referencia", "TransferenciaId")
+SELECT "ProductoId", "AlmacenOrigenId", "Fecha", 'Salida', "Cantidad", NULL, 'SEED-TRF-01', "Id" FROM nueva
+UNION ALL
+SELECT "ProductoId", "AlmacenDestinoId", "Fecha", 'Entrada', "Cantidad", "CostoUnitario", 'SEED-TRF-01', "Id" FROM nueva;
 TRUNCATE TABLE "EvaluacionesProveedor" RESTART IDENTITY;
 
 INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCumplimiento", "PuntajeCalidad", "PuntajePlazos", "PuntajeFinal", "Calificacion", "Observaciones", "FechaRegistro") VALUES
@@ -634,7 +677,28 @@ INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCum
     (6, 6, '2026-10', 100, 90, 95, 95.50, 'Excelente', NULL, TIMESTAMPTZ '2026-10-31 12:00:00+00');
 
 SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
+TRUNCATE TABLE "EjecucionesReabastecimiento", "ReglasReabastecimiento" RESTART IDENTITY CASCADE;
 
+INSERT INTO "ReglasReabastecimiento" ("Id", "Codigo", "ProductoId", "AlmacenId", "ProveedorPreferidoId", "StockActual", "StockMinimo", "PuntoReorden", "StockMaximo", "CantidadLoteCompra", "Activa", "UltimaEvaluacion", "Observaciones") VALUES
+    (1, 'REB-001', 3, 1, 1, 15, 10, 25, 50, 10, TRUE, TIMESTAMPTZ '2026-11-20 10:00:00+00', 'Mouse óptico bajo punto de reorden en Central Lima'),
+    (2, 'REB-002', 6, 1, 2, 80, 20, 40, 120, 20, TRUE, TIMESTAMPTZ '2026-11-20 10:00:00+00', 'Cable HDMI con nivel óptimo'),
+    (3, 'REB-003', 1, 2, 1, 2, 5, 10, 25, 5, FALSE, NULL, 'Regla pausada en Regional Lima');
+
+INSERT INTO "EjecucionesReabastecimiento" ("Id", "ReglaReabastecimientoId", "FechaEjecucion", "StockActual", "CantidadSugerida", "Estado", "SolicitudCompraId", "Observacion") VALUES
+    (1, 1, TIMESTAMPTZ '2026-11-20 10:00:00+00', 15, 40, 'Pendiente', NULL, 'Stock actual (15) por debajo del punto de reorden (25).');
+
+SELECT setval(pg_get_serial_sequence('"ReglasReabastecimiento"', 'Id'), (SELECT MAX("Id") FROM "ReglasReabastecimiento"));
+SELECT setval(pg_get_serial_sequence('"EjecucionesReabastecimiento"', 'Id'), (SELECT MAX("Id") FROM "EjecucionesReabastecimiento"));
+
+INSERT INTO "AjustesInventario" ("Id", "Codigo", "AlmacenId", "ProductoId", "Tipo", "Motivo", "Cantidad", "CostoUnitario", "Fecha", "Responsable", "Observaciones") VALUES
+    (1, 'AJU-2026-001', (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 2, 'Incremento', 'ConteoFisico', 10, 26.0000, now() - interval '12 days', 'Carlos Mendoza', 'Sobrante detectado en conteo cíclico'),
+    (2, 'AJU-2026-002', (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), 2, 'Decremento', 'Merma', 5, 25.6000, now() - interval '6 days', 'Lucía Paredes', 'Merma por manipulación en almacén');
+
+SELECT setval(pg_get_serial_sequence('"AjustesInventario"', 'Id'), (SELECT MAX("Id") FROM "AjustesInventario"));
+
+INSERT INTO "MovimientosKardex" ("ProductoId", "AlmacenId", "LoteId", "Fecha", "Tipo", "Cantidad", "CostoUnitario", "Referencia", "AjusteInventarioId") VALUES
+    (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '12 days', 'Entrada', 10, 26.0000, 'AJUSTE AJU-2026-001', 1),
+    (2, (SELECT "Id" FROM "Almacenes" WHERE "Codigo" = 'ALM-LIM-01'), NULL, now() - interval '6 days', 'Salida', 5, NULL, 'AJUSTE AJU-2026-002', 2);
 -- Módulo 48: proveedores externos e historial de fletes (idempotente).
 INSERT INTO "TransportistasTerceros" ("RazonSocial", "DocumentoFiscal", "Pais", "TipoServicio", "Contacto", "Email", "Telefono", "Observaciones", "Activo") VALUES
 ('Andes Logística 3PL', '20148000001', 'Perú', 'Ambos', 'Lucía Torres', 'operaciones@andes.example', '+51 999480001', 'Distribución nacional y almacenamiento externo.', true),

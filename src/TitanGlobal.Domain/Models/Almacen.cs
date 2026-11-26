@@ -23,5 +23,17 @@ public partial class Almacen
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<AjusteInventario> AjustesInventario { get; set; } = new List<AjusteInventario>();
+
+    public virtual ICollection<MovimientoKardex> MovimientosKardex { get; set; } = new List<MovimientoKardex>();
+
+    public virtual ICollection<ReglaReabastecimiento> ReglasReabastecimiento { get; set; } = new List<ReglaReabastecimiento>();
+
+    public virtual ICollection<TomaInventario> TomasInventario { get; set; } = new List<TomaInventario>();
+
+    public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacenAlmacenDestino { get; set; } = new List<TransferenciaAlmacen>();
+
+    public virtual ICollection<TransferenciaAlmacen> TransferenciasAlmacenAlmacenOrigen { get; set; } = new List<TransferenciaAlmacen>();
+
     public virtual ICollection<ZonaAlmacenaje> Zonas { get; set; } = new List<ZonaAlmacenaje>();
 }
