@@ -618,6 +618,29 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "m55-openapi": lambda d: all(code in d["paths"]["/api/v1/tesoreria-bancos" + path][method]["responses"] for method, path, code in (
+        ("get", "/cuentas", "200"), ("post", "/cuentas", "201"), ("get", "/cuentas/{id}", "200"),
+        ("put", "/cuentas/{id}", "200"), ("get", "/cuentas/{id}/movimientos", "200"),
+        ("post", "/cuentas/{id}/movimientos", "201"), ("post", "/cuentas/{id}/movimientos/{movimientoId}/revertir", "200"),
+        ("post", "/transferencias", "201"), ("get", "/transferencias/{id}", "200")
+    )),
+    "m55-seed-pen": lambda d: d["totalRegistros"] == 2 and d["pagina"] == 1 and d["tamanoPagina"] == 20
+        and [(c["numero"], c["saldo"]) for c in d["items"]] == [("00055001", 55), ("00055002", 50)],
+    "m55-seed-usd": lambda d: d["totalRegistros"] == 1 and d["items"][0]["numero"] == "00055003" and d["items"][0]["saldo"] == 75,
+    "m55-cuenta-creada": lambda d: d["id"] > 0 and d["banco"] == "BANCO SMOKE 55" and d["numero"].startswith("000")
+        and d["moneda"] == "PEN" and d["tipo"] == "Corriente" and d["saldo"] == 0 and d["fechaRegistro"].endswith("Z"),
+    "m55-ingreso": lambda d: d["tipo"] == "Ingreso" and d["importe"] == 100.01 and d["moneda"] == "PEN"
+        and d["fechaOperacion"] == "2026-11-10" and d["referencia"] == "Apertura",
+    "m55-egreso": lambda d: d["tipo"] == "Egreso" and d["importe"] == 30.01 and d["moneda"] == "PEN" and d["referencia"] is None,
+    "m55-transferencia": lambda d: d["id"] > 0 and d["moneda"] == "PEN" and d["importe"] == 20
+        and d["cuentaOrigenId"] != d["cuentaDestinoId"] and d["movimientoEgresoId"] > 0 and d["movimientoIngresoId"] > 0
+        and d["movimientoEgresoId"] != d["movimientoIngresoId"],
+    "m55-revertido": lambda d: d["tipo"] == "Egreso" and d["importe"] == 30.01 and d["motivoReversion"] == "Corrección de smoke"
+        and d["fechaReversion"].endswith("Z"),
+    "m55-saldo-origen": lambda d: d["saldo"] == 80.01,
+    "m55-saldo-destino": lambda d: d["saldo"] == 20,
+    "m55-sin-saldo": lambda d: d == {"StatusCode": 409, "Message": "La cuenta bancaria no tiene saldo suficiente."},
+    "m55-moneda-bloqueada": lambda d: d == {"StatusCode": 409, "Message": "No se puede cambiar la moneda de una cuenta con movimientos."},
 }
 
 if validation not in checks or not checks[validation](body):
@@ -834,6 +857,16 @@ request_check() {
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    if [[ "$validation" == "m55-cuenta-creada" ]]; then
+        CUENTA_BANCARIA_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m55-egreso" ]]; then
+        EGRESO_BANCARIO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m55-transferencia" ]]; then
+        TRANSFERENCIA_BANCARIA_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "ruta-produccion-creada" ]]; then
         RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -1604,4 +1637,31 @@ BEGIN
     END;
 END $$;
 SQL
+
+# Módulo 55: saldos derivados, transferencias y reversiones en PostgreSQL.
+TOKEN_55_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M55 exige sesión' GET '/api/v1/tesoreria-bancos/cuentas' 401 no-session
+TOKEN_ACTUAL="$TOKEN_55_ADMIN"
+request_check 'M55 OpenAPI nueve operaciones' GET '/openapi/v1.json' 200 m55-openapi
+CUENTAS_55='/api/v1/tesoreria-bancos/cuentas'
+TRANSFERENCIAS_55='/api/v1/tesoreria-bancos/transferencias'
+request_check 'M55 saldo del seed PEN' GET "$CUENTAS_55?moneda=PEN" 200 m55-seed-pen
+request_check 'M55 saldo del seed USD' GET "$CUENTAS_55?moneda=USD" 200 m55-seed-usd
+request_check 'M55 alta cuenta de origen' POST "$CUENTAS_55" 201 m55-cuenta-creada '{"banco":" banco smoke 55 ","numero":"000055S1","nombre":"Origen de smoke","tipo":"corriente","moneda":"pen"}'
+ORIGEN_55_ID="$CUENTA_BANCARIA_CREADA_ID"
+request_check 'M55 alta cuenta de destino' POST "$CUENTAS_55" 201 m55-cuenta-creada '{"banco":"Banco Smoke 55","numero":"000055S2","nombre":"Destino de smoke","tipo":"Corriente","moneda":"PEN"}'
+DESTINO_55_ID="$CUENTA_BANCARIA_CREADA_ID"
+MOVIMIENTOS_55="$CUENTAS_55/$ORIGEN_55_ID/movimientos"
+request_check 'M55 registra ingreso exacto' POST "$MOVIMIENTOS_55" 201 m55-ingreso '{"tipo":"Ingreso","importe":100.01,"fechaOperacion":"2026-11-10","referencia":"  Apertura  "}'
+request_check 'M55 registra egreso sin referencia' POST "$MOVIMIENTOS_55" 201 m55-egreso '{"tipo":"Egreso","importe":30.01,"fechaOperacion":"2026-11-10"}'
+request_check 'M55 impide egreso que deja saldo negativo' POST "$MOVIMIENTOS_55" 409 m55-sin-saldo '{"tipo":"Egreso","importe":70.01,"fechaOperacion":"2026-11-10"}'
+request_check 'M55 bloquea cambio de moneda histórico' PUT "$CUENTAS_55/$ORIGEN_55_ID" 409 m55-moneda-bloqueada '{"banco":"Banco Smoke 55","numero":"000055S1","nombre":"Origen de smoke","tipo":"Corriente","moneda":"USD"}'
+M55_TRASLADO='{"cuentaOrigenId":'"${ORIGEN_55_ID}"',"cuentaDestinoId":'"${DESTINO_55_ID}"',"importe":20,"fechaOperacion":"2026-11-10","referencia":"Traslado smoke"}'
+request_check 'M55 registra transferencia de dos patas' POST "$TRANSFERENCIAS_55" 201 m55-transferencia "$M55_TRASLADO"
+request_check 'M55 consulta transferencia' GET "$TRANSFERENCIAS_55/$TRANSFERENCIA_BANCARIA_CREADA_ID" 200 m55-transferencia
+request_check 'M55 revierte egreso y conserva datos' POST "$MOVIMIENTOS_55/$EGRESO_BANCARIO_CREADO_ID/revertir" 200 m55-revertido '{"motivo":"  Corrección de smoke  "}'
+request_check 'M55 saldo de origen después de revertir' GET "$CUENTAS_55/$ORIGEN_55_ID" 200 m55-saldo-origen
+request_check 'M55 saldo de destino después de transferir' GET "$CUENTAS_55/$DESTINO_55_ID" 200 m55-saldo-destino
+M55_TOKEN="$TOKEN_ACTUAL" python3 scripts/smoke-tesoreria-bancos.py "$BASE_URL"
 printf 'SMOKE OK\n'

@@ -1,6 +1,6 @@
 # Especificación: modulo55-tesoreria-bancos-backend — Tesorería y bancos
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 quedaron integradas por el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -8,8 +8,8 @@ Administrar cuentas bancarias y su saldo en la moneda de cada cuenta. Registrar 
 
 ### Base comprobada y dependencias
 
-- **Base.** El backend del 55 es autónomo en `main` salvo el rol de escritura creado por el 52 según G1. No existe un catálogo de cuentas bancarias integrado.
-- **Posterior.** El [56](modulo56-conciliacion-bancaria-backend.md) usa las cuentas y movimientos del 55. La guarda de reversión por coincidencia se completa en el PR del 56, cuando exista su tabla. El esquema inicial del 55 prescinde de tablas anticipadas del 56.
+- **Base.** El backend del 55 es autónomo en `main` salvo el rol `FINANZAS` (Id 7), que incorpora el 52. Las pruebas emiten JWT de ese rol con la infraestructura existente.
+- **Posterior.** El [56](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/specs/modulo56-conciliacion-bancaria-backend.md) usa las cuentas y movimientos del 55. Su PR registra la consulta a coincidencias. Mientras tanto, la guarda del 55 consulta un proveedor sin coincidencias.
 
 ## 2. Fuera de alcance
 
@@ -27,13 +27,13 @@ Administrar cuentas bancarias y su saldo en la moneda de cada cuenta. Registrar 
 | 55.5 | Cheques | Los cheques quedan fuera de la v0. |
 | 55.6 | Referencias | La referencia de origen es texto opcional. Prescindir de vínculos y escrituras automáticas en otros módulos. |
 
-Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
+Las [reglas comunes G1 a G9](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
 | Archivo previsto | Acción futura | Alcance |
 |---|---|---|
-| `database/NNN-modulo55-tesoreria-bancos.sql` y `docs/equipo/relevo.md` | Crear / registrar | Tomar el siguiente número libre al implementar y registrar solo la fila de este módulo. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
+| `database/046-modulo55-tesoreria-bancos.sql` y `docs/equipo/relevo.md` | Crear / registrar | El 046 es el siguiente número libre en las reservas y scripts publicados al iniciar esta rama. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
 | `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar | Entidades y navegaciones de §4 mediante scaffold. Revisar los nombres que produce el pluralizador. |
 | `src/TitanGlobal.Application/DTOs/Modulo55_TesoreriaBancos/` y `src/TitanGlobal.Application/UseCases/Modulo55_TesoreriaBancos/` | Crear | Validación, proyecciones y casos de uso concretos en Application. |
 | `src/TitanGlobal.Api/Controllers/Modulo55_TesoreriaBancos/TesoreriaBancosController.cs` | Crear | Rutas y autorización de §4. |
@@ -46,7 +46,7 @@ Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan e
 
 ### Convenciones y permisos
 
-Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, SQL 024 del módulo 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
 
 La cuenta define moneda y los movimientos la heredan. El número de cuenta es la identificación externa del banco. Los registros internos se consultan por su identidad y no reciben serie. Los importes son `numeric(18,2)`.
 
@@ -64,7 +64,7 @@ Saldo = suma de ingresos vigentes − suma de egresos vigentes. Una cuenta empie
 
 ### Casos de uso, rutas y DTOs
 
-Ruta base `/api/v1/tesoreria-bancos`. Las rutas de consulta proyectan con `AsNoTracking`. Filtrar cuentas por `moneda?` y `tipo?`. Filtrar movimientos por `tipo?`, `desde?` y `hasta?`, por fecha e `Id` descendentes. Paginación 1/20, máximo 100.
+Ruta base `/api/v1/tesoreria-bancos`. Las rutas de consulta proyectan con `AsNoTracking`. Filtrar cuentas por `moneda?` y `tipo?`, ordenadas por banco, número e `Id`. Filtrar movimientos por `tipo?`, `desde?` y `hasta?`, por fecha e `Id` descendentes. Paginación 1/20, máximo 100.
 
 | Método y ruta relativa | Caso de uso | Entrada → éxito |
 |---|---|---|
@@ -84,9 +84,9 @@ Ruta base `/api/v1/tesoreria-bancos`. Las rutas de consulta proyectan con `AsNoT
 
 ### Validaciones y mensajes literales
 
-Registrar un solo tipo por movimiento, con importe mayor que cero, fecha hasta hoy y referencia opcional. Canonizar banco y número antes de comprobar unicidad. Con movimientos históricos de cualquier estado, rechazar un cambio de moneda.
+Registrar un solo tipo por movimiento, con importe positivo representable con hasta dos decimales, fecha hasta hoy en UTC y referencia opcional. Recortar banco y número y normalizarlos a mayúsculas antes de comprobar unicidad. Se conservan los ceros iniciales y los caracteres internos del número. Con movimientos históricos de cualquier estado, rechazar un cambio de moneda. La v0 opera con cuentas existentes y su saldo se consulta en el listado y en el detalle. El contrato carece de una transición de estado para la cuenta.
 
-Serializar ingresos, egresos, cambios de moneda y reversiones por cuenta. Comprobar el saldo resultante también al revertir un ingreso. Las transferencias bloquean ambas cuentas en orden ascendente de `Id` y confirman la cabecera y el par de movimientos en una sola transacción. Ante cualquier fallo se conserva el saldo de ambas cuentas. Al implementar el 56, la asignación de coincidencia y la reversión adquieren el mismo bloqueo y comprueban el estado antes de guardar.
+Ingresos, egresos, ediciones de cuenta y reversiones bloquean las filas afectadas con `FOR UPDATE` antes de leer los datos o el saldo. Las transferencias toman ambos bloqueos en orden ascendente de `Id` y confirman la cabecera y sus dos movimientos en la misma transacción. Comprobar el saldo resultante también al revertir un ingreso. Al implementar el 56, su escritura de coincidencia usará `IUnitOfWorkTesoreria.ConCuentasBloqueadasAsync`. Su consulta a coincidencias se registrará con `IConsultaConciliacionBancaria` y el mismo `DbContext` de la transacción. La reversión consulta ese puerto después de bloquear la cuenta.
 
 Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
 
@@ -104,11 +104,12 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 | 409 | Transferencia entre monedas distintas | «Las cuentas de la transferencia deben tener la misma moneda.» |
 | 409 | Movimiento conciliado, al integrar 56 | «No se puede revertir un movimiento conciliado.» |
 | 409 | Movimiento ya revertido | «El movimiento bancario ya fue revertido.» |
+| 409 | Reversión individual de una pata de transferencia | «No se puede revertir por separado un movimiento de transferencia.» |
 | 409 | Referencia perdida al guardar | «No se pudo guardar la operación bancaria porque una referencia ya no existe.» |
 
 ### Precisiones para la revisión final
 
-- **Transferencias y reversión.** El par se registra atómicamente. La respuesta no define si se admite revertir una transferencia completa ni qué ruta se usará. Resolver esta operación antes de permitir una reversión que afecte a un movimiento del par. La guarda para cualquier movimiento conciliado se conserva.
+- **Transferencias y reversión.** El par se registra atómicamente y sus movimientos quedan excluidos de la reversión individual. Queda pendiente confirmar si se admite el reverso completo, su ruta, las condiciones y el literal propuesto para bloquear el reverso individual. La guarda de movimiento conciliado también se comprueba para movimientos de transferencia.
 - **Saldo de apertura.** La propuesta técnica lo registra como ingreso manual en lugar de mantener un saldo editable separado.
 
 ### Seed, pruebas y smoke
@@ -122,7 +123,7 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 3. Transferencia a moneda igual, destino igual o moneda distinta rechazados, fallo intermedio con rollback y conciliado rechazado al incorporar el 56.
 4. JWT, roles, literales y referencias opcionales. Los movimientos solo aparecen en el 55.
 
-**Smoke PostgreSQL.** Verificar unicidad, ingresos, egresos, saldo, transferencia y reversión. Forzar dos egresos por el mismo saldo y transferencias concurrentes de sentido contrario. El 56 añade el caso de reversión de movimiento conciliado. Añadir `request_check`, la validación Python de códigos y cuerpos, y la comprobación de OpenAPI. Ejecutar en una base desechable hasta `SMOKE OK`.
+**Smoke PostgreSQL.** Verificar unicidad, ingresos, egresos, saldo, transferencia y reversión con `request_check`, validación Python y OpenAPI. Comprobar en `smoke-tesoreria-bancos.py` las restricciones SQL, dos egresos por el mismo saldo, transferencias con origen común y de sentido contrario, doble reversión, cambio de moneda frente al primer movimiento y rollback por una FK en la segunda pata. El 56 añade el caso con una coincidencia persistida.
 
 ## 5. Criterios de aceptación (medibles)
 
@@ -139,12 +140,27 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 
 - [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
 - [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
-- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
-- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
+- [x] Verificar las dependencias disponibles, aplicar SQL 046 en PostgreSQL desechable y generar entidades y DbContext.
+- [x] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
+- [ ] Conectar la consulta a coincidencias persistidas y ejecutar la validación compartida al integrar el 56.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
 | 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
-| 2026-11-23 | Validación funcional de la spec aprobada | Pendiente | Esta fase revisa documentación. La ejecución de §5 corresponde a la rama de implementación. |
+| 2026-11-24 | A1–A4 | Compilación sin advertencias ni errores. Reglas y gate correctos. | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `scripts/verify.sh`. Pasaron 48 pruebas del 55 dentro de 1.239 pruebas de backend y 752 del frontend. |
+| 2026-11-24 | A5 | HTTP 409 con proveedor de coincidencias de prueba. | El caso con una coincidencia en PostgreSQL se ejecutará con el 56. |
+| 2026-11-24 | A6 | `SCAFFOLD AL DÍA` y `SMOKE OK`. | PostgreSQL 16 desechable. Dos cargas dejaron idénticas 3 cuentas, 7 movimientos y 1 transferencia, con saldos 55 PEN, 50 PEN y 75 USD. Pasaron las cinco carreras y el rollback por fallo en la segunda pata. |
+
+## Actualización del 2026-11-26
+
+El despliegue requiere el catálogo `FINANZAS` (Id 7) que crea el SQL 024 del PR #83. Las pruebas de la rama pueden usar ADMIN y tokens de prueba de FINANZAS. La dependencia de despliegue sigue el orden indicado por Lukas.
+
+Ingresos, egresos y transferencias validan su fecha de operación contra el día de Perú. El corte cambia a las 05:00 UTC. Los instantes de registro y reversión siguen en UTC. Las cuatro pruebas de frontera ejercitan los tres tipos de operación.
+
+### Verificación vigente
+
+- Compilación sin advertencias. `verify.sh` en verde con 1.811 pruebas backend, 52 del módulo, y 1.455 frontend.
+- SQL 046, `SCAFFOLD AL DÍA` y `SMOKE OK`. Dos cargas del seed preservaron las cuentas y movimientos de ejemplo. PostgreSQL comprobó saldos, concurrencia y rollback de transferencias.
+- La primera ejecución concurrente detectó un fallo de temporización en una prueba de Planillas. Se repitió el gate completo con tres workers de Vitest y pasó.
