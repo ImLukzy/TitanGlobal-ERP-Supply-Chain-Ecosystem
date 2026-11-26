@@ -4,7 +4,7 @@
 
 Habilitar la pantalla de Mantenimiento Preventivo en Manufactura (`/modulos/39-mantenimiento-preventivo`, que hoy muestra «Pantalla pendiente»). El usuario podrá consultar las paradas programadas de los centros de trabajo, ver las vencidas y las de los próximos 7 días, programar y editar una parada, llevarla por sus estados (iniciar, completar con las horas reales o cancelar con motivo) y ver la fecha sugerida de la siguiente parada.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas por el chat del equipo (PR #88, integrada el 2026-11-25).
 
 La implementación consume el [contrato del backend del módulo 39](modulo39-mantenimiento-preventivo-backend.md) y, para elegir el centro de trabajo, el listado del módulo 33. Las pruebas de la pantalla simulan la API; la prueba con la API real (A5) requiere el backend del 39 (PR #87) en el entorno de desarrollo.
 
@@ -98,7 +98,7 @@ Los mensajes de centro inexistente o inactivo, fecha repetida en el centro, para
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance y el diseño.
+- [x] Aprobación de Lukas sobre el alcance y el diseño (chat del equipo, 2026-11-25).
 - [ ] Backend del 39 integrado en `main` (PR #87), y rama actualizada.
 - [ ] Commit 2: tipos, cliente HTTP y sus pruebas.
 - [ ] Commit 3: pantalla, componentes, registro en `pantallas.ts`, estilos y pruebas de la página.
