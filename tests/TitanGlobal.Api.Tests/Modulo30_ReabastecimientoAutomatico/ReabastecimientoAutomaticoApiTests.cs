@@ -269,11 +269,11 @@ public class ReabastecimientoAutomaticoApiTests
         }
         if (!contexto.Proveedores.Any(pr => pr.Id == 1))
         {
-            contexto.Proveedores.Add(new Proveedor { Id = 1, RazonSocial = "Proveedor Alpha S.A.C.", Ruc = "20511111111", Contacto = "Ana Torres", Email = "ventas@alpha.pe", Telefono = "999111222", Activo = true });
+            contexto.Proveedores.Add(new Proveedor { Id = 1, RazonSocial = "Proveedor Alpha S.A.C.", Ruc = "20511111111", Pais = "Perú", Email = "ventas@alpha.pe", Telefono = "999111222", Activo = true });
         }
         if (!contexto.Proveedores.Any(pr => pr.Id == 2))
         {
-            contexto.Proveedores.Add(new Proveedor { Id = 2, RazonSocial = "Distribuidora Beta S.R.L.", Ruc = "20522222222", Contacto = "Luis Ramos", Email = "contacto@beta.pe", Telefono = "999333444", Activo = true });
+            contexto.Proveedores.Add(new Proveedor { Id = 2, RazonSocial = "Distribuidora Beta S.R.L.", Ruc = "20522222222", Pais = "Perú", Email = "contacto@beta.pe", Telefono = "999333444", Activo = true });
         }
         contexto.SaveChanges();
 
