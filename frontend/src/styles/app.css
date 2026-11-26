@@ -2307,3 +2307,33 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* Módulo 27: Transferencias entre almacenes */
+.transf-page { padding-bottom: 42px; }
+.transf-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.transf-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 15px; }
+.transf-list-panel, .transf-detail-panel, .transf-form-panel { min-width: 0; }
+.transf-form-panel { margin-bottom: 16px; }
+.transf-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
+.transf-table { width: 100%; min-width: 560px; border-collapse: collapse; text-align: left; }
+.transf-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.transf-table th { padding: 9px 8px; background: var(--surface-muted); color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.transf-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.transf-table tbody tr.is-selected { background: var(--accent-soft); }
+.transf-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.transf-numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.transf-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.transf-detail-grid dt { color: var(--ink-soft); font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.transf-detail-grid dd { margin: 0; color: var(--ink); }
+.transf-detail-notes, .transf-observaciones-field { grid-column: 1 / -1; }
+.transf-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.transf-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+@media (min-width: 1024px) {
+  .transf-work-area { grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr); }
+  .transf-table { min-width: 0; table-layout: fixed; }
+}
+
+@media (max-width: 720px) {
+  .transf-summary, .transf-form, .transf-detail-grid { grid-template-columns: minmax(0, 1fr); }
+}
