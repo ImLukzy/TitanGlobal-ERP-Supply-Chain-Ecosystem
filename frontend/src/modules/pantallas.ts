@@ -20,6 +20,7 @@ import { NotificacionesAlertasPage } from './notificaciones-alertas/Notificacion
 import { RolesPermisosPage } from './roles-permisos/RolesPermisosPage';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { EmpleadosPage } from './empleados/EmpleadosPage';
+import { CentrosCostoPage } from './centros-costo/CentrosCostoPage';
 import { CentrosTrabajoPage } from './centros-trabajo/CentrosTrabajoPage';
 import { VehiculosFlotaPage } from './vehiculos-flota/VehiculosFlotaPage';
 import { ConductoresPage } from './conductores/ConductoresPage';
@@ -59,6 +60,7 @@ export const pantallas: Record<string, ComponentType> = {
   '72-roles-permisos': RolesPermisosPage,
   '71-usuarios': UsuariosPage,
   '61-empleados': EmpleadosPage,
+  '59-centros-costo': CentrosCostoPage,
   '33-centros-trabajo': CentrosTrabajoPage,
   '41-vehiculos-flota': VehiculosFlotaPage,
   '42-conductores': ConductoresPage,
