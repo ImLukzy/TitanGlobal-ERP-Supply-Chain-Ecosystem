@@ -49,6 +49,57 @@ public class ImpuestosApiTests
         Assert.False(impuestos.Single(impuesto => impuesto.Id == 4).Activo);
     }
 
+    [Theory]
+    [InlineData(30, 23, 59, 59, 18)]
+    [InlineData(1, 0, 0, 0, 18)]
+    [InlineData(1, 4, 59, 59, 18)]
+    [InlineData(1, 5, 0, 0, 17)]
+    public async Task VigenciaDelListadoUsaMedianocheDePeru(int dia, int hora, int minuto, int segundo, int porcentaje)
+    {
+        using IServiceScope scope = _fabrica.Services.CreateScope();
+        TitanGlobalDbContext contexto = scope.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.TasasImpuestos.RemoveRange(contexto.TasasImpuestos.Where(tasa => tasa.ImpuestoId == 1));
+        contexto.TasasImpuestos.AddRange(
+            new TasaImpuesto
+            {
+                ImpuestoId = 1,
+                Porcentaje = 18m,
+                Activo = true,
+                FechaInicio = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                FechaFin = new DateTime(2026, 9, 30, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new TasaImpuesto
+            {
+                ImpuestoId = 1,
+                Porcentaje = 17m,
+                Activo = true,
+                FechaInicio = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc)
+            });
+        await contexto.SaveChangesAsync();
+        DateTimeOffset instante = new(2026, dia == 30 ? 9 : 10, dia, hora, minuto, segundo, TimeSpan.Zero);
+        IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        ListarImpuestosUseCase caso = new(unitOfWork, new RelojImpuestos(instante));
+
+        List<ImpuestoListadoDto> impuestos = await caso.Ejecutar();
+
+        Assert.Equal((decimal)porcentaje, Assert.Single(impuestos, impuesto => impuesto.Id == 1).PorcentajeVigente);
+    }
+
+    private sealed class RelojImpuestos : TimeProvider
+    {
+        private readonly DateTimeOffset _instante;
+
+        public RelojImpuestos(DateTimeOffset instante)
+        {
+            _instante = instante;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _instante;
+        }
+    }
+
     [Fact]
     public async Task DetailReturnsTaxWithRatesFromNewestToOldest()
     {

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
+using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
@@ -9,15 +10,18 @@ namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
 public class ListarImpuestosUseCase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly TimeProvider _reloj;
 
-    public ListarImpuestosUseCase(IUnitOfWork unitOfWork)
+    public ListarImpuestosUseCase(IUnitOfWork unitOfWork, TimeProvider? reloj = null)
     {
         _unitOfWork = unitOfWork;
+        _reloj = reloj ?? TimeProvider.System;
     }
 
     public async Task<List<ImpuestoListadoDto>> Ejecutar()
     {
-        DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly dia = FechaNegocioPeru.DesdeUtc(_reloj.GetUtcNow().UtcDateTime);
+        DateTime hoy = dia.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
         return await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
