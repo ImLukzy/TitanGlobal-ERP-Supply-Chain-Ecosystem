@@ -1,12 +1,16 @@
+using System.Data;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Infrastructure.Repositories.Implementation;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : IUnitOfWorkFacturas
 {
     private readonly TitanGlobalDbContext _context;
 
@@ -45,6 +49,43 @@ public class UnitOfWork : IUnitOfWork
                 excepcion.Message,
                 excepcion);
         }
+    }
+
+    public async Task<TResult> ConFacturaBloqueadaAsync<TResult>(int facturaId, Func<Task<TResult>> operacion)
+    {
+        if (!_context.Database.IsRelational())
+        {
+            return await operacion();
+        }
+
+        await using IDbContextTransaction transaccion =
+            await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT \"Id\" FROM \"Facturas\" WHERE \"Id\" = {facturaId} FOR UPDATE");
+
+        TResult resultado = await operacion();
+        await transaccion.CommitAsync();
+        return resultado;
+    }
+
+    public async Task<long> SiguienteCorrelativoNotaAsync(string tipo)
+    {
+        if (!_context.Database.IsRelational())
+        {
+            string? ultimo = await _context.Set<NotaCreditoDebito>().AsNoTracking()
+                .Where(nota => nota.Tipo == tipo && !nota.Numero.StartsWith("TMP-"))
+                .OrderByDescending(nota => nota.Numero.Length)
+                .ThenByDescending(nota => nota.Numero)
+                .Select(nota => nota.Numero)
+                .FirstOrDefaultAsync();
+
+            return ultimo is null ? 1 : long.Parse(ultimo.AsSpan(3), CultureInfo.InvariantCulture) + 1;
+        }
+
+        string sql = tipo == NotaCreditoDebito.TipoCredito
+            ? """SELECT nextval('"SecuenciaNotasCredito"') AS "Value" """
+            : """SELECT nextval('"SecuenciaNotasDebito"') AS "Value" """;
+        return await _context.Database.SqlQueryRaw<long>(sql).SingleAsync();
     }
 
     private static bool EsViolacionConocida(PostgresException excepcion)

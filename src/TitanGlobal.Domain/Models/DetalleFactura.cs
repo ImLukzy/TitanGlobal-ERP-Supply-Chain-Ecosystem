@@ -33,6 +33,8 @@ public partial class DetalleFactura
 
     public decimal Total { get; set; }
 
+    public virtual ICollection<DetalleNotaCreditoDebito> DetallesNotaCreditoDebito { get; set; } = new List<DetalleNotaCreditoDebito>();
+
     public virtual Factura Factura { get; set; } = null!;
 
     public virtual Impuesto? Impuesto { get; set; }

@@ -16,7 +16,9 @@ public static class InfrastructureServicesExtensions
         string connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Falta ConnectionStrings:DefaultConnection.");
         services.AddDbContext<TitanGlobalDbContext>(options => options.UseNpgsql(connectionString));
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<UnitOfWork>();
+        services.AddScoped<IUnitOfWork>(proveedor => proveedor.GetRequiredService<UnitOfWork>());
+        services.AddScoped<IUnitOfWorkFacturas>(proveedor => proveedor.GetRequiredService<UnitOfWork>());
         services.AddScoped<IEscrituraListaMaterial, EscrituraListaMaterial>();
         services.AddScoped<IEscrituraRutaProduccion, EscrituraRutaProduccion>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

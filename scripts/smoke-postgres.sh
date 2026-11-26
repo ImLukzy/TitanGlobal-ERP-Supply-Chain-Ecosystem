@@ -41,6 +41,12 @@ TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 RUTA_PRODUCCION_CREADA_ID=""
 
+FACTURA_NOTA_SEED_ID=""
+FACTURA_NOTA_SMOKE_ID=""
+DETALLE_FACTURA_NOTA_ID=""
+NOTA_SMOKE_ID=""
+TOKEN_CONSULTA_SMOKE=""
+
 cleanup() {
     local exit_status=$?
     trap - EXIT INT TERM
@@ -114,6 +120,12 @@ fi
 # La base se crea desde database/ y el código generado tiene que coincidir con ella (database first).
 ./scripts/aplicar-bd.sh --reiniciar
 ./scripts/scaffold.sh --comprobar
+ROL_FINANZAS_SQL="$(docker compose exec -T db psql -U titanglobal -d titanglobal -qAt -v ON_ERROR_STOP=1 -c "SELECT \"Id\" FROM \"Roles\" WHERE \"Codigo\" = 'FINANZAS';")"
+if [[ "$ROL_FINANZAS_SQL" != "7" ]]; then
+    printf 'ERROR: SQL 024 no creó FINANZAS Id 7 antes del seed\n' >&2
+    exit 1
+fi
+printf 'M52 rol FINANZAS Id 7 verificado antes del seed\n'
 docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -f - < scripts/seed-dev.sql
 
 ASPNETCORE_ENVIRONMENT=Development dotnet run --no-build --project src/TitanGlobal.Api --urls "$BASE_URL" >/dev/null 2>&1 &
@@ -381,10 +393,10 @@ checks = {
     "usuario-duplicate-email": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un usuario con el email admin@titanglobal.example." and "Detail" not in data,
     "usuario-last-admin": lambda data: data["StatusCode"] == 409 and data["Message"] == "Debe quedar al menos un usuario activo con el rol ADMIN." and "Detail" not in data,
     "usuario-role-protected": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede eliminar el rol VENTAS porque tiene usuarios." and "Detail" not in data,
-    "roles-list": lambda data: data["total"] == 6 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "RRHH", "VENTAS"],
+    "roles-list": lambda data: data["total"] == 7 and [item["codigo"] for item in data["items"]] == ["ADMIN", "ALMACEN", "COMPRAS", "CONSULTA", "FINANZAS", "RRHH", "VENTAS"] and data["items"][4]["id"] == 7,
     "role-detail": lambda data: data["codigo"] == "VENTAS" and data["modulosConLectura"] == 11 and data["modulosConEscritura"] == 10,
     "role-permissions": lambda data: len(data) == 80 and data[20]["puedeLeer"] is True and data[20]["puedeEscribir"] is False,
-    "roles-matrix": lambda data: len(data["roles"]) == 6 and len(data["modulos"]) == 80 and data["modulos"][0]["permisos"] == ["Escritura", "Ninguno", "Ninguno", "Lectura", "Ninguno", "Escritura"],
+    "roles-matrix": lambda data: len(data["roles"]) == 7 and len(data["modulos"]) == 80 and data["modulos"][0]["permisos"] == ["Escritura", "Ninguno", "Ninguno", "Lectura", "Ninguno", "Ninguno", "Escritura"],
     "role-created": lambda data: data["id"] > 0,
     "role-invalid-write": lambda data: data["StatusCode"] == 400 and data["Message"] == "El módulo 1 no puede tener escritura sin lectura." and "Detail" not in data,
     "role-system-delete": lambda data: data["StatusCode"] == 409 and data["Message"] == "El rol ADMIN es de sistema y no se puede modificar de esa forma." and "Detail" not in data,
@@ -664,6 +676,22 @@ checks = {
         data["StatusCode"] == 409 and data["Message"] == "Solo se pueden modificar facturas en estado Borrador."
     ),
     "m51-no-existe": lambda data: data["StatusCode"] == 404 and data["Message"] == "La factura solicitada no existe.",
+    "facturas-notas-seed": lambda data: {item["numero"] for item in data["items"] if item["serie"] == "F52-DEV" and item["estado"] == "Emitida" and item["total"] == 100} == {1, 2, 3},
+    "nota-seed": lambda data: data["totalRegistros"] == 1 and data["items"][0]["numero"] == "NC-000001" and data["items"][0]["estado"] == "Emitida",
+    "nota-borrador": lambda data: data["id"] > 0 and data["numero"] == "ND-000002" and data["estado"] == "Borrador" and data["moneda"] == "USD" and data["total"] == data["baseImponible"] == 12.30 and data["importeImpuesto"] == 0 and data["detalles"][0]["cantidad"] == 0.123 and data["fechaCreacion"].endswith("Z") and data["fechaEmision"] is None,
+    "nota-editada": lambda data: data["numero"] == "ND-000002" and data["estado"] == "Borrador" and data["total"] == 13.45 and data["detalles"][0]["cantidad"] == 0.1345,
+    "nota-emitida": lambda data: data["estado"] == "Emitida" and data["total"] == 13.45 and re.fullmatch(r"\d{4}-\d{2}-\d{2}", data["fechaEmision"]) is not None,
+    "nota-anulada": lambda data: data["estado"] == "Anulada" and data["fechaAnulacion"].endswith("Z") and data["motivoAnulacion"] == "Rectificación interna",
+    "notas-paginadas": lambda data: data["totalRegistros"] == 2 and data["totalPaginas"] == 2 and data["pagina"] == 1 and data["tamanoPagina"] == 1 and len(data["items"]) == 1 and data["items"][0]["numero"] == "ND-000002",
+    "factura-protegida-notas": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede anular un comprobante con notas emitidas." and "Detail" not in data,
+    "factura-importes-notas": lambda data: data["estado"] == "Emitida" and data["subtotal"] == 100 and data["totalDescuento"] == 0 and data["totalImpuesto"] == 0 and data["total"] == 100 and data["detalles"][0]["total"] == 100,
+    "nota-importe-invalido": lambda data: data["StatusCode"] == 400 and data["Message"] == "La cantidad o el importe de la nota no es válido." and "Detail" not in data,
+    "nota-sin-token": lambda data: data["StatusCode"] == 401 and data["Message"] == "Debe iniciar sesión para acceder a este recurso." and "Detail" not in data,
+    "nota-sin-rol": lambda data: data["StatusCode"] == 403 and data["Message"] == "Acceso denegado: Su rol no tiene permisos para ejecutar esta operación." and "Detail" not in data,
+    "openapi-notas-credito-debito": lambda data: all(
+        verb in data["paths"].get("/api/v1/notas-credito-debito" + suffix, {})
+        for suffix, verb in [("", "get"), ("", "post"), ("/{id}", "get"), ("/{id}", "put"), ("/{id}/emitir", "post"), ("/{id}/anular", "post")]
+    ),
 }
 
 if validation not in checks or not checks[validation](body):
@@ -875,6 +903,16 @@ request_check() {
     if [[ "$validation" == "contrato-laboral-renovado" ]]; then
         CONTRATO_LABORAL_RENOVADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    if [[ "$validation" == "facturas-notas-seed" ]]; then
+        read -r FACTURA_NOTA_SEED_ID FACTURA_NOTA_SMOKE_ID < <(
+            python3 -c 'import json,sys; ids={f["numero"]: f["id"] for f in json.loads(sys.argv[1])["items"] if f["serie"]=="F52-DEV"}; print(ids[1], ids[2])' "$body" | tr -d '\r'
+        )
+    elif [[ "$validation" == "factura-importes-notas" ]]; then
+        DETALLE_FACTURA_NOTA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["detalles"][0]["id"])' "$body")"
+    elif [[ "$validation" == "nota-borrador" ]]; then
+        NOTA_SMOKE_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "turno-created" ]]; then
         TURNO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -1219,6 +1257,7 @@ request_check 'POST contrato laboral con contrato vigente' POST '/api/v1/contrat
 TOKEN_ADMIN_SMOKE="$TOKEN_ACTUAL"
 request_check 'Login de la cuenta sin rol de escritura' POST '/api/v1/autenticacion/login' 200 login-invitado '{"nombreUsuario":"invitado","contrasena":"Demo2026!"}'
 TOKEN_ACTUAL="$TOKEN_LOGIN"
+TOKEN_CONSULTA_SMOKE="$TOKEN_ACTUAL"
 request_check 'POST contrato laboral sin rol RRHH o ADMIN' POST '/api/v1/contratos-laborales' 403 contrato-laboral-sin-rol '{"empleadoId":3,"modalidad":"PlazoFijo","fechaInicio":"2027-01-01","fechaFin":"2027-12-31","sueldoBasico":1500.00,"cargo":"Almacenero"}'
 TOKEN_ACTUAL="$TOKEN_ADMIN_SMOKE"
 request_check 'POST contrato laboral con vencido calculado' POST '/api/v1/contratos-laborales' 200 contrato-laboral-created-e3 '{"empleadoId":3,"modalidad":"PlazoFijo","fechaInicio":"2027-01-01","fechaFin":"2027-12-31","sueldoBasico":1500.00,"cargo":"Almacenero"}'
@@ -1661,7 +1700,7 @@ TOKEN_ACTUAL=''
 request_check 'M51 exige sesión' GET '/api/v1/facturas' 401 no-session
 TOKEN_ACTUAL="$TOKEN_51_ADMIN"
 request_check 'M51 OpenAPI siete operaciones' GET '/openapi/v1.json' 200 m51-openapi
-request_check 'M51 seed en los tres estados' GET '/api/v1/facturas' 200 m51-seed
+request_check 'M51 seed en los tres estados' GET '/api/v1/facturas?fechaDesde=2026-08-01&fechaHasta=2026-08-04' 200 m51-seed
 FACTURA_51_JSON='{"clienteId":1,"ordenCompraId":1,"tipoComprobante":"factura","serie":" s51f ","numero":1,"fechaEmision":"2026-11-19T12:00:00","moneda":"pen","detalles":[{"productoId":3,"impuestoId":1,"descripcion":"Mouse de smoke","cantidad":2,"precioUnitario":10,"descuentoPorcentaje":10}]}'
 FACTURA_51_EDITADA="${FACTURA_51_JSON/\"cantidad\":2/\"cantidad\":3}"
 request_check 'M51 crear borrador' POST '/api/v1/facturas' 201 m51-creada "$FACTURA_51_JSON"
@@ -1724,4 +1763,114 @@ BEGIN
 END $$;
 SQL
 printf 'M51 persistencia y restricciones PostgreSQL OK\n'
+request_check 'OpenAPI de notas de crédito y débito' GET '/openapi/v1.json' 200 openapi-notas-credito-debito
+request_check 'Comprobantes de ejemplo del módulo 52' GET '/api/v1/facturas?busqueda=F52-DEV' 200 facturas-notas-seed
+request_check 'Nota emitida del seed' GET "/api/v1/notas-credito-debito?facturaId=$FACTURA_NOTA_SEED_ID" 200 nota-seed
+request_check 'Factura con nota emitida rechaza la anulación' POST "/api/v1/facturas/$FACTURA_NOTA_SEED_ID/anular" 409 factura-protegida-notas '{"motivo":"Intento de anulación"}'
+request_check 'Identificar la línea de la boleta' GET "/api/v1/facturas/$FACTURA_NOTA_SMOKE_ID" 200 factura-importes-notas
+
+NOTA_BODY="{\"facturaId\":$FACTURA_NOTA_SMOKE_ID,\"tipo\":\"Debito\",\"motivo\":\"Ajuste informado\",\"detalles\":[{\"detalleFacturaId\":$DETALLE_FACTURA_NOTA_ID,\"cantidad\":0.123,\"precioUnitario\":100}]}"
+TOKEN_ACTUAL=''
+request_check 'Consultar notas sin JWT' GET '/api/v1/notas-credito-debito' 401 nota-sin-token
+TOKEN_ACTUAL="$TOKEN_CONSULTA_SMOKE"
+request_check 'Consultar notas con rol de lectura' GET "/api/v1/notas-credito-debito?facturaId=$FACTURA_NOTA_SEED_ID" 200 nota-seed
+request_check 'Crear nota sin permiso de escritura' POST '/api/v1/notas-credito-debito' 403 nota-sin-rol "$NOTA_BODY"
+TOKEN_ACTUAL="$TOKEN_ADMIN_SMOKE"
+
+request_check 'Crear nota en borrador' POST '/api/v1/notas-credito-debito' 201 nota-borrador "$NOTA_BODY"
+request_check 'Rechazar cantidad con más de cuatro decimales' POST '/api/v1/notas-credito-debito' 400 nota-importe-invalido \
+    "{\"facturaId\":$FACTURA_NOTA_SMOKE_ID,\"tipo\":\"Credito\",\"motivo\":\"Cantidad inválida\",\"detalles\":[{\"detalleFacturaId\":$DETALLE_FACTURA_NOTA_ID,\"cantidad\":0.12345,\"precioUnitario\":100}]}"
+request_check 'Editar nota en borrador' PUT "/api/v1/notas-credito-debito/$NOTA_SMOKE_ID" 200 nota-editada \
+    "{\"motivo\":\"Ajuste corregido\",\"detalles\":[{\"detalleFacturaId\":$DETALLE_FACTURA_NOTA_ID,\"cantidad\":0.1345,\"precioUnitario\":100}]}"
+request_check 'Listado de notas filtrado y paginado' GET "/api/v1/notas-credito-debito?facturaId=$FACTURA_NOTA_SMOKE_ID&tipo=Debito&estado=Borrador&tamanoPagina=1" 200 notas-paginadas
+request_check 'Emitir nota sin cuerpo' POST "/api/v1/notas-credito-debito/$NOTA_SMOKE_ID/emitir" 200 nota-emitida
+request_check 'Consultar nota emitida' GET "/api/v1/notas-credito-debito/$NOTA_SMOKE_ID" 200 nota-emitida
+request_check 'Anular nota emitida' POST "/api/v1/notas-credito-debito/$NOTA_SMOKE_ID/anular" 200 nota-anulada '{"motivo":"Rectificación interna"}'
+request_check 'La nota conserva los importes del comprobante' GET "/api/v1/facturas/$FACTURA_NOTA_SMOKE_ID" 200 factura-importes-notas
+
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 -f - <<'SQL'
+DO $$
+DECLARE
+    factura_id integer;
+    detalle_id integer;
+    nota_id integer;
+    restriccion text;
+BEGIN
+    SELECT factura."Id", detalle."Id", nota."Id" INTO STRICT factura_id, detalle_id, nota_id
+    FROM "Facturas" AS factura
+    JOIN "DetallesFactura" AS detalle ON detalle."FacturaId" = factura."Id"
+    JOIN "NotasCreditoDebito" AS nota ON nota."FacturaId" = factura."Id"
+    WHERE factura."TipoComprobante" = 'Factura' AND factura."Serie" = 'F52-DEV'
+      AND factura."Numero" = 1 AND nota."Numero" = 'NC-000001';
+
+    BEGIN
+        INSERT INTO "NotasCreditoDebito" ("FacturaId", "Tipo", "Numero", "Moneda", "Motivo",
+            "BaseImponible", "ImporteImpuesto", "Total", "Estado", "FechaCreacion")
+        VALUES (factura_id, 'Credito', 'NC-000001', 'PEN', 'Duplicado', 1, 0, 1, 'Borrador', CURRENT_TIMESTAMP);
+        RAISE EXCEPTION 'Se admitió un folio duplicado';
+    EXCEPTION WHEN unique_violation THEN
+        NULL;
+    END;
+
+    BEGIN
+        INSERT INTO "NotasCreditoDebito" ("FacturaId", "Tipo", "Numero", "Moneda", "Motivo",
+            "BaseImponible", "ImporteImpuesto", "Total", "Estado", "FechaCreacion")
+        VALUES (-1, 'Credito', 'NC-900001', 'PEN', 'Origen inexistente', 1, 0, 1, 'Borrador', CURRENT_TIMESTAMP);
+        RAISE EXCEPTION 'Se admitió una factura inexistente';
+    EXCEPTION WHEN foreign_key_violation THEN
+        NULL;
+    END;
+
+    BEGIN
+        INSERT INTO "DetallesNotaCreditoDebito" ("NotaCreditoDebitoId", "DetalleFacturaId", "Cantidad",
+            "PrecioUnitario", "PorcentajeImpuesto", "BaseImponible", "ImporteImpuesto", "Total")
+        VALUES (nota_id, -1, 1, 1, 0, 1, 0, 1);
+        RAISE EXCEPTION 'Se admitió un detalle de factura inexistente';
+    EXCEPTION WHEN foreign_key_violation THEN
+        NULL;
+    END;
+
+    BEGIN
+        UPDATE "NotasCreditoDebito" SET "FechaEmision" = NULL WHERE "Id" = nota_id;
+        RAISE EXCEPTION 'Se admitió una nota emitida sin fecha';
+    EXCEPTION WHEN check_violation THEN
+        NULL;
+    END;
+
+    BEGIN
+        UPDATE "NotasCreditoDebito" SET "Total" = 'NaN'::numeric WHERE "Id" = nota_id;
+        RAISE EXCEPTION 'Se admitió NaN como importe';
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion IS DISTINCT FROM 'CK_NotasCreditoDebito_Total' THEN
+            RAISE;
+        END IF;
+    END;
+
+    BEGIN
+        UPDATE "DetallesNotaCreditoDebito" SET "Cantidad" = 'NaN'::numeric
+        WHERE "NotaCreditoDebitoId" = nota_id AND "DetalleFacturaId" = detalle_id;
+        RAISE EXCEPTION 'Se admitió NaN como cantidad';
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion IS DISTINCT FROM 'CK_DetallesNotaCreditoDebito_Cantidad' THEN
+            RAISE;
+        END IF;
+    END;
+
+    BEGIN
+        UPDATE "DetallesNotaCreditoDebito" SET "PrecioUnitario" = 'NaN'::numeric
+        WHERE "NotaCreditoDebitoId" = nota_id AND "DetalleFacturaId" = detalle_id;
+        RAISE EXCEPTION 'Se admitió NaN como precio';
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS restriccion = CONSTRAINT_NAME;
+        IF restriccion IS DISTINCT FROM 'CK_DetallesNotaCreditoDebito_Importes' THEN
+            RAISE;
+        END IF;
+    END;
+END $$;
+SQL
+
+TITANGLOBAL_REPRO_JWT="$TOKEN_ACTUAL" python3 ./scripts/repro-edicion-factura-modulo52.py "$BASE_URL"
+
 printf 'SMOKE OK\n'

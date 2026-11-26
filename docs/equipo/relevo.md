@@ -106,6 +106,7 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 021 | `021-vehiculos-flota-placa-unica.sql` | Kelvin | `kelvin/modulo41-vehiculos-flota-frontend` | no (en `main` por el PR #51 y aplicado en la demo) |
 | 022 | `022-conductores-licencia-unica.sql` | Kelvin | `kelvin/modulo42-conductores` | no (en `main` por el PR #59 y aplicado en la demo) |
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
+| 024 | `024-modulo52-notas-credito-debito.sql` | Leonel | `leonel/modulo52-notas-credito-debito` | no |
 | 025 | `025-ordenes-produccion.sql` | Antony | `antony/modulo34-ordenes-produccion` | no (el 024 lo usa Leonel en `leonel/modulo52-notas-credito-debito`) |
 | 026 | `026-mantenimiento-preventivo.sql` | Antony | `antony/modulo39-mantenimiento-preventivo` | no |
 | 027 | `027-importaciones.sql` | Sergio | `sergio/modulo16-importaciones` (PR #56) | no |
