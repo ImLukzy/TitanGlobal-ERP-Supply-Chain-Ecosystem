@@ -35,5 +35,33 @@ public partial class Empleado
 
     public string? MotivoCese { get; set; }
 
+    public virtual AfiliacionPension? AfiliacionPension { get; set; }
+
+    public virtual ICollection<AsignacionTurno> AsignacionesTurno { get; set; } = new List<AsignacionTurno>();
+
+    public virtual ICollection<Ausencia> Ausencias { get; set; } = new List<Ausencia>();
+
+    public virtual ICollection<BonoPlanilla> BonosPlanilla { get; set; } = new List<BonoPlanilla>();
+
     public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
+
+    public virtual ICollection<EntregaEpp> EntregasEpp { get; set; } = new List<EntregaEpp>();
+
+    public virtual ICollection<Evaluacion> EvaluacionesEmpleado { get; set; } = new List<Evaluacion>();
+
+    public virtual ICollection<Evaluacion> EvaluacionesEvaluador { get; set; } = new List<Evaluacion>();
+
+    public virtual ICollection<ExamenMedico> ExamenesMedicos { get; set; } = new List<ExamenMedico>();
+
+    public virtual ICollection<IncidenteSst> IncidentesSst { get; set; } = new List<IncidenteSst>();
+
+    public virtual ICollection<InscripcionCurso> InscripcionesCurso { get; set; } = new List<InscripcionCurso>();
+
+    public virtual ICollection<JornadaAsistencia> JornadasAsistencia { get; set; } = new List<JornadaAsistencia>();
+
+    public virtual ICollection<Marcacion> Marcaciones { get; set; } = new List<Marcacion>();
+
+    public virtual ICollection<PlanillaDetalle> PlanillaDetalles { get; set; } = new List<PlanillaDetalle>();
+
+    public virtual ICollection<Prestamo> Prestamos { get; set; } = new List<Prestamo>();
 }
