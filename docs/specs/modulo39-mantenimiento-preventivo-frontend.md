@@ -4,7 +4,7 @@
 
 Habilitar la pantalla de Mantenimiento Preventivo en Manufactura (`/modulos/39-mantenimiento-preventivo`, que hoy muestra «Pantalla pendiente»). El usuario podrá consultar las paradas programadas de los centros de trabajo, ver las vencidas y las de los próximos 7 días, programar y editar una parada, llevarla por sus estados (iniciar, completar con las horas reales o cancelar con motivo) y ver la fecha sugerida de la siguiente parada.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas por el chat del equipo (PR #88, integrada el 2026-11-25).
 
 La implementación consume el [contrato del backend del módulo 39](modulo39-mantenimiento-preventivo-backend.md) y, para elegir el centro de trabajo, el listado del módulo 33. Las pruebas de la pantalla simulan la API; la prueba con la API real (A5) requiere el backend del 39 (PR #87) en el entorno de desarrollo.
 
@@ -98,7 +98,7 @@ Los mensajes de centro inexistente o inactivo, fecha repetida en el centro, para
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance y el diseño.
+- [x] Aprobación de Lukas sobre el alcance y el diseño (chat del equipo, 2026-11-25).
 - [ ] Backend del 39 integrado en `main` (PR #87), y rama actualizada.
 - [ ] Commit 2: tipos, cliente HTTP y sus pruebas.
 - [ ] Commit 3: pantalla, componentes, registro en `pantallas.ts`, estilos y pruebas de la página.
@@ -108,3 +108,9 @@ Los mensajes de centro inexistente o inactivo, fecha repetida en el centro, para
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-25 | A1 | `./scripts/verify.sh` en verde y sin advertencias. | Backend: Superado 1759, Con error 0. Frontend: Test Files 150 passed, Tests 1482 passed. |
+| 2026-11-25 | A2 | Nueve peticiones con URL, método, query sin filtros vacíos y cuerpos exactos. | `api.test.ts`: 6 pruebas en verde. |
+| 2026-11-25 | A3 | Carga inicial con una sola petición del listado, espera de 300 ms con temporizadores falsos, filtros combinados, reinicio de página, rango inválido sin petición, carga, vacío, error y «Vencido». | `MantenimientoPreventivoPage.test.tsx`: 11 pruebas en verde. |
+| 2026-11-25 | A4 | Validaciones locales sin petición, «hoy» en hora de Perú a las 19:00, edición sin centro, acciones por estado, 409 de fecha repetida conservando el formulario, completar, cancelar, Escape y foco. | `MantenimientoPreventivoAcciones.test.tsx`: 10 pruebas en verde. Suite del módulo 10 de 10 ejecuciones seguidas en verde. |
+| 2026-11-25 | A5 | Con la API del PR #87 en local: se programa, edita, inicia y completa una parada, se cancela otra, y la fecha repetida devuelve el 409 literal. La ruta abre desde el catálogo y las pruebas existentes pasan. | `docs/evidencias/modulo39/README.md`. |
+| 2026-11-25 | A6 | Detalle y diálogo a 375 px y 1280 px en claro y oscuro, sin desplazamiento horizontal de la página ni errores de JavaScript. | Ocho capturas en `docs/evidencias/modulo39/`. |
