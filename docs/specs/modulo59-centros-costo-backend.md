@@ -1,6 +1,6 @@
 # Especificación: modulo59-centros-costo-backend — Centros de costo
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 quedaron integradas por el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -9,7 +9,8 @@ Mantener un catálogo de centros de costo con jerarquía de hasta tres niveles y
 ### Base comprobada y dependencias
 
 - **Disponible en `main`.** `Empleados` del 61 para el responsable opcional. [Empleados](modulo61-empleados-backend.md)
-- **Consumidores posteriores.** [Presupuestos (58)](modulo58-presupuestos-backend.md) y [Activos fijos (60)](modulo60-activos-fijos-backend.md) usan el catálogo y validan actividad al alta. El 59 conserva la identidad y no agrega sus importes.
+- **Permiso pendiente de integración.** El módulo 52 incorpora `FINANZAS` (Id 7). Las pruebas del 59 emiten un JWT con ese rol mediante la infraestructura existente. En `main` el rol aún no está disponible para iniciar sesión.
+- **Consumidores posteriores.** [Presupuestos (58)](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/specs/modulo58-presupuestos-backend.md) y [Activos fijos (60)](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/specs/modulo60-activos-fijos-backend.md) usan el catálogo y validan actividad al alta. El 59 conserva la identidad y no agrega sus importes.
 
 ## 2. Fuera de alcance
 
@@ -25,13 +26,13 @@ Mantener un catálogo de centros de costo con jerarquía de hasta tres niveles y
 | 59.3 | Vigencia | Comprobar actividad al crear referencias. Desactivar conserva lo existente. El catálogo admite reactivación. |
 | 59.4 | Acceso y consultas | Aplicar G1. Las consultas de centros no reportan importes. |
 
-Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
+Las [reglas comunes G1 a G9](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
 | Archivo previsto | Acción futura | Alcance |
 |---|---|---|
-| `database/NNN-modulo59-centros-costo.sql` y `docs/equipo/relevo.md` | Crear / registrar | Tomar el siguiente número libre al implementar y registrar solo la fila de este módulo. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
+| `database/045-modulo59-centros-costo.sql` y `docs/equipo/relevo.md` | Crear / registrar | El 045 es el siguiente número libre en las reservas y scripts publicados al iniciar la rama. [Relevo §8](../equipo/relevo.md#8-números-de-los-scripts-de-base-de-datos) |
 | `src/TitanGlobal.Domain/Models/` y `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | Generar | Entidades y navegaciones de §4 mediante scaffold. Revisar los nombres que produce el pluralizador. |
 | `src/TitanGlobal.Application/DTOs/Modulo59_CentrosCosto/` y `src/TitanGlobal.Application/UseCases/Modulo59_CentrosCosto/` | Crear | Validación, proyecciones y casos de uso concretos en Application. |
 | `src/TitanGlobal.Api/Controllers/Modulo59_CentrosCosto/CentrosCostoController.cs` | Crear | Rutas y autorización de §4. |
@@ -44,7 +45,7 @@ Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan e
 
 ### Convenciones y permisos
 
-Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, SQL 024 del módulo 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. El catálogo solo registra instantes del servidor en `timestamptz`, normalizados con `FechasUtc`.
 
 El código de catálogo es capturado y validado en mayúsculas. Es una identidad maestra y no un folio transaccional de G5. G2 y G4 no tienen objeto en este catálogo. La reactivación expresa la excepción de G7 para la vigencia del maestro.
 
@@ -52,7 +53,7 @@ El código de catálogo es capturado y validado en mayúsculas. Es una identidad
 
 | Tabla → entidad | Campos y restricciones |
 |---|---|
-| `CentrosCosto` → `CentroCosto` | `Id`, `Codigo varchar(20)` único y de longitud mínima 2, `Nombre varchar(120)`, `Descripcion varchar(300)?`, `ResponsableEmpleadoId` FK opcional a `Empleados`, `CentroCostoPadreId` FK opcional a la misma tabla, `Activo boolean`, `FechaRegistro timestamptz` y `FechaDesactivacion timestamptz?`. Índice por padre y actividad. Check de padre distinto del propio id. |
+| `CentrosCosto` → `CentroCosto` | `Id`, `Codigo varchar(20)` único y de longitud mínima 2, `Nombre varchar(120)`, `Descripcion varchar(300)?`, `ResponsableEmpleadoId` FK opcional a `Empleados`, `CentroCostoPadreId` FK opcional a la misma tabla, `Activo boolean`, `FechaRegistro timestamptz` y `FechaDesactivacion timestamptz?`. Índice por padre y actividad. Checks de código recortado, nombre no vacío, padre distinto del propio id y fecha de desactivación presente solo en centros inactivos. |
 
 Las PK son identidades `integer`. Las FKs se indexan y conservan referencias con `ON DELETE RESTRICT`. Application valida los límites de columna antes de guardar.
 
@@ -61,6 +62,8 @@ El nivel de la raíz es 1. Sus hijos están en nivel 2 y sus nietos en nivel 3. 
 ### Casos de uso, rutas y DTOs
 
 Ruta base `/api/v1/centros-costo`. Las rutas de consulta proyectan con `AsNoTracking`. Listar por `activo?` y `centroCostoPadreId?`. Orden por `Codigo` e `Id`. Páginas 1/20 y máximo 100.
+
+Para recorrer el árbol, el filtro `centroCostoPadreId` devuelve los hijos directos. El detalle devuelve el nivel y el id del padre. El listado sin filtros incluye raíces y centros activos e inactivos.
 
 | Método y ruta relativa | Caso de uso | Entrada → éxito |
 |---|---|---|
@@ -78,7 +81,7 @@ Ruta base `/api/v1/centros-costo`. Las rutas de consulta proyectan con `AsNoTrac
 
 Recortar y pasar el código a mayúsculas antes de medir su longitud y consultar unicidad. Verificar existencia de padre o responsable cuando se informan. Revisar ancestros, identidad propia y altura del subárbol antes de guardar un vínculo. Ninguna operación puede dejar un ciclo o nivel 4.
 
-Serializar cambios de jerarquía y estado con sus controles. La desactivación verifica hijos activos antes de persistir y la reactivación recupera la vigencia del mismo id. En el 58 y el 60, la creación de una referencia y la consulta de centro activo usan una garantía compartida con la desactivación. La validación de actividad no invalida referencias anteriores.
+Cada escritura adquiere un bloqueo `SHARE ROW EXCLUSIVE` sobre `CentrosCosto` antes de leer sus filas. La transacción mantiene el bloqueo hasta confirmar o revertir. La desactivación verifica hijos activos y la reactivación recupera la vigencia del mismo id. Al implementar 58 y 60, sus altas deben serializar la comprobación de actividad y el guardado frente a una desactivación concurrente. Una opción es leer el centro con `SELECT … FOR SHARE` en la misma transacción que guarda la referencia. Las referencias anteriores conservan el id original.
 
 Los textos de negocio de la tabla son **propuestas concretas para la revisión final**. El UseCase responde con `ReglaNegocioException` y `CodigosEstado`. El cuerpo conserva `{ StatusCode, Message }`. Las carreras de unicidad y FK se traducen mediante `ViolacionRestriccionException` del `UnitOfWork`.
 
@@ -90,26 +93,28 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 | 404 | Empleado inexistente | «El empleado responsable no existe.» |
 | 409 | Código normalizado duplicado | «Ya existe un centro de costo con ese código.» |
 | 409 | Ciclo o nivel superior a 3 | «La jerarquía de centros debe evitar ciclos y tener como máximo tres niveles.» |
+| 409 | Alta, cambio de padre o reactivación bajo un padre inactivo | «El centro de costo padre debe estar activo.» |
 | 409 | Desactivar con hijos activos | «No se puede desactivar un centro de costo con hijos activos.» |
 | 409 | Vigencia solicitada ya vigente | «El centro de costo ya tiene el estado solicitado.» |
 | 409 | Referencia perdida al guardar | «No se pudo guardar el centro de costo porque una referencia ya no existe.» |
 
 ### Precisiones para la revisión final
 
-- **Cambios del maestro.** Confirmar si el `PUT` admite cambio de código y de padre en registros existentes. Precisar alta o reactivación bajo un padre inactivo. Las reglas aprobadas de profundidad, ciclos y desactivación de padres con hijos activos se comprueban en todos los casos.
+- **Cambios del maestro.** La implementación admite que el `PUT` cambie código o padre y conserva el id y la fecha de registro. Queda pendiente confirmar estos dos campos editables.
+- **Padre inactivo.** La implementación exige un padre activo al crear, reasignar o reactivar. Un centro inactivo que conserva su padre puede editar sus otros datos. Queda pendiente confirmar esta precisión y su literal.
 
 ### Seed, pruebas y smoke
 
-**Seed.** Crear por códigos estables una raíz, un hijo y un nieto activos, además de una hoja inactiva y un centro con responsable del 61. Resolver el padre y responsable por claves existentes y conservar identificadores al repetir.
+**Seed.** Crear por códigos estables una raíz con responsable del 61, un hijo y un nieto activos, y una hoja inactiva. Resolver el padre y responsable por claves existentes y conservar identificadores al repetir. La carga vuelve a usar los empleados de ejemplo para evitar el truncado en cascada de los centros.
 
 **Pruebas de integración.**
 
 1. Código de 2 y 20 caracteres, límites, normalización y duplicidad. Padre y responsable opcionales o inexistentes. Confirmar lectura sin importes.
 2. Árbol de tres niveles, cuarto nivel rechazado, ciclos, padre propio y altura del subárbol en cambios de vínculo.
-3. Desactivación con hijos activos rechazada, hoja desactivada y reactivada con la misma identidad, y referencias de 58/60 históricas intactas.
+3. Desactivación con hijos activos rechazada, hoja desactivada y reactivada con la misma identidad. Verificar las referencias históricas al integrar cada consumidor (58 y 60).
 4. JWT, ambos roles de escritura, 403 de consulta al escribir y cada literal.
 
-**Smoke PostgreSQL.** Probar tres niveles, duplicidad, rechazo del cuarto nivel y desactivación de padre con hijos activos. Probar desactivación y reactivación de una hoja y la carrera de cambios jerárquicos. Añadir `request_check`, la validación Python de códigos y cuerpos, y la comprobación de OpenAPI. Ejecutar en una base desechable hasta `SMOKE OK`.
+**Smoke PostgreSQL.** Comprobar tres niveles, duplicidad, rechazo del cuarto nivel, desactivación de un padre con hijos activos y reactivación. Validar con `request_check`, el diccionario Python y OpenAPI. Comprobar restricciones por escritura directa y coordinar en PostgreSQL las carreras entre cambios de padre, alta de hijo y desactivación, y pérdida del empleado responsable. Ejecutar en una base desechable hasta `SMOKE OK`.
 
 ## 5. Criterios de aceptación (medibles)
 
@@ -125,12 +130,23 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 
 - [x] Incorporar las decisiones oficiales de §2 y G1 a G9.
 - [ ] Terminar la revisión del PR de documentación y cerrar las precisiones de §4.
-- [ ] Confirmar dependencias, aplicar el SQL en local y generar entidades y DbContext.
-- [ ] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
+- [x] Verificar las dependencias disponibles, aplicar el SQL 045 en PostgreSQL desechable y generar entidades y DbContext.
+- [x] Implementar API, pruebas, seed y smoke. Registrar los resultados de §5.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
 | 2026-11-23 | Decisiones v0 | Aprobadas. Revisión final del PR pendiente. | [Respuesta de Lukas](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52#issuecomment-7109010161) |
-| 2026-11-23 | Validación funcional de la spec aprobada | Pendiente | Esta fase revisa documentación. La ejecución de §5 corresponde a la rama de implementación. |
+| 2026-11-24 | A1–A4 | Compilación con cero advertencias. Reglas y gate correctos. | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `scripts/verify.sh`. Pasaron 41 pruebas HTTP del 59 dentro de 1.232 pruebas de backend y 695 del frontend. |
+| 2026-11-24 | A5 | `SCAFFOLD AL DÍA` y `SMOKE OK`. | PostgreSQL 16 desechable. El seed repetido conservó ids y relaciones. El smoke verificó restricciones, ciclos concurrentes, alta frente a desactivación y pérdida de FK con HTTP 409. |
+
+## Actualización del 2026-11-26
+
+El despliegue requiere el catálogo `FINANZAS` (Id 7) que crea el SQL 024 del PR #83. Las pruebas de la rama pueden usar ADMIN y tokens de prueba de FINANZAS. La dependencia de despliegue sigue el orden indicado por Lukas.
+
+### Verificación vigente
+
+- Base `1835648`. Compilación sin advertencias, check-rules y verify en verde con 1.800 backend (41 del módulo), 1.455 frontend.
+- SQL 045 aplicado, `SCAFFOLD AL DÍA`, `SMOKE OK` y dos cargas de seed con los mismos centros, empleados y roles. El smoke comprobó las carreras de jerarquía y la pérdida de la referencia de empleado.
+- Fecha de registro y fecha de desactivación representan instantes UTC.

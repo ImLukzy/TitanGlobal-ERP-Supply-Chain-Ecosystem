@@ -43,6 +43,8 @@ public partial class Empleado
 
     public virtual ICollection<BonoPlanilla> BonosPlanilla { get; set; } = new List<BonoPlanilla>();
 
+    public virtual ICollection<CentroCosto> CentrosCosto { get; set; } = new List<CentroCosto>();
+
     public virtual ICollection<ContratoLaboral> ContratosLaborales { get; set; } = new List<ContratoLaboral>();
 
     public virtual ICollection<EntregaEpp> EntregasEpp { get; set; } = new List<EntregaEpp>();

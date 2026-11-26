@@ -29,6 +29,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; } = null!;
 
+    public virtual DbSet<CentroCosto> CentrosCosto { get; set; } = null!;
+
     public virtual DbSet<CentroTrabajo> CentrosTrabajo { get; set; } = null!;
 
     public virtual DbSet<CertificacionCurso> CertificacionesCurso { get; set; } = null!;
@@ -316,6 +318,31 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Activa).HasDefaultValue(true);
             entity.Property(e => e.Descripcion).HasMaxLength(250);
             entity.Property(e => e.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<CentroCosto>(entity =>
+        {
+            entity.HasIndex(e => e.Codigo, "IX_CentrosCosto_Codigo").IsUnique();
+
+            entity.HasIndex(e => new { e.CentroCostoPadreId, e.Activo }, "IX_CentrosCosto_PadreActivo");
+
+            entity.HasIndex(e => e.ResponsableEmpleadoId, "IX_CentrosCosto_ResponsableEmpleadoId");
+
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Codigo).HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(300);
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.Nombre).HasMaxLength(120);
+
+            entity.HasOne(d => d.CentroCostoPadre).WithMany(p => p.InverseCentroCostoPadre)
+                .HasForeignKey(d => d.CentroCostoPadreId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CentrosCosto_CentroCostoPadre");
+
+            entity.HasOne(d => d.ResponsableEmpleado).WithMany(p => p.CentrosCosto)
+                .HasForeignKey(d => d.ResponsableEmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CentrosCosto_Empleados");
         });
 
         modelBuilder.Entity<CentroTrabajo>(entity =>

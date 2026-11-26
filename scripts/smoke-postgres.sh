@@ -618,6 +618,20 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "m59-openapi": lambda d: all(method in d["paths"]["/api/v1/centros-costo" + path] for method, path in (
+        ("get", ""), ("post", ""), ("get", "/{id}"), ("put", "/{id}"), ("post", "/{id}/desactivar"), ("post", "/{id}/reactivar")
+    )) and "201" in d["paths"]["/api/v1/centros-costo"]["post"]["responses"],
+    "m59-seed": lambda d: d["pagina"] == 1 and d["tamanoPagina"] == 20 and d["totalRegistros"] == 4 and d["totalPaginas"] == 1
+        and [c["codigo"] for c in d["items"]] == ["CC59-HIJO", "CC59-INACTIVO", "CC59-NIETO", "CC59-RAIZ"]
+        and d["items"][-1]["responsableEmpleadoId"] == 1 and d["items"][1]["activo"] is False,
+    "m59-hijo": lambda d: d["totalRegistros"] == 1 and d["items"][0]["codigo"] == "CC59-HIJO",
+    "m59-nieto": lambda d: d["codigo"] == "CC59-NIETO" and d["nivel"] == 3 and d["activo"] is True,
+    "m59-creado": lambda d: d["codigo"] == "M59-SMOKE" and d["nivel"] == 1 and d["activo"] is True
+        and d["fechaRegistro"].endswith("Z") and d["fechaDesactivacion"] is None and "importe" not in d and "moneda" not in d,
+    "m59-inactivo": lambda d: d["codigo"] == "M59-SMOKE" and d["activo"] is False and d["fechaDesactivacion"].endswith("Z"),
+    "m59-duplicado": lambda d: d == {"StatusCode": 409, "Message": "Ya existe un centro de costo con ese código."},
+    "m59-jerarquia": lambda d: d == {"StatusCode": 409, "Message": "La jerarquía de centros debe evitar ciclos y tener como máximo tres niveles."},
+    "m59-hijos-activos": lambda d: d == {"StatusCode": 409, "Message": "No se puede desactivar un centro de costo con hijos activos."},
 }
 
 if validation not in checks or not checks[validation](body):
@@ -834,6 +848,10 @@ request_check() {
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    if [[ "$validation" == "m59-creado" ]]; then
+        CENTRO_COSTO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "ruta-produccion-creada" ]]; then
         RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -1604,4 +1622,169 @@ BEGIN
     END;
 END $$;
 SQL
+
+# Módulo 59: catálogo, vigencia y restricciones en PostgreSQL.
+TOKEN_59_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+request_check 'M59 exige sesión' GET '/api/v1/centros-costo' 401 no-session
+TOKEN_ACTUAL="$TOKEN_59_ADMIN"
+request_check 'M59 OpenAPI seis operaciones' GET '/openapi/v1.json' 200 m59-openapi
+request_check 'M59 centros del seed' GET '/api/v1/centros-costo' 200 m59-seed
+RAIZ_59_ID="$(docker compose exec -T db psql -U titanglobal -d titanglobal -qAt -c "SELECT \"Id\" FROM \"CentrosCosto\" WHERE \"Codigo\" = 'CC59-RAIZ'" | tr -d '\r')"
+NIETO_59_ID="$(docker compose exec -T db psql -U titanglobal -d titanglobal -qAt -c "SELECT \"Id\" FROM \"CentrosCosto\" WHERE \"Codigo\" = 'CC59-NIETO'" | tr -d '\r')"
+request_check 'M59 hijos activos del padre' GET "/api/v1/centros-costo?centroCostoPadreId=${RAIZ_59_ID}&activo=true" 200 m59-hijo
+request_check 'M59 nivel tres' GET "/api/v1/centros-costo/${NIETO_59_ID}" 200 m59-nieto
+request_check 'M59 impide cuarto nivel' POST '/api/v1/centros-costo' 409 m59-jerarquia '{"codigo":"NIVEL4","nombre":"Smoke","centroCostoPadreId":'"${NIETO_59_ID}"'}'
+request_check 'M59 no desactiva padre con hijos activos' POST "/api/v1/centros-costo/${RAIZ_59_ID}/desactivar" 409 m59-hijos-activos
+request_check 'M59 alta y código normalizado' POST '/api/v1/centros-costo' 201 m59-creado '{"codigo":" m59-smoke ","nombre":"Centro de smoke"}'
+request_check 'M59 duplicado normalizado' POST '/api/v1/centros-costo' 409 m59-duplicado '{"codigo":"m59-smoke","nombre":"Duplicado"}'
+request_check 'M59 desactivar hoja' POST "/api/v1/centros-costo/${CENTRO_COSTO_CREADO_ID}/desactivar" 200 m59-inactivo
+request_check 'M59 reactivar hoja' POST "/api/v1/centros-costo/${CENTRO_COSTO_CREADO_ID}/reactivar" 200 m59-creado
+
+docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO "CentrosCosto" ("Codigo", "Nombre") VALUES ('CC59-RAIZ', 'Duplicado SQL');
+        RAISE EXCEPTION 'M59: falta unicidad de código';
+    EXCEPTION WHEN unique_violation THEN NULL;
+    END;
+    BEGIN
+        INSERT INTO "CentrosCosto" ("Codigo", "Nombre") VALUES ('A', 'Código corto');
+        RAISE EXCEPTION 'M59: falta longitud mínima de código';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "CentrosCosto" SET "CentroCostoPadreId" = "Id" WHERE "Codigo" = 'CC59-RAIZ';
+        RAISE EXCEPTION 'M59: falta restricción de padre propio';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "CentrosCosto" SET "Activo" = FALSE WHERE "Codigo" = 'CC59-RAIZ';
+        RAISE EXCEPTION 'M59: falta coherencia de fechas de vigencia';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    BEGIN
+        DELETE FROM "CentrosCosto" WHERE "Codigo" = 'CC59-RAIZ';
+        RAISE EXCEPTION 'M59: falta protección de historial por clave foránea';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+    BEGIN
+        UPDATE "CentrosCosto" SET "ResponsableEmpleadoId" = -1 WHERE "Codigo" = 'CC59-RAIZ';
+        RAISE EXCEPTION 'M59: falta la clave foránea de empleado responsable';
+    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    END;
+END $$;
+SQL
+
+M59_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL" <<'PY'
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+import json
+import os
+import subprocess
+import sys
+import time
+from urllib.error import HTTPError
+from urllib.request import ProxyHandler, Request, build_opener
+
+psql = ["docker", "compose", "exec", "-T", "db", "psql", "-X", "-U", "titanglobal", "-d", "titanglobal", "-v", "ON_ERROR_STOP=1", "-qAt"]
+ruta = sys.argv[1] + "/api/v1/centros-costo"
+cabeceras = {"Authorization": f"Bearer {os.environ['M59_TOKEN']}", "Content-Type": "application/json"}
+
+def consultar_sql(sentencia):
+    return subprocess.run(psql, input=sentencia + "\n", capture_output=True, text=True,
+                          encoding="utf-8", check=True, timeout=8).stdout.strip()
+
+@contextmanager
+def transaccion(sentencia):
+    with subprocess.Popen(psql, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8") as proceso:
+        comando_final = "ROLLBACK"
+        try:
+            proceso.stdin.write("BEGIN;\nSET LOCAL statement_timeout = '12s';\n" + sentencia + "\nSELECT 'listo';\n")
+            proceso.stdin.flush()
+            assert proceso.stdout.readline().strip() == "listo", "M59: no se adquirió el bloqueo de prueba"
+            yield
+            comando_final = "COMMIT"
+        finally:
+            if proceso.poll() is None:
+                proceso.stdin.write(comando_final + ";\n\\q\n")
+                proceso.stdin.flush()
+                proceso.wait(timeout=8)
+        assert proceso.returncode == 0, "M59: falló la transacción de prueba"
+
+def solicitar(metodo, sufijo="", datos=None):
+    cuerpo = json.dumps(datos).encode("utf-8") if datos is not None else (b"" if metodo == "POST" else None)
+    peticion = Request(ruta + sufijo, data=cuerpo, headers=cabeceras, method=metodo)
+    try:
+        with build_opener(ProxyHandler({})).open(peticion, timeout=30) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as error:
+        with error:
+            return error.code, json.load(error)
+
+def datos_centro(codigo, padre=None, responsable=None):
+    return {"codigo": codigo, "nombre": "Centro de smoke", "centroCostoPadreId": padre, "responsableEmpleadoId": responsable}
+
+def crear_raiz(codigo):
+    estado, detalle = solicitar("POST", datos=datos_centro(codigo))
+    assert estado == 201, (estado, detalle)
+    return detalle["id"]
+
+def concurrencia(bloqueo, consulta_espera, *solicitudes):
+    # Dejar todas las peticiones esperando en PostgreSQL antes de liberar la transacción.
+    with ThreadPoolExecutor(max_workers=len(solicitudes)) as peticiones:
+        with transaccion(bloqueo):
+            pendientes = [peticiones.submit(solicitar, *solicitud) for solicitud in solicitudes]
+            limite = time.monotonic() + 10
+            while int(consultar_sql(consulta_espera)) < len(solicitudes):
+                assert time.monotonic() < limite, "M59: las peticiones no esperaron el bloqueo en PostgreSQL"
+                time.sleep(0.1)
+        return [peticion.result(timeout=12) for peticion in pendientes]
+
+bloqueo_arbol = 'LOCK TABLE "CentrosCosto" IN SHARE ROW EXCLUSIVE MODE;'
+espera_arbol = """SELECT count(*) FROM pg_locks WHERE relation = '"CentrosCosto"'::regclass
+    AND mode = 'ShareRowExclusiveLock' AND NOT granted;"""
+
+centro_a = crear_raiz("M59-SMOKE-A")
+centro_b = crear_raiz("M59-SMOKE-B")
+cambios = concurrencia(bloqueo_arbol, espera_arbol,
+                       ("PUT", f"/{centro_a}", datos_centro("M59-SMOKE-A", centro_b)),
+                       ("PUT", f"/{centro_b}", datos_centro("M59-SMOKE-B", centro_a)))
+assert sorted(estado for estado, _ in cambios) == [200, 409], cambios
+assert next(cuerpo for estado, cuerpo in cambios if estado == 409) == {
+    "StatusCode": 409, "Message": "La jerarquía de centros debe evitar ciclos y tener como máximo tres niveles."}
+_, detalle_a = solicitar("GET", f"/{centro_a}")
+_, detalle_b = solicitar("GET", f"/{centro_b}")
+assert (detalle_a["centroCostoPadreId"], detalle_b["centroCostoPadreId"]) in [(centro_b, None), (None, centro_a)]
+assert sorted([detalle_a["nivel"], detalle_b["nivel"]]) == [1, 2]
+print("M59 PostgreSQL rechazó un ciclo en actualizaciones concurrentes")
+
+padre = crear_raiz("M59-SMOKE-PADRE")
+baja, alta = concurrencia(bloqueo_arbol, espera_arbol,
+                          ("POST", f"/{padre}/desactivar"),
+                          ("POST", "", datos_centro("M59-SMOKE-HIJO", padre)))
+_, detalle_padre = solicitar("GET", f"/{padre}")
+_, hijos = solicitar("GET", f"?centroCostoPadreId={padre}")
+if baja[0] == 200:
+    assert not detalle_padre["activo"] and hijos["items"] == []
+    assert alta == (409, {"StatusCode": 409, "Message": "El centro de costo padre debe estar activo."}), alta
+else:
+    assert baja == (409, {"StatusCode": 409, "Message": "No se puede desactivar un centro de costo con hijos activos."}), baja
+    assert alta[0] == 201 and detalle_padre["activo"] and [hijo["id"] for hijo in hijos["items"]] == [alta[1]["id"]]
+print("M59 PostgreSQL serializó el alta de un hijo con la desactivación del padre")
+
+empleado = int(consultar_sql("""INSERT INTO "Empleados"
+    ("Legajo", "TipoDocumento", "NumeroDocumento", "Nombres", "Apellidos", "FechaNacimiento", "FechaIngreso", "Cargo", "Area", "Estado")
+    VALUES ('EMP-SMOKE-59', 'DNI', '59000002', 'Empleado', 'Smoke', DATE '1990-01-01', DATE '2020-01-01', 'Analista', 'Pruebas', 'Activo')
+    RETURNING "Id";"""))
+espera_fk = """SELECT count(*) FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'
+    AND query LIKE 'INSERT INTO "CentrosCosto"%';"""
+# La lectura ve al empleado antes del commit. El INSERT espera por la FK a esa misma fila.
+resultado, = concurrencia(f'DELETE FROM "Empleados" WHERE "Id" = {empleado};', espera_fk,
+                         ("POST", "", datos_centro("M59-SMOKE-FK", responsable=empleado)))
+assert resultado == (409, {"StatusCode": 409, "Message": "No se pudo guardar el centro de costo porque una referencia ya no existe."}), resultado
+assert consultar_sql("""SELECT count(*) FROM "CentrosCosto" WHERE "Codigo" = 'M59-SMOKE-FK';""") == "0"
+print("M59 PostgreSQL devolvió 409 y revirtió el alta tras perder la referencia al empleado")
+PY
 printf 'SMOKE OK\n'

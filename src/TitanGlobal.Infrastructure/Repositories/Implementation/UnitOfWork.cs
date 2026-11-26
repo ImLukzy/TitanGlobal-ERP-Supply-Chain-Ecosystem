@@ -1,4 +1,6 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
@@ -6,7 +8,7 @@ using TitanGlobal.Infrastructure.Persistence;
 
 namespace TitanGlobal.Infrastructure.Repositories.Implementation;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : IUnitOfWorkCentrosCosto
 {
     private readonly TitanGlobalDbContext _context;
 
@@ -45,6 +47,21 @@ public class UnitOfWork : IUnitOfWork
                 excepcion.Message,
                 excepcion);
         }
+    }
+
+    public async Task<TResult> ConCentrosCostoBloqueadosAsync<TResult>(Func<Task<TResult>> operacion)
+    {
+        if (!_context.Database.IsRelational())
+        {
+            return await operacion();
+        }
+
+        await using IDbContextTransaction transaccion = await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        // Los cambios del árbol y de vigencia leen el estado posterior a la última escritura.
+        await _context.Database.ExecuteSqlRawAsync("""LOCK TABLE "CentrosCosto" IN SHARE ROW EXCLUSIVE MODE""");
+        TResult resultado = await operacion();
+        await transaccion.CommitAsync();
+        return resultado;
     }
 
     private static bool EsViolacionConocida(PostgresException excepcion)
