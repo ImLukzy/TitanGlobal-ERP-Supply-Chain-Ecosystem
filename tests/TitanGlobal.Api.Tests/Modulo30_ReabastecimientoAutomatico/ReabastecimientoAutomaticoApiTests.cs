@@ -255,6 +255,28 @@ public class ReabastecimientoAutomaticoApiTests
 
         contexto.SaveChanges();
 
+        if (!contexto.Almacenes.Any(a => a.Id == 1))
+        {
+            contexto.Almacenes.Add(new Almacen { Id = 1, Codigo = "ALM-LIM-01", Nombre = "Almacén Central Lima", Tipo = "Central", Direccion = "Av. Industrial 100", Ciudad = "Lima", CapacidadM3 = 500m, Responsable = "QA", Activo = true });
+        }
+        if (!contexto.Almacenes.Any(a => a.Id == 2))
+        {
+            contexto.Almacenes.Add(new Almacen { Id = 2, Codigo = "ALM-ARE-01", Nombre = "Almacén Regional Arequipa", Tipo = "Regional", Direccion = "Av. Parra 200", Ciudad = "Arequipa", CapacidadM3 = 300m, Responsable = "QA", Activo = true });
+        }
+        if (!contexto.Almacenes.Any(a => a.Id == 4))
+        {
+            contexto.Almacenes.Add(new Almacen { Id = 4, Codigo = "ALM-TRU-01", Nombre = "Almacén Trujillo", Tipo = "Regional", Direccion = "Av. América 400", Ciudad = "Trujillo", CapacidadM3 = 200m, Responsable = "QA", Activo = false });
+        }
+        if (!contexto.Proveedores.Any(pr => pr.Id == 1))
+        {
+            contexto.Proveedores.Add(new Proveedor { Id = 1, RazonSocial = "Proveedor Alpha S.A.C.", Ruc = "20511111111", Contacto = "Ana Torres", Email = "ventas@alpha.pe", Telefono = "999111222", Activo = true });
+        }
+        if (!contexto.Proveedores.Any(pr => pr.Id == 2))
+        {
+            contexto.Proveedores.Add(new Proveedor { Id = 2, RazonSocial = "Distribuidora Beta S.R.L.", Ruc = "20522222222", Contacto = "Luis Ramos", Email = "contacto@beta.pe", Telefono = "999333444", Activo = true });
+        }
+        contexto.SaveChanges();
+
         DateTime fechaBase = new DateTime(2026, 11, 20, 10, 0, 0, DateTimeKind.Utc);
         ReglaReabastecimiento regla1 = new ReglaReabastecimiento
         {
