@@ -661,4 +661,328 @@ INSERT INTO "EvaluacionesProveedor" ("Id", "ProveedorId", "Periodo", "PuntajeCum
 
 SELECT setval(pg_get_serial_sequence('"EvaluacionesProveedor"', 'Id'), (SELECT MAX("Id") FROM "EvaluacionesProveedor"));
 
+-- Módulo 48: proveedores externos e historial de fletes (idempotente).
+INSERT INTO "TransportistasTerceros" ("RazonSocial", "DocumentoFiscal", "Pais", "TipoServicio", "Contacto", "Email", "Telefono", "Observaciones", "Activo") VALUES
+('Andes Logística 3PL', '20148000001', 'Perú', 'Ambos', 'Lucía Torres', 'operaciones@andes.example', '+51 999480001', 'Distribución nacional y almacenamiento externo.', true),
+('Pacífico Fletes', '20148000002', 'Perú', 'Flete', 'Pedro Ruiz', 'trafico@pacifico.example', '+51 999480002', NULL, true),
+('Sur Operador 3PL', '76.480.003-1', 'Chile', '3PL', 'Camila Soto', 'contacto@sur.example', '+56 948000003', NULL, true),
+('Atlántico Transporte', '48.000.004/0001-01', 'Brasil', 'Ambos', 'Ana Costa', NULL, '+55 1148000004', NULL, true),
+('Ruta Histórica', '20148000005', 'Perú', 'Flete', NULL, NULL, NULL, 'Proveedor desactivado; conservar historial.', false),
+('Norte Express', '20148000006', 'Perú', 'Flete', NULL, NULL, NULL, NULL, true)
+ON CONFLICT (lower(btrim("Pais")), lower(btrim("DocumentoFiscal"))) DO NOTHING;
+
+INSERT INTO "FletesTerceros" ("TransportistaTerceroId", "Referencia", "Fecha", "Origen", "Destino", "Importe", "Moneda", "Estado", "Observaciones", "MotivoCancelacion", "FechaCancelacion")
+SELECT t."Id", v.referencia, v.fecha::timestamptz, v.origen, v.destino, v.importe, v.moneda, v.estado, v.observaciones, v.motivo, v.cancelacion::timestamptz
+FROM (VALUES
+('20148000001', 'Perú', 'FLT-48001', '2026-11-10T00:00:00Z', 'Lima', 'Arequipa', 1250.50, 'PEN', 'Registrado', 'Entrega industrial.', NULL, NULL),
+('20148000002', 'Perú', 'FLT-48002', '2026-11-11T00:00:00Z', 'Callao', 'Lima', 450.00, 'PEN', 'Registrado', NULL, NULL, NULL),
+('76.480.003-1', 'Chile', 'FLT-48003', '2026-11-12T00:00:00Z', 'Santiago', 'Valparaíso', 330.25, 'USD', 'Registrado', NULL, NULL, NULL),
+('20148000005', 'Perú', 'FLT-48004', '2026-11-09T00:00:00Z', 'Lima', 'Trujillo', 900.00, 'PEN', 'Cancelado', NULL, 'Ruta suspendida por el cliente.', '2026-11-10T15:00:00Z')
+) AS v(documento, pais, referencia, fecha, origen, destino, importe, moneda, estado, observaciones, motivo, cancelacion)
+JOIN "TransportistasTerceros" t ON lower(btrim(t."DocumentoFiscal")) = lower(v.documento) AND lower(btrim(t."Pais")) = lower(v.pais)
+ON CONFLICT ("TransportistaTerceroId", lower(btrim("Referencia"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"TransportistasTerceros"', 'Id'), (SELECT MAX("Id") FROM "TransportistasTerceros"));
+SELECT setval(pg_get_serial_sequence('"FletesTerceros"', 'Id'), (SELECT MAX("Id") FROM "FletesTerceros"));
+TRUNCATE TABLE "AsignacionesTurno", "Turnos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Turnos" ("Id", "Codigo", "Nombre", "Tipo", "HoraEntrada", "HoraSalida", "CruzaMedianoche", "ToleranciaMinutos", "DiasLaborables", "DiasTrabajo", "DiasDescanso", "FechaInicioCiclo", "Activo") VALUES
+    (1, 'DIA', 'Turno dia', 'Fijo', TIME '08:00', TIME '17:00', false, 10, '1,2,3,4,5', NULL, NULL, NULL, true),
+    (2, 'NOCHE', 'Turno noche', 'Fijo', TIME '22:00', TIME '06:00', true, 5, '1,2,3,4,5,6', NULL, NULL, NULL, true),
+    (3, 'ROT4X2', 'Rotativo 4x2', 'Rotativo', TIME '07:00', TIME '19:00', false, 15, NULL, 4, 2, DATE '2026-01-05', true),
+    (4, 'SABADO', 'Sabado medio dia', 'Fijo', TIME '08:00', TIME '13:00', false, 10, '6', NULL, NULL, NULL, false);
+
+INSERT INTO "AsignacionesTurno" ("Id", "EmpleadoId", "TurnoId", "FechaInicio", "FechaFin") VALUES
+    (1, 1, 1, DATE '2021-03-01', NULL),
+    (2, 2, 2, DATE '2019-08-16', DATE '2025-12-31'),
+    (3, 2, 3, DATE '2026-01-01', NULL),
+    (4, 3, 1, DATE '2024-01-08', NULL),
+    (5, 4, 1, DATE '2018-05-02', NULL);
+
+SELECT setval(pg_get_serial_sequence('"Turnos"', 'Id'), (SELECT MAX("Id") FROM "Turnos"));
+SELECT setval(pg_get_serial_sequence('"AsignacionesTurno"', 'Id'), (SELECT MAX("Id") FROM "AsignacionesTurno"));
+
+TRUNCATE TABLE "JornadasAsistencia", "Marcaciones" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Marcaciones" ("Id", "EmpleadoId", "Tipo", "Instante", "Origen", "Dispositivo", "NumeroRegistro", "Observacion") VALUES
+    (1, 1, 'Entrada', TIMESTAMPTZ '2026-11-02 13:05:00+00', 'Reloj', 'RELOJ-01', 'REG-0001', NULL),
+    (2, 1, 'Salida', TIMESTAMPTZ '2026-11-02 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0002', NULL),
+    (3, 1, 'Entrada', TIMESTAMPTZ '2026-11-03 13:25:00+00', 'Reloj', 'RELOJ-01', 'REG-0003', NULL),
+    (4, 1, 'Salida', TIMESTAMPTZ '2026-11-03 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0004', NULL),
+    (5, 1, 'Entrada', TIMESTAMPTZ '2026-11-04 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0005', NULL),
+    (6, 1, 'Salida', TIMESTAMPTZ '2026-11-04 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0006', NULL),
+    (7, 1, 'Entrada', TIMESTAMPTZ '2026-11-05 12:30:00+00', 'Reloj', 'RELOJ-01', 'REG-0007', NULL),
+    (8, 1, 'Salida', TIMESTAMPTZ '2026-11-06 00:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0008', NULL),
+    (9, 1, 'Entrada', TIMESTAMPTZ '2026-11-06 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0009', NULL),
+    (10, 1, 'Salida', TIMESTAMPTZ '2026-11-06 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0010', NULL),
+    (11, 2, 'Entrada', TIMESTAMPTZ '2026-11-02 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0011', NULL),
+    (12, 2, 'Salida', TIMESTAMPTZ '2026-11-03 00:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0012', NULL),
+    (13, 2, 'Entrada', TIMESTAMPTZ '2026-11-03 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0013', NULL),
+    (14, 2, 'Salida', TIMESTAMPTZ '2026-11-04 00:00:00+00', 'Manual', NULL, NULL, 'Salida omitida por el reloj; confirmada por el jefe de turno'),
+    (15, 2, 'Entrada', TIMESTAMPTZ '2026-11-04 12:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0014', NULL),
+    (16, 2, 'Salida', TIMESTAMPTZ '2026-11-05 01:30:00+00', 'Reloj', 'RELOJ-01', 'REG-0015', NULL),
+    (17, 3, 'Entrada', TIMESTAMPTZ '2026-11-02 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0016', NULL),
+    (18, 3, 'Salida', TIMESTAMPTZ '2026-11-02 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0017', NULL),
+    (19, 3, 'Entrada', TIMESTAMPTZ '2026-11-03 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0018', NULL),
+    (20, 3, 'Salida', TIMESTAMPTZ '2026-11-03 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0019', NULL),
+    (21, 3, 'Entrada', TIMESTAMPTZ '2026-11-04 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0020', NULL),
+    (22, 3, 'Entrada', TIMESTAMPTZ '2026-11-05 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0021', NULL),
+    (23, 3, 'Salida', TIMESTAMPTZ '2026-11-05 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0022', NULL),
+    (24, 3, 'Entrada', TIMESTAMPTZ '2026-11-06 13:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0023', NULL),
+    (25, 3, 'Salida', TIMESTAMPTZ '2026-11-06 22:00:00+00', 'Reloj', 'RELOJ-01', 'REG-0024', NULL);
+
+INSERT INTO "JornadasAsistencia" ("Id", "EmpleadoId", "Fecha", "TurnoId", "HoraEntradaProgramada", "HoraSalidaProgramada", "ToleranciaMinutos", "Entrada", "Salida", "MinutosTrabajados", "MinutosTardanza", "MinutosExtra", "Estado", "EstadoHorasExtra", "DecididoPor", "FechaDecision", "MotivoRechazo") VALUES
+    (1, 1, DATE '2026-11-02', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-02 13:05:00+00', TIMESTAMPTZ '2026-11-02 22:00:00+00', 535, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (2, 1, DATE '2026-11-03', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-03 13:25:00+00', TIMESTAMPTZ '2026-11-03 22:00:00+00', 515, 15, 0, 'Tardanza', 'NoAplica', NULL, NULL, NULL),
+    (3, 1, DATE '2026-11-04', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-04 13:00:00+00', TIMESTAMPTZ '2026-11-04 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (4, 1, DATE '2026-11-05', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-05 12:30:00+00', TIMESTAMPTZ '2026-11-06 00:00:00+00', 690, 0, 150, 'Asistencia', 'Aprobada', 'admin', TIMESTAMPTZ '2026-11-09 15:00:00+00', NULL),
+    (5, 1, DATE '2026-11-06', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-06 13:00:00+00', TIMESTAMPTZ '2026-11-06 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (6, 2, DATE '2026-11-02', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-02 12:00:00+00', TIMESTAMPTZ '2026-11-03 00:00:00+00', 720, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (7, 2, DATE '2026-11-03', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-03 12:00:00+00', TIMESTAMPTZ '2026-11-04 00:00:00+00', 720, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (8, 2, DATE '2026-11-04', 3, TIME '07:00', TIME '19:00', 15, TIMESTAMPTZ '2026-11-04 12:00:00+00', TIMESTAMPTZ '2026-11-05 01:30:00+00', 810, 0, 90, 'Asistencia', 'Pendiente', NULL, NULL, NULL),
+    (9, 3, DATE '2026-11-02', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-02 13:00:00+00', TIMESTAMPTZ '2026-11-02 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (10, 3, DATE '2026-11-03', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-03 13:00:00+00', TIMESTAMPTZ '2026-11-03 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (11, 3, DATE '2026-11-04', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-04 13:00:00+00', NULL, 0, 0, 0, 'SinMarcacion', 'NoAplica', NULL, NULL, NULL),
+    (12, 3, DATE '2026-11-05', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-05 13:00:00+00', TIMESTAMPTZ '2026-11-05 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL),
+    (13, 3, DATE '2026-11-06', 1, TIME '08:00', TIME '17:00', 10, TIMESTAMPTZ '2026-11-06 13:00:00+00', TIMESTAMPTZ '2026-11-06 22:00:00+00', 540, 0, 0, 'Asistencia', 'NoAplica', NULL, NULL, NULL);
+
+SELECT setval(pg_get_serial_sequence('"Marcaciones"', 'Id'), (SELECT MAX("Id") FROM "Marcaciones"));
+SELECT setval(pg_get_serial_sequence('"JornadasAsistencia"', 'Id'), (SELECT MAX("Id") FROM "JornadasAsistencia"));
+
+TRUNCATE TABLE "Ausencias" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Ausencias" ("Id", "Numero", "EmpleadoId", "Tipo", "FechaInicio", "FechaFin", "Dias", "Motivo", "Estado", "FechaSolicitud", "DecididoPor", "FechaDecision", "MotivoRechazo", "FechaCancelacion") VALUES
+    (1, 'AUS-000001', 1, 'Vacaciones', DATE '2026-02-02', DATE '2026-02-13', 12, NULL, 'Aprobada', DATE '2026-01-12', 'admin', TIMESTAMPTZ '2026-01-13 15:00:00+00', NULL, NULL),
+    (2, 'AUS-000002', 1, 'Vacaciones', DATE '2027-01-04', DATE '2027-01-10', 7, NULL, 'Aprobada', DATE '2026-11-02', 'admin', TIMESTAMPTZ '2026-11-03 15:00:00+00', NULL, NULL),
+    (3, 'AUS-000003', 1, 'PermisoConGoce', DATE '2026-12-14', DATE '2026-12-15', 2, 'Tramite notarial', 'Pendiente', DATE '2026-11-16', NULL, NULL, NULL, NULL),
+    (4, 'AUS-000004', 2, 'DescansoMedico', DATE '2026-11-09', DATE '2026-11-13', 5, 'Cuadro gripal con certificado medico', 'Aprobada', DATE '2026-11-09', 'admin', TIMESTAMPTZ '2026-11-09 16:00:00+00', NULL, NULL),
+    (5, 'AUS-000005', 2, 'PermisoSinGoce', DATE '2026-11-16', DATE '2026-11-17', 2, 'Asunto familiar', 'Aprobada', DATE '2026-11-10', 'admin', TIMESTAMPTZ '2026-11-11 15:00:00+00', NULL, NULL),
+    (6, 'AUS-000006', 3, 'Vacaciones', DATE '2026-12-21', DATE '2026-12-31', 11, NULL, 'Rechazada', DATE '2026-11-05', 'admin', TIMESTAMPTZ '2026-11-06 15:00:00+00', 'Cierre de inventario anual', NULL),
+    (7, 'AUS-000007', 3, 'Vacaciones', DATE '2027-02-01', DATE '2027-02-05', 5, NULL, 'Cancelada', DATE '2026-11-05', NULL, NULL, NULL, DATE '2026-11-10');
+
+SELECT setval(pg_get_serial_sequence('"Ausencias"', 'Id'), (SELECT MAX("Id") FROM "Ausencias"));
+
+TRUNCATE TABLE "DescuentosCuotaPrestamo", "CuotasPrestamo", "Prestamos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Prestamos" ("Id", "Numero", "EmpleadoId", "Tipo", "Monto", "NumeroCuotas", "FechaOtorgamiento", "PrimerAnio", "PrimerMes", "Motivo", "Estado", "Saldo", "FechaAnulacion", "MotivoAnulacion") VALUES
+    (1, 'PRE-000001', 1, 'Prestamo', 600.00, 6, DATE '2026-09-01', 2026, 9, 'Compra de equipo de computo', 'Activo', 400.00, NULL, NULL),
+    (2, 'PRE-000002', 2, 'Adelanto', 500.00, 1, DATE '2026-10-05', 2026, 10, 'Gastos medicos', 'Cancelado', 0.00, NULL, NULL),
+    (3, 'PRE-000003', 3, 'Prestamo', 300.00, 3, DATE '2026-10-20', 2026, 11, 'Curso de capacitacion', 'Anulado', 0.00, DATE '2026-10-22', 'Registrado por error');
+
+INSERT INTO "CuotasPrestamo" ("Id", "PrestamoId", "NumeroCuota", "Anio", "Mes", "Monto", "MontoDescontado", "Estado") VALUES
+    (1, 1, 1, 2026, 9, 100.00, 100.00, 'Descontada'),
+    (2, 1, 2, 2026, 10, 100.00, 100.00, 'Descontada'),
+    (3, 1, 3, 2026, 11, 100.00, 0.00, 'Pendiente'),
+    (4, 1, 4, 2026, 12, 100.00, 0.00, 'Pendiente'),
+    (5, 1, 5, 2027, 1, 100.00, 0.00, 'Pendiente'),
+    (6, 1, 6, 2027, 2, 100.00, 0.00, 'Pendiente'),
+    (7, 2, 1, 2026, 10, 500.00, 500.00, 'Descontada'),
+    (8, 3, 1, 2026, 11, 100.00, 0.00, 'Pendiente'),
+    (9, 3, 2, 2026, 12, 100.00, 0.00, 'Pendiente'),
+    (10, 3, 3, 2027, 1, 100.00, 0.00, 'Pendiente');
+
+SELECT setval(pg_get_serial_sequence('"Prestamos"', 'Id'), (SELECT MAX("Id") FROM "Prestamos"));
+SELECT setval(pg_get_serial_sequence('"CuotasPrestamo"', 'Id'), (SELECT MAX("Id") FROM "CuotasPrestamo"));
+
+TRUNCATE TABLE "DescuentosCuotaPrestamo", "BonosPlanilla", "PlanillaDetalles", "Planillas", "AfiliacionesPension" RESTART IDENTITY CASCADE;
+
+-- ParametrosPlanilla, ParametrosPension y TramosQuintaCategoria los carga database/038-planillas.sql (catalogos).
+
+INSERT INTO "AfiliacionesPension" ("Id", "EmpleadoId", "ParametroPensionId", "Cuspp", "FechaAfiliacion") VALUES
+    (1, 1, 2, '123456ATORR1', DATE '2021-03-01'),
+    (2, 2, 1, NULL, DATE '2019-08-16'),
+    (3, 3, 3, '654321MSALA0', DATE '2024-01-08');
+
+-- Planilla 2026-10 pagada: los importes salen de CalculadoraRemuneracion con estos datos (empleado 1: 9500 + bono 500, INTEGRA;
+-- empleado 2: 4200, ONP; cuotas de prestamo descontadas de los prestamos 1 y 2 del modulo 67). Planilla 2026-11 en borrador.
+INSERT INTO "Planillas" ("Id", "Numero", "Anio", "Mes", "Tipo", "Estado", "Empleados", "Incidencias", "TotalIngresos", "TotalDescuentos", "TotalNeto", "TotalAportesEmpleador", "FechaCalculo", "CalculadoPor", "AprobadoPor", "FechaAprobacion", "FechaPago") VALUES
+    (1, 'PLA-202610-M', 2026, 10, 'Mensual', 'Pagada', 2, 0, 14200.00, 3353.66, 10846.34, 1278.00, TIMESTAMPTZ '2026-11-02 15:00:00+00', 'admin', 'admin', TIMESTAMPTZ '2026-11-03 15:00:00+00', DATE '2026-11-05'),
+    (2, 'PLA-202611-M', 2026, 11, 'Mensual', 'Borrador', 0, 0, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO "PlanillaDetalles" ("Id", "PlanillaId", "EmpleadoId", "ContratoLaboralId", "Cargo", "SueldoBasico", "DiasContrato", "DiasSinGoce", "DiasFalta", "DiasLaborados", "IngresoBasico", "MinutosExtra", "IngresoHorasExtra", "IngresoBonos", "TotalIngresos", "CodigoPension", "DescuentoPension", "DescuentoQuinta", "DescuentoPrestamos", "TotalDescuentos", "Neto", "AporteEssalud", "Incidencia", "NumeroBoleta") VALUES
+    (1, 1, 1, 1, 'Gerente Comercial', 9500.00, 30, 0, 0, 30, 9500.00, 0, 0.00, 500.00, 10000.00, 'INTEGRA', 1292.00, 829.33, 100.00, 2221.33, 7778.67, 900.00, NULL, 'BOL-202610-M-000001'),
+    (2, 1, 2, 4, 'Analista de Compras', 4200.00, 30, 0, 0, 30, 4200.00, 0, 0.00, 0.00, 4200.00, 'ONP', 546.00, 86.33, 500.00, 1132.33, 3067.67, 378.00, NULL, 'BOL-202610-M-000002');
+
+INSERT INTO "BonosPlanilla" ("Id", "EmpleadoId", "Anio", "Mes", "TipoPlanilla", "Concepto", "Monto", "PlanillaId") VALUES
+    (1, 1, 2026, 10, 'Mensual', 'Bono por metas', 500.00, 1);
+
+INSERT INTO "DescuentosCuotaPrestamo" ("Id", "CuotaPrestamoId", "PlanillaId", "Monto") VALUES
+    (1, 2, 1, 100.00),
+    (2, 7, 1, 500.00);
+
+SELECT setval(pg_get_serial_sequence('"AfiliacionesPension"', 'Id'), (SELECT MAX("Id") FROM "AfiliacionesPension"));
+SELECT setval(pg_get_serial_sequence('"Planillas"', 'Id'), (SELECT MAX("Id") FROM "Planillas"));
+SELECT setval(pg_get_serial_sequence('"PlanillaDetalles"', 'Id'), (SELECT MAX("Id") FROM "PlanillaDetalles"));
+SELECT setval(pg_get_serial_sequence('"BonosPlanilla"', 'Id'), (SELECT MAX("Id") FROM "BonosPlanilla"));
+SELECT setval(pg_get_serial_sequence('"DescuentosCuotaPrestamo"', 'Id'), (SELECT MAX("Id") FROM "DescuentosCuotaPrestamo"));
+
+-- Modulo 68 EvaluacionDesempeno. Ciclo 2026-S1 cerrado (evaluaciones de los empleados 1, 2 y 4, con contrato en el periodo)
+-- y ciclo 2026-S2 abierto (una evaluacion enviada y otra en borrador). PuntajeFinal = suma de peso / 100 x calificacion:
+-- S1 (30, 25, 30, 15): empleado 1 con 5,4,5,4 = 4.60; empleado 2 con 4,3,4,3 = 3.60; empleado 4 con 3,3,2,3 = 2.70.
+-- S2 (25, 25, 35, 15): empleado 1 con 4,5,4,3 = 4.10.
+TRUNCATE TABLE "CalificacionesEvaluacion", "Evaluaciones", "CompetenciasEvaluacion", "CiclosEvaluacion" RESTART IDENTITY CASCADE;
+
+INSERT INTO "CiclosEvaluacion" ("Id", "Codigo", "Nombre", "Periodo", "FechaInicioPeriodo", "FechaFinPeriodo", "FechaApertura", "FechaCierre", "Estado") VALUES
+    (1, '2026-S1', 'Evaluacion de desempeno 2026 - primer semestre', 'Semestral', DATE '2026-01-01', DATE '2026-06-30', DATE '2026-06-01', DATE '2026-07-15', 'Cerrado'),
+    (2, '2026-S2', 'Evaluacion de desempeno 2026 - segundo semestre', 'Semestral', DATE '2026-06-01', DATE '2026-11-30', DATE '2026-11-01', DATE '2026-12-31', 'Abierto');
+
+INSERT INTO "CompetenciasEvaluacion" ("Id", "CicloEvaluacionId", "Nombre", "Descripcion", "Peso") VALUES
+    (1, 1, 'Calidad del trabajo', 'Precision y cuidado en las tareas', 30.00),
+    (2, 1, 'Trabajo en equipo', 'Colaboracion con sus companeros', 25.00),
+    (3, 1, 'Cumplimiento de objetivos', 'Metas del semestre alcanzadas', 30.00),
+    (4, 1, 'Iniciativa', 'Propone mejoras sin que se lo pidan', 15.00),
+    (5, 2, 'Calidad del trabajo', 'Precision y cuidado en las tareas', 25.00),
+    (6, 2, 'Trabajo en equipo', 'Colaboracion con sus companeros', 25.00),
+    (7, 2, 'Cumplimiento de objetivos', 'Metas del semestre alcanzadas', 35.00),
+    (8, 2, 'Iniciativa', 'Propone mejoras sin que se lo pidan', 15.00);
+
+INSERT INTO "Evaluaciones" ("Id", "CicloEvaluacionId", "EmpleadoId", "EvaluadorId", "Estado", "Comentario", "PuntajeFinal", "FechaEnvio", "FechaCierre") VALUES
+    (1, 1, 1, 2, 'Cerrada', 'Desempeno sobresaliente', 4.60, TIMESTAMPTZ '2026-06-20 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (2, 1, 2, 1, 'Cerrada', 'Cumple lo esperado', 3.60, TIMESTAMPTZ '2026-06-21 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (3, 1, 4, 1, 'Cerrada', 'Debe mejorar el cumplimiento de metas', 2.70, TIMESTAMPTZ '2026-06-22 15:00:00+00', TIMESTAMPTZ '2026-07-16 15:00:00+00'),
+    (4, 2, 1, 2, 'Enviada', 'Buen semestre', 4.10, TIMESTAMPTZ '2026-11-10 15:00:00+00', NULL),
+    (5, 2, 2, 1, 'Borrador', NULL, NULL, NULL, NULL);
+
+INSERT INTO "CalificacionesEvaluacion" ("Id", "EvaluacionId", "CompetenciaEvaluacionId", "Calificacion") VALUES
+    (1, 1, 1, 5), (2, 1, 2, 4), (3, 1, 3, 5), (4, 1, 4, 4),
+    (5, 2, 1, 4), (6, 2, 2, 3), (7, 2, 3, 4), (8, 2, 4, 3),
+    (9, 3, 1, 3), (10, 3, 2, 3), (11, 3, 3, 2), (12, 3, 4, 3),
+    (13, 4, 5, 4), (14, 4, 6, 5), (15, 4, 7, 4), (16, 4, 8, 3),
+    (17, 5, 5, 3), (18, 5, 6, 4);
+
+SELECT setval(pg_get_serial_sequence('"CiclosEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CiclosEvaluacion"));
+SELECT setval(pg_get_serial_sequence('"CompetenciasEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CompetenciasEvaluacion"));
+SELECT setval(pg_get_serial_sequence('"Evaluaciones"', 'Id'), (SELECT MAX("Id") FROM "Evaluaciones"));
+SELECT setval(pg_get_serial_sequence('"CalificacionesEvaluacion"', 'Id'), (SELECT MAX("Id") FROM "CalificacionesEvaluacion"));
+
+-- Modulo 69 Capacitaciones. 4 cursos (ISO-900 inactivo) y 3 programaciones: la 1 realizada en 2026 con resultados y
+-- certificaciones (la CERT-SEG-0002 vencida), la 2 programada en 2027 (cupo 3 con 2 inscritos, siempre futura) y la 3
+-- cancelada. Anio = anio de FechaInicio. K5 de 2026: los empleados 1, 2 y 4 aprobaron el curso 1 (8 h); el 3 desaprobo.
+TRUNCATE TABLE "CertificacionesCurso", "InscripcionesCurso", "ProgramacionesCurso", "Cursos" RESTART IDENTITY CASCADE;
+
+INSERT INTO "Cursos" ("Id", "Codigo", "Nombre", "Horas", "Tipo", "Proveedor", "Activo") VALUES
+    (1, 'SEG-001', 'Seguridad y salud en el trabajo', 8.0, 'Interno', NULL, true),
+    (2, 'EXC-201', 'Excel avanzado para analistas', 16.0, 'Virtual', 'Aula Digital SAC', true),
+    (3, 'LID-301', 'Liderazgo de equipos', 24.0, 'Externo', 'Instituto Andino de Gestion', true),
+    (4, 'ISO-900', 'Auditor interno ISO 9001', 20.5, 'Externo', 'Calidad Total SA', false);
+
+INSERT INTO "ProgramacionesCurso" ("Id", "CursoId", "Anio", "FechaInicio", "FechaFin", "Cupo", "Lugar", "Estado") VALUES
+    (1, 1, 2026, DATE '2026-03-10', DATE '2026-03-11', 10, 'Sala de capacitacion', 'Realizada'),
+    (2, 2, 2027, DATE '2027-03-15', DATE '2027-03-16', 3, 'Aula virtual', 'Programada'),
+    (3, 3, 2026, DATE '2026-05-18', DATE '2026-05-20', 12, 'Auditorio central', 'Cancelada');
+
+INSERT INTO "InscripcionesCurso" ("Id", "ProgramacionCursoId", "EmpleadoId", "Estado", "Nota", "FechaInscripcion") VALUES
+    (1, 1, 1, 'Aprobado', 17.0, DATE '2026-02-20'),
+    (2, 1, 2, 'Aprobado', 15.5, DATE '2026-02-20'),
+    (3, 1, 3, 'Desaprobado', 9.0, DATE '2026-02-21'),
+    (4, 1, 4, 'Aprobado', 14.0, DATE '2026-02-21'),
+    (5, 2, 2, 'Inscrito', NULL, DATE '2026-11-10'),
+    (6, 2, 3, 'Inscrito', NULL, DATE '2026-11-10'),
+    (7, 3, 1, 'Retirado', NULL, DATE '2026-04-20');
+
+INSERT INTO "CertificacionesCurso" ("Id", "InscripcionCursoId", "Codigo", "FechaEmision", "FechaVencimiento") VALUES
+    (1, 1, 'CERT-SEG-0001', DATE '2026-03-15', NULL),
+    (2, 2, 'CERT-SEG-0002', DATE '2026-03-15', DATE '2026-09-15');
+
+SELECT setval(pg_get_serial_sequence('"Cursos"', 'Id'), (SELECT MAX("Id") FROM "Cursos"));
+SELECT setval(pg_get_serial_sequence('"ProgramacionesCurso"', 'Id'), (SELECT MAX("Id") FROM "ProgramacionesCurso"));
+SELECT setval(pg_get_serial_sequence('"InscripcionesCurso"', 'Id'), (SELECT MAX("Id") FROM "InscripcionesCurso"));
+SELECT setval(pg_get_serial_sequence('"CertificacionesCurso"', 'Id'), (SELECT MAX("Id") FROM "CertificacionesCurso"));
+
+-- Modulo 70 SeguridadSaludOcupacional. 4 equipos (ARN-004 inactivo). Las entregas vigentes usan el equipo LEN-003 (vida util
+-- de 3650 dias) para que sigan vigentes hasta 2036 sin depender del calendario; la entrega 1 del casco vencio en 2026-01-15.
+-- Examenes: el 1 vencido (2026-02-10), el 2 AptoConRestricciones, el 3 vigente hasta 2031 y el 4 de retiro del empleado 4
+-- (cese 2026-09-30, dentro de los 30 dias). Incidentes 2026: el 1 cerrado con su accion completada y el 2 AccidenteConBaja
+-- abierto con una accion pendiente.
+TRUNCATE TABLE "AccionesCorrectivasSst", "IncidentesSst", "ExamenesMedicos", "EntregasEpp", "EquiposProteccion" RESTART IDENTITY CASCADE;
+
+INSERT INTO "EquiposProteccion" ("Id", "Codigo", "Nombre", "VidaUtilDias", "Activo") VALUES
+    (1, 'CAS-001', 'Casco de seguridad', 365, true),
+    (2, 'GUA-002', 'Guantes de proteccion mecanica', 180, true),
+    (3, 'LEN-003', 'Lentes de proteccion', 3650, true),
+    (4, 'ARN-004', 'Arnes de seguridad', 730, false);
+
+INSERT INTO "EntregasEpp" ("Id", "EquipoProteccionId", "EmpleadoId", "FechaEntrega", "Cantidad", "FechaVencimiento") VALUES
+    (1, 1, 1, DATE '2025-01-15', 1, DATE '2025-01-15' + 365),
+    (2, 3, 2, DATE '2026-09-01', 1, DATE '2026-09-01' + 3650),
+    (3, 3, 3, DATE '2026-09-01', 2, DATE '2026-09-01' + 3650);
+
+INSERT INTO "ExamenesMedicos" ("Id", "EmpleadoId", "Tipo", "Fecha", "Resultado", "Restricciones", "FechaVencimiento", "Clinica") VALUES
+    (1, 1, 'Periodico', DATE '2025-02-10', 'Apto', NULL, DATE '2026-02-10', 'Clinica Salud Laboral'),
+    (2, 2, 'Ingreso', DATE '2026-03-05', 'AptoConRestricciones', 'Sin trabajo en altura ni cargas superiores a 15 kg', DATE '2031-03-05', 'Clinica Salud Laboral'),
+    (3, 3, 'Periodico', DATE '2026-06-12', 'Apto', NULL, DATE '2031-06-12', 'Centro Medico del Norte'),
+    (4, 4, 'Retiro', DATE '2026-10-05', 'Apto', NULL, NULL, 'Clinica Salud Laboral');
+
+INSERT INTO "IncidentesSst" ("Id", "Numero", "EmpleadoId", "Tipo", "Severidad", "Fecha", "Lugar", "Descripcion", "DiasBaja", "Estado", "FechaCierre") VALUES
+    (1, 'INC-000001', 3, 'AccidenteSinBaja', 'Leve', DATE '2026-04-14', 'Almacen central', 'Golpe en el pie al mover un pallet sin lesion que requiera descanso', 0, 'Cerrado', DATE '2026-05-10'),
+    (2, 'INC-000002', 2, 'AccidenteConBaja', 'Moderada', DATE '2026-10-20', 'Zona de despacho', 'Corte en la mano al retirar zunchos de un pallet', 5, 'Abierto', NULL);
+
+INSERT INTO "AccionesCorrectivasSst" ("Id", "IncidenteSstId", "Descripcion", "Responsable", "FechaCompromiso", "Completada", "FechaCompletada") VALUES
+    (1, 1, 'Senalizar la zona de pallets y exigir calzado con punta de acero', 'Jefe de Almacen', DATE '2026-05-05', true, DATE '2026-05-08'),
+    (2, 2, 'Entregar guantes anticorte y capacitar en el retiro de zunchos', 'Supervisor de Despacho', DATE '2026-12-15', false, NULL);
+
+SELECT setval(pg_get_serial_sequence('"EquiposProteccion"', 'Id'), (SELECT MAX("Id") FROM "EquiposProteccion"));
+SELECT setval(pg_get_serial_sequence('"EntregasEpp"', 'Id'), (SELECT MAX("Id") FROM "EntregasEpp"));
+SELECT setval(pg_get_serial_sequence('"ExamenesMedicos"', 'Id'), (SELECT MAX("Id") FROM "ExamenesMedicos"));
+SELECT setval(pg_get_serial_sequence('"IncidentesSst"', 'Id'), (SELECT MAX("Id") FROM "IncidentesSst"));
+SELECT setval(pg_get_serial_sequence('"AccionesCorrectivasSst"', 'Id'), (SELECT MAX("Id") FROM "AccionesCorrectivasSst"));
+
+-- Módulo 31: dos versiones para el producto 1.
+INSERT INTO "ListasMateriales" ("ProductoId", "Version", "Estado") VALUES
+    (1, 1, 'Activa'),
+    (1, 2, 'Borrador')
+ON CONFLICT ("ProductoId", "Version") DO NOTHING;
+
+INSERT INTO "DetallesListaMaterial" ("ListaMaterialId", "ComponenteProductoId", "Cantidad", "UnidadMedida")
+SELECT lista."Id", datos.componente_id, datos.cantidad, 'unidad'
+FROM (VALUES (1, 3, 1.000000), (1, 4, 1.000000), (2, 3, 1.000000), (2, 6, 2.000000))
+    AS datos(version, componente_id, cantidad)
+JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = datos.version
+ON CONFLICT ("ListaMaterialId", "ComponenteProductoId") DO NOTHING;
+
+INSERT INTO "RutasProduccion" ("ProductoId", "Version", "Estado") VALUES
+    (1, 1, 'Activa'),
+    (1, 2, 'Borrador')
+ON CONFLICT ("ProductoId", "Version") DO UPDATE SET "Estado" = EXCLUDED."Estado";
+
+INSERT INTO "OperacionesRutaProduccion" (
+    "RutaProduccionId", "Secuencia", "Nombre", "CentroTrabajoId", "MinutosPreparacion", "MinutosPorUnidad")
+SELECT ruta."Id", datos.secuencia, datos.nombre, centro."Id", datos.preparacion, datos.por_unidad
+FROM (VALUES
+    (1, 1, 'Ensamblaje', 'CT-LIM-C01', 10.00, 5.50),
+    (1, 2, 'Envasado', 'CT-LIM-L01', 4.25, 1.00),
+    (2, 1, 'Ensamblaje', 'CT-LIM-C01', 8.00, 4.75),
+    (2, 2, 'Envasado', 'CT-LIM-L02', 3.00, 0.80)
+) AS datos(version, secuencia, nombre, codigo_centro, preparacion, por_unidad)
+JOIN "RutasProduccion" ruta ON ruta."ProductoId" = 1 AND ruta."Version" = datos.version
+JOIN "CentrosTrabajo" centro ON centro."Codigo" = datos.codigo_centro
+ON CONFLICT ("RutaProduccionId", "Secuencia") DO UPDATE SET
+    "Nombre" = EXCLUDED."Nombre",
+    "CentroTrabajoId" = EXCLUDED."CentroTrabajoId",
+    "MinutosPreparacion" = EXCLUDED."MinutosPreparacion",
+    "MinutosPorUnidad" = EXCLUDED."MinutosPorUnidad";
+
+-- Módulo 43: maestro de rutas; estimaciones por recorrido, sin conversión.
+INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda", "Activo", "Observaciones") VALUES
+('RTA-43001', 'Corredor Norte', 'Norte', 'Lima', 'Trujillo', 558.50, 98.00, 'PEN', true, 'Estimación de peajes por recorrido.'),
+('RTA-43002', 'Corredor Sur', 'Sur', 'Lima', 'Ica', 303.25, 35.50, 'PEN', true, NULL),
+('RTA-43003', 'Conexión urbana', 'Centro', 'Callao', 'Lima', 25.00, 0.00, 'PEN', true, 'Recorrido sin peajes estimados.'),
+('RTA-43004', 'Conexión internacional', 'Norte', 'Tumbes', 'Guayaquil', 280.00, 18.75, 'USD', true, NULL),
+('RTA-43005', 'Tramo Sur suspendido', 'Sur', 'Arequipa', 'Tacna', 368.20, 42.00, 'PEN', false, 'Ruta temporalmente desactivada.'),
+('RTA-43006', 'Corredor Centro', 'Centro', 'Lima', 'Huancayo', 302.40, 44.00, 'PEN', true, NULL)
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"RutasDespacho"', 'Id'), (SELECT MAX("Id") FROM "RutasDespacho"));
+
+-- Módulo 44: preparación manual de carga; valores estimados por empaque.
+INSERT INTO "ConsolidacionesCarga" ("Codigo","Nombre","Estado","Observaciones","FechaConfirmacion","MotivoCancelacion","FechaCancelacion") VALUES
+('CAR-44001','Preparación Norte','Borrador','Picking pendiente.',NULL,NULL,NULL),
+('CAR-44002','Carga confirmada Centro','Confirmada',NULL,'2026-11-20T12:00:00Z',NULL,NULL),
+('CAR-44003','Carga cancelada Sur','Cancelada',NULL,'2026-11-19T12:00:00Z','Cambio de programación.','2026-11-20T12:00:00Z')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad","CantidadRecogida","UnidadesPorBulto","LargoCm","AnchoCm","AltoCm","PesoBultoKg")
+SELECT c."Id",1,'MAN-44001','Presentación manual de ejemplo',10,CASE WHEN c."Estado" = 'Borrador' THEN 4 ELSE 10 END,4,50,40,30,2
+FROM "ConsolidacionesCarga" c WHERE c."Codigo" IN ('CAR-44001','CAR-44002','CAR-44003')
+AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."ConsolidacionCargaId" = c."Id" AND l."Posicion" = 1);
+SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
+SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
+
 COMMIT;
