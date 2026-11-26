@@ -31,6 +31,8 @@ public partial class Producto
 
     public virtual ListaMateriales? ListaMateriales { get; set; }
 
+    public virtual ICollection<OrdenProduccion> OrdenesProduccion { get; set; } = new List<OrdenProduccion>();
+
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();
 
     public virtual ICollection<ReclamoPostventa> ReclamosPostventa { get; set; } = new List<ReclamoPostventa>();

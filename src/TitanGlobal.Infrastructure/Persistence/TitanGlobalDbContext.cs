@@ -109,6 +109,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<OrdenCompra> OrdenesCompra { get; set; } = null!;
 
+    public virtual DbSet<OrdenProduccion> OrdenesProduccion { get; set; } = null!;
+
     public virtual DbSet<ParametroPension> ParametrosPension { get; set; } = null!;
 
     public virtual DbSet<ParametroPlanilla> ParametrosPlanilla { get; set; } = null!;
@@ -953,6 +955,35 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Total).HasPrecision(18, 2);
 
             entity.HasOne(d => d.Cliente).WithMany(p => p.OrdenesCompra).HasForeignKey(d => d.ClienteId);
+        });
+
+        modelBuilder.Entity<OrdenProduccion>(entity =>
+        {
+            entity.HasIndex(e => e.Estado, "IX_OrdenesProduccion_Estado");
+
+            entity.HasIndex(e => e.ListaMaterialesId, "IX_OrdenesProduccion_ListaMaterialesId");
+
+            entity.HasIndex(e => e.Numero, "IX_OrdenesProduccion_Numero").IsUnique();
+
+            entity.HasIndex(e => e.ProductoId, "IX_OrdenesProduccion_ProductoId");
+
+            entity.HasIndex(e => e.RutaProduccionId, "IX_OrdenesProduccion_RutaProduccionId");
+
+            entity.Property(e => e.Estado).HasMaxLength(12);
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(250);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+
+            entity.HasOne(d => d.ListaMateriales).WithMany(p => p.OrdenesProduccion)
+                .HasForeignKey(d => d.ListaMaterialesId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.OrdenesProduccion)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.RutaProduccion).WithMany(p => p.OrdenesProduccion)
+                .HasForeignKey(d => d.RutaProduccionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ParametroPension>(entity =>
