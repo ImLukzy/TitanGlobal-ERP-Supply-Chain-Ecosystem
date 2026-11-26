@@ -618,6 +618,31 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "m54-openapi": lambda d: all(code in d["paths"]["/api/v1/cuentas-por-pagar" + path][method]["responses"] for method, path, code in (
+        ("get", "", "200"), ("post", "", "201"), ("get", "/{id}", "200"), ("get", "/resumen", "200"),
+        ("get", "/{id}/pagos", "200"), ("post", "/{id}/pagos", "201"),
+        ("post", "/{id}/pagos/{pagoId}/revertir", "200"), ("post", "/{id}/anular", "200")
+    )),
+    "m54-resumen-seed": lambda d: [(g["proveedorId"], g["moneda"], g["saldoAlDia"], g["saldoVencido"]) for g in d["grupos"]]
+        == [(1, "PEN", 150, 118), (2, "USD", 118, 0)],
+    "m54-creado-con-orden": lambda d: d["id"] > 0 and d["serie"] == "SM54" and d["numeroDocumento"] == "000001"
+        and d["ordenAbastecimientoId"] > 0 and d["moneda"] == "PEN" and d["baseImponible"] == 100
+        and d["importeImpuesto"] == 18 and d["total"] == d["saldo"] == 118 and d["importePagado"] == 0,
+    "m54-creado-sin-orden": lambda d: d["id"] > 0 and d["ordenAbastecimientoId"] is None and d["moneda"] == "USD" and d["saldo"] == 75,
+    "m54-duplicado": lambda d: d == {"StatusCode": 409, "Message": "La factura del proveedor ya está registrada."},
+    "m54-pago": lambda d: d["id"] > 0 and d["importe"] == 40 and d["moneda"] == "PEN" and d["fechaReversion"] is None,
+    "m54-parcial": lambda d: d["saldo"] == 78 and d["importePagado"] == 40 and d["total"] == 118,
+    "m54-sobrepago": lambda d: d == {"StatusCode": 409, "Message": "El pago supera el saldo pendiente."},
+    "m54-anticipo": lambda d: d == {"StatusCode": 400, "Message": "Los datos de la cuenta por pagar no son válidos."},
+    "m54-anulacion-con-pago": lambda d: d == {"StatusCode": 409, "Message": "No se puede anular una cuenta por pagar con pagos."},
+    "m54-reversion": lambda d: d["importe"] == 40 and d["fechaReversion"].endswith("Z") and d["motivoReversion"] == "Corrección de smoke",
+    "m54-tras-reversion": lambda d: d["saldo"] == d["total"] == 118 and d["importePagado"] == 0,
+    "m54-anulado": lambda d: d["anulada"] is True and d["vencida"] is False and d["saldo"] == 0 and d["total"] == 118
+        and d["fechaAnulacion"].endswith("Z") and d["motivoAnulacion"] == "Factura duplicada",
+    "m54-historial": lambda d: d["totalRegistros"] == 1 and d["items"][0]["importe"] == 40
+        and d["items"][0]["motivoReversion"] == "Corrección de smoke",
+    "m54-pago-total": lambda d: d["importe"] == 75 and d["moneda"] == "USD" and d["fechaReversion"] is None,
+    "m54-liquidado": lambda d: d["saldo"] == 0 and d["importePagado"] == d["total"] == 75 and not d["anulada"] and not d["vencida"],
 }
 
 if validation not in checks or not checks[validation](body):
@@ -834,6 +859,13 @@ request_check() {
     if [[ "$validation" == "lista-material-creada" ]]; then
         LISTA_MATERIAL_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    if [[ "$validation" == "m54-creado-con-orden" || "$validation" == "m54-creado-sin-orden" ]]; then
+        CUENTA_POR_PAGAR_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "m54-pago" ]]; then
+        PAGO_CREADO_54_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "ruta-produccion-creada" ]]; then
         RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -1604,4 +1636,32 @@ BEGIN
     END;
 END $$;
 SQL
+
+# Módulo 54: saldos pendientes, historial, vencimientos y concurrencia en PostgreSQL.
+TOKEN_54_ADMIN="$TOKEN_ACTUAL"
+TOKEN_ACTUAL=''
+CXP_54='/api/v1/cuentas-por-pagar'
+request_check 'M54 exige sesión' GET "$CXP_54" 401 no-session
+TOKEN_ACTUAL="$TOKEN_54_ADMIN"
+request_check 'M54 OpenAPI ocho operaciones' GET '/openapi/v1.json' 200 m54-openapi
+request_check 'M54 saldos del seed por proveedor y moneda' GET "$CXP_54/resumen" 200 m54-resumen-seed
+ORDEN_54_ID="$(docker compose exec -T db psql -U titanglobal -d titanglobal -qAt -c "SELECT \"Id\" FROM \"OrdenesAbastecimiento\" WHERE \"Numero\" = 'OA-DEV-001'" | tr -d '\r')"
+M54_FACTURA='{"proveedorId":1,"ordenAbastecimientoId":'"${ORDEN_54_ID}"',"serie":" sm 54 ","numeroDocumento":"0 00 001","fechaDocumento":"2026-11-01","fechaVencimiento":"2099-12-31","moneda":"PEN","baseImponible":100,"importeImpuesto":18,"total":1}'
+request_check 'M54 alta con orden, clave normalizada y total calculado' POST "$CXP_54" 201 m54-creado-con-orden "$M54_FACTURA"
+CUENTA_54="$CXP_54/$CUENTA_POR_PAGAR_CREADA_ID"
+request_check 'M54 duplicado normalizado' POST "$CXP_54" 409 m54-duplicado "$M54_FACTURA"
+request_check 'M54 impide anticipo' POST "$CUENTA_54/pagos" 400 m54-anticipo '{"importe":1,"fechaPago":"2026-10-31"}'
+request_check 'M54 pago parcial' POST "$CUENTA_54/pagos" 201 m54-pago '{"importe":40,"fechaPago":"2026-11-05"}'
+request_check 'M54 saldo y pagado tras parcial' GET "$CUENTA_54" 200 m54-parcial
+request_check 'M54 impide sobrepago' POST "$CUENTA_54/pagos" 409 m54-sobrepago '{"importe":78.01,"fechaPago":"2026-11-05"}'
+request_check 'M54 impide anular sobre pago vigente' POST "$CUENTA_54/anular" 409 m54-anulacion-con-pago '{"motivo":"Factura duplicada"}'
+request_check 'M54 revierte sin borrar el pago' POST "$CUENTA_54/pagos/$PAGO_CREADO_54_ID/revertir" 200 m54-reversion '{"motivo":"  Corrección de smoke  "}'
+request_check 'M54 saldo restaurado' GET "$CUENTA_54" 200 m54-tras-reversion
+request_check 'M54 anula tras revertir todos los pagos' POST "$CUENTA_54/anular" 200 m54-anulado '{"motivo":"Factura duplicada"}'
+request_check 'M54 conserva el pago revertido tras anular' GET "$CUENTA_54/pagos" 200 m54-historial
+request_check 'M54 alta sin orden en USD' POST "$CXP_54" 201 m54-creado-sin-orden '{"proveedorId":2,"serie":"SM54","numeroDocumento":"000002","fechaDocumento":"2026-11-01","fechaVencimiento":"2026-11-10","moneda":"USD","baseImponible":75,"importeImpuesto":0}'
+CUENTA_USD_54="$CXP_54/$CUENTA_POR_PAGAR_CREADA_ID"
+request_check 'M54 pago total en USD' POST "$CUENTA_USD_54/pagos" 201 m54-pago-total '{"importe":75,"fechaPago":"2026-11-05"}'
+request_check 'M54 deuda liquidada sin saldo vencido' GET "$CUENTA_USD_54" 200 m54-liquidado
+M54_TOKEN="$TOKEN_ACTUAL" python3 scripts/smoke-cuentas-por-pagar.py "$BASE_URL"
 printf 'SMOKE OK\n'

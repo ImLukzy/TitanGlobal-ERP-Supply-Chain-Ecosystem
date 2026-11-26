@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TitanGlobal.Application.Services;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -19,6 +20,8 @@ public static class InfrastructureServicesExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IEscrituraListaMaterial, EscrituraListaMaterial>();
         services.AddScoped<IEscrituraRutaProduccion, EscrituraRutaProduccion>();
+        services.AddScoped<IUnitOfWorkCuentasPorPagar, UnitOfWorkCuentasPorPagar>();
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
         services.AddSingleton<IServicioTokens, ServicioTokens>();

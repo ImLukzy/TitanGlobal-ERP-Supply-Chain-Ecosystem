@@ -17,6 +17,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Almacen> Almacenes { get; set; } = null!;
 
+    public virtual DbSet<AplicacionPago> AplicacionesPago { get; set; } = null!;
+
     public virtual DbSet<AsignacionTurno> AsignacionesTurno { get; set; } = null!;
 
     public virtual DbSet<AsignacionVenta> AsignacionesVentas { get; set; } = null!;
@@ -48,6 +50,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<ContratoLaboral> ContratosLaborales { get; set; } = null!;
 
     public virtual DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
+
+    public virtual DbSet<CuentaPorPagar> CuentasPorPagar { get; set; } = null!;
 
     public virtual DbSet<CuotaPrestamo> CuotasPrestamo { get; set; } = null!;
 
@@ -222,6 +226,20 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(200);
             entity.Property(e => e.Responsable).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<AplicacionPago>(entity =>
+        {
+            entity.HasIndex(e => new { e.CuentaPorPagarId, e.FechaPago, e.Id }, "IX_AplicacionesPago_CuentaFechaId").IsDescending(false, true, true);
+
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.Importe).HasPrecision(18, 2);
+            entity.Property(e => e.MotivoReversion).HasMaxLength(300);
+
+            entity.HasOne(d => d.CuentaPorPagar).WithMany(p => p.AplicacionesPago)
+                .HasForeignKey(d => d.CuentaPorPagarId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AplicacionesPago_CuentaPorPagar");
         });
 
         modelBuilder.Entity<AsignacionTurno>(entity =>
@@ -459,6 +477,38 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.OrdenCompra).WithMany(p => p.Cotizaciones)
                 .HasForeignKey(d => d.OrdenCompraId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CuentaPorPagar>(entity =>
+        {
+            entity.HasIndex(e => e.FechaVencimiento, "IX_CuentasPorPagar_FechaVencimiento");
+
+            entity.HasIndex(e => new { e.Moneda, e.FechaRegistro, e.Id }, "IX_CuentasPorPagar_MonedaFechaRegistroId").IsDescending(false, true, true);
+
+            entity.HasIndex(e => e.OrdenAbastecimientoId, "IX_CuentasPorPagar_OrdenAbastecimientoId");
+
+            entity.HasIndex(e => new { e.ProveedorId, e.Serie, e.NumeroDocumento }, "IX_CuentasPorPagar_ProveedorSerieNumero").IsUnique();
+
+            entity.Property(e => e.BaseImponible).HasPrecision(18, 2);
+            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("now()");
+            entity.Property(e => e.ImporteImpuesto).HasPrecision(18, 2);
+            entity.Property(e => e.Moneda)
+                .HasMaxLength(3)
+                .IsFixedLength();
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(300);
+            entity.Property(e => e.NumeroDocumento).HasMaxLength(40);
+            entity.Property(e => e.Serie).HasMaxLength(10);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.OrdenAbastecimiento).WithMany(p => p.CuentasPorPagar)
+                .HasForeignKey(d => d.OrdenAbastecimientoId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CuentasPorPagar_OrdenAbastecimiento");
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.CuentasPorPagar)
+                .HasForeignKey(d => d.ProveedorId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CuentasPorPagar_Proveedor");
         });
 
         modelBuilder.Entity<CuotaPrestamo>(entity =>

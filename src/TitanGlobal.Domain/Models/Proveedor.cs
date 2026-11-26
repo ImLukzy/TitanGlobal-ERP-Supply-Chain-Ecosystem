@@ -19,6 +19,8 @@ public partial class Proveedor
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<CuentaPorPagar> CuentasPorPagar { get; set; } = new List<CuentaPorPagar>();
+
     public virtual ICollection<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = new List<EvaluacionProveedor>();
 
     public virtual ICollection<OrdenAbastecimiento> OrdenesAbastecimiento { get; set; } = new List<OrdenAbastecimiento>();

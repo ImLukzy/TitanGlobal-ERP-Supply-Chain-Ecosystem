@@ -126,5 +126,6 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 042 | `042-consumo-materiales.sql` | Antony | `antony/modulo35-consumo-materiales` | no |
 | 043 | `043-control-calidad-insumos.sql` | Antony | `antony/modulo36-control-calidad-insumos` | no |
 | 044 | `044-control-calidad-producto-terminado.sql` | Antony | `antony/modulo37-control-calidad-producto-terminado` | no |
+| 047 | `047-modulo54-cuentas-por-pagar.sql` | Leonel | `leonel/modulo54-cuentas-por-pagar` | no |
 
 Reservados además (2026-11-23), con su fila en la rama de cada uno: 024 Leonel (52), 025 y 026 Antony (34 y 39), 027 Sergio (16, PR #56) y 028 a 033 Sergio (sus próximas specs). Un script nuevo toma el siguiente número libre (034 en adelante) y se añade aquí en el mismo PR. Esta tabla es la única fuente: cada rama solo añade **su** fila y no reescribe las demás (2026-11-22).
