@@ -1,0 +1,139 @@
+{
+  "fecha": "2026-11-24",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "navegador": "Microsoft Edge headless",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "escenarios": {
+        "programaciones": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "cursos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "horas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "escenarios": {
+        "programaciones": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "cursos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "horas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "escenarios": {
+        "programaciones": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "cursos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "horas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "escenarios": {
+        "programaciones": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "cursos": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        },
+        "horas": {
+          "pasos": [
+            true
+          ],
+          "enfocado": true,
+          "sinDesbordamiento": true,
+          "escapeCierra": null,
+          "erroresConsola": []
+        }
+      }
+    }
+  ]
+}

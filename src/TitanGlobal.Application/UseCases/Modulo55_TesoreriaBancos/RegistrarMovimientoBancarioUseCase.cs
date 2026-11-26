@@ -9,16 +9,19 @@ namespace TitanGlobal.Application.UseCases.Modulo55_TesoreriaBancos;
 public class RegistrarMovimientoBancarioUseCase
 {
     private readonly IUnitOfWorkTesoreria _unitOfWork;
+    private readonly TimeProvider _reloj;
 
-    public RegistrarMovimientoBancarioUseCase(IUnitOfWorkTesoreria unitOfWork)
+    public RegistrarMovimientoBancarioUseCase(IUnitOfWorkTesoreria unitOfWork, TimeProvider? reloj = null)
     {
         _unitOfWork = unitOfWork;
+        _reloj = reloj ?? TimeProvider.System;
     }
 
     public Task<MovimientoBancarioDto> ExecuteAsync(int id, RegistrarMovimientoBancarioRequestDto solicitud)
     {
         string tipo = ValidacionTesoreriaBancos.TipoMovimiento(solicitud.Tipo);
-        DatosOperacionBancaria datos = ValidacionTesoreriaBancos.Operacion(solicitud.Importe, solicitud.FechaOperacion, solicitud.Referencia);
+        DateOnly hoy = FechaNegocioPeru.DesdeUtc(_reloj.GetUtcNow().UtcDateTime);
+        DatosOperacionBancaria datos = ValidacionTesoreriaBancos.Operacion(solicitud.Importe, solicitud.FechaOperacion, solicitud.Referencia, hoy);
         return _unitOfWork.ConCuentasBloqueadasAsync([id], async () =>
         {
             await ConsultasTesoreriaBancos.CuentaAsync(_unitOfWork, id);

@@ -1,6 +1,6 @@
 # Especificación: modulo55-tesoreria-bancos-backend — Tesorería y bancos
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 quedaron integradas por el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -152,3 +152,15 @@ Los textos de negocio de la tabla son **propuestas concretas para la revisión f
 | 2026-11-24 | A1–A4 | Compilación sin advertencias ni errores. Reglas y gate correctos. | `dotnet build -warnaserror`, `scripts/check-rules.sh` y `scripts/verify.sh`. Pasaron 48 pruebas del 55 dentro de 1.239 pruebas de backend y 752 del frontend. |
 | 2026-11-24 | A5 | HTTP 409 con proveedor de coincidencias de prueba. | El caso con una coincidencia en PostgreSQL se ejecutará con el 56. |
 | 2026-11-24 | A6 | `SCAFFOLD AL DÍA` y `SMOKE OK`. | PostgreSQL 16 desechable. Dos cargas dejaron idénticas 3 cuentas, 7 movimientos y 1 transferencia, con saldos 55 PEN, 50 PEN y 75 USD. Pasaron las cinco carreras y el rollback por fallo en la segunda pata. |
+
+## Actualización del 2026-11-26
+
+El despliegue requiere el catálogo `FINANZAS` (Id 7) que crea el SQL 024 del PR #83. Las pruebas de la rama pueden usar ADMIN y tokens de prueba de FINANZAS. La dependencia de despliegue sigue el orden indicado por Lukas.
+
+Ingresos, egresos y transferencias validan su fecha de operación contra el día de Perú. El corte cambia a las 05:00 UTC. Los instantes de registro y reversión siguen en UTC. Las cuatro pruebas de frontera ejercitan los tres tipos de operación.
+
+### Verificación vigente
+
+- Compilación sin advertencias. `verify.sh` en verde con 1.811 pruebas backend, 52 del módulo, y 1.455 frontend.
+- SQL 046, `SCAFFOLD AL DÍA` y `SMOKE OK`. Dos cargas del seed preservaron las cuentas y movimientos de ejemplo. PostgreSQL comprobó saldos, concurrencia y rollback de transferencias.
+- La primera ejecución concurrente detectó un fallo de temporización en una prueba de Planillas. Se repitió el gate completo con tres workers de Vitest y pasó.

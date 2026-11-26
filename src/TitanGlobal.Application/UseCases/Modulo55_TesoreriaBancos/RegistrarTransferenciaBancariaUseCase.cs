@@ -9,10 +9,12 @@ namespace TitanGlobal.Application.UseCases.Modulo55_TesoreriaBancos;
 public class RegistrarTransferenciaBancariaUseCase
 {
     private readonly IUnitOfWorkTesoreria _unitOfWork;
+    private readonly TimeProvider _reloj;
 
-    public RegistrarTransferenciaBancariaUseCase(IUnitOfWorkTesoreria unitOfWork)
+    public RegistrarTransferenciaBancariaUseCase(IUnitOfWorkTesoreria unitOfWork, TimeProvider? reloj = null)
     {
         _unitOfWork = unitOfWork;
+        _reloj = reloj ?? TimeProvider.System;
     }
 
     public Task<TransferenciaBancariaDto> ExecuteAsync(RegistrarTransferenciaBancariaRequestDto solicitud)
@@ -26,7 +28,8 @@ public class RegistrarTransferenciaBancariaUseCase
             throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "Las cuentas de origen y destino deben ser distintas.");
         }
 
-        DatosOperacionBancaria datos = ValidacionTesoreriaBancos.Operacion(solicitud.Importe, solicitud.FechaOperacion, solicitud.Referencia);
+        DateOnly hoy = FechaNegocioPeru.DesdeUtc(_reloj.GetUtcNow().UtcDateTime);
+        DatosOperacionBancaria datos = ValidacionTesoreriaBancos.Operacion(solicitud.Importe, solicitud.FechaOperacion, solicitud.Referencia, hoy);
         return _unitOfWork.ConCuentasBloqueadasAsync([solicitud.CuentaOrigenId, solicitud.CuentaDestinoId], async () =>
         {
             CuentaBancaria origen = await ConsultasTesoreriaBancos.CuentaAsync(_unitOfWork, solicitud.CuentaOrigenId);

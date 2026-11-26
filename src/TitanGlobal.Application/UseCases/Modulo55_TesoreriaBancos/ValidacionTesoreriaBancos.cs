@@ -48,11 +48,11 @@ internal static class ValidacionTesoreriaBancos
         return Opcion(valor, "PEN", "USD");
     }
 
-    internal static DatosOperacionBancaria Operacion(decimal importe, DateOnly? fecha, string? referencia)
+    internal static DatosOperacionBancaria Operacion(decimal importe, DateOnly? fecha, string? referencia, DateOnly hoy)
     {
         string texto = referencia?.Trim() ?? string.Empty;
         if (importe <= 0m || importe > ImporteMaximo || decimal.Round(importe, 2, MidpointRounding.AwayFromZero) != importe
-            || !fecha.HasValue || fecha > DateOnly.FromDateTime(DateTime.UtcNow) || !TextoValido(texto, 0, 100))
+            || !fecha.HasValue || fecha > hoy || !TextoValido(texto, 0, 100))
         {
             throw DatosInvalidos();
         }

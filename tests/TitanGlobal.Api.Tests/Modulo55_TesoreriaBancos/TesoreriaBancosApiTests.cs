@@ -53,6 +53,43 @@ public class TesoreriaBancosApiTests : IDisposable
         Assert.Equal(cuenta.Id, (await LeerAsync<CuentaBancariaDetalleDto>(lectura, HttpStatusCode.OK)).Id);
     }
 
+    [Theory]
+    [InlineData(30, 23, 59, 59, false)]
+    [InlineData(1, 0, 0, 0, false)]
+    [InlineData(1, 4, 59, 59, false)]
+    [InlineData(1, 5, 0, 0, true)]
+    public async Task OperacionesAplicanElCorteDePeru(int dia, int hora, int minuto, int segundo, bool permite)
+    {
+        _factory.Reloj.Instante = new DateTimeOffset(2026, dia == 30 ? 9 : 10, dia, hora, minuto, segundo, TimeSpan.Zero);
+        CuentaBancariaDetalleDto origen = await CrearCuentaAsync("CORTE-1");
+        CuentaBancariaDetalleDto destino = await CrearCuentaAsync("CORTE-2");
+        await CrearMovimientoAsync(origen.Id, "Ingreso", 100m, new DateOnly(2026, 9, 30));
+        DateOnly fecha = new DateOnly(2026, 10, 1);
+
+        using HttpResponseMessage ingreso = await _cliente.PostAsJsonAsync(RutaMovimientos(origen.Id), Movimiento("Ingreso", 10m, fecha));
+        using HttpResponseMessage egreso = await _cliente.PostAsJsonAsync(RutaMovimientos(origen.Id), Movimiento("Egreso", 10m, fecha));
+        using HttpResponseMessage transferencia = await _cliente.PostAsJsonAsync(Transferencias, new RegistrarTransferenciaBancariaRequestDto
+        {
+            CuentaOrigenId = origen.Id,
+            CuentaDestinoId = destino.Id,
+            Importe = 10m,
+            FechaOperacion = fecha
+        });
+        if (permite)
+        {
+            Assert.Equal(fecha, (await LeerAsync<MovimientoBancarioDto>(ingreso, HttpStatusCode.Created)).FechaOperacion);
+            Assert.Equal(fecha, (await LeerAsync<MovimientoBancarioDto>(egreso, HttpStatusCode.Created)).FechaOperacion);
+            TransferenciaBancariaDto registrada = await LeerAsync<TransferenciaBancariaDto>(transferencia, HttpStatusCode.Created);
+            Assert.Equal(fecha, registrada.FechaOperacion);
+        }
+        else
+        {
+            await ErrorAsync(ingreso, HttpStatusCode.BadRequest, DatosInvalidos);
+            await ErrorAsync(egreso, HttpStatusCode.BadRequest, DatosInvalidos);
+            await ErrorAsync(transferencia, HttpStatusCode.BadRequest, DatosInvalidos);
+        }
+    }
+
     [Fact]
     public async Task UnicidadPorBancoYNumeroCanonicosEnAltaYEdicion()
     {
@@ -547,6 +584,8 @@ public sealed class TesoreriaBancosApiFactory : WebApplicationFactory<Program>
 
     public int? MovimientoConciliadoId { get; set; }
 
+    internal RelojTesoreria Reloj { get; } = new RelojTesoreria();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(servicios =>
@@ -554,6 +593,8 @@ public sealed class TesoreriaBancosApiFactory : WebApplicationFactory<Program>
             servicios.RemoveAll<DbContextOptions<TitanGlobalDbContext>>();
             servicios.RemoveAll<IDbContextOptionsConfiguration<TitanGlobalDbContext>>();
             servicios.AddDbContext<TitanGlobalDbContext>(opciones => opciones.UseInMemoryDatabase(_baseDatos));
+            servicios.RemoveAll<TimeProvider>();
+            servicios.AddSingleton<TimeProvider>(Reloj);
             servicios.RemoveAll<IConsultaConciliacionBancaria>();
             servicios.AddScoped<IConsultaConciliacionBancaria>(servicio => new ConsultaConciliacionPruebas(this));
         });
@@ -572,5 +613,15 @@ public sealed class TesoreriaBancosApiFactory : WebApplicationFactory<Program>
         {
             return Task.FromResult(_factory.MovimientoConciliadoId == movimientoId);
         }
+    }
+}
+
+internal sealed class RelojTesoreria : TimeProvider
+{
+    internal DateTimeOffset? Instante { get; set; }
+
+    public override DateTimeOffset GetUtcNow()
+    {
+        return Instante ?? TimeProvider.System.GetUtcNow();
     }
 }

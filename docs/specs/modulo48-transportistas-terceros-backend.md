@@ -1,6 +1,6 @@
 # Especificación propuesta: módulo 48 — Transportistas terceros (backend)
 
-**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #63 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** el enunciado define «TransportistasTerceros (3PL y fletes)», pero no hay tablas, API ni reglas aprobadas para el módulo. Es previo a RutasDespacho según `docs/equipo/asignaciones.md`.
@@ -137,6 +137,7 @@ Commits por avances funcionales con sus pruebas, no por archivo, usando la ident
 |---|---|---|
 | 2026-11-21 | Propuesta, sin aprobación ni implementación | Asignación y orden confirmados; alcance disponible en el enunciado limitado a «3PL y fletes»; rutas y capas contrastadas con el repositorio |
 | 2026-11-21 | Implementado y verificado localmente como propuesta, pendiente de aprobación de Lukas; aprobación de Lukas pendiente | 53 pruebas propias del backend, diez operaciones OpenAPI, seed repetido sin duplicados, scaffold comprobado y smoke contra PostgreSQL; detalles en `docs/evidencias/modulo48/README.md` |
+| 2026-11-23 | Integración y producción | Spec aprobada por Lukas. `012` aplicado en la demo con copia y ensayo (6 scripts registrados, filas de las 41 tablas existentes sin cambios). PR #63 fusionado con merge commit (`b95dfc7`); gate de GitHub y local, smoke, Vercel y Render correctos; en producción `/api/v1/transportistas-terceros` y `/api/v1/fletes-terceros` responden 200 |
 
 ### Preparación de revisión — 2026-11-22
 
