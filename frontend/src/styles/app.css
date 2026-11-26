@@ -2307,3 +2307,18 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+.finanzas-columnas { display: grid; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); gap: 18px; align-items: start; }
+.finanzas-superficie { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+.finanzas-superficie h2 { font-size: 1.125rem; margin-block: 0 12px; overflow-wrap: anywhere; }
+.finanzas-superficie h3 { margin-block: 18px 8px; }
+.finanzas-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; border: 0; margin: 0 0 12px; padding: 0; min-width: 0; }
+.finanzas-campos .form-field { min-width: 0; }
+.finanzas-campos input, .finanzas-campos select, .finanzas-campos textarea { max-width: 100%; }
+.finanzas-acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-block: 8px 12px; }
+.finanzas-acciones h2 { flex: 1; margin: 0; }
+.finanzas-confirmacion { padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.finanzas-confirmacion button { margin-inline-end: 8px; }
+.finanzas-historial { display: grid; gap: 8px; overflow-wrap: anywhere; }
+@media (max-width: 1080px) { .finanzas-columnas { grid-template-columns: minmax(0, 1fr); } }
+.centros-costo-page .finanzas-campos .form-field { grid-template-columns: minmax(0, 1fr); }
