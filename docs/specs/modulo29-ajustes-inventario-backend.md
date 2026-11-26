@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 **Problema:** las diferencias de inventario físico, mermas, daños o caducidades requieren ajustar el stock en almacén dejando trazabilidad contable y sincronizando automáticamente el Kardex valorizado (módulo 26).
-**Resultado esperado:** entidad `AjusteInventario` (`database/035-ajustes-inventario.sql`) y controlador `api/v1/ajustes-inventario` siguiendo la arquitectura en 4 capas (`Domain`, `Application`, `Infrastructure`, `Api`):
+**Resultado esperado:** entidad `AjusteInventario` (`database/049-ajustes-inventario.sql`) y controlador `api/v1/ajustes-inventario` siguiendo la arquitectura en 4 capas (`Domain`, `Application`, `Infrastructure`, `Api`):
 - listado paginado con filtros (`almacenId`, `productoId`, `tipo`, `motivo`, `busqueda`, `fechaDesde`, `fechaHasta`);
 - consulta de detalle por identificador;
 - registro de ajuste (`Incremento` / `Decremento`) con generación atómica de `MovimientoKardex` asociado (`Entrada` / `Salida`);
@@ -12,7 +12,7 @@
 ## 2. Archivos afectados
 | Archivo | Acción |
 |---|---|
-| `database/035-ajustes-inventario.sql` | tabla `AjustesInventario`, restricciones `CHECK`, índice único normalizado y FK `AjusteInventarioId` en `MovimientosKardex` |
+| `database/049-ajustes-inventario.sql` | tabla `AjustesInventario`, restricciones `CHECK`, índice único normalizado y FK `AjusteInventarioId` en `MovimientosKardex` |
 | `src/TitanGlobal.Domain/Models/AjusteInventario.cs` | generado mediante `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Infrastructure/Persistence/TitanGlobalDbContext.cs` | regenerado mediante `./scripts/scaffold.sh` |
 | `src/TitanGlobal.Application/DTOs/Modulo29_AjustesInventario/` | DTOs de solicitud, ítem, página, resumen y valores iniciales |

@@ -1,4 +1,4 @@
--- Script: 035-ajustes-inventario.sql
+-- Script: 049-ajustes-inventario.sql
 -- Módulo: 29 - AjustesInventario
 -- Responsable: Maxi
 
