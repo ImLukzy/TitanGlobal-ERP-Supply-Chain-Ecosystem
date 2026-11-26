@@ -23,5 +23,7 @@ public partial class CentroTrabajo
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<MantenimientoPreventivo> MantenimientosPreventivos { get; set; } = new List<MantenimientoPreventivo>();
+
     public virtual ICollection<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = new List<OperacionRutaProduccion>();
 }

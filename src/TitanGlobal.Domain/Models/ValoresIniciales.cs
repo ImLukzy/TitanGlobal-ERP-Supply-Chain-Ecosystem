@@ -78,6 +78,14 @@ public partial class ListaPrecios
     }
 }
 
+public partial class MantenimientoPreventivo
+{
+    public MantenimientoPreventivo()
+    {
+        Estado = "Programado";
+    }
+}
+
 public partial class OrdenAbastecimiento
 {
     public OrdenAbastecimiento()
