@@ -112,5 +112,5 @@ Los mensajes de centro inexistente o inactivo, fecha repetida en el centro, para
 | 2026-11-25 | A2 | Nueve peticiones con URL, método, query sin filtros vacíos y cuerpos exactos. | `api.test.ts`: 6 pruebas en verde. |
 | 2026-11-25 | A3 | Carga inicial con una sola petición del listado, espera de 300 ms con temporizadores falsos, filtros combinados, reinicio de página, rango inválido sin petición, carga, vacío, error y «Vencido». | `MantenimientoPreventivoPage.test.tsx`: 11 pruebas en verde. |
 | 2026-11-25 | A4 | Validaciones locales sin petición, «hoy» en hora de Perú a las 19:00, edición sin centro, acciones por estado, 409 de fecha repetida conservando el formulario, completar, cancelar, Escape y foco. | `MantenimientoPreventivoAcciones.test.tsx`: 10 pruebas en verde. Suite del módulo 10 de 10 ejecuciones seguidas en verde. |
-| — | A5 | Pendiente: necesita el backend del PR #87 en `main`. | — |
-| — | A6 | Pendiente: capturas a 375 px y 1280 px en claro y oscuro con datos reales. | — |
+| 2026-11-25 | A5 | Con la API del PR #87 en local: se programa, edita, inicia y completa una parada, se cancela otra, y la fecha repetida devuelve el 409 literal. La ruta abre desde el catálogo y las pruebas existentes pasan. | `docs/evidencias/modulo39/README.md`. |
+| 2026-11-25 | A6 | Detalle y diálogo a 375 px y 1280 px en claro y oscuro, sin desplazamiento horizontal de la página ni errores de JavaScript. | Ocho capturas en `docs/evidencias/modulo39/`. |
