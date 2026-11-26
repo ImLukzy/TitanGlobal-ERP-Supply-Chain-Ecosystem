@@ -1,6 +1,6 @@
 # Especificación: 48 - Modulo42_Conductores (backend)
 
-**Estado de revisión: propuesta, pendiente de aprobación de Lukas.**
+**Estado:** aprobada por Lukas el 2026-11-23, integrada en `main` por el PR #59 y desplegada en la demo.
 
 ## 1. Objetivo
 **Problema:** la flota (módulo 41) tiene vehículos, pero sin conductores no se puede saber quién conduce ni si la licencia está al día.
@@ -77,6 +77,7 @@ El backend original estaba integrado. La ampliación y la pantalla están verifi
 | 2026-11-21 | A4 | Aprobado | scripts 001/008/011 aplicados en PostgreSQL 16 local, `scaffold.sh` ejecutado y `SCAFFOLD AL DÍA`; sin cambios de modelo generados |
 | 2026-11-21 | A5 | Aprobado | `smoke-postgres.sh` → `SMOKE OK`; índice de licencias rechaza escritura directa duplicada con SQLSTATE 23505; seed probado tras cambiar mayúsculas en una transacción revertida, sin duplicar conductores |
 | 2026-11-21 | A6 | Aprobado | OpenAPI local: GET/POST de `/api/v1/conductores`, GET/PUT/DELETE de `/api/v1/conductores/{id}` |
+| 2026-11-23 | Integración y producción | Aprobado | Spec aprobada por Lukas. `022` aplicado en la demo con copia y ensayo (5 scripts registrados, filas de las 41 tablas sin cambios). PR #59 fusionado con merge commit (`0b0324f`); gate de GitHub, Vercel y Render correctos; en producción `/api/v1/conductores` responde 200 y la pantalla está publicada |
 
 ### Preparación de revisión — 2026-11-22
 
