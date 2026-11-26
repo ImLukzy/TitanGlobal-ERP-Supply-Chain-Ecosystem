@@ -1,0 +1,158 @@
+{
+  "fecha": "2026-11-21",
+  "origen": "API y PostgreSQL locales, sin respuestas simuladas",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "altaDosLineas": true,
+      "cantidadExacta": "0.001",
+      "pesoDeclaradoKg": "12.34",
+      "edicionUtcEnAmericaLima": true,
+      "instanteUtc": "2026-11-22T10:30:12.345Z",
+      "emisionInterna": true,
+      "anulacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".guias-remision-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".guias-remision-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".guias-remision-table small",
+          "contraste": 4.98103373080793
+        },
+        {
+          "selector": ".guias-remision-badge",
+          "contraste": 13.975422786303964
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "altaDosLineas": true,
+      "cantidadExacta": "0.001",
+      "pesoDeclaradoKg": "12.34",
+      "edicionUtcEnAmericaLima": true,
+      "instanteUtc": "2026-11-22T10:30:12.345Z",
+      "emisionInterna": true,
+      "anulacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".guias-remision-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".guias-remision-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".guias-remision-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".guias-remision-badge",
+          "contraste": 11.442405154162405
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "altaDosLineas": true,
+      "cantidadExacta": "0.001",
+      "pesoDeclaradoKg": "12.34",
+      "edicionUtcEnAmericaLima": true,
+      "instanteUtc": "2026-11-22T10:30:12.345Z",
+      "emisionInterna": true,
+      "anulacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".guias-remision-page h1",
+          "contraste": 14.378577104873306
+        },
+        {
+          "selector": ".guias-remision-summary span",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".guias-remision-table small",
+          "contraste": 5.544708298228794
+        },
+        {
+          "selector": ".guias-remision-badge",
+          "contraste": 14.056280042570044
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 5.1247234989259125
+        }
+      ],
+      "erroresJavaScript": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "altaDosLineas": true,
+      "cantidadExacta": "0.001",
+      "pesoDeclaradoKg": "12.34",
+      "edicionUtcEnAmericaLima": true,
+      "instanteUtc": "2026-11-22T10:30:12.345Z",
+      "emisionInterna": true,
+      "anulacionConHistorial": true,
+      "bajaBorrador": true,
+      "focoTabEscapeYRetorno": true,
+      "fondoSeleccionUniforme": true,
+      "sinDesbordamiento": true,
+      "contrastes": [
+        {
+          "selector": ".guias-remision-page h1",
+          "contraste": 15.994013094938792
+        },
+        {
+          "selector": ".guias-remision-summary span",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".guias-remision-table small",
+          "contraste": 7.388284656334749
+        },
+        {
+          "selector": ".guias-remision-badge",
+          "contraste": 11.442405154162405
+        },
+        {
+          "selector": ".breadcrumbs a",
+          "contraste": 8.196063030164025
+        }
+      ],
+      "erroresJavaScript": []
+    }
+  ]
+}

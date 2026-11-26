@@ -2307,3 +2307,35 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .consolidacion-carga-card, .consolidacion-carga-summary article { padding: 16px; }
   .consolidacion-carga-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* Módulo 45: guías de remisión */
+.guias-remision-page { min-width: 0; }
+.guias-remision-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.guias-remision-summary article, .guias-remision-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--surface); min-width: 0; }
+.guias-remision-summary article { display: grid; gap: 10px; color: var(--ink-soft); }
+.guias-remision-summary strong { color: var(--ink); font-size: 30px; }
+.guias-remision-toolbar, .guias-remision-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.guias-remision-toolbar { justify-content: space-between; }
+.guias-remision-filters { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 12px; margin: 20px 0; }
+.guias-remision-filters label { display: grid; gap: 8px; }
+.guias-remision-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(320px,1fr); gap: 20px; align-items: start; }
+.guias-remision-form { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.guias-remision-linea { border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; padding: 14px; min-width: 0; }
+.guias-remision-editor { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.guias-remision-page input, .guias-remision-page select, .guias-remision-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.guias-remision-table th, .guias-remision-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.guias-remision-table small { display: block; color: var(--ink-soft); font-weight: 400; margin-top: 6px; }
+.guias-remision-table tbody .guias-remision-selected > th, .guias-remision-table tbody .guias-remision-selected > td { background: var(--accent-soft); }
+.guias-remision-details dt { color: var(--ink-soft); margin-top: 14px; }
+.guias-remision-details dd { margin: 6px 0; overflow-wrap: anywhere; }
+.guias-remision-dialog { max-height: 90vh; overflow-y: auto; }
+.guias-remision-badge { display: inline-flex; white-space: nowrap; border-radius: 6px; padding: 5px 8px; color: var(--ink); background: var(--accent-soft); }
+.guias-remision-emitida { background: var(--good-soft); }
+.guias-remision-anulada { background: var(--bad-soft); }
+@media (max-width: 1100px) { .guias-remision-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .guias-remision-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .guias-remision-filters, .guias-remision-editor { grid-template-columns: minmax(0,1fr); }
+  .guias-remision-card, .guias-remision-summary article { padding: 16px; }
+  .guias-remision-toolbar { flex-direction: column; align-items: stretch; }
+}

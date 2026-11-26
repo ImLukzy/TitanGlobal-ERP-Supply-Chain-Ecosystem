@@ -13,6 +13,7 @@ public class NombresNavegacion : CandidateNamingService
     {
         { "Almacen.ZonaAlmacenaje", "Zonas" },
         { "ConsolidacionCarga.LineaConsolidacionCarga", "Lineas" },
+        { "GuiaRemision.LineaGuiaRemision", "Lineas" },
         { "Cotizacion.DetalleCotizacion", "Detalles" },
         { "DevolucionComercial.DetalleDevolucion", "Detalles" },
         { "Impuesto.TasaImpuesto", "Tasas" },
