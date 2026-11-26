@@ -82,6 +82,15 @@ public sealed class OrdenesProduccionApiFactory : WebApplicationFactory<Program>
         contexto.SaveChanges();
     }
 
+    public void RetirarListaYRutaDelProductoUno()
+    {
+        using IServiceScope scope = Services.CreateScope();
+        TitanGlobalDbContext contexto = scope.ServiceProvider.GetRequiredService<TitanGlobalDbContext>();
+        contexto.ListasMateriales.Single(lista => lista.Id == 10).Estado = "Retirada";
+        contexto.RutasProduccion.Single(ruta => ruta.Id == 20).Estado = "Retirada";
+        contexto.SaveChanges();
+    }
+
     private static OrdenProduccion Orden(
         int id, int productoId, int listaId, int rutaId, int cantidad, DateOnly inicio, DateOnly fin, string estado)
     {

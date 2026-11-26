@@ -1,9 +1,15 @@
+using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Domain.Repositories;
 
 namespace TitanGlobal.Application.UseCases.Modulo34_OrdenesProduccion;
 
 internal static class ValidacionOrdenProduccion
 {
+    public const int MaximoUnidades = 1000000;
+    public const string ReferenciaProducto = "FK_OrdenesProduccion_Productos_ProductoId";
+
     public const string Planificada = "Planificada";
     public const string Liberada = "Liberada";
     public const string EnProceso = "EnProceso";
@@ -68,6 +74,53 @@ internal static class ValidacionOrdenProduccion
         }
 
         return valor.ToUpperInvariant();
+    }
+
+    public static int ValidarCantidadPlanificada(int cantidad)
+    {
+        if (cantidad < 1 || cantidad > MaximoUnidades)
+        {
+            throw Invalida("La cantidad planificada debe estar entre 1 y 1000000.");
+        }
+
+        return cantidad;
+    }
+
+    public static (DateOnly Inicio, DateOnly Fin) ValidarFechasPlanificadas(DateOnly? inicio, DateOnly? fin)
+    {
+        if (!inicio.HasValue || !fin.HasValue)
+        {
+            throw Invalida("Las fechas planificadas son obligatorias.");
+        }
+
+        if (fin.Value < inicio.Value)
+        {
+            throw Invalida("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
+
+        return (inicio.Value, fin.Value);
+    }
+
+    public static string NumeroTemporal()
+    {
+        return $"TMP-{Guid.NewGuid().ToString("N").Substring(0, 16)}";
+    }
+
+    public static string NumeroDefinitivo(int id)
+    {
+        return $"OP-{id:D6}";
+    }
+
+    public static async Task<OrdenProduccion> ObtenerAsync(IUnitOfWork unidad, int id)
+    {
+        OrdenProduccion? orden = await unidad.Repository<OrdenProduccion>().AsQueryable()
+            .SingleOrDefaultAsync(orden => orden.Id == id);
+        return orden ?? throw NoEncontrada(id);
+    }
+
+    public static ReglaNegocioException ProductoInexistente(int productoId)
+    {
+        return Invalida($"El producto {productoId} no existe.");
     }
 
     public static ReglaNegocioException NoEncontrada(int id)

@@ -8,10 +8,14 @@ namespace TitanGlobal.Api.Tests.Modulo34_OrdenesProduccion;
 public sealed class OrdenesProduccionApiTests : IClassFixture<OrdenesProduccionApiFactory>, IDisposable
 {
     private const string Ruta = "/api/v1/ordenes-produccion";
+    private static readonly DateOnly Inicio = new DateOnly(2027, 1, 4);
+    private static readonly DateOnly Fin = new DateOnly(2027, 1, 8);
+    private readonly OrdenesProduccionApiFactory _fabrica;
     private readonly HttpClient _cliente;
 
     public OrdenesProduccionApiTests(OrdenesProduccionApiFactory fabrica)
     {
+        _fabrica = fabrica;
         fabrica.PrepararDatos();
         _cliente = fabrica.CreateClient();
         TokenPruebas.AutenticarComoAdministrador(_cliente, fabrica.Services);
@@ -136,6 +140,112 @@ public sealed class OrdenesProduccionApiTests : IClassFixture<OrdenesProduccionA
     {
         using HttpResponseMessage respuesta = await _cliente.GetAsync($"{Ruta}/99");
         await VerificarErrorAsync(respuesta, HttpStatusCode.NotFound, "La orden de producción 99 no existe.");
+    }
+
+    [Fact]
+    public async Task AltaAsignaNumeroListaYRutaActivasYConservaLasVersiones()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            Ruta, new CrearOrdenProduccionRequestDto(1, 6, Inicio, Inicio));
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        OrdenProduccionCreadaDto? creada = await respuesta.Content.ReadFromJsonAsync<OrdenProduccionCreadaDto>();
+        Assert.NotNull(creada);
+        Assert.Equal($"OP-{creada.Id:D6}", creada.Numero);
+        Assert.EndsWith($"{Ruta}/{creada.Id}", respuesta.Headers.Location?.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        _fabrica.RetirarListaYRutaDelProductoUno();
+        OrdenProduccionDetalleDto detalle = await ObtenerAsync(creada.Id);
+        Assert.Equal("Planificada", detalle.Estado);
+        Assert.Equal(6, detalle.CantidadPlanificada);
+        Assert.Equal(Inicio, detalle.FechaInicioPlanificada);
+        Assert.Equal(Inicio, detalle.FechaFinPlanificada);
+        Assert.Equal(10, detalle.ListaMaterialesId);
+        Assert.Equal(20, detalle.RutaProduccionId);
+        Assert.Equal(new[] { 12m, 3m }, detalle.Materiales.Select(material => material.CantidadRequerida));
+        Assert.Equal(25.5m, detalle.TiempoEstimadoMinutos);
+
+        using HttpResponseMessage sinLista = await _cliente.PostAsJsonAsync(
+            Ruta, new CrearOrdenProduccionRequestDto(1, 6, Inicio, Fin));
+        await VerificarErrorAsync(sinLista, HttpStatusCode.Conflict, "El producto 1 no tiene una lista de materiales activa.");
+    }
+
+    [Theory]
+    [InlineData(0, 0, null, "2027-01-01", "El identificador del producto debe ser mayor que 0.")]
+    [InlineData(99, 0, null, "2027-01-01", "La cantidad planificada debe estar entre 1 y 1000000.")]
+    [InlineData(1, 1000001, null, null, "La cantidad planificada debe estar entre 1 y 1000000.")]
+    [InlineData(99, 1000000, null, "2027-01-01", "Las fechas planificadas son obligatorias.")]
+    [InlineData(99, 1, "2027-01-02", "2027-01-01", "La fecha de fin no puede ser anterior a la fecha de inicio.")]
+    [InlineData(99, 1, "2027-01-01", "2027-01-01", "El producto 99 no existe.")]
+    public async Task AltaValidaCamposAntesQueReferencias(
+        int productoId, int cantidad, string? inicio, string? fin, string mensaje)
+    {
+        CrearOrdenProduccionRequestDto solicitud = new CrearOrdenProduccionRequestDto(
+            productoId, cantidad, Fecha(inicio), Fecha(fin));
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta, solicitud);
+        await VerificarErrorAsync(respuesta, HttpStatusCode.BadRequest, mensaje);
+    }
+
+    [Theory]
+    [InlineData(2, "El producto 2 no tiene una lista de materiales activa.")]
+    [InlineData(5, "El producto 5 no tiene una ruta de producción activa.")]
+    public async Task AltaSinListaORutaActivaDevuelve409(int productoId, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            Ruta, new CrearOrdenProduccionRequestDto(productoId, 1, Inicio, Fin));
+        await VerificarErrorAsync(respuesta, HttpStatusCode.Conflict, mensaje);
+        Assert.Equal(4, (await ListarAsync(string.Empty)).Total);
+    }
+
+    [Fact]
+    public async Task EdicionCambiaCantidadYFechasDeUnaOrdenPlanificada()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync(
+            $"{Ruta}/1", new EditarOrdenProduccionRequestDto(1000000, Inicio, Fin));
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(1, (await respuesta.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32());
+        OrdenProduccionDetalleDto detalle = await ObtenerAsync(1);
+        Assert.Equal(1000000, detalle.CantidadPlanificada);
+        Assert.Equal(Inicio, detalle.FechaInicioPlanificada);
+        Assert.Equal(Fin, detalle.FechaFinPlanificada);
+        Assert.Equal("OP-000001", detalle.Numero);
+        Assert.Equal(2000000m, detalle.Materiales[0].CantidadRequerida);
+    }
+
+    [Theory]
+    [InlineData(99, 0, HttpStatusCode.NotFound, "La orden de producción 99 no existe.")]
+    [InlineData(2, 0, HttpStatusCode.Conflict, "Solo se pueden editar órdenes de producción planificadas.")]
+    [InlineData(4, 0, HttpStatusCode.Conflict, "Solo se pueden editar órdenes de producción planificadas.")]
+    [InlineData(1, 0, HttpStatusCode.BadRequest, "La cantidad planificada debe estar entre 1 y 1000000.")]
+    public async Task EdicionVerificaExistenciaEstadoYCampos(int id, int cantidad, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync(
+            $"{Ruta}/{id}", new EditarOrdenProduccionRequestDto(cantidad, null, null));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    [Fact]
+    public async Task EdicionRechazaFechasAusentesOInvertidasSinCambiarLaOrden()
+    {
+        using HttpResponseMessage sinFechas = await _cliente.PutAsJsonAsync(
+            $"{Ruta}/1", new EditarOrdenProduccionRequestDto(5, Inicio, null));
+        using HttpResponseMessage invertidas = await _cliente.PutAsJsonAsync(
+            $"{Ruta}/1", new EditarOrdenProduccionRequestDto(5, Fin, Inicio));
+
+        await VerificarErrorAsync(sinFechas, HttpStatusCode.BadRequest, "Las fechas planificadas son obligatorias.");
+        await VerificarErrorAsync(invertidas, HttpStatusCode.BadRequest, "La fecha de fin no puede ser anterior a la fecha de inicio.");
+        Assert.Equal(10, (await ObtenerAsync(1)).CantidadPlanificada);
+    }
+
+    private static DateOnly? Fecha(string? valor)
+    {
+        if (valor == null)
+        {
+            return null;
+        }
+
+        return DateOnly.Parse(valor, System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private async Task<PaginaOrdenesProduccionDto> ListarAsync(string filtros)
