@@ -8,7 +8,7 @@ Responsable: Kelvin Pinto, según `docs/equipo/asignaciones.md`. Siguiente módu
 
 El enunciado solo define `GuiasRemision (documentos de transporte)`; no establece campos, reglas fiscales, numeración ni integración. Esta propuesta concreta un registro interno de documentos de transporte con cabecera, mercancías y estados. Propuesta, pendiente de aprobación de Lukas. No se presenta como especificación aprobada ni habilita integración o despliegue.
 
-Rama independiente: `kelvin/modulo45-guias-remision`, creada desde `origin/main` actualizado el 2026-11-21. Las ramas locales de los módulos anteriores se conservan; no se incorporan sus commits a esta rama ni se modifica main.
+Rama independiente: `kelvin/modulo45-guias-remision`, creada desde `origin/main` actualizado el 2026-11-21. Se conservan los módulos anteriores ya integrados en main; no se incorporan implementaciones desde ramas pendientes ni se modifica main.
 
 ## 2. Fuera de alcance y decisiones pendientes
 
@@ -23,7 +23,7 @@ Quedan fuera las cuatro entidades congeladas, tablas/pantallas ajenas, middlewar
 
 ## 3. Archivos previstos
 
-| Ruta | Acción local autorizada por Kelvin |
+| Ruta | Acción propuesta, pendiente de aprobación de Lukas |
 |---|---|
 | `database/015-guias-remision.sql` | Crear, comprobando otra vez la numeración reservada |
 | `src/TitanGlobal.Domain/Models/GuiaRemision.cs` y `LineaGuiaRemision.cs` | Generar por scaffold, nunca editar a mano |
@@ -37,7 +37,7 @@ Quedan fuera las cuatro entidades congeladas, tablas/pantallas ajenas, middlewar
 | `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Añadir bloque propio y validadores, sin alterar los de otros módulos |
 | `docs/equipo/asignaciones.md`, `docs/equipo/relevo.md` y specs de 45 | Estado y resultados reales |
 
-El 015 considera las reservas 010–014 de las ramas independientes de Kelvin. Aplicación de SQL y generación de entidades exclusivamente en PostgreSQL local; no se utiliza producción.
+El 015 es la reserva oficial del módulo 45 en relevo §8. Aplicación de SQL y generación de entidades exclusivamente en PostgreSQL local; no se utiliza producción.
 
 ## 4. Contrato propuesto
 
@@ -144,3 +144,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1143 pruebas backend y 604 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Preparación del PR del 45 — 2026-11-25
+
+- Incorporado `origin/main` (1835648c03103c73317555d4c2e6ed8a544b9cae) después de integrar el PR #96 del 44; se conservan los módulos y cambios ya integrados.
+- Resueltos los conflictos de estilos, seed, smoke y nombres de navegación conservando main y los bloques originales del 45. `relevo.md` idéntico a main; asignaciones modifica únicamente la fila propia.
+- Contexto tomado de main, PostgreSQL local recreado, scripts aplicados, seed cargado y entidades/contexto regenerados con `./scripts/scaffold.sh`, sin edición manual. Script propio: `015-guias-remision.sql`.
+- `./scripts/verify.sh`: exit 0; 1819 pruebas backend y 1516 frontend en 152 archivos; .NET sin warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del 45 y los existentes de main.
+- `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración compartida. Se mantienen los avisos globales de ESLint 9 y tamaño del bundle de Vite.
+- Evidencia visual real del 2026-11-21 conservada, sin cambios al bloque visual propio. Propuesta, pendiente de aprobación de Lukas. El script de la demo lo aplica Lukas; no se ejecutó SQL contra producción.

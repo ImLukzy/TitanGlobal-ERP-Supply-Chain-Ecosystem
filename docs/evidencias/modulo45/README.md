@@ -61,3 +61,13 @@ Rama actualizada con `git pull origin main`, conservando la tabla oficial de rel
 `./scripts/verify.sh`: salida0, 1143 pruebas backend y 604 frontend en 75 archivos. `./scripts/smoke-postgres.sh`: salida0, scaffold coincidente y SMOKE OK. Se usó VITEST_MAX_WORKERS=1 temporal, sin modificar pruebas, timeouts ni configuración compartida. Persisten los avisos globales de ESLint9/Vite; no se cambiaron dependencias ni umbrales.
 
 No se generaron capturas nuevas ni se cambió la pantalla para estos ajustes. Se conserva la evidencia visual previa. Preparación local: sin nuevos PR, sin push y sin integración. Tras cada fusión anterior habrá que incorporar main y repetir estas verificaciones antes del PR correspondiente.
+
+### Preparación del PR del 45 — 2026-11-25
+
+- Incorporado `origin/main` (1835648c03103c73317555d4c2e6ed8a544b9cae) después de integrar el PR #96 del 44; se conservan los módulos y cambios ya integrados.
+- Resueltos los conflictos de estilos, seed, smoke y nombres de navegación conservando main y los bloques originales del 45. `relevo.md` idéntico a main; asignaciones modifica únicamente la fila propia.
+- Contexto tomado de main, PostgreSQL local recreado, scripts aplicados, seed cargado y entidades/contexto regenerados con `./scripts/scaffold.sh`, sin edición manual. Script propio: `015-guias-remision.sql`.
+- `./scripts/verify.sh`: exit 0; 1819 pruebas backend y 1516 frontend en 152 archivos; .NET sin warnings, lint, tipos y build correctos.
+- `./scripts/smoke-postgres.sh`: exit 0, `SCAFFOLD AL DÍA` y `SMOKE OK`, incluidos los flujos del 45 y los existentes de main.
+- `VITEST_MAX_WORKERS=1` temporal, sin modificar pruebas, timeouts ni configuración compartida. Se mantienen los avisos globales de ESLint 9 y tamaño del bundle de Vite.
+- Evidencia visual real del 2026-11-21 conservada, sin cambios al bloque visual propio. Propuesta, pendiente de aprobación de Lukas. El script de la demo lo aplica Lukas; no se ejecutó SQL contra producción.
