@@ -101,7 +101,11 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<Lote> Lotes { get; set; } = null!;
+
     public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
+
+    public virtual DbSet<MovimientoKardex> MovimientosKardex { get; set; } = null!;
 
     public virtual DbSet<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = null!;
 
@@ -147,9 +151,13 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<TramoQuintaCategoria> TramosQuintaCategoria { get; set; } = null!;
 
+    public virtual DbSet<TransferenciaAlmacen> TransferenciasAlmacen { get; set; } = null!;
+
     public virtual DbSet<TransportistaTercero> TransportistasTerceros { get; set; } = null!;
 
     public virtual DbSet<Turno> Turnos { get; set; } = null!;
+
+    public virtual DbSet<UnidadSerie> UnidadesSerie { get; set; } = null!;
 
     public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
 
@@ -888,6 +896,18 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<Lote>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProductoId, e.Codigo }, "IX_Lotes_ProductoId_Codigo").IsUnique();
+
+            entity.Property(e => e.Codigo).HasMaxLength(30);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.Lotes)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<Marcacion>(entity =>
         {
             entity.HasIndex(e => new { e.Dispositivo, e.NumeroRegistro }, "IX_Marcaciones_Dispositivo_NumeroRegistro").IsUnique();
@@ -902,6 +922,37 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Empleado).WithMany(p => p.Marcaciones)
                 .HasForeignKey(d => d.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MovimientoKardex>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenId, "IX_MovimientosKardex_AlmacenId");
+
+            entity.HasIndex(e => e.LoteId, "IX_MovimientosKardex_LoteId");
+
+            entity.HasIndex(e => new { e.ProductoId, e.AlmacenId, e.Fecha }, "IX_MovimientosKardex_ProductoId_AlmacenId_Fecha");
+
+            entity.HasIndex(e => e.TransferenciaId, "IX_MovimientosKardex_TransferenciaId");
+
+            entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
+            entity.Property(e => e.Referencia).HasMaxLength(100);
+            entity.Property(e => e.Tipo).HasMaxLength(10);
+
+            entity.HasOne(d => d.Almacen).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.AlmacenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Lote).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.LoteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Transferencia).WithMany(p => p.MovimientosKardex)
+                .HasForeignKey(d => d.TransferenciaId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -1242,6 +1293,32 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Tasa).HasPrecision(6, 4);
         });
 
+        modelBuilder.Entity<TransferenciaAlmacen>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenDestinoId, "IX_TransferenciasAlmacen_AlmacenDestinoId");
+
+            entity.HasIndex(e => e.AlmacenOrigenId, "IX_TransferenciasAlmacen_AlmacenOrigenId");
+
+            entity.HasIndex(e => e.Fecha, "IX_TransferenciasAlmacen_Fecha");
+
+            entity.HasIndex(e => e.ProductoId, "IX_TransferenciasAlmacen_ProductoId");
+
+            entity.Property(e => e.CostoUnitario).HasPrecision(18, 4);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.AlmacenDestino).WithMany(p => p.TransferenciasAlmacenAlmacenDestino)
+                .HasForeignKey(d => d.AlmacenDestinoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.AlmacenOrigen).WithMany(p => p.TransferenciasAlmacenAlmacenOrigen)
+                .HasForeignKey(d => d.AlmacenOrigenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.TransferenciasAlmacen)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<TransportistaTercero>(entity =>
         {
             entity.Property(e => e.Activo).HasDefaultValue(true);
@@ -1263,6 +1340,24 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.DiasLaborables).HasMaxLength(13);
             entity.Property(e => e.Nombre).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<UnidadSerie>(entity =>
+        {
+            entity.HasIndex(e => e.LoteId, "IX_UnidadesSerie_LoteId");
+
+            entity.HasIndex(e => new { e.ProductoId, e.NumeroSerie }, "IX_UnidadesSerie_ProductoId_NumeroSerie").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.NumeroSerie).HasMaxLength(50);
+
+            entity.HasOne(d => d.Lote).WithMany(p => p.UnidadesSerie)
+                .HasForeignKey(d => d.LoteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.UnidadesSerie)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Usuario>(entity =>
