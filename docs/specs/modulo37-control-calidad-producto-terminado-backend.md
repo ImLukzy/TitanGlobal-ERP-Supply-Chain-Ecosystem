@@ -6,9 +6,9 @@
 
 **Resultado esperado:** el usuario inspecciona las unidades producidas de una orden terminada, en una o varias inspecciones, las dictamina como aprobadas o rechazadas según las unidades no conformes y la tolerancia, las anula si fueron un error, y consulta por orden cuántas unidades se inspeccionaron, cuántas resultaron conformes y cuántas faltan por inspeccionar.
 
-Responsable: Antony Huayhua. Estado: propuesta pendiente de aprobación de Lukas.
+Responsable: Antony Huayhua. Estado: aprobada por Lukas (PR #80, fusionado el 2026-11-25).
 
-**Dependencias:** usa `OrdenesProduccion` (módulo 34, script 025). La implementación empieza cuando el 34 esté integrado en `main`.
+**Dependencias:** usa `OrdenesProduccion` (módulo 34, script 025). Actualizado el 2026-11-26: el 34 aún no está en `main`, así que la rama parte de `antony/modulo34-ordenes-produccion` y se actualiza con `main` cuando el 34 se integre.
 
 ## 2. Fuera de alcance
 
@@ -143,14 +143,23 @@ El módulo 34 no cambia su contrato: las órdenes no se borran, así que la FK d
 
 ## 6. Checklist de ejecución
 
-- [ ] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato.
-- [ ] Módulo 34 integrado en `main`, y rama actualizada.
-- [ ] Commit 1: script SQL 044, pluralizador (si hace falta) y entidades generadas.
-- [ ] Commit 2: DTOs, validaciones y casos de uso.
-- [ ] Commit 3: controlador, pruebas, seed y smoke.
-- [ ] Verificar A1–A7 y registrar los resultados.
+- [x] Aprobación de Lukas sobre el alcance, las decisiones de §2 y el contrato (PR #80, 2026-11-25).
+- [ ] Módulo 34 integrado en `main`, y rama actualizada (pendiente: la rama parte de la del 34).
+- [x] Commit 1: script SQL 044, pluralizador y entidades generadas (la fila del 044 en `relevo.md` ya estaba en `main`).
+- [x] Commit 2: UseCase de consulta (listado, resumen, avance y detalle) y sus endpoints GET.
+- [x] Commit 3: alta y edición con bloqueo de la fila de la orden.
+- [x] Commit 4: dictamen y anulación con bloqueo de la fila de la inspección.
+- [x] Commit 5: seed y comprobaciones del smoke.
+- [x] Verificar A1–A7 y registrar los resultados.
 
 ## 7. Registro de verificación
 
 | Fecha | Criterio | Resultado | Evidencia |
 |---|---|---|---|
+| 2026-11-26 | A1 | 0 errores, 0 warnings | `dotnet build -warnaserror` dentro de `./scripts/verify.sh` |
+| 2026-11-26 | A2 | En verde | `./scripts/verify.sh` |
+| 2026-11-26 | A3 | 59 de 59 en verde: cada mensaje de §4, las tres transiciones, la paginación, los filtros y ningún caso inválido crea ni cambia filas | `dotnet test --filter Modulo37_ControlCalidadProductoTerminado` (1869 en total) |
+| 2026-11-26 | A4 | Las ocho operaciones presentes y autenticadas | `openapi-inspecciones-producto-terminado` en el smoke |
+| 2026-11-26 | A5 | Porcentaje, conformes, avance y resumen exactos; la anulada libera sus unidades; sobre la tolerancia, aprobar da 409 y rechazar funciona; el fin de la orden se toma en hora de Perú | Pruebas de integración y smoke |
+| 2026-11-26 | A6 | `SMOKE OK`, con dos altas concurrentes sobre la misma orden que no superan juntas la cantidad producida | `./scripts/smoke-postgres.sh` |
+| 2026-11-26 | A7 | Tres inspecciones (`Pendiente`, `Aprobada` y `Rechazada`) de `OP-000003` tras dos cargas seguidas | `scripts/seed-dev.sql` cargado dos veces con `psql` sobre la base local |
