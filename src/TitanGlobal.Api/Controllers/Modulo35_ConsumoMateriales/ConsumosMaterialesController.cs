@@ -13,19 +13,22 @@ public class ConsumosMaterialesController : ControllerBase
     private readonly BalanceConsumoOrdenUseCase _balance;
     private readonly ObtenerConsumoMaterialUseCase _obtener;
     private readonly RegistrarConsumoMaterialUseCase _registrar;
+    private readonly AnularConsumoMaterialUseCase _anular;
 
     public ConsumosMaterialesController(
         ListarConsumosMaterialesUseCase listar,
         ResumenConsumosMaterialesUseCase resumen,
         BalanceConsumoOrdenUseCase balance,
         ObtenerConsumoMaterialUseCase obtener,
-        RegistrarConsumoMaterialUseCase registrar)
+        RegistrarConsumoMaterialUseCase registrar,
+        AnularConsumoMaterialUseCase anular)
     {
         _listar = listar;
         _resumen = resumen;
         _balance = balance;
         _obtener = obtener;
         _registrar = registrar;
+        _anular = anular;
     }
 
     [HttpGet]
@@ -70,5 +73,12 @@ public class ConsumosMaterialesController : ControllerBase
     {
         ConsumoMaterialRegistradoDto registrado = await _registrar.ExecuteAsync(solicitud);
         return CreatedAtAction(nameof(Obtener), new { id = registrado.Id }, registrado);
+    }
+
+    [HttpPost("{id:int}/anular")]
+    public async Task<IActionResult> Anular(int id, [FromBody] AnularConsumoMaterialRequestDto solicitud)
+    {
+        int resultado = await _anular.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
     }
 }

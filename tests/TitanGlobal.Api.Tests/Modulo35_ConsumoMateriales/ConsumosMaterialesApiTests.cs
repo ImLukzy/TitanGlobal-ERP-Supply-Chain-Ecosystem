@@ -225,6 +225,56 @@ public sealed class ConsumosMaterialesApiTests : IClassFixture<ConsumosMateriale
         Assert.Equal(5, (await ListarAsync(string.Empty)).Total);
     }
 
+    [Fact]
+    public async Task AnulacionGuardaMotivoYFechaYSaleDelBalance()
+    {
+        DateTime antes = DateTime.UtcNow;
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/anular", new AnularConsumoMaterialRequestDto("  Lote equivocado  "));
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(1, (await respuesta.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32());
+        ConsumoMaterialDetalleDto anulado = await ObtenerAsync(1);
+        Assert.Equal("Anulado", anulado.Estado);
+        Assert.Equal("Lote equivocado", anulado.MotivoAnulacion);
+        Assert.NotNull(anulado.FechaAnulacion);
+        Assert.InRange(anulado.FechaAnulacion.Value, antes, DateTime.UtcNow);
+
+        BalanceConsumoOrdenDto? balance =
+            await _cliente.GetFromJsonAsync<BalanceConsumoOrdenDto>($"{Ruta}/ordenes/1/balance");
+        Assert.NotNull(balance);
+        Assert.Equal(0m, balance.Lineas.Single(linea => linea.ComponenteProductoId == 3).CantidadConsumida);
+        Assert.Equal(new ResumenConsumosMaterialesDto(3, 2, 2, 1),
+            await _cliente.GetFromJsonAsync<ResumenConsumosMaterialesDto>($"{Ruta}/resumen"));
+    }
+
+    [Theory]
+    [InlineData(99, null, HttpStatusCode.NotFound, "El consumo de materiales 99 no existe.")]
+    [InlineData(2, null, HttpStatusCode.Conflict, "El consumo de materiales CM-000002 ya está anulado.")]
+    [InlineData(4, "Motivo", HttpStatusCode.Conflict, "Solo se pueden anular consumos de órdenes de producción en proceso.")]
+    [InlineData(1, null, HttpStatusCode.BadRequest, "El motivo de anulación es obligatorio.")]
+    [InlineData(1, "   ", HttpStatusCode.BadRequest, "El motivo de anulación es obligatorio.")]
+    public async Task AnulacionVerificaExistenciaEstadosYMotivo(
+        int id, string? motivo, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/{id}/anular", new AnularConsumoMaterialRequestDto(motivo));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    [Fact]
+    public async Task AnulacionRechazaMotivoDeMasDe250CaracteresSinCambiarElConsumo()
+    {
+        using HttpResponseMessage largo = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/anular", new AnularConsumoMaterialRequestDto(new string('m', 251)));
+        await VerificarErrorAsync(largo, HttpStatusCode.BadRequest, "El motivo de anulación no puede superar 250 caracteres.");
+        Assert.Equal("Registrado", (await ObtenerAsync(1)).Estado);
+
+        using HttpResponseMessage maximo = await _cliente.PostAsJsonAsync(
+            $"{Ruta}/1/anular", new AnularConsumoMaterialRequestDto(new string('m', 250)));
+        Assert.Equal(HttpStatusCode.OK, maximo.StatusCode);
+    }
+
     private async Task<PaginaConsumosMaterialesDto> ListarAsync(string filtros)
     {
         PaginaConsumosMaterialesDto? pagina = await _cliente.GetFromJsonAsync<PaginaConsumosMaterialesDto>(Ruta + filtros);
