@@ -23,13 +23,13 @@ public partial class MovimientoKardex
 
     public string? Referencia { get; set; }
 
-    public int? TransferenciaId { get; set; }
+    public int? AjusteInventarioId { get; set; }
+
+    public virtual AjusteInventario? AjusteInventario { get; set; }
 
     public virtual Almacen Almacen { get; set; } = null!;
 
     public virtual Lote? Lote { get; set; }
 
     public virtual Producto Producto { get; set; } = null!;
-
-    public virtual TransferenciaAlmacen? Transferencia { get; set; }
 }
