@@ -9,6 +9,9 @@ PRODUCTO_CREADO_ID=""
 PROVEEDOR_CREADO_ID=""
 IMPUESTO_CREADO_ID=""
 CATEGORIA_PRODUCTO_CREADA_ID=""
+LOTE_CREADO_ID=""
+SERIE_CREADA_ID=""
+RUN_ID="$(date +%s)"
 SOLICITUD_CREADA_ID=""
 ORDEN_ABASTECIMIENTO_CREADA_ID=""
 ALMACEN_CREADO_ID=""
@@ -306,6 +309,17 @@ checks = {
     "categoria-producto-created": lambda data: data["id"] > 0,
     "categoria-producto-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una categoría con el nombre computo.",
     "categoria-producto-deactivated": lambda data: data["nombre"] == "Categoría Smoke" and data["descripcion"] == "Alta de smoke" and data["activa"] is False,
+        "lotes-producto": lambda data: data["total"] >= 2 and all(item["productoId"] == 1 for item in data["items"]),
+        "lotes-busqueda": lambda data: data["total"] == 1 and data["items"][0]["codigo"] == "LOT-2026-001",
+        "lotes-resumen": lambda data: data["totalLotes"] >= 4 and data["bloqueados"] >= 1 and data["enCuarentena"] >= 1 and data["vencidos"] >= 1 and data["porVencer"] >= 1,
+        "lote-created": lambda data: data["id"] > 0,
+        "lote-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe el lote LOT-2026-001 para el producto 1.",
+        "lote-bad-dates": lambda data: data["StatusCode"] == 400 and data["Message"] == "La fecha de vencimiento no puede ser anterior a la de fabricación.",
+        "lote-notfound": lambda data: data["StatusCode"] == 404 and data["Message"] == "El lote 9999 no existe.",
+        "serie-created": lambda data: data["id"] > 0,
+        "serie-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe la serie SN-0001 para el producto 1.",
+        "serie-state-changed": lambda data: data["id"] > 0,
+        "serie-bad-transition": lambda data: data["StatusCode"] == 409 and data["Message"] == "No se puede pasar la serie de Baja a Disponible.",
     "solicitudes-pendientes": lambda data: data["total"] == 2 and [item["estado"] for item in data["items"]] == ["Pendiente", "Pendiente"],
     "solicitudes-rango": lambda data: data["total"] == 2 and [item["numero"] for item in data["items"]] == ["SC-DEV-003", "SC-DEV-002"],
     "solicitud-detalle": lambda data: data["numero"] == "SC-DEV-001" and data["estado"] == "Pendiente" and data["proveedorNombre"] == "Andes Suministros S.A.C." and data["montoEstimado"] == 4760.0 and [linea["productoId"] for linea in data["lineas"]] == [1, 3] and [linea["subtotal"] for linea in data["lineas"]] == [4600.0, 160.0],
@@ -724,6 +738,14 @@ request_check() {
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
+    
+        if [[ "$validation" == "lote-created" ]]; then
+            LOTE_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+        fi
+    
+        if [[ "$validation" == "serie-created" ]]; then
+            SERIE_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+        fi
 
     if [[ "$validation" == "solicitud-created" ]]; then
         SOLICITUD_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
@@ -913,6 +935,18 @@ request_check 'POST categoría de producto válida' POST '/api/v1/categorias-pro
 request_check 'POST categoría de producto duplicada sin importar mayúsculas' POST '/api/v1/categorias-producto' 409 categoria-producto-duplicate '{"nombre":"computo"}'
 request_check 'DELETE categoría de producto recién creada (baja lógica)' DELETE "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 204 ''
 request_check 'Categoría de producto recién creada queda inactiva' GET "/api/v1/categorias-producto/${CATEGORIA_PRODUCTO_CREADA_ID}" 200 categoria-producto-deactivated
+request_check 'Lotes del producto 1' GET '/api/v1/lotes-series/lotes?productoId=1' 200 lotes-producto
+request_check 'Lotes por código' GET '/api/v1/lotes-series/lotes?busqueda=lot-2026-001' 200 lotes-busqueda
+request_check 'Resumen de lotes' GET '/api/v1/lotes-series/lotes/resumen' 200 lotes-resumen
+request_check 'POST lote válido' POST '/api/v1/lotes-series/lotes' 200 lote-created "{\"productoId\":1,\"codigo\":\"SMK-${RUN_ID}\",\"cantidad\":2,\"estado\":\"Disponible\"}"
+request_check 'POST lote con código del seed' POST '/api/v1/lotes-series/lotes' 409 lote-duplicate '{"productoId":1,"codigo":"lot-2026-001","cantidad":5,"estado":"Disponible"}'
+request_check 'POST lote con vencimiento anterior a la fabricación' POST '/api/v1/lotes-series/lotes' 400 lote-bad-dates '{"productoId":1,"codigo":"SMK-FECHAS","cantidad":5,"estado":"Disponible","fechaFabricacion":"2026-06-10","fechaVencimiento":"2026-06-01"}'
+request_check 'Lote inexistente' GET '/api/v1/lotes-series/lotes/9999' 404 lote-notfound
+request_check 'POST serie válida en el lote creado' POST '/api/v1/lotes-series/series' 200 serie-created "{\"productoId\":1,\"loteId\":${LOTE_CREADO_ID},\"numeroSerie\":\"SMK-S-${RUN_ID}\"}"
+request_check 'POST serie con número del seed' POST '/api/v1/lotes-series/series' 409 serie-duplicate '{"productoId":1,"numeroSerie":"sn-0001"}'
+request_check 'Serie a Asignada' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 200 serie-state-changed '{"estado":"Asignada"}'
+request_check 'Serie a Baja' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 200 serie-state-changed '{"estado":"Baja"}'
+request_check 'Serie de Baja no vuelve a Disponible' PUT "/api/v1/lotes-series/series/${SERIE_CREADA_ID}/estado" 409 serie-bad-transition '{"estado":"Disponible"}'
 request_check 'Almacenes por ciudad Lima' GET '/api/v1/almacenes?ciudad=lima' 200 warehouses-city
 request_check 'Almacenes por tipo Regional' GET '/api/v1/almacenes?tipo=regional' 200 warehouses-type
 request_check 'Almacenes inactivos' GET '/api/v1/almacenes?activo=false' 200 warehouses-inactive

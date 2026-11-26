@@ -101,6 +101,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
+    public virtual DbSet<Lote> Lotes { get; set; } = null!;
+
     public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
 
     public virtual DbSet<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = null!;
@@ -150,6 +152,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<TransportistaTercero> TransportistasTerceros { get; set; } = null!;
 
     public virtual DbSet<Turno> Turnos { get; set; } = null!;
+
+    public virtual DbSet<UnidadSerie> UnidadesSerie { get; set; } = null!;
 
     public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
 
@@ -888,6 +892,18 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<Lote>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProductoId, e.Codigo }, "IX_Lotes_ProductoId_Codigo").IsUnique();
+
+            entity.Property(e => e.Codigo).HasMaxLength(30);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.Lotes)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<Marcacion>(entity =>
         {
             entity.HasIndex(e => new { e.Dispositivo, e.NumeroRegistro }, "IX_Marcaciones_Dispositivo_NumeroRegistro").IsUnique();
@@ -1263,6 +1279,24 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.DiasLaborables).HasMaxLength(13);
             entity.Property(e => e.Nombre).HasMaxLength(100);
             entity.Property(e => e.Tipo).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<UnidadSerie>(entity =>
+        {
+            entity.HasIndex(e => e.LoteId, "IX_UnidadesSerie_LoteId");
+
+            entity.HasIndex(e => new { e.ProductoId, e.NumeroSerie }, "IX_UnidadesSerie_ProductoId_NumeroSerie").IsUnique();
+
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.NumeroSerie).HasMaxLength(50);
+
+            entity.HasOne(d => d.Lote).WithMany(p => p.UnidadesSerie)
+                .HasForeignKey(d => d.LoteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.UnidadesSerie)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Usuario>(entity =>
