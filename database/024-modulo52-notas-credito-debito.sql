@@ -107,3 +107,32 @@ CREATE UNIQUE INDEX "IX_DetallesNotaCreditoDebito_NotaId_DetalleFacturaId"
     ON "DetallesNotaCreditoDebito" ("NotaCreditoDebitoId", "DetalleFacturaId");
 CREATE INDEX "IX_DetallesNotaCreditoDebito_DetalleFacturaId"
     ON "DetallesNotaCreditoDebito" ("DetalleFacturaId");
+
+-- Inicio rol FINANZAS del módulo 52
+DO $$
+DECLARE
+    ultimo_id bigint;
+    secuencia_usada boolean;
+    maximo_id integer;
+BEGIN
+    LOCK TABLE "Roles" IN SHARE ROW EXCLUSIVE MODE;
+
+    IF EXISTS (SELECT 1 FROM "Roles" WHERE "Id" = 7 AND "Codigo" <> 'FINANZAS') THEN
+        RAISE EXCEPTION 'El Id 7 ya pertenece a otro rol. No se creó FINANZAS.';
+    END IF;
+    IF EXISTS (SELECT 1 FROM "Roles" WHERE upper(btrim("Codigo")) = 'FINANZAS' AND "Id" <> 7) THEN
+        RAISE EXCEPTION 'El código FINANZAS ya pertenece a un Id distinto de 7.';
+    END IF;
+
+    INSERT INTO "Roles" ("Id", "Codigo", "Nombre", "Descripcion", "EsSistema")
+    VALUES (7, 'FINANZAS', 'Finanzas', 'Operaciones financieras', FALSE)
+    ON CONFLICT DO NOTHING;
+
+    SELECT MAX("Id") INTO maximo_id FROM "Roles";
+    SELECT last_value, is_called INTO ultimo_id, secuencia_usada FROM "Roles_Id_seq";
+    IF ultimo_id < maximo_id OR (ultimo_id = maximo_id AND NOT secuencia_usada) THEN
+        PERFORM setval(pg_get_serial_sequence('"Roles"', 'Id'), maximo_id, TRUE);
+    END IF;
+END
+$$;
+-- Fin rol FINANZAS del módulo 52

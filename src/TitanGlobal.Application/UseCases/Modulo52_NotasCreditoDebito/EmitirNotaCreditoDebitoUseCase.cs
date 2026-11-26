@@ -1,4 +1,5 @@
 using TitanGlobal.Application.DTOs.Modulo52_NotasCreditoDebito;
+using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -6,12 +7,13 @@ namespace TitanGlobal.Application.UseCases.Modulo52_NotasCreditoDebito;
 
 public sealed class EmitirNotaCreditoDebitoUseCase
 {
-    private static readonly TimeZoneInfo ZonaLima = TimeZoneInfo.FindSystemTimeZoneById("America/Lima");
     private readonly IUnitOfWorkFacturas _unitOfWork;
+    private readonly TimeProvider _reloj;
 
-    public EmitirNotaCreditoDebitoUseCase(IUnitOfWorkFacturas unitOfWork)
+    public EmitirNotaCreditoDebitoUseCase(IUnitOfWorkFacturas unitOfWork, TimeProvider? reloj = null)
     {
         _unitOfWork = unitOfWork;
+        _reloj = reloj ?? TimeProvider.System;
     }
 
     public Task<NotaCreditoDebitoDetalleDto> ExecuteAsync(int id)
@@ -29,7 +31,7 @@ public sealed class EmitirNotaCreditoDebitoUseCase
             await PersistenciaNotaCreditoDebito.ValidarTopesCreditoAsync(_unitOfWork, nota);
         }
 
-        nota.FechaEmision = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ZonaLima));
+        nota.FechaEmision = FechaNegocioPeru.DesdeUtc(_reloj.GetUtcNow().UtcDateTime);
         nota.Estado = NotaCreditoDebito.EstadoEmitida;
     }
 }

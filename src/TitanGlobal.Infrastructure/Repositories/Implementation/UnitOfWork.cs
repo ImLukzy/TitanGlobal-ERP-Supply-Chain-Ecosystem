@@ -72,7 +72,7 @@ public class UnitOfWork : IUnitOfWorkFacturas
     {
         if (!_context.Database.IsRelational())
         {
-            string? ultimo = await _context.NotasCreditoDebito.AsNoTracking()
+            string? ultimo = await _context.Set<NotaCreditoDebito>().AsNoTracking()
                 .Where(nota => nota.Tipo == tipo && !nota.Numero.StartsWith("TMP-"))
                 .OrderByDescending(nota => nota.Numero.Length)
                 .ThenByDescending(nota => nota.Numero)

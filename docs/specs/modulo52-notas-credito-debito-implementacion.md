@@ -1,13 +1,13 @@
 # Implementación del módulo 52 — Notas de crédito y débito
 
-La [spec del 52](modulo52-notas-credito-debito-backend.md) recoge las decisiones aprobadas para la v0. Su revisión de conjunto se sigue en el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52). Se conserva `fb84529` como dependencia temporal mientras el PR #48 del 51 siga abierto.
+La [spec del 52](modulo52-notas-credito-debito-backend.md) recoge las decisiones aprobadas para la v0. El [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) ya se integró. El PR #83 usa como base temporal la rama actualizada del PR #48 en `7d131c7`. Tras integrar el 51, se revisará su base para apuntar a `main`.
 
 ## Contrato implementado
 
 - La factura o boleta debe estar emitida al crear y emitir. La nota conserva su moneda y guarda líneas con `DetalleFacturaId`, cantidad de cuatro decimales, precio unitario y porcentaje histórico. El servidor redondea la base por línea, calcula y redondea su impuesto a dos decimales con `MidpointRounding.AwayFromZero` y suma los resultados en la cabecera.
 - Cada tipo usa su secuencia PostgreSQL. El alta guarda `TMP-` y asigna `NC-` o `ND-` en la misma transacción. El índice único cubre el folio definitivo.
-- Las seis rutas de `/api/v1/notas-credito-debito` permiten lectura con JWT y escritura con ADMIN o FINANZAS. El seed agrega FINANZAS con Id 7 y aborta antes de escribir cuando se detecta un conflicto.
-- Solo se editan borradores. La emisión fija el día de negocio de Lima en una columna `date`. La anulación es lógica con motivo de 3 a 300 caracteres. Los instantes de creación y anulación se guardan en UTC.
+- Las seis rutas de `/api/v1/notas-credito-debito` permiten lectura con JWT y escritura con ADMIN o FINANZAS. SQL 024 crea FINANZAS con Id 7 antes del seed, conserva los roles existentes y aborta cuando el Id o el código están ocupados. Solo avanza la secuencia de roles cuando corresponde.
+- Solo se editan borradores. La emisión fija el día de negocio de Perú en una columna `date`. Se comprueba el cambio de día a las 05:00 UTC. La anulación es lógica con motivo de 3 a 300 caracteres. Los instantes de creación y anulación se guardan en UTC.
 - El tope de crédito al emitir usa cantidad y total facturados por línea y acumula únicamente otras notas en `Emitida`. Los débitos carecen de tope acumulado. La guarda para anular un crédito aplicado se incorporará con el 53.
 
 ## Transición local desde el 024 provisional
@@ -19,6 +19,8 @@ docker compose exec -T db psql -U titanglobal -d titanglobal -v ON_ERROR_STOP=1 
 ```
 
 El script bloquea la tabla provisional al comprobar que está vacía. Si encuentra notas globales, aborta y conserva todos los datos. Esas notas carecen de líneas de origen, cantidades y desglose histórico. Una conversión que preserve su significado necesita una asignación de esos datos autorizada. Para fixtures de una base desechable, el flujo del repositorio es recrear con `./scripts/aplicar-bd.sh --reiniciar` y cargar el seed definitivo.
+
+Cuando una base ya tiene registrada la versión definitiva del SQL 024, el aplicador omite el archivo por nombre. Si ese entorno todavía carece de FINANZAS, Lukas debe autorizar un nuevo script de actualización numerado. El bloque de catálogo es idempotente por sí mismo.
 
 ## Concurrencia del 51 y el 52
 
@@ -41,3 +43,9 @@ El [script de regresión](../../scripts/repro-edicion-factura-modulo52.py) se ej
 | Escritura, consulta y contratos | Se verificaron los 401 y 403 en PostgreSQL y la escritura por FINANZAS y ADMIN en las pruebas HTTP. OpenAPI y Swagger publican las seis operaciones y los DTOs definitivos. |
 | PostgreSQL desechable | `SCAFFOLD AL DÍA` y `SMOKE OK`. Se verificaron FKs, unicidad, rechazo de `NaN`, folios concurrentes, ambos topes de crédito y las carreras del 51 y del 52. |
 | Transición del 024 y seed | Se actualizó un esquema provisional vacío. Un esquema con dos notas globales conservó los datos al rechazarse la conversión. Se probó la recreación oficial en una base desechable. Dos cargas del seed produjeron tres facturas, tres líneas de factura, dos notas, dos líneas de nota y un rol FINANZAS. Un conflicto simulado de Id 7 abortó el seed y conservó las filas. |
+
+### Verificación del 2026-11-26
+
+- `git diff --check`, reglas y compilación verificados. `verify.sh` con 1.869 casos backend, 44 del módulo, y 1.455 frontend.
+- `SCAFFOLD AL DÍA` y `SMOKE OK` sobre PostgreSQL desechable, incluida la concurrencia de facturas y notas.
+- Aplicación oficial sin seed, rol Id 7 sin usuarios asignados, secuencia adelantada y dos tipos de conflicto rechazados. El aplicador omitió el SQL 024 en una segunda pasada y el catálogo mantuvo las filas al ejecutar su bloque dos veces. Dos cargas del seed conservaron los registros e identificadores de prueba.

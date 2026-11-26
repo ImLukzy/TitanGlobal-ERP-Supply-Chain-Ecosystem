@@ -1,0 +1,50 @@
+{
+  "fecha": "2026-11-21",
+  "origen": "API y PostgreSQL locales; sin respuestas simuladas",
+  "resultados": [
+    {
+      "ancho": 375,
+      "tema": "light",
+      "altaEdicionBajaTransportista": true,
+      "registroFleteUtc": true,
+      "importeOriginal": "1234.50 USD",
+      "cancelacionConMotivo": true,
+      "escapeYRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "erroresConsola": []
+    },
+    {
+      "ancho": 375,
+      "tema": "dark",
+      "altaEdicionBajaTransportista": true,
+      "registroFleteUtc": true,
+      "importeOriginal": "1234.50 USD",
+      "cancelacionConMotivo": true,
+      "escapeYRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "erroresConsola": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "light",
+      "altaEdicionBajaTransportista": true,
+      "registroFleteUtc": true,
+      "importeOriginal": "1234.50 USD",
+      "cancelacionConMotivo": true,
+      "escapeYRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "erroresConsola": []
+    },
+    {
+      "ancho": 1280,
+      "tema": "dark",
+      "altaEdicionBajaTransportista": true,
+      "registroFleteUtc": true,
+      "importeOriginal": "1234.50 USD",
+      "cancelacionConMotivo": true,
+      "escapeYRetornoFoco": true,
+      "sinDesbordamiento": true,
+      "erroresConsola": []
+    }
+  ]
+}

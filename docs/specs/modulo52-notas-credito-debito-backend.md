@@ -1,6 +1,6 @@
 # Especificación: modulo52-notas-credito-debito-backend — Notas de crédito y débito
 
-> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. La revisión final del [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52) sigue pendiente.
+> Estado: **aprobada** por Lukas el 2026-11-23 para la v0. Responsable: Leonel Portillo. Las decisiones v0 están integradas mediante el [PR #52](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/52).
 
 ## 1. Objetivo
 
@@ -8,9 +8,9 @@ Registrar notas internas de crédito y débito sobre las líneas de una factura 
 
 ### Base comprobada y dependencias
 
-- **Disponible para revisión.** Facturación del 51 en `fb84529` y [PR #48](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/48). Su contrato contiene `Facturas`, `DetallesFactura`, `TipoComprobante`, `Estado`, `Moneda`, `Cantidad`, `PrecioUnitario`, `PorcentajeImpuesto` y los importes calculados. El 51 todavía debe integrarse antes de fusionar el backend definitivo del 52.
+- **Disponible para revisión.** Facturación del 51 en `7d131c7` y [PR #48](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/pull/48). Su contrato contiene `Facturas`, `DetallesFactura`, `TipoComprobante`, `Estado`, `Moneda`, `Cantidad`, `PrecioUnitario`, `PorcentajeImpuesto` y los importes calculados. El 51 todavía debe integrarse antes de fusionar el backend definitivo del 52.
 - **Disponible en `main`.** Impuestos y tasas del 75. El cálculo de la nota usa el porcentaje ya guardado por el 51 y prescinde de las tasas vigentes del 75.
-- **Posterior.** El [53](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/specs/modulo53-cuentas-por-cobrar-backend.md) administrará la aplicación explícita de créditos. Su integración incorpora la guarda de anulación de la nota aplicada cuando exista la tabla de aplicaciones del 53.
+- **Posterior.** El [53](modulo53-cuentas-por-cobrar-backend.md) administrará la aplicación explícita de créditos. Su integración incorpora la guarda de anulación de la nota aplicada cuando exista la tabla de aplicaciones del 53.
 
 ## 2. Fuera de alcance
 
@@ -28,7 +28,7 @@ Registrar notas internas de crédito y débito sobre las líneas de una factura 
 | 52.5 | Detalle y cálculo | Cada línea refiere un `DetalleFacturaId`. Usar la tasa guardada en la línea del 51. La base surge de cantidad por precio unitario, el impuesto del porcentaje sobre la base con redondeo y el total de ambos importes. |
 | 52.6 | Topes y orden de validación | Los créditos en `Emitida` se acumulan por línea de factura y se limitan a su cantidad e importe facturados. Los borradores no consumen cupo. El débito carece de ese tope. Cartera exige una nota `Emitida`. Validar forma, existencia, estado y por último el tope. |
 
-Las [reglas comunes G1 a G9](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-Chain-Ecosystem/blob/dbd4155fae4be59ab39ab9f3eb2a8bd17cd38534/docs/equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
+Las [reglas comunes G1 a G9](../equipo/revision-finanzas-52-60.md#reglas-generales-g1-a-g9) se aplican junto con las precisiones de §4.
 
 ## 3. Archivos afectados
 
@@ -40,7 +40,7 @@ Las [reglas comunes G1 a G9](https://github.com/ImLukzy/TitanGlobal-ERP-Supply-C
 | `src/TitanGlobal.Api/Controllers/Modulo52_NotasCreditoDebito/NotasCreditoDebitoController.cs` | Crear | Rutas y autorización de §4. |
 | `AnularFacturaUseCase.cs` y pruebas del 51 | Ampliar en el PR del 52 | HTTP 409 cuando existe una nota `Emitida`. Compartir la garantía transaccional de la factura con la emisión de notas. |
 | `tests/TitanGlobal.Api.Tests/Modulo52_NotasCreditoDebito/NotasCreditoDebitoApiTests.cs` | Crear | Pruebas HTTP de §4. |
-| `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Ampliar | Fixtures idempotentes, rol `FINANZAS` (Id 7) y checks HTTP/SQL del 52. |
+| `scripts/seed-dev.sql` y `scripts/smoke-postgres.sh` | Ampliar | Fixtures idempotentes y comprobaciones HTTP/SQL del 52. |
 
 ## 4. Diseño y lógica
 
@@ -48,9 +48,9 @@ Los nombres, tamaños auxiliares, rutas y mecanismos de persistencia concretan e
 
 ### Convenciones y permisos
 
-Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, seed del 52) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
+Controller → UseCase → IUnitOfWork → Repository → DbContext → PostgreSQL. DTOs en camelCase. Las lecturas requieren JWT. Las escrituras requieren `FINANZAS` (Id 7, creado por el SQL 024) o `ADMIN` mediante `[Authorize(Roles = "FINANZAS,ADMIN")]`. Los 401, 403 y el 400 de cuerpo vacío conservan los literales del pipeline. Las acciones sin cuerpo usan `[PermitirCuerpoVacio]`. Las fechas de negocio usan `DateOnly` y `date` con JSON `yyyy-MM-dd`. Los instantes del servidor usan `timestamptz` y `FechasUtc`.
 
-La v0 usa cantidades `numeric(18,4)` e importes `numeric(18,2)`. El servidor copia la moneda `PEN` o `USD` de la factura al alta. `FechaEmision` es una fecha de negocio asignada al emitir y coincide con el día de la operación. Los motivos se validan tras `Trim()`. Esta spec usa corte de Lima como convención técnica propuesta para el día de negocio.
+La v0 usa cantidades `numeric(18,4)` e importes `numeric(18,2)`. El servidor copia la moneda `PEN` o `USD` de la factura al alta. `FechaEmision` es una fecha de negocio asignada al emitir y coincide con el día de la operación. Los motivos se validan tras `Trim()`. La fecha de negocio de Perú cambia a las 05:00 UTC. Este ajuste y la creación del rol desde SQL 024 aplican las últimas indicaciones de Lukas. El seed conserva su catálogo de desarrollo para las pruebas.
 
 ### Datos y persistencia
 

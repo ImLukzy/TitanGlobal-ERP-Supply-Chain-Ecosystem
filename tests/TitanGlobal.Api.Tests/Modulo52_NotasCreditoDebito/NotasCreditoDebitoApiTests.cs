@@ -74,10 +74,10 @@ public class NotasCreditoDebitoApiTests
         Assert.Equal(nota.FechaCreacion, actualizada.FechaCreacion);
         Assert.Equal(linea.Id, Assert.Single(actualizada.Detalles).Id);
 
+        DateOnly diaAntes = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5));
         NotaCreditoDebitoDetalleDto emitida = await EmitirNotaAsync(nota.Id);
         Assert.Equal("Emitida", emitida.Estado);
-        Assert.Equal(DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-            TimeZoneInfo.FindSystemTimeZoneById("America/Lima"))), emitida.FechaEmision);
+        Assert.Contains(emitida.FechaEmision, new DateOnly?[] { diaAntes, DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5)) });
 
         await VerificarErrorAsync(await _cliente.PutAsJsonAsync($"{RutaNotas}/{nota.Id}", cambio),
             HttpStatusCode.Conflict, EstadoNotaInvalido);
@@ -573,14 +573,51 @@ public class NotasCreditoDebitoApiTests
         contexto.SaveChanges();
     }
 
+    [Theory]
+    [InlineData(30, 23, 59, 59, 9, 30)]
+    [InlineData(1, 0, 0, 0, 9, 30)]
+    [InlineData(1, 4, 59, 59, 9, 30)]
+    [InlineData(1, 5, 0, 0, 10, 1)]
+    public async Task EmisionRespetaMedianocheDePeru(int dia, int hora, int minuto, int segundo, int mesEsperado, int diaEsperado)
+    {
+        DateTimeOffset instante = new(2026, dia == 30 ? 9 : 10, dia, hora, minuto, segundo, TimeSpan.Zero);
+        using FabricaNotas fabrica = new(reloj: new RelojFijo(instante));
+        fabrica.SeedDatabase();
+        using HttpClient cliente = fabrica.CreateClient();
+        FacturaDetalleDto factura = await CrearFacturaAsync(1, cliente: cliente);
+        NotaCreditoDebitoDetalleDto nota = await CrearNotaAsync(Solicitud(factura), cliente);
+
+        NotaCreditoDebitoDetalleDto emitida = await EmitirNotaAsync(nota.Id, cliente);
+
+        Assert.Equal(new DateOnly(2026, mesEsperado, diaEsperado), emitida.FechaEmision);
+        Assert.Equal(DateTimeKind.Utc, emitida.FechaCreacion.Kind);
+    }
+
+    private sealed class RelojFijo : TimeProvider
+    {
+        private readonly DateTimeOffset _instante;
+
+        public RelojFijo(DateTimeOffset instante)
+        {
+            _instante = instante;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _instante;
+        }
+    }
+
     private sealed class FabricaNotas : OrdenesCompraApiFactory
     {
         private readonly string _base = $"Modulo52-{Guid.NewGuid():N}";
         private readonly SaveChangesInterceptor? _interceptor;
+        private readonly TimeProvider? _reloj;
 
-        public FabricaNotas(SaveChangesInterceptor? interceptor = null)
+        public FabricaNotas(SaveChangesInterceptor? interceptor = null, TimeProvider? reloj = null)
         {
             _interceptor = interceptor;
+            _reloj = reloj;
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -588,6 +625,10 @@ public class NotasCreditoDebitoApiTests
             base.ConfigureWebHost(builder);
             builder.ConfigureServices(servicios =>
             {
+                if (_reloj is not null)
+                {
+                    servicios.AddSingleton(_reloj);
+                }
                 servicios.AddDbContext<TitanGlobalDbContext>(opciones =>
                 {
                     opciones.UseInMemoryDatabase(_base);
