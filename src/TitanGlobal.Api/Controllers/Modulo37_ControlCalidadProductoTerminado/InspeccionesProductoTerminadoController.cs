@@ -12,17 +12,23 @@ public class InspeccionesProductoTerminadoController : ControllerBase
     private readonly ResumenInspeccionesProductoTerminadoUseCase _resumen;
     private readonly AvanceInspeccionOrdenUseCase _avance;
     private readonly ObtenerInspeccionProductoTerminadoUseCase _obtener;
+    private readonly CrearInspeccionProductoTerminadoUseCase _crear;
+    private readonly EditarInspeccionProductoTerminadoUseCase _editar;
 
     public InspeccionesProductoTerminadoController(
         ListarInspeccionesProductoTerminadoUseCase listar,
         ResumenInspeccionesProductoTerminadoUseCase resumen,
         AvanceInspeccionOrdenUseCase avance,
-        ObtenerInspeccionProductoTerminadoUseCase obtener)
+        ObtenerInspeccionProductoTerminadoUseCase obtener,
+        CrearInspeccionProductoTerminadoUseCase crear,
+        EditarInspeccionProductoTerminadoUseCase editar)
     {
         _listar = listar;
         _resumen = resumen;
         _avance = avance;
         _obtener = obtener;
+        _crear = crear;
+        _editar = editar;
     }
 
     [HttpGet]
@@ -60,5 +66,19 @@ public class InspeccionesProductoTerminadoController : ControllerBase
     {
         InspeccionProductoTerminadoDetalleDto resultado = await _obtener.ExecuteAsync(id);
         return Ok(resultado);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Crear([FromBody] CrearInspeccionProductoTerminadoRequestDto solicitud)
+    {
+        InspeccionProductoTerminadoCreadaDto creada = await _crear.ExecuteAsync(solicitud);
+        return CreatedAtAction(nameof(Obtener), new { id = creada.Id }, creada);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Editar(int id, [FromBody] EditarInspeccionProductoTerminadoRequestDto solicitud)
+    {
+        int resultado = await _editar.ExecuteAsync(id, solicitud);
+        return Ok(new { Id = resultado });
     }
 }

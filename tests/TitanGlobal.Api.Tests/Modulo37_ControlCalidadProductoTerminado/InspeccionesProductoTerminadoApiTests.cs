@@ -140,6 +140,125 @@ public sealed class InspeccionesProductoTerminadoApiTests
         await VerificarErrorAsync(respuesta, HttpStatusCode.NotFound, "La inspección de producto terminado 99 no existe.");
     }
 
+    [Fact]
+    public async Task AltaUsaLasUnidadesLiberadasPorLaAnuladaYAsignaNumero()
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new CrearInspeccionProductoTerminadoRequestDto(5, new DateOnly(2026, 11, 25), 5, 2.5m, "  Ana Torres  "));
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        InspeccionProductoTerminadoCreadaDto? creada =
+            await respuesta.Content.ReadFromJsonAsync<InspeccionProductoTerminadoCreadaDto>();
+        Assert.NotNull(creada);
+        Assert.Equal($"CCP-{creada.Id:D6}", creada.Numero);
+        Assert.EndsWith($"{Ruta}/{creada.Id}", respuesta.Headers.Location?.ToString(), StringComparison.OrdinalIgnoreCase);
+        InspeccionProductoTerminadoDetalleDto detalle = await ObtenerAsync(creada.Id);
+        Assert.Equal("Pendiente", detalle.Estado);
+        Assert.Equal("Ana Torres", detalle.Inspector);
+        Assert.Equal(2.5m, detalle.ToleranciaNoConformesPorcentaje);
+        Assert.Equal(0, (await _cliente.GetFromJsonAsync<AvanceInspeccionOrdenDto>($"{Ruta}/ordenes/5/avance"))?.UnidadesPorInspeccionar);
+
+        using HttpResponseMessage agotada = await _cliente.PostAsJsonAsync(Ruta,
+            new CrearInspeccionProductoTerminadoRequestDto(5, new DateOnly(2026, 11, 25), 1, 0m, "Ana Torres"));
+        await VerificarErrorAsync(agotada, HttpStatusCode.Conflict, "La orden OP-000005 solo tiene 0 unidades por inspeccionar.");
+    }
+
+    [Theory]
+    [InlineData(0, null, 0, null, null, "El identificador de la orden de producción debe ser mayor que 0.")]
+    [InlineData(99, null, 0, null, null, "La fecha de inspección es obligatoria.")]
+    [InlineData(99, "manana", 0, null, null, "La fecha de inspección no puede ser posterior a hoy.")]
+    [InlineData(99, "2026-11-25", 0, null, null, "La cantidad inspeccionada debe estar entre 1 y 1000000.")]
+    [InlineData(99, "2026-11-25", 1000001, null, null, "La cantidad inspeccionada debe estar entre 1 y 1000000.")]
+    [InlineData(99, "2026-11-25", 1, null, null, "La tolerancia de no conformes debe estar entre 0 y 100.")]
+    [InlineData(99, "2026-11-25", 1, "100.01", null, "La tolerancia de no conformes debe estar entre 0 y 100.")]
+    [InlineData(99, "2026-11-25", 1, "2.555", null, "La tolerancia de no conformes admite como máximo 2 decimales.")]
+    [InlineData(99, "2026-11-25", 1, "100", "   ", "El inspector es obligatorio.")]
+    [InlineData(99, "2026-11-25", 1, "0", "LARGO", "El inspector no puede superar 100 caracteres.")]
+    [InlineData(99, "2026-11-25", 1000000, "0", "Ana", "La orden de producción 99 no existe.")]
+    public async Task AltaValidaCamposAntesQueLaOrden(
+        int ordenId, string? fecha, int cantidad, string? tolerancia, string? inspector, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new CrearInspeccionProductoTerminadoRequestDto(
+                ordenId, Fecha(fecha), cantidad, Decimal(tolerancia), inspector == "LARGO" ? new string('i', 101) : inspector));
+
+        await VerificarErrorAsync(respuesta, HttpStatusCode.BadRequest, mensaje);
+        Assert.Equal(5, (await ListarAsync(string.Empty)).Total);
+    }
+
+    [Theory]
+    [InlineData(3, "2026-11-25", 1, HttpStatusCode.Conflict, "Solo se pueden inspeccionar órdenes de producción terminadas.")]
+    [InlineData(6, "2026-11-24", 1, HttpStatusCode.BadRequest, "La fecha de inspección no puede ser anterior al fin de la orden OP-000006.")]
+    [InlineData(6, "2026-11-25", 1, HttpStatusCode.Conflict, "La orden OP-000006 solo tiene 0 unidades por inspeccionar.")]
+    [InlineData(1, "2026-11-25", 11, HttpStatusCode.Conflict, "La orden OP-000001 solo tiene 10 unidades por inspeccionar.")]
+    public async Task AltaExigeOrdenTerminadaFechaYUnidadesDisponibles(
+        int ordenId, string fecha, int cantidad, HttpStatusCode estado, string mensaje)
+    {
+        // OP-000006 terminó el 2026-11-26 00:30 UTC, que en Perú es el 2026-11-25.
+        using HttpResponseMessage respuesta = await _cliente.PostAsJsonAsync(Ruta,
+            new CrearInspeccionProductoTerminadoRequestDto(ordenId, Fecha(fecha), cantidad, 5m, "Ana Torres"));
+
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+        Assert.Equal(5, (await ListarAsync(string.Empty)).Total);
+    }
+
+    [Fact]
+    public async Task EdicionExcluyeLasUnidadesDeLaPropiaInspeccion()
+    {
+        EditarInspeccionProductoTerminadoRequestDto cambio =
+            new EditarInspeccionProductoTerminadoRequestDto(new DateOnly(2026, 11, 24), 30, 1.25m, " Luis Rojas ");
+        using HttpResponseMessage editada = await _cliente.PutAsJsonAsync($"{Ruta}/3", cambio);
+
+        Assert.Equal(HttpStatusCode.OK, editada.StatusCode);
+        Assert.Equal(3, (await editada.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32());
+        InspeccionProductoTerminadoDetalleDto detalle = await ObtenerAsync(3);
+        Assert.Equal(30, detalle.CantidadInspeccionada);
+        Assert.Equal(new DateOnly(2026, 11, 24), detalle.FechaInspeccion);
+        Assert.Equal(1.25m, detalle.ToleranciaNoConformesPorcentaje);
+        Assert.Equal("Luis Rojas", detalle.Inspector);
+
+        using HttpResponseMessage excedida = await _cliente.PutAsJsonAsync($"{Ruta}/3", cambio with { CantidadInspeccionada = 31 });
+        await VerificarErrorAsync(excedida, HttpStatusCode.Conflict, "La orden OP-000001 solo tiene 30 unidades por inspeccionar.");
+        Assert.Equal(30, (await ObtenerAsync(3)).CantidadInspeccionada);
+    }
+
+    [Theory]
+    [InlineData(99, HttpStatusCode.NotFound, "La inspección de producto terminado 99 no existe.")]
+    [InlineData(2, HttpStatusCode.Conflict, "Solo se pueden editar inspecciones pendientes.")]
+    [InlineData(5, HttpStatusCode.Conflict, "Solo se pueden editar inspecciones pendientes.")]
+    [InlineData(3, HttpStatusCode.BadRequest, "El inspector es obligatorio.")]
+    public async Task EdicionVerificaExistenciaEstadoYCampos(int id, HttpStatusCode estado, string mensaje)
+    {
+        using HttpResponseMessage respuesta = await _cliente.PutAsJsonAsync($"{Ruta}/{id}",
+            new EditarInspeccionProductoTerminadoRequestDto(new DateOnly(2026, 11, 24), 1, 0m, " "));
+        await VerificarErrorAsync(respuesta, estado, mensaje);
+    }
+
+    private static DateOnly? Fecha(string? valor)
+    {
+        if (valor == null)
+        {
+            return null;
+        }
+
+        if (valor == "manana")
+        {
+            return DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5)).AddDays(1);
+        }
+
+        return DateOnly.Parse(valor, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static decimal? Decimal(string? valor)
+    {
+        if (valor == null)
+        {
+            return null;
+        }
+
+        return decimal.Parse(valor, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     private async Task<PaginaInspeccionesProductoTerminadoDto> ListarAsync(string filtros)
     {
         PaginaInspeccionesProductoTerminadoDto? pagina =

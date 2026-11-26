@@ -20,6 +20,7 @@ public static class InfrastructureServicesExtensions
         services.AddScoped<IEscrituraListaMaterial, EscrituraListaMaterial>();
         services.AddScoped<IEscrituraRutaProduccion, EscrituraRutaProduccion>();
         services.AddScoped<IEscrituraOrdenProduccion, EscrituraOrdenProduccion>();
+        services.AddScoped<IEscrituraInspeccionProductoTerminado, EscrituraInspeccionProductoTerminado>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
         services.AddSingleton<IServicioTokens, ServicioTokens>();
