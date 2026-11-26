@@ -1,4 +1,4 @@
--- Script: 034-toma-inventario.sql
+-- Script: 048-toma-inventario.sql
 -- Módulo: 28 - TomaInventario
 -- Responsable: Maxi
 

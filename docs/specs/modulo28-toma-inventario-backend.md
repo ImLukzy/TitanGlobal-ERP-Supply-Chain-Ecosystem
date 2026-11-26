@@ -15,7 +15,7 @@ Registrar conteos físicos periódicos por almacén y producto, comparando la ca
 
 ## 3. Base de datos
 
-Script `database/034-toma-inventario.sql` (registrado en `docs/equipo/relevo.md`):
+Script `database/048-toma-inventario.sql` (registrado en `docs/equipo/relevo.md`):
 
 - **`TomasInventario`:** `Id`, `Codigo` (único e índice único normalizado `lower(btrim("Codigo"))`), `AlmacenId` (FK `RESTRICT`), `FechaToma`, `Estado` (`Abierta`, `Cerrada`, `Anulada`), `Responsable`, `Observaciones`.
 - **`DetallesTomaInventario`:** `Id`, `TomaInventarioId` (FK `CASCADE`), `ProductoId` (FK `RESTRICT`), `StockSistema`, `CantidadContada`, `Diferencia`, `Observacion`, con índice único `(TomaInventarioId, ProductoId)`.
