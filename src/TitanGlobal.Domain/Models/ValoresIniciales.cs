@@ -36,6 +36,14 @@ public partial class Conductor
     }
 }
 
+public partial class ConsumoMaterial
+{
+    public ConsumoMaterial()
+    {
+        Estado = "Registrado";
+    }
+}
+
 public partial class ContratoComercial
 {
     public ContratoComercial()
@@ -83,6 +91,14 @@ public partial class OrdenAbastecimiento
     public OrdenAbastecimiento()
     {
         Estado = "Emitida";
+    }
+}
+
+public partial class OrdenProduccion
+{
+    public OrdenProduccion()
+    {
+        Estado = "Planificada";
     }
 }
 

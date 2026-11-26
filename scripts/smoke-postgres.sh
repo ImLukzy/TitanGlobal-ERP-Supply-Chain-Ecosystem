@@ -40,6 +40,8 @@ EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 RUTA_PRODUCCION_CREADA_ID=""
+ORDEN_PRODUCCION_CREADA_ID=""
+CONSUMO_MATERIAL_CREADO_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -618,6 +620,88 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "openapi-ordenes-produccion": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/ordenes-produccion", "get"), ("/api/v1/ordenes-produccion", "post"),
+        ("/api/v1/ordenes-produccion/resumen", "get"),
+        ("/api/v1/ordenes-produccion/{id}", "get"), ("/api/v1/ordenes-produccion/{id}", "put"),
+        ("/api/v1/ordenes-produccion/{id}/liberar", "post"), ("/api/v1/ordenes-produccion/{id}/iniciar", "post"),
+        ("/api/v1/ordenes-produccion/{id}/terminar", "post"), ("/api/v1/ordenes-produccion/{id}/cancelar", "post"),
+    ]),
+    "ordenes-produccion-seed": lambda data: data["total"] == 3 and [
+        (item["numero"], item["estado"], item["fechaInicioPlanificada"]) for item in data["items"]
+    ] == [
+        ("OP-000001", "Planificada", "2026-12-01"),
+        ("OP-000002", "EnProceso", "2026-11-24"),
+        ("OP-000003", "Terminada", "2026-11-16"),
+    ],
+    "ordenes-produccion-resumen": lambda data: data["totalOrdenes"] == 3 and [
+        (grupo["estado"], grupo["total"]) for grupo in data["porEstado"]
+    ] == [("Planificada", 1), ("Liberada", 0), ("EnProceso", 1), ("Terminada", 1), ("Cancelada", 0)]
+        and data["unidadesPlanificadasAbiertas"] == 70 and data["unidadesProducidas"] == 29,
+    "ordenes-produccion-rango-invalido": lambda data: (
+        data["StatusCode"] == 400 and data["Message"] == "La fecha desde no puede ser posterior a la fecha hasta."
+    ),
+    "orden-produccion-sin-lista": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "El producto 7 no tiene una lista de materiales activa."
+    ),
+    "orden-produccion-creada": lambda data: isinstance(data.get("id"), int)
+        and data["numero"] == f"OP-{data['id']:06d}",
+    "orden-produccion-dia": lambda data: data["estado"] == "Planificada"
+        and data["fechaInicioPlanificada"] == "2026-12-31" and data["fechaFinPlanificada"] == "2026-12-31"
+        and [material["cantidadRequerida"] for material in data["materiales"]] == [5, 5]
+        and [operacion["minutosEstimados"] for operacion in data["operaciones"]] == [37.5, 9.25]
+        and data["tiempoEstimadoMinutos"] == 46.75,
+    "orden-produccion-edicion-bloqueada": lambda data: (
+        data["StatusCode"] == 409 and data["Message"] == "Solo se pueden editar órdenes de producción planificadas."
+    ),
+    "orden-produccion-cancelacion-bloqueada": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "Solo se pueden cancelar órdenes de producción planificadas o liberadas.",
+    "orden-produccion-cantidad-producida": lambda data: (
+        data["StatusCode"] == 400 and data["Message"] == "La cantidad producida debe estar entre 0 y 1000000."
+    ),
+    "orden-produccion-terminada": lambda data: data["estado"] == "Terminada" and data["cantidadProducida"] == 5
+        and data["fechaInicioReal"].endswith("Z") and data["fechaFinReal"].endswith("Z")
+        and data["fechaFinReal"] >= data["fechaInicioReal"],
+    "openapi-consumos-materiales": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/consumos-materiales", "get"), ("/api/v1/consumos-materiales", "post"),
+        ("/api/v1/consumos-materiales/resumen", "get"),
+        ("/api/v1/consumos-materiales/ordenes/{ordenProduccionId}/balance", "get"),
+        ("/api/v1/consumos-materiales/{id}", "get"), ("/api/v1/consumos-materiales/{id}/anular", "post"),
+    ]),
+    "consumos-materiales-seed": lambda data: data["total"] == 4 and [
+        (item["numero"], item["estado"], item["cantidad"], item["unidadMedida"]) for item in data["items"]
+    ] == [
+        ("CM-000004", "Registrado", 4.5, "unidad"), ("CM-000003", "Anulado", 3, "unidad"),
+        ("CM-000002", "Registrado", 5, "unidad"), ("CM-000001", "Registrado", 8, "unidad"),
+    ],
+    "consumos-materiales-dia-peru": lambda data: [item["numero"] for item in data["items"]] == [
+        "CM-000004", "CM-000003", "CM-000002",
+    ],
+    "consumos-materiales-balance": lambda data: data["ordenProduccionNumero"] == "OP-000002"
+        and data["estadoOrden"] == "EnProceso" and [
+            (linea["componenteProductoId"], linea["cantidadRequerida"], linea["cantidadConsumida"],
+             linea["cantidadPendiente"], linea["desviacionPorcentaje"])
+            for linea in data["lineas"]
+        ] == [(3, 20, 12.5, 7.5, -37.5), (4, 20, 5, 15, -75)],
+    "consumo-material-creado": lambda data: isinstance(data.get("id"), int)
+        and data["numero"] == f"CM-{data['id']:06d}",
+    "consumo-material-seis-decimales": lambda data: data["cantidad"] == 0.123456
+        and data["unidadMedida"] == "unidad" and data["estado"] == "Registrado"
+        and data["fechaRegistro"].endswith("Z") and data["responsable"] is None,
+    "consumo-material-siete-decimales": lambda data: (
+        data["StatusCode"] == 400 and data["Message"] == "La cantidad consumida admite como máximo 6 decimales."
+    ),
+    "consumo-material-fuera-de-lista": lambda data: data["StatusCode"] == 409 and data["Message"] == (
+        "El producto 6 no forma parte de la lista de materiales de la orden OP-000002."
+    ),
+    "consumo-material-orden-terminada": lambda data: data["StatusCode"] == 409
+        and data["Message"] == "Solo se pueden registrar consumos en órdenes de producción en proceso.",
+    "consumo-material-anulado": lambda data: data["estado"] == "Anulado"
+        and data["motivoAnulacion"] == "Prueba de anulación" and data["fechaAnulacion"].endswith("Z"),
+    "consumo-material-ya-anulado": lambda data: data["StatusCode"] == 409
+        and re.fullmatch(r"El consumo de materiales CM-[0-9]{6} ya está anulado\.", data["Message"]) is not None,
+    "consumos-materiales-resumen": lambda data: data["totalRegistrados"] == 3 and data["totalAnulados"] == 2
+        and data["ordenesConConsumo"] == 1 and isinstance(data["consumosUltimos7Dias"], int),
 }
 
 if validation not in checks or not checks[validation](body):
@@ -836,6 +920,12 @@ request_check() {
     fi
     if [[ "$validation" == "ruta-produccion-creada" ]]; then
         RUTA_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "orden-produccion-creada" ]]; then
+        ORDEN_PRODUCCION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+    if [[ "$validation" == "consumo-material-creado" ]]; then
+        CONSUMO_MATERIAL_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
     if [[ "$validation" == "login-ok" || "$validation" == "login-invitado" ]]; then
         TOKEN_LOGIN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "$body")"
@@ -1604,4 +1694,98 @@ BEGIN
     END;
 END $$;
 SQL
+# Módulo 34: órdenes de producción con la lista de materiales y la ruta activas del producto.
+request_check 'OpenAPI de órdenes de producción' GET '/openapi/v1.json' 200 openapi-ordenes-produccion
+request_check 'Órdenes de producción del seed' GET '/api/v1/ordenes-produccion?productoId=1' 200 ordenes-produccion-seed
+request_check 'Resumen de órdenes de producción' GET '/api/v1/ordenes-produccion/resumen' 200 ordenes-produccion-resumen
+request_check 'Rechazar rango de fechas invertido' GET '/api/v1/ordenes-produccion?desde=2026-12-02&hasta=2026-12-01' 400 ordenes-produccion-rango-invalido
+request_check 'Rechazar producto sin lista activa' POST '/api/v1/ordenes-produccion' 409 orden-produccion-sin-lista '{"productoId":7,"cantidadPlanificada":1,"fechaInicioPlanificada":"2026-12-31","fechaFinPlanificada":"2026-12-31"}'
+request_check 'Crear orden con fechas de un día' POST '/api/v1/ordenes-produccion' 201 orden-produccion-creada '{"productoId":1,"cantidadPlanificada":5,"fechaInicioPlanificada":"2026-12-31","fechaFinPlanificada":"2026-12-31"}'
+ORDEN_PRODUCCION_SMOKE="/api/v1/ordenes-produccion/${ORDEN_PRODUCCION_CREADA_ID}"
+request_check 'Fechas sin cambio de día y cálculos' GET "$ORDEN_PRODUCCION_SMOKE" 200 orden-produccion-dia
+request_check 'Liberar orden de producción' POST "$ORDEN_PRODUCCION_SMOKE/liberar" 200 created
+request_check 'Bloquear edición de orden liberada' PUT "$ORDEN_PRODUCCION_SMOKE" 409 orden-produccion-edicion-bloqueada '{"cantidadPlanificada":6,"fechaInicioPlanificada":"2026-12-31","fechaFinPlanificada":"2026-12-31"}'
+request_check 'Iniciar orden de producción' POST "$ORDEN_PRODUCCION_SMOKE/iniciar" 200 created
+request_check 'Bloquear cancelación en proceso' POST "$ORDEN_PRODUCCION_SMOKE/cancelar" 409 orden-produccion-cancelacion-bloqueada '{"motivo":"Sin insumos"}'
+request_check 'Rechazar cantidad producida fuera de rango' POST "$ORDEN_PRODUCCION_SMOKE/terminar" 400 orden-produccion-cantidad-producida '{"cantidadProducida":1000001}'
+request_check 'Terminar orden de producción' POST "$ORDEN_PRODUCCION_SMOKE/terminar" 200 created '{"cantidadProducida":5}'
+request_check 'Fechas reales en UTC' GET "$ORDEN_PRODUCCION_SMOKE" 200 orden-produccion-terminada
+
+TITANGLOBAL_SMOKE_ORDENES_TOKEN="$TOKEN_ACTUAL" python3 - "$BASE_URL/api/v1/ordenes-produccion" <<'PY'
+import json
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+url = sys.argv[1]
+headers = {
+    "Authorization": f"Bearer {os.environ['TITANGLOBAL_SMOKE_ORDENES_TOKEN']}",
+    "Content-Type": "application/json",
+}
+
+def peticion(metodo, ruta="", datos=None):
+    contenido = None if datos is None else json.dumps(datos).encode()
+    solicitud = Request(url + ruta, data=contenido, headers=headers, method=metodo)
+    try:
+        with urlopen(solicitud, timeout=15) as respuesta:
+            return respuesta.status, json.load(respuesta)
+    except HTTPError as respuesta:
+        return respuesta.code, json.load(respuesta)
+
+def crear():
+    estado, respuesta = peticion("POST", datos={
+        "productoId": 1, "cantidadPlanificada": 2,
+        "fechaInicioPlanificada": "2027-01-04", "fechaFinPlanificada": "2027-01-08",
+    })
+    assert estado == 201, respuesta
+    return respuesta["id"]
+
+def en_paralelo(primera, segunda):
+    barrera = Barrier(2)
+
+    def ejecutar(argumentos):
+        barrera.wait(timeout=10)
+        return peticion(*argumentos)
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        return list(ejecutor.map(ejecutar, (primera, segunda)))
+
+orden = crear()
+resultados = en_paralelo(("POST", f"/{orden}/liberar"), ("POST", f"/{orden}/liberar"))
+assert sorted(estado for estado, _ in resultados) == [200, 409], resultados
+conflicto = next(cuerpo for estado, cuerpo in resultados if estado == 409)
+assert conflicto["Message"] == "Solo se pueden liberar órdenes de producción planificadas.", conflicto
+estado, detalle = peticion("GET", f"/{orden}")
+assert estado == 200 and detalle["estado"] == "Liberada", detalle
+
+inicio, cancelacion = en_paralelo(
+    ("POST", f"/{orden}/iniciar"),
+    ("POST", f"/{orden}/cancelar", {"motivo": "Cambio de plan"}),
+)
+assert sorted([inicio[0], cancelacion[0]]) == [200, 409], (inicio, cancelacion)
+estado, detalle = peticion("GET", f"/{orden}")
+esperado = "EnProceso" if inicio[0] == 200 else "Cancelada"
+assert estado == 200 and detalle["estado"] == esperado, detalle
+assert (detalle["fechaInicioReal"] is None) == (esperado == "Cancelada"), detalle
+assert (detalle["motivoCancelacion"] == "Cambio de plan") == (esperado == "Cancelada"), detalle
+print("Concurrencia de órdenes de producción OK")
+PY
+# Módulo 35: consumos de materiales de la orden en proceso OP-000002 del seed.
+request_check 'OpenAPI de consumos de materiales' GET '/openapi/v1.json' 200 openapi-consumos-materiales
+request_check 'Consumos de materiales del seed' GET '/api/v1/consumos-materiales?ordenProduccionId=2' 200 consumos-materiales-seed
+request_check 'Consumos del día en hora de Perú' GET '/api/v1/consumos-materiales?desde=2026-11-25&hasta=2026-11-25' 200 consumos-materiales-dia-peru
+request_check 'Balance de la orden en proceso' GET '/api/v1/consumos-materiales/ordenes/2/balance' 200 consumos-materiales-balance
+request_check 'Rechazar cantidad con 7 decimales' POST '/api/v1/consumos-materiales' 400 consumo-material-siete-decimales '{"ordenProduccionId":2,"componenteProductoId":3,"cantidad":0.1234567}'
+request_check 'Rechazar componente fuera de la lista' POST '/api/v1/consumos-materiales' 409 consumo-material-fuera-de-lista '{"ordenProduccionId":2,"componenteProductoId":6,"cantidad":1}'
+request_check 'Rechazar consumo en orden terminada' POST '/api/v1/consumos-materiales' 409 consumo-material-orden-terminada '{"ordenProduccionId":3,"componenteProductoId":3,"cantidad":1}'
+request_check 'Registrar consumo con 6 decimales' POST '/api/v1/consumos-materiales' 201 consumo-material-creado '{"ordenProduccionId":2,"componenteProductoId":3,"cantidad":0.123456,"responsable":"  ","observaciones":"Smoke"}'
+CONSUMO_MATERIAL_SMOKE="/api/v1/consumos-materiales/${CONSUMO_MATERIAL_CREADO_ID}"
+request_check 'Cantidad guardada sin redondeo' GET "$CONSUMO_MATERIAL_SMOKE" 200 consumo-material-seis-decimales
+request_check 'Anular consumo de materiales' POST "$CONSUMO_MATERIAL_SMOKE/anular" 200 created '{"motivo":"  Prueba de anulación  "}'
+request_check 'Consultar el consumo anulado' GET "$CONSUMO_MATERIAL_SMOKE" 200 consumo-material-anulado
+request_check 'Rechazar anulación repetida' POST "$CONSUMO_MATERIAL_SMOKE/anular" 409 consumo-material-ya-anulado '{"motivo":"Otra vez"}'
+request_check 'Resumen de consumos de materiales' GET '/api/v1/consumos-materiales/resumen' 200 consumos-materiales-resumen
 printf 'SMOKE OK\n'

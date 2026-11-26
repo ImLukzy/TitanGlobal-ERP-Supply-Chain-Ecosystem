@@ -24,6 +24,7 @@ public class PluralizadorEspanol : IPluralizer
         { "Clientes", "Cliente" },
         { "CompetenciasEvaluacion", "CompetenciaEvaluacion" },
         { "Conductores", "Conductor" },
+        { "ConsumosMateriales", "ConsumoMaterial" },
         { "ContratosComerciales", "ContratoComercial" },
         { "ContratosLaborales", "ContratoLaboral" },
         { "Cotizaciones", "Cotizacion" },

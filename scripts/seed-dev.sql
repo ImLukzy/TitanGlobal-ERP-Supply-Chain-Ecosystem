@@ -959,4 +959,62 @@ AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."Consolidacio
 SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
 SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
 
+-- Módulo 34: tres órdenes del producto 1 con su lista de materiales y su ruta activas (versión 1).
+INSERT INTO "OrdenesProduccion" (
+    "Id", "Numero", "ProductoId", "ListaMaterialesId", "RutaProduccionId", "CantidadPlanificada",
+    "CantidadProducida", "FechaInicioPlanificada", "FechaFinPlanificada", "FechaInicioReal", "FechaFinReal",
+    "Estado", "MotivoCancelacion")
+SELECT datos.id, datos.numero, 1, lista."Id", ruta."Id", datos.cantidad, datos.producida,
+    datos.inicio, datos.fin, datos.inicio_real, datos.fin_real, datos.estado, NULL
+FROM (VALUES
+    (1, 'OP-000001', 50, NULL::integer, DATE '2026-12-01', DATE '2026-12-04',
+        NULL::timestamptz, NULL::timestamptz, 'Planificada'),
+    (2, 'OP-000002', 20, NULL::integer, DATE '2026-11-24', DATE '2026-11-27',
+        TIMESTAMPTZ '2026-11-24T13:00:00Z', NULL::timestamptz, 'EnProceso'),
+    (3, 'OP-000003', 30, 29, DATE '2026-11-16', DATE '2026-11-19',
+        TIMESTAMPTZ '2026-11-16T13:00:00Z', TIMESTAMPTZ '2026-11-19T21:00:00Z', 'Terminada')
+) AS datos(id, numero, cantidad, producida, inicio, fin, inicio_real, fin_real, estado)
+JOIN "ListasMateriales" lista ON lista."ProductoId" = 1 AND lista."Version" = 1
+JOIN "RutasProduccion" ruta ON ruta."ProductoId" = 1 AND ruta."Version" = 1
+ON CONFLICT ("Numero") DO UPDATE SET
+    "CantidadPlanificada" = EXCLUDED."CantidadPlanificada",
+    "CantidadProducida" = EXCLUDED."CantidadProducida",
+    "FechaInicioPlanificada" = EXCLUDED."FechaInicioPlanificada",
+    "FechaFinPlanificada" = EXCLUDED."FechaFinPlanificada",
+    "FechaInicioReal" = EXCLUDED."FechaInicioReal",
+    "FechaFinReal" = EXCLUDED."FechaFinReal",
+    "Estado" = EXCLUDED."Estado",
+    "MotivoCancelacion" = NULL;
+SELECT setval(pg_get_serial_sequence('"OrdenesProduccion"', 'Id'), (SELECT MAX("Id") FROM "OrdenesProduccion"));
+
+-- Módulo 35: cuatro consumos (tres registrados y uno anulado) de la orden en proceso OP-000002.
+-- CM-000004 se registró el 2026-11-26 00:30 UTC, que en Perú es el 2026-11-25 a las 19:30.
+INSERT INTO "ConsumosMateriales" (
+    "Id", "Numero", "OrdenProduccionId", "ComponenteProductoId", "Cantidad", "UnidadMedida", "FechaRegistro",
+    "Responsable", "Observaciones", "Estado", "FechaAnulacion", "MotivoAnulacion")
+SELECT datos.id, datos.numero, orden."Id", datos.componente_id, datos.cantidad, detalle."UnidadMedida",
+    datos.fecha, datos.responsable, NULL, datos.estado, datos.fecha_anulacion, datos.motivo
+FROM (VALUES
+    (1, 'CM-000001', 3, 8.000000, TIMESTAMPTZ '2026-11-24T15:00:00Z', 'Ana Torres', 'Registrado',
+        NULL::timestamptz, NULL),
+    (2, 'CM-000002', 4, 5.000000, TIMESTAMPTZ '2026-11-25T14:00:00Z', NULL, 'Registrado',
+        NULL::timestamptz, NULL),
+    (3, 'CM-000003', 3, 3.000000, TIMESTAMPTZ '2026-11-25T16:00:00Z', NULL, 'Anulado',
+        TIMESTAMPTZ '2026-11-25T16:30:00Z', 'Cantidad duplicada'),
+    (4, 'CM-000004', 3, 4.500000, TIMESTAMPTZ '2026-11-26T00:30:00Z', 'Luis Rojas', 'Registrado',
+        NULL::timestamptz, NULL)
+) AS datos(id, numero, componente_id, cantidad, fecha, responsable, estado, fecha_anulacion, motivo)
+JOIN "OrdenesProduccion" orden ON orden."Numero" = 'OP-000002'
+JOIN "DetallesListaMaterial" detalle
+    ON detalle."ListaMaterialId" = orden."ListaMaterialesId" AND detalle."ComponenteProductoId" = datos.componente_id
+ON CONFLICT ("Numero") DO UPDATE SET
+    "Cantidad" = EXCLUDED."Cantidad",
+    "UnidadMedida" = EXCLUDED."UnidadMedida",
+    "FechaRegistro" = EXCLUDED."FechaRegistro",
+    "Responsable" = EXCLUDED."Responsable",
+    "Estado" = EXCLUDED."Estado",
+    "FechaAnulacion" = EXCLUDED."FechaAnulacion",
+    "MotivoAnulacion" = EXCLUDED."MotivoAnulacion";
+SELECT setval(pg_get_serial_sequence('"ConsumosMateriales"', 'Id'), (SELECT MAX("Id") FROM "ConsumosMateriales"));
+
 COMMIT;

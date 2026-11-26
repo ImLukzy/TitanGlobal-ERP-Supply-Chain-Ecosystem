@@ -15,5 +15,7 @@ public partial class RutaProduccion
 
     public virtual ICollection<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = new List<OperacionRutaProduccion>();
 
+    public virtual ICollection<OrdenProduccion> OrdenesProduccion { get; set; } = new List<OrdenProduccion>();
+
     public virtual Producto Producto { get; set; } = null!;
 }

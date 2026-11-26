@@ -15,6 +15,8 @@ public partial class Producto
 
     public string? Descripcion { get; set; }
 
+    public virtual ICollection<ConsumoMaterial> ConsumosMateriales { get; set; } = new List<ConsumoMaterial>();
+
     public virtual ICollection<DetalleCotizacion> DetallesCotizacion { get; set; } = new List<DetalleCotizacion>();
 
     public virtual ICollection<DetalleDevolucion> DetallesDevolucion { get; set; } = new List<DetalleDevolucion>();
@@ -30,6 +32,8 @@ public partial class Producto
     public virtual ICollection<ItemListaPrecios> ItemsListaPrecios { get; set; } = new List<ItemListaPrecios>();
 
     public virtual ListaMateriales? ListaMateriales { get; set; }
+
+    public virtual ICollection<OrdenProduccion> OrdenesProduccion { get; set; } = new List<OrdenProduccion>();
 
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();
 
