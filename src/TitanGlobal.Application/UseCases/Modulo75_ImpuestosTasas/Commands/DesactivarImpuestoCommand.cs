@@ -1,25 +1,31 @@
+using MediatR;
 using System;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Commands;
 
-public class DesactivarImpuestoUseCase
+public class DesactivarImpuestoCommand : IRequest
+{
+    public int Id { get; set; }
+}
+
+public class DesactivarImpuestoCommandHandler : IRequestHandler<DesactivarImpuestoCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public DesactivarImpuestoUseCase(IUnitOfWork unitOfWork)
+    public DesactivarImpuestoCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Ejecutar(int id)
+    public async Task Handle(DesactivarImpuestoCommand request, CancellationToken cancellationToken)
     {
         Impuesto? impuesto = await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == request.Id);
 
         if (impuesto == null)
             throw new ReglaNegocioException(

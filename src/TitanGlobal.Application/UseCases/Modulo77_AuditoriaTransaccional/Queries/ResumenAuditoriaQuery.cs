@@ -1,20 +1,25 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo77_AuditoriaTransaccional;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo77_AuditoriaTransaccional;
+namespace TitanGlobal.Application.UseCases.Modulo77_AuditoriaTransaccional.Queries;
 
-public class ResumenAuditoriaUseCase
+public class ResumenAuditoriaQuery : IRequest<ResumenAuditoriaDto>
+{
+}
+
+public class ResumenAuditoriaQueryHandler : IRequestHandler<ResumenAuditoriaQuery, ResumenAuditoriaDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ResumenAuditoriaUseCase(IUnitOfWork unitOfWork)
+    public ResumenAuditoriaQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResumenAuditoriaDto> ExecuteAsync()
+    public async Task<ResumenAuditoriaDto> Handle(ResumenAuditoriaQuery request, CancellationToken cancellationToken)
     {
         IQueryable<RegistroAuditoria> consulta = _unitOfWork.Repository<RegistroAuditoria>().AsQueryable();
         int total = await consulta.CountAsync();

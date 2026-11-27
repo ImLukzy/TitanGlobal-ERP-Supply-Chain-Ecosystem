@@ -1,21 +1,26 @@
+using MediatR;
 using System;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Queries;
 
-public class ListarImpuestosUseCase
+public class ListarImpuestosQuery : IRequest<List<ImpuestoListadoDto>>
+{
+}
+
+public class ListarImpuestosQueryHandler : IRequestHandler<ListarImpuestosQuery, List<ImpuestoListadoDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ListarImpuestosUseCase(IUnitOfWork unitOfWork)
+    public ListarImpuestosQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<ImpuestoListadoDto>> Ejecutar()
+    public async Task<List<ImpuestoListadoDto>> Handle(ListarImpuestosQuery request, CancellationToken cancellationToken)
     {
         DateTime hoy = DateTime.UtcNow.Date;
 

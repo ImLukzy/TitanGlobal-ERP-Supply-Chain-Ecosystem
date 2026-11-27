@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo71_Usuarios;
-using TitanGlobal.Application.UseCases.Modulo71_Usuarios;
+using TitanGlobal.Application.UseCases.Modulo71_Usuarios.Commands;
+using TitanGlobal.Application.UseCases.Modulo71_Usuarios.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo71_Usuarios;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo71_Usuarios;
 [Route("api/v1/usuarios")]
 public class UsuariosController : ControllerBase
 {
-    private readonly AdministrarUsuariosUseCase _administrarUsuarios;
+    private readonly ISender _sender;
 
-    public UsuariosController(AdministrarUsuariosUseCase administrarUsuarios)
+    public UsuariosController(ISender sender)
     {
-        _administrarUsuarios = administrarUsuarios;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,26 +26,28 @@ public class UsuariosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaUsuariosDto resultado = await _administrarUsuarios.ListarAsync(
-            busqueda,
-            rolId,
-            activo,
-            pagina,
-            tamanoPagina);
+        PaginaUsuariosDto resultado = await _sender.Send(new ListarUsuariosQuery
+        {
+            Busqueda = busqueda,
+            RolId = rolId,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenUsuariosDto resultado = await _administrarUsuarios.ResumenAsync();
+        ResumenUsuariosDto resultado = await _sender.Send(new ResumenUsuariosQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        UsuarioDetalleDto resultado = await _administrarUsuarios.ObtenerAsync(id);
+        UsuarioDetalleDto resultado = await _sender.Send(new ObtenerUsuarioQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -52,7 +56,7 @@ public class UsuariosController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarUsuarioRequestDto solicitud)
     {
-        int id = await _administrarUsuarios.CrearAsync(solicitud);
+        int id = await _sender.Send(new CrearUsuarioCommand { Solicitud = solicitud });
         return Ok(new UsuarioIdDto { Id = id });
     }
 
@@ -61,7 +65,7 @@ public class UsuariosController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarUsuarioRequestDto solicitud)
     {
-        int actualizado = await _administrarUsuarios.ActualizarAsync(id, solicitud);
+        int actualizado = await _sender.Send(new ActualizarUsuarioCommand { Id = id, Solicitud = solicitud });
         return Ok(new UsuarioIdDto { Id = actualizado });
     }
 
@@ -70,14 +74,14 @@ public class UsuariosController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _administrarUsuarios.EliminarAsync(id);
+        await _sender.Send(new EliminarUsuarioCommand { Id = id });
         return NoContent();
     }
 
     [HttpGet("{id:int}/permisos")]
     public async Task<IActionResult> Permisos(int id)
     {
-        List<PermisoEfectivoDto> resultado = await _administrarUsuarios.PermisosAsync(id);
+        List<PermisoEfectivoDto> resultado = await _sender.Send(new ObtenerPermisosUsuarioQuery { Id = id });
         return Ok(resultado);
     }
 }

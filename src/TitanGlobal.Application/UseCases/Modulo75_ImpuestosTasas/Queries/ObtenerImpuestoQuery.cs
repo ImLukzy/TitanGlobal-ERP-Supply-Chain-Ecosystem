@@ -1,3 +1,4 @@
+using MediatR;
 using System;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
@@ -5,22 +6,27 @@ using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Queries;
 
-public class ObtenerImpuestoUseCase
+public class ObtenerImpuestoQuery : IRequest<ImpuestoDetalleDto>
+{
+    public int Id { get; set; }
+}
+
+public class ObtenerImpuestoQueryHandler : IRequestHandler<ObtenerImpuestoQuery, ImpuestoDetalleDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ObtenerImpuestoUseCase(IUnitOfWork unitOfWork)
+    public ObtenerImpuestoQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ImpuestoDetalleDto> Ejecutar(int id)
+    public async Task<ImpuestoDetalleDto> Handle(ObtenerImpuestoQuery request, CancellationToken cancellationToken)
     {
         ImpuestoDetalleDto? impuesto = await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
-            .Where(x => x.Id == id)
+            .Where(x => x.Id == request.Id)
             .Select(x => new ImpuestoDetalleDto
             {
                 Id = x.Id,

@@ -1,3 +1,4 @@
+using MediatR;
 using System;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
@@ -5,27 +6,32 @@ using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Commands;
 
-public class CrearImpuestoUseCase
+public class CrearImpuestoCommand : IRequest<int>
+{
+    public required GuardarImpuestoRequestDto Dto { get; set; }
+}
+
+public class CrearImpuestoCommandHandler : IRequestHandler<CrearImpuestoCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public CrearImpuestoUseCase(IUnitOfWork unitOfWork)
+    public CrearImpuestoCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> Ejecutar(GuardarImpuestoRequestDto dto)
+    public async Task<int> Handle(CrearImpuestoCommand request, CancellationToken cancellationToken)
     {
         Impuesto impuesto = new Impuesto
         {
-            Codigo = dto.Codigo,
-            Nombre = dto.Nombre,
-            Tipo = dto.Tipo,
-            Descripcion = dto.Descripcion,
-            Pais = dto.Pais,
-            Activo = dto.Activo
+            Codigo = request.Dto.Codigo,
+            Nombre = request.Dto.Nombre,
+            Tipo = request.Dto.Tipo,
+            Descripcion = request.Dto.Descripcion,
+            Pais = request.Dto.Pais,
+            Activo = request.Dto.Activo
         };
 
         ValidacionImpuesto.ValidarDatos(impuesto);

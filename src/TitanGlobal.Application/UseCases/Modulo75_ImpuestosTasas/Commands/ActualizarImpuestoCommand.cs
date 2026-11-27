@@ -1,43 +1,51 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+namespace TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Commands;
 
-public class ActualizarImpuestoUseCase
+public class ActualizarImpuestoCommand : IRequest
+{
+    public int Id { get; set; }
+
+    public required GuardarImpuestoRequestDto Dto { get; set; }
+}
+
+public class ActualizarImpuestoCommandHandler : IRequestHandler<ActualizarImpuestoCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ActualizarImpuestoUseCase(IUnitOfWork unitOfWork)
+    public ActualizarImpuestoCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Ejecutar(int id, GuardarImpuestoRequestDto dto)
+    public async Task Handle(ActualizarImpuestoCommand request, CancellationToken cancellationToken)
     {
         Impuesto? impuesto = await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == request.Id);
 
         if (impuesto == null)
             throw new ReglaNegocioException(
                 CodigosEstado.Status404NotFound,
                 "No se encontró el impuesto solicitado.");
 
-        impuesto.Codigo = dto.Codigo;
-        impuesto.Nombre = dto.Nombre;
-        impuesto.Tipo = dto.Tipo;
-        impuesto.Descripcion = dto.Descripcion;
-        impuesto.Pais = dto.Pais;
-        impuesto.Activo = dto.Activo;
+        impuesto.Codigo = request.Dto.Codigo;
+        impuesto.Nombre = request.Dto.Nombre;
+        impuesto.Tipo = request.Dto.Tipo;
+        impuesto.Descripcion = request.Dto.Descripcion;
+        impuesto.Pais = request.Dto.Pais;
+        impuesto.Activo = request.Dto.Activo;
 
         ValidacionImpuesto.ValidarDatos(impuesto);
 
         bool codigoExiste = await _unitOfWork.Repository<Impuesto>()
             .AsQueryable()
-            .AnyAsync(x => x.Codigo == impuesto.Codigo && x.Id != id);
+            .AnyAsync(x => x.Codigo == impuesto.Codigo && x.Id != request.Id);
 
         if (codigoExiste)
             throw CrearConflictoCodigoException(impuesto.Codigo);
