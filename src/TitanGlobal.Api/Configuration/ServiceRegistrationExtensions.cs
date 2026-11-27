@@ -20,12 +20,23 @@ public static class ServiceRegistrationExtensions
         services.AddInfrastructureServices(configuration);
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IContextoSolicitud, ContextoSolicitud>();
+        AddMediatR(services);
         AddUseCases(services);
         AddSwagger(services);
 
         return services;
     }
 
+    // Registra las queries, los commands y sus handlers de Application (CQRS con MediatR).
+    private static void AddMediatR(IServiceCollection services)
+    {
+        services.AddMediatR(configuracion =>
+        {
+            configuracion.RegisterServicesFromAssembly(typeof(ReglaNegocioException).Assembly);
+        });
+    }
+
+    // Registro de los *UseCase que aún no se migran (ramas y PR abiertos del equipo).
     private static void AddUseCases(IServiceCollection services)
     {
         foreach (Type type in typeof(ReglaNegocioException).Assembly.GetTypes()
