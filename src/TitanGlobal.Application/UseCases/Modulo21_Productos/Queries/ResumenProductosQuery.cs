@@ -1,20 +1,25 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo21_Productos;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo21_Productos;
+namespace TitanGlobal.Application.UseCases.Modulo21_Productos.Queries;
 
-public class ResumenProductosUseCase
+public class ResumenProductosQuery : IRequest<ResumenProductosDto>
+{
+}
+
+public class ResumenProductosQueryHandler : IRequestHandler<ResumenProductosQuery, ResumenProductosDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ResumenProductosUseCase(IUnitOfWork unitOfWork)
+    public ResumenProductosQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResumenProductosDto> ExecuteAsync()
+    public async Task<ResumenProductosDto> Handle(ResumenProductosQuery request, CancellationToken cancellationToken)
     {
         IQueryable<Producto> productos = _unitOfWork.Repository<Producto>().AsQueryable();
         int totalProductos = await productos.CountAsync();

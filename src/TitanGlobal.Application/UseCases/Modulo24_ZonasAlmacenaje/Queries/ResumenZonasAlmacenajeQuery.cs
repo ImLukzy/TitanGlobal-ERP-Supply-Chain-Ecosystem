@@ -1,41 +1,47 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo24_ZonasAlmacenaje;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje;
+namespace TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje.Queries;
 
-public class ResumenZonasAlmacenajeUseCase
+public class ResumenZonasAlmacenajeQuery : IRequest<ResumenZonasDto>
+{
+    public int? AlmacenId { get; set; }
+}
+
+public class ResumenZonasAlmacenajeQueryHandler : IRequestHandler<ResumenZonasAlmacenajeQuery, ResumenZonasDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ResumenZonasAlmacenajeUseCase(IUnitOfWork unitOfWork)
+    public ResumenZonasAlmacenajeQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResumenZonasDto> ExecuteAsync(int? almacenId)
+    public async Task<ResumenZonasDto> Handle(ResumenZonasAlmacenajeQuery request, CancellationToken cancellationToken)
     {
-        if (almacenId.HasValue)
+        if (request.AlmacenId.HasValue)
         {
             bool almacenExiste = await _unitOfWork.Repository<Almacen>()
                 .AsQueryable()
-                .AnyAsync(almacen => almacen.Id == almacenId.Value);
+                .AnyAsync(almacen => almacen.Id == request.AlmacenId.Value);
             if (!almacenExiste)
             {
                 throw new ReglaNegocioException(
                     CodigosEstado.Status400BadRequest,
-                    $"El almacén {almacenId.Value} no existe.");
+                    $"El almacén {request.AlmacenId.Value} no existe.");
             }
         }
 
         IQueryable<ZonaAlmacenaje> zonas = _unitOfWork.Repository<ZonaAlmacenaje>().AsQueryable();
         IQueryable<Almacen> almacenes = _unitOfWork.Repository<Almacen>().AsQueryable();
-        if (almacenId.HasValue)
+        if (request.AlmacenId.HasValue)
         {
-            zonas = zonas.Where(zona => zona.AlmacenId == almacenId.Value);
-            almacenes = almacenes.Where(almacen => almacen.Id == almacenId.Value);
+            zonas = zonas.Where(zona => zona.AlmacenId == request.AlmacenId.Value);
+            almacenes = almacenes.Where(almacen => almacen.Id == request.AlmacenId.Value);
         }
 
         int totalZonas = await zonas.CountAsync();

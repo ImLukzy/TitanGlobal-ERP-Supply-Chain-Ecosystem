@@ -1,37 +1,45 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto;
+namespace TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto.Commands;
 
-public class ActualizarCategoriaProductoUseCase
+public class ActualizarCategoriaProductoCommand : IRequest<int>
+{
+    public int Id { get; set; }
+
+    public required ActualizarCategoriaProductoDto Solicitud { get; set; }
+}
+
+public class ActualizarCategoriaProductoCommandHandler : IRequestHandler<ActualizarCategoriaProductoCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ActualizarCategoriaProductoUseCase(IUnitOfWork unitOfWork)
+    public ActualizarCategoriaProductoCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> ExecuteAsync(int id, ActualizarCategoriaProductoDto solicitud)
+    public async Task<int> Handle(ActualizarCategoriaProductoCommand request, CancellationToken cancellationToken)
     {
         CategoriaProducto? categoria = await _unitOfWork.Repository<CategoriaProducto>()
             .AsQueryable()
-            .SingleOrDefaultAsync(registro => registro.Id == id);
+            .SingleOrDefaultAsync(registro => registro.Id == request.Id);
         if (categoria is null)
         {
-            throw ValidacionCategoriaProducto.CrearNoEncontrada(id);
+            throw ValidacionCategoriaProducto.CrearNoEncontrada(request.Id);
         }
 
-        string nombre = ValidacionCategoriaProducto.NormalizarNombre(solicitud.Nombre);
-        string? descripcion = ValidacionCategoriaProducto.NormalizarDescripcion(solicitud.Descripcion);
+        string nombre = ValidacionCategoriaProducto.NormalizarNombre(request.Solicitud.Nombre);
+        string? descripcion = ValidacionCategoriaProducto.NormalizarDescripcion(request.Solicitud.Descripcion);
         string nombreMinuscula = nombre.ToLowerInvariant();
 
         bool nombreExiste = await _unitOfWork.Repository<CategoriaProducto>()
             .AsQueryable()
-            .AnyAsync(registro => registro.Id != id && registro.Nombre.ToLower() == nombreMinuscula);
+            .AnyAsync(registro => registro.Id != request.Id && registro.Nombre.ToLower() == nombreMinuscula);
         if (nombreExiste)
         {
             throw ValidacionCategoriaProducto.CrearConflictoNombre(nombre);

@@ -1,24 +1,30 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto;
+namespace TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto.Commands;
 
-public class CrearCategoriaProductoUseCase
+public class CrearCategoriaProductoCommand : IRequest<int>
+{
+    public required CrearCategoriaProductoDto Solicitud { get; set; }
+}
+
+public class CrearCategoriaProductoCommandHandler : IRequestHandler<CrearCategoriaProductoCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public CrearCategoriaProductoUseCase(IUnitOfWork unitOfWork)
+    public CrearCategoriaProductoCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> ExecuteAsync(CrearCategoriaProductoDto solicitud)
+    public async Task<int> Handle(CrearCategoriaProductoCommand request, CancellationToken cancellationToken)
     {
-        string nombre = ValidacionCategoriaProducto.NormalizarNombre(solicitud.Nombre);
-        string? descripcion = ValidacionCategoriaProducto.NormalizarDescripcion(solicitud.Descripcion);
+        string nombre = ValidacionCategoriaProducto.NormalizarNombre(request.Solicitud.Nombre);
+        string? descripcion = ValidacionCategoriaProducto.NormalizarDescripcion(request.Solicitud.Descripcion);
         string nombreMinuscula = nombre.ToLowerInvariant();
 
         bool nombreExiste = await _unitOfWork.Repository<CategoriaProducto>()

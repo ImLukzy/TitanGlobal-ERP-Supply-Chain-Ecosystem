@@ -1,34 +1,44 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo23_Almacenes;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo23_Almacenes;
+namespace TitanGlobal.Application.UseCases.Modulo23_Almacenes.Queries;
 
-public class ListarAlmacenesUseCase
+public class ListarAlmacenesQuery : IRequest<PaginaAlmacenesDto>
+{
+    public string? Busqueda { get; set; }
+
+    public string? Ciudad { get; set; }
+
+    public string? Tipo { get; set; }
+
+    public bool? Activo { get; set; }
+
+    public int Pagina { get; set; }
+
+    public int TamanoPagina { get; set; }
+}
+
+public class ListarAlmacenesQueryHandler : IRequestHandler<ListarAlmacenesQuery, PaginaAlmacenesDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ListarAlmacenesUseCase(IUnitOfWork unitOfWork)
+    public ListarAlmacenesQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PaginaAlmacenesDto> ExecuteAsync(
-        string? busqueda,
-        string? ciudad,
-        string? tipo,
-        bool? activo,
-        int pagina,
-        int tamanoPagina)
+    public async Task<PaginaAlmacenesDto> Handle(ListarAlmacenesQuery request, CancellationToken cancellationToken)
     {
-        if (pagina < 1)
+        if (request.Pagina < 1)
         {
             throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "La página debe ser mayor o igual a 1.");
         }
 
-        if (tamanoPagina < 1 || tamanoPagina > 100)
+        if (request.TamanoPagina < 1 || request.TamanoPagina > 100)
         {
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,
@@ -36,7 +46,7 @@ public class ListarAlmacenesUseCase
         }
 
         IQueryable<Almacen> consulta = _unitOfWork.Repository<Almacen>().AsQueryable();
-        string busquedaNormalizada = busqueda?.Trim().ToLowerInvariant() ?? string.Empty;
+        string busquedaNormalizada = request.Busqueda?.Trim().ToLowerInvariant() ?? string.Empty;
         if (!string.IsNullOrEmpty(busquedaNormalizada))
         {
             // PATRÓN LINQ 1: búsqueda textual insensible a mayúsculas.
@@ -45,31 +55,31 @@ public class ListarAlmacenesUseCase
                 || almacen.Nombre.ToLower().Contains(busquedaNormalizada));
         }
 
-        string ciudadNormalizada = ciudad?.Trim().ToLowerInvariant() ?? string.Empty;
+        string ciudadNormalizada = request.Ciudad?.Trim().ToLowerInvariant() ?? string.Empty;
         if (!string.IsNullOrEmpty(ciudadNormalizada))
         {
             consulta = consulta.Where(almacen => almacen.Ciudad.ToLower() == ciudadNormalizada);
         }
 
-        if (!string.IsNullOrWhiteSpace(tipo))
+        if (!string.IsNullOrWhiteSpace(request.Tipo))
         {
-            string tipoNormalizado = ValidacionAlmacen.NormalizarTipo(tipo);
+            string tipoNormalizado = ValidacionAlmacen.NormalizarTipo(request.Tipo);
             consulta = consulta.Where(almacen => almacen.Tipo == tipoNormalizado);
         }
 
-        if (activo.HasValue)
+        if (request.Activo.HasValue)
         {
-            consulta = consulta.Where(almacen => almacen.Activo == activo.Value);
+            consulta = consulta.Where(almacen => almacen.Activo == request.Activo.Value);
         }
 
         int total = await consulta.CountAsync();
-        long inicio = ((long)pagina - 1) * tamanoPagina;
+        long inicio = ((long)request.Pagina - 1) * request.TamanoPagina;
         int saltar = inicio > int.MaxValue ? int.MaxValue : (int)inicio;
         List<AlmacenListadoDto> items = await consulta
             .OrderBy(almacen => almacen.Codigo)
             .ThenBy(almacen => almacen.Id)
             .Skip(saltar)
-            .Take(tamanoPagina)
+            .Take(request.TamanoPagina)
             .Select(almacen => new AlmacenListadoDto
             {
                 Id = almacen.Id,
@@ -86,8 +96,8 @@ public class ListarAlmacenesUseCase
         {
             Items = items,
             Total = total,
-            Pagina = pagina,
-            TamanoPagina = tamanoPagina
+            Pagina = request.Pagina,
+            TamanoPagina = request.TamanoPagina
         };
     }
 }

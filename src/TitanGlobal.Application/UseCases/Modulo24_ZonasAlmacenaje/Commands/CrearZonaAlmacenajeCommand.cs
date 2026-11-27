@@ -1,32 +1,38 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo24_ZonasAlmacenaje;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje;
+namespace TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje.Commands;
 
-public class CrearZonaAlmacenajeUseCase
+public class CrearZonaAlmacenajeCommand : IRequest<int>
+{
+    public required GuardarZonaRequestDto Solicitud { get; set; }
+}
+
+public class CrearZonaAlmacenajeCommandHandler : IRequestHandler<CrearZonaAlmacenajeCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public CrearZonaAlmacenajeUseCase(IUnitOfWork unitOfWork)
+    public CrearZonaAlmacenajeCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> ExecuteAsync(GuardarZonaRequestDto solicitud)
+    public async Task<int> Handle(CrearZonaAlmacenajeCommand request, CancellationToken cancellationToken)
     {
         Almacen? almacenEncontrado = await _unitOfWork.Repository<Almacen>()
             .AsQueryable()
-            .SingleOrDefaultAsync(almacen => almacen.Id == solicitud.AlmacenId);
-        Almacen almacen = ValidacionZonaAlmacenaje.ValidarAlmacenExistente(almacenEncontrado, solicitud.AlmacenId);
+            .SingleOrDefaultAsync(almacen => almacen.Id == request.Solicitud.AlmacenId);
+        Almacen almacen = ValidacionZonaAlmacenaje.ValidarAlmacenExistente(almacenEncontrado, request.Solicitud.AlmacenId);
         ValidacionZonaAlmacenaje.ValidarAlmacenActivo(almacen);
-        string codigo = ValidacionZonaAlmacenaje.NormalizarCodigo(solicitud.Codigo);
-        string nombre = ValidacionZonaAlmacenaje.NormalizarNombre(solicitud.Nombre);
-        string tipo = ValidacionZonaAlmacenaje.NormalizarTipo(solicitud.Tipo);
-        string temperatura = ValidacionZonaAlmacenaje.NormalizarTemperatura(solicitud.Temperatura);
-        decimal capacidadM3 = ValidacionZonaAlmacenaje.ValidarCapacidad(solicitud.CapacidadM3);
+        string codigo = ValidacionZonaAlmacenaje.NormalizarCodigo(request.Solicitud.Codigo);
+        string nombre = ValidacionZonaAlmacenaje.NormalizarNombre(request.Solicitud.Nombre);
+        string tipo = ValidacionZonaAlmacenaje.NormalizarTipo(request.Solicitud.Tipo);
+        string temperatura = ValidacionZonaAlmacenaje.NormalizarTemperatura(request.Solicitud.Temperatura);
+        decimal capacidadM3 = ValidacionZonaAlmacenaje.ValidarCapacidad(request.Solicitud.CapacidadM3);
         bool codigoExiste = await _unitOfWork.Repository<ZonaAlmacenaje>()
             .AsQueryable()
             .AnyAsync(zona => zona.AlmacenId == almacen.Id && zona.Codigo == codigo);
@@ -35,7 +41,7 @@ public class CrearZonaAlmacenajeUseCase
             throw ValidacionZonaAlmacenaje.CrearConflictoCodigo(codigo, almacen.Codigo);
         }
 
-        if (solicitud.Activa)
+        if (request.Solicitud.Activa)
         {
             decimal capacidadOtrasZonasM3 = await _unitOfWork.Repository<ZonaAlmacenaje>()
                 .AsQueryable()
@@ -53,7 +59,7 @@ public class CrearZonaAlmacenajeUseCase
             Tipo = tipo,
             Temperatura = temperatura,
             CapacidadM3 = capacidadM3,
-            Activa = solicitud.Activa
+            Activa = request.Solicitud.Activa
         };
         await _unitOfWork.Repository<ZonaAlmacenaje>().AddAsync(zonaNueva);
 

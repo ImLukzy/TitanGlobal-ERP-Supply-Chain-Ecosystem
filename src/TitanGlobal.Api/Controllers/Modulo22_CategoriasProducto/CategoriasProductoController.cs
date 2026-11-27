@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo22_CategoriasProducto;
-using TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto;
+using TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto.Commands;
+using TitanGlobal.Application.UseCases.Modulo22_CategoriasProducto.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo22_CategoriasProducto;
 
@@ -8,32 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo22_CategoriasProducto;
 [Route("api/v1/categorias-producto")]
 public class CategoriasProductoController : ControllerBase
 {
-    private readonly ListarCategoriasProductoUseCase _listarCategoriasProductoUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerCategoriaProductoUseCase _obtenerCategoriaProductoUseCase;
-
-    private readonly CrearCategoriaProductoUseCase _crearCategoriaProductoUseCase;
-
-    private readonly ActualizarCategoriaProductoUseCase _actualizarCategoriaProductoUseCase;
-
-    private readonly DesactivarCategoriaProductoUseCase _desactivarCategoriaProductoUseCase;
-
-    private readonly ObtenerResumenCategoriasProductoUseCase _obtenerResumenCategoriasProductoUseCase;
-
-    public CategoriasProductoController(
-        ListarCategoriasProductoUseCase listarCategoriasProductoUseCase,
-        ObtenerCategoriaProductoUseCase obtenerCategoriaProductoUseCase,
-        CrearCategoriaProductoUseCase crearCategoriaProductoUseCase,
-        ActualizarCategoriaProductoUseCase actualizarCategoriaProductoUseCase,
-        DesactivarCategoriaProductoUseCase desactivarCategoriaProductoUseCase,
-        ObtenerResumenCategoriasProductoUseCase obtenerResumenCategoriasProductoUseCase)
+    public CategoriasProductoController(ISender sender)
     {
-        _listarCategoriasProductoUseCase = listarCategoriasProductoUseCase;
-        _obtenerCategoriaProductoUseCase = obtenerCategoriaProductoUseCase;
-        _crearCategoriaProductoUseCase = crearCategoriaProductoUseCase;
-        _actualizarCategoriaProductoUseCase = actualizarCategoriaProductoUseCase;
-        _desactivarCategoriaProductoUseCase = desactivarCategoriaProductoUseCase;
-        _obtenerResumenCategoriasProductoUseCase = obtenerResumenCategoriasProductoUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -41,9 +22,11 @@ public class CategoriasProductoController : ControllerBase
         [FromQuery] string? buscar,
         [FromQuery] bool incluirInactivas = false)
     {
-        List<CategoriaProductoDto> resultado = await _listarCategoriasProductoUseCase.ExecuteAsync(
-            buscar,
-            incluirInactivas);
+        List<CategoriaProductoDto> resultado = await _sender.Send(new ListarCategoriasProductoQuery
+        {
+            Buscar = buscar,
+            IncluirInactivas = incluirInactivas
+        });
 
         return Ok(resultado);
     }
@@ -51,7 +34,7 @@ public class CategoriasProductoController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenCategoriasProductoDto resultado = await _obtenerResumenCategoriasProductoUseCase.ExecuteAsync();
+        ResumenCategoriasProductoDto resultado = await _sender.Send(new ObtenerResumenCategoriasProductoQuery());
 
         return Ok(resultado);
     }
@@ -59,7 +42,7 @@ public class CategoriasProductoController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        CategoriaProductoDto resultado = await _obtenerCategoriaProductoUseCase.ExecuteAsync(id);
+        CategoriaProductoDto resultado = await _sender.Send(new ObtenerCategoriaProductoQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -67,7 +50,7 @@ public class CategoriasProductoController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearCategoriaProductoDto solicitud)
     {
-        int id = await _crearCategoriaProductoUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearCategoriaProductoCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -75,7 +58,11 @@ public class CategoriasProductoController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarCategoriaProductoDto solicitud)
     {
-        int idActualizado = await _actualizarCategoriaProductoUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarCategoriaProductoCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(new { Id = idActualizado });
     }
@@ -83,7 +70,7 @@ public class CategoriasProductoController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Desactivar(int id)
     {
-        await _desactivarCategoriaProductoUseCase.ExecuteAsync(id);
+        await _sender.Send(new DesactivarCategoriaProductoCommand { Id = id });
 
         return NoContent();
     }

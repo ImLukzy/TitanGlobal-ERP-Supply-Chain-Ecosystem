@@ -1,20 +1,25 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo23_Almacenes;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo23_Almacenes;
+namespace TitanGlobal.Application.UseCases.Modulo23_Almacenes.Queries;
 
-public class ResumenAlmacenesUseCase
+public class ResumenAlmacenesQuery : IRequest<ResumenAlmacenesDto>
+{
+}
+
+public class ResumenAlmacenesQueryHandler : IRequestHandler<ResumenAlmacenesQuery, ResumenAlmacenesDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ResumenAlmacenesUseCase(IUnitOfWork unitOfWork)
+    public ResumenAlmacenesQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResumenAlmacenesDto> ExecuteAsync()
+    public async Task<ResumenAlmacenesDto> Handle(ResumenAlmacenesQuery request, CancellationToken cancellationToken)
     {
         IQueryable<Almacen> almacenes = _unitOfWork.Repository<Almacen>().AsQueryable();
         int totalAlmacenes = await almacenes.CountAsync();

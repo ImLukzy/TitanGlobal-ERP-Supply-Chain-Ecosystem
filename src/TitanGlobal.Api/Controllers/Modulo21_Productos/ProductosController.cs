@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo21_Productos;
-using TitanGlobal.Application.UseCases.Modulo21_Productos;
+using TitanGlobal.Application.UseCases.Modulo21_Productos.Commands;
+using TitanGlobal.Application.UseCases.Modulo21_Productos.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo21_Productos;
 
@@ -8,36 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo21_Productos;
 [Route("api/v1/productos")]
 public class ProductosController : ControllerBase
 {
-    private readonly ListarProductosUseCase _listarProductosUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerProductoUseCase _obtenerProductoUseCase;
-
-    private readonly CrearProductoUseCase _crearProductoUseCase;
-
-    private readonly ActualizarProductoUseCase _actualizarProductoUseCase;
-
-    private readonly EliminarProductoUseCase _eliminarProductoUseCase;
-
-    private readonly ListarCategoriasProductoUseCase _listarCategoriasProductoUseCase;
-
-    private readonly ResumenProductosUseCase _resumenProductosUseCase;
-
-    public ProductosController(
-        ListarProductosUseCase listarProductosUseCase,
-        ObtenerProductoUseCase obtenerProductoUseCase,
-        CrearProductoUseCase crearProductoUseCase,
-        ActualizarProductoUseCase actualizarProductoUseCase,
-        EliminarProductoUseCase eliminarProductoUseCase,
-        ListarCategoriasProductoUseCase listarCategoriasProductoUseCase,
-        ResumenProductosUseCase resumenProductosUseCase)
+    public ProductosController(ISender sender)
     {
-        _listarProductosUseCase = listarProductosUseCase;
-        _obtenerProductoUseCase = obtenerProductoUseCase;
-        _crearProductoUseCase = crearProductoUseCase;
-        _actualizarProductoUseCase = actualizarProductoUseCase;
-        _eliminarProductoUseCase = eliminarProductoUseCase;
-        _listarCategoriasProductoUseCase = listarCategoriasProductoUseCase;
-        _resumenProductosUseCase = resumenProductosUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -49,13 +26,15 @@ public class ProductosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaProductosDto resultado = await _listarProductosUseCase.ExecuteAsync(
-            busqueda,
-            categoria,
-            precioMin,
-            precioMax,
-            pagina,
-            tamanoPagina);
+        PaginaProductosDto resultado = await _sender.Send(new ListarProductosQuery
+        {
+            Busqueda = busqueda,
+            Categoria = categoria,
+            PrecioMin = precioMin,
+            PrecioMax = precioMax,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -63,7 +42,7 @@ public class ProductosController : ControllerBase
     [HttpGet("categorias")]
     public async Task<IActionResult> ListarCategorias()
     {
-        List<string> categorias = await _listarCategoriasProductoUseCase.ExecuteAsync();
+        List<string> categorias = await _sender.Send(new ListarCategoriasProductoQuery());
 
         return Ok(categorias);
     }
@@ -71,7 +50,7 @@ public class ProductosController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenProductosDto resultado = await _resumenProductosUseCase.ExecuteAsync();
+        ResumenProductosDto resultado = await _sender.Send(new ResumenProductosQuery());
 
         return Ok(resultado);
     }
@@ -79,7 +58,7 @@ public class ProductosController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ProductoDetalleDto resultado = await _obtenerProductoUseCase.ExecuteAsync(id);
+        ProductoDetalleDto resultado = await _sender.Send(new ObtenerProductoQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -87,7 +66,7 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarProductoRequestDto solicitud)
     {
-        int id = await _crearProductoUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearProductoCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -95,7 +74,7 @@ public class ProductosController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarProductoRequestDto solicitud)
     {
-        int idActualizado = await _actualizarProductoUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarProductoCommand { Id = id, Solicitud = solicitud });
 
         return Ok(new { Id = idActualizado });
     }
@@ -103,7 +82,7 @@ public class ProductosController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarProductoUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarProductoCommand { Id = id });
 
         return NoContent();
     }
