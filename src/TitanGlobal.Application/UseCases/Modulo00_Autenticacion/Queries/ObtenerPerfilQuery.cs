@@ -1,3 +1,4 @@
+using MediatR;
 using System.Globalization;
 using TitanGlobal.Application.DTOs.Modulo00_Autenticacion;
 using TitanGlobal.Application.Exceptions;
@@ -5,20 +6,25 @@ using TitanGlobal.Application.UseCases.Modulo71_Usuarios;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo00_Autenticacion;
+namespace TitanGlobal.Application.UseCases.Modulo00_Autenticacion.Queries;
 
-public class ObtenerPerfilUseCase
+public class ObtenerPerfilQuery : IRequest<PerfilDto>
+{
+    public string? IdentificadorToken { get; set; }
+}
+
+public class ObtenerPerfilQueryHandler : IRequestHandler<ObtenerPerfilQuery, PerfilDto>
 {
     private readonly IUnitOfWork _unidad;
 
-    public ObtenerPerfilUseCase(IUnitOfWork unidad)
+    public ObtenerPerfilQueryHandler(IUnitOfWork unidad)
     {
         _unidad = unidad;
     }
 
-    public async Task<PerfilDto> ExecuteAsync(string? identificadorToken)
+    public async Task<PerfilDto> Handle(ObtenerPerfilQuery request, CancellationToken cancellationToken)
     {
-        if (!int.TryParse(identificadorToken, NumberStyles.Integer, CultureInfo.InvariantCulture, out int usuarioId))
+        if (!int.TryParse(request.IdentificadorToken, NumberStyles.Integer, CultureInfo.InvariantCulture, out int usuarioId))
         {
             throw new ReglaNegocioException(
                 CodigosEstado.Status401Unauthorized,

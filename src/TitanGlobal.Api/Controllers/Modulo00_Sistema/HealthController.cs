@@ -1,6 +1,7 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TitanGlobal.Application.UseCases.Modulo00_Sistema;
+using TitanGlobal.Application.UseCases.Modulo00_Sistema.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo00_Sistema;
 
@@ -9,16 +10,17 @@ namespace TitanGlobal.Api.Controllers.Modulo00_Sistema;
 [Route("api/v1/sistema/salud")]
 public class HealthController : ControllerBase
 {
-    private readonly ConsultarSaludUseCase _consultarSaludUseCase;
+    private readonly ISender _sender;
 
-    public HealthController(ConsultarSaludUseCase consultarSaludUseCase)
+    public HealthController(ISender sender)
     {
-        _consultarSaludUseCase = consultarSaludUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
-    public IActionResult Consultar()
+    public async Task<IActionResult> Consultar()
     {
-        return Ok(_consultarSaludUseCase.Ejecutar());
+        object resultado = await _sender.Send(new ConsultarSaludQuery());
+        return Ok(resultado);
     }
 }

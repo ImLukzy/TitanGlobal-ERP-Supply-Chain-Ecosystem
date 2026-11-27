@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo00_Autenticacion;
 using TitanGlobal.Application.Exceptions;
@@ -5,31 +6,35 @@ using TitanGlobal.Application.Services;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo00_Autenticacion;
+namespace TitanGlobal.Application.UseCases.Modulo00_Autenticacion.Queries;
 
-public class IniciarSesionUseCase
+public class IniciarSesionQuery : IRequest<SesionDto>
 {
-    private const string MensajeCredenciales = "Usuario o contraseña incorrectos.";
+    public IniciarSesionRequestDto? Solicitud { get; set; }
+}
 
-    // Hash BCrypt de una contraseña descartada: se compara contra él cuando el usuario no existe
-    // para que el tiempo de respuesta no revele qué usuarios existen.
-    private const string HashSustituto = "$2a$11$s53gKd79mBMrMGywk/ySEefCYwC2ZvrmDoSTFHa9v6kNUHhU3mXuW";
-
+public class IniciarSesionQueryHandler : IRequestHandler<IniciarSesionQuery, SesionDto>
+{
     private readonly IUnitOfWork _unidad;
+
     private readonly IServicioContrasenas _contrasenas;
+
     private readonly IServicioTokens _tokens;
 
-    public IniciarSesionUseCase(IUnitOfWork unidad, IServicioContrasenas contrasenas, IServicioTokens tokens)
+    public IniciarSesionQueryHandler(
+        IUnitOfWork unidad,
+        IServicioContrasenas contrasenas,
+        IServicioTokens tokens)
     {
         _unidad = unidad;
         _contrasenas = contrasenas;
         _tokens = tokens;
     }
 
-    public async Task<SesionDto> ExecuteAsync(IniciarSesionRequestDto? solicitud)
+    public async Task<SesionDto> Handle(IniciarSesionQuery request, CancellationToken cancellationToken)
     {
-        string nombreUsuario = solicitud?.NombreUsuario?.Trim().ToLowerInvariant() ?? string.Empty;
-        string contrasena = solicitud?.Contrasena ?? string.Empty;
+        string nombreUsuario = request.Solicitud?.NombreUsuario?.Trim().ToLowerInvariant() ?? string.Empty;
+        string contrasena = request.Solicitud?.Contrasena ?? string.Empty;
         if (nombreUsuario.Length == 0 || contrasena.Length == 0)
         {
             throw new ReglaNegocioException(
@@ -62,4 +67,10 @@ public class IniciarSesionUseCase
             Roles = roles
         };
     }
+
+    private const string MensajeCredenciales = "Usuario o contraseña incorrectos.";
+
+    // Hash BCrypt de una contraseña descartada: se compara contra él cuando el usuario no existe
+    // para que el tiempo de respuesta no revele qué usuarios existen.
+    private const string HashSustituto = "$2a$11$s53gKd79mBMrMGywk/ySEefCYwC2ZvrmDoSTFHa9v6kNUHhU3mXuW";
 }

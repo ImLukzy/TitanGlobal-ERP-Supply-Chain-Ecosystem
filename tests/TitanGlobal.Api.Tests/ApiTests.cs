@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TitanGlobal.Application.UseCases.Modulo00_Sistema;
+using MediatR;
+using TitanGlobal.Application.UseCases.Modulo00_Sistema.Queries;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Infrastructure.Persistence;
@@ -115,12 +116,14 @@ public class ApiTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
-    public void UseCasesAreRegisteredByReflection()
+    public void HandlersAreRegisteredWithMediatR()
     {
         using IServiceScope scope = _factory.Services.CreateScope();
-        ConsultarSaludUseCase useCase = scope.ServiceProvider.GetRequiredService<ConsultarSaludUseCase>();
+        IRequestHandler<ConsultarSaludQuery, object> handler =
+            scope.ServiceProvider.GetRequiredService<IRequestHandler<ConsultarSaludQuery, object>>();
 
-        Assert.NotNull(useCase);
+        Assert.NotNull(handler);
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<ISender>());
     }
 
     [Fact]
