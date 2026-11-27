@@ -13,7 +13,7 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 | Si necesitas… | Colócalo en… | Carpeta / Namespace | Prohibido usar allí |
 |---|---|---|---|
 | Entidad (generada con scaffold) o puerto de repositorio | `TitanGlobal.Domain` | `Models/`, `Repositories/`, `Common/` | EF Core, Npgsql, ASP.NET, otras capas |
-| Caso de uso, validación o DTO | `TitanGlobal.Application` | `DTOs/ModuloNN_...`, `UseCases/ModuloNN_...` | ASP.NET, Npgsql, `StatusCodes`, `Infrastructure`, `Api` |
+| Query o Command (CQRS con MediatR), validación o DTO | `TitanGlobal.Application` | `DTOs/ModuloNN_...`, `UseCases/ModuloNN_.../Queries` y `Commands` | ASP.NET, Npgsql, `StatusCodes`, `Infrastructure`, `Api` |
 | Tabla nueva o cambio de esquema | raíz del repositorio | `database/NNN-*.sql` | Editar un script ya fusionado |
 | DbContext (generado), persistencia o configuración | `TitanGlobal.Infrastructure` | `Persistence/`, `Configuration/` | ASP.NET, `Api` |
 | Endpoint HTTP, middleware o host | `TitanGlobal.Api` | `Controllers/ModuloNN_...`, `Program.cs` | Lógica de negocio, consultas directas a base de datos |
@@ -21,8 +21,8 @@ Dirección estricta: `Api` → `Application` e `Infrastructure`; `Infrastructure
 
 ## 3. Reglas de código que rompen el gate o la revisión
 - **Sin `var` y sin `=>` en miembros:** declara siempre tipos explícitos. Constructores, métodos, propiedades y acciones llevan bloque `{ }` y `return`; `=>` solo se permite dentro de expresiones lambda LINQ o configuración.
-- **UseCases concretos:** clases públicas terminadas en `UseCase` sin interfaz, en español (`CrearProveedorUseCase`). Se registran solas por reflexión.
-- **Controladores delgados:** solo reciben la petición HTTP, invocan al `UseCase` y devuelven la respuesta. Acciones `POST`/`PUT` sin cuerpo llevan `[PermitirCuerpoVacio]`.
+- **Queries y Commands con MediatR:** cada caso de uso es una Query (solo lee) en `UseCases/ModuloNN_.../Queries` o un Command (escribe) en `UseCases/ModuloNN_.../Commands`, en español (`ObtenerProveedorQuery`, `CrearProveedorCommand`). La request y su handler (`CrearProveedorCommandHandler`) van en el mismo archivo. Los ayudantes del módulo (`ValidacionProveedor`) quedan en la raíz del módulo. `AddMediatR` registra los handlers solo.
+- **Controladores delgados:** solo reciben la petición HTTP, envían la Query o el Command con `ISender` y devuelven la respuesta. Acciones `POST`/`PUT` sin cuerpo llevan `[PermitirCuerpoVacio]`.
 - **Excepciones y códigos de estado:** en `Application` usa exclusivamente `using TitanGlobal.Application.Exceptions;`, `ReglaNegocioException` y `CodigosEstado` (nunca `StatusCodes` de ASP.NET).
 - **Restricciones de base de datos:** captura `ViolacionRestriccionException` (`TipoViolacionRestriccion.Unicidad` o `ReferenciaForanea`) lanzada por `UnitOfWork`. Prohibido capturar `DbUpdateException` o `PostgresException` en `Application`.
 - **Mensajes literales:** usa los mensajes de error idénticos a los especificados en la spec.

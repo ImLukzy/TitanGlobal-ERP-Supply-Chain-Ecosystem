@@ -9,7 +9,7 @@ La dirección de dependencias es estricta: `Api` → `Application` e `Infrastruc
 | Capa / Proyecto | Carpetas | Qué contiene | Prohibido usar |
 |---|---|---|---|
 | `src/TitanGlobal.Domain` | `Models/`, `Repositories/`, `Common/` | Entidades `partial` generadas con scaffold, contratos `IGenericRepository<T>` e `IUnitOfWork`, utilidades puras (`FechasUtc`) | EF Core, Npgsql, ASP.NET, otras capas |
-| `src/TitanGlobal.Application` | `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/`, `Services/` | DTOs, casos de uso concretos, validaciones, `ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`, puerto `IContextoSolicitud` | Npgsql, ASP.NET (`StatusCodes`), `Infrastructure`, `Api` *(conserva `Microsoft.EntityFrameworkCore` solo para los operadores asíncronos de LINQ)* |
+| `src/TitanGlobal.Application` | `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/Queries/` y `Commands/`, `Exceptions/`, `Services/` | DTOs, queries y commands con sus handlers (MediatR), validaciones, `ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`, puerto `IContextoSolicitud` | Npgsql, ASP.NET (`StatusCodes`), `Infrastructure`, `Api` *(conserva `Microsoft.EntityFrameworkCore` solo para los operadores asíncronos de LINQ)* |
 | `src/TitanGlobal.Infrastructure` | `Persistence/`, `Repositories/Implementation/`, `Configuration/` | `TitanGlobalDbContext` (generado) y su parte propia (constructor, auditoría), `GenericRepository<T>`, `UnitOfWork` (traduce `23505`/`23503` a `ViolacionRestriccionException`), `InfrastructureServicesExtensions` | ASP.NET, `Api` |
 | `src/TitanGlobal.Api` | `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/`, `Services/`, `Program.cs` | Controladores delgados, pipeline de middlewares, `ServiceRegistrationExtensions`, `AuthService`, `ContextoSolicitud`, Swagger (`/swagger`) y OpenAPI (`/openapi/v1.json`) | Lógica de negocio o acceso directo a persistencia en controladores |
 | `tests/TitanGlobal.Api.Tests` | `ModuloNN_Nombre/`, `Arquitectura/` | Pruebas de integración por módulo (`WebApplicationFactory` + EF InMemory) y pruebas de arquitectura (`ArquitecturaTests`, `UnitOfWorkTests`) | — |
@@ -131,12 +131,22 @@ public class GuardarProveedorRequestDto
 }
 ```
 
-### 6. UseCases
+### 6. Queries y Commands (CQRS con MediatR)
 
-Crea los casos de uso y su helper de validación en `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/` (`namespace TitanGlobal.Application.UseCases.ModuloNN_Nombre;`).
+Cada caso de uso es una **Query** (solo lee) o un **Command** (crea, cambia o borra datos). Van en dos carpetas dentro del módulo:
+
+```
+src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/
+  Commands/   CrearXCommand.cs, ActualizarXCommand.cs, EliminarXCommand.cs…   (namespace ...ModuloNN_Nombre.Commands)
+  Queries/    ListarXQuery.cs, ObtenerXQuery.cs, ResumenXQuery.cs…           (namespace ...ModuloNN_Nombre.Queries)
+  ValidacionX.cs, PersistenciaX.cs…                                           (ayudantes del módulo, namespace ...ModuloNN_Nombre)
+```
 
 Reglas obligatorias en `Application`:
-- **Clases concretas sin interfaz**, con nombre terminado en `UseCase`. `ServiceRegistrationExtensions.AddApplicationServices` (`src/TitanGlobal.Api/Configuration/ServiceRegistrationExtensions.cs`) las registra por reflexión automáticamente.
+- **Un archivo por caso de uso con dos clases:** la request (`CrearProveedorCommand : IRequest<int>`) con los datos de entrada como propiedades, y debajo su handler (`CrearProveedorCommandHandler : IRequestHandler<CrearProveedorCommand, int>`) con la lógica en `Handle`. El handler se llama como la request más `Handler` y está en el mismo namespace (`ArquitecturaTests` lo comprueba).
+- **Query o Command según lo que hace:** si guarda en la base (`AddAsync`, `Update`, `Remove`, `CompleteAsync`) es un Command; si solo lee, una Query. Si un Command debe devolver el detalle actualizado, envía la Query del módulo con `ISender` en vez de copiar la consulta.
+- **Ayudantes del módulo** (validaciones, mensajes de error, mapeos que usan varios handlers) en la raíz del módulo como `internal static class`.
+- **Registro automático:** `AddMediatR` en `ServiceRegistrationExtensions.AddApplicationServices` (`src/TitanGlobal.Api/Configuration/ServiceRegistrationExtensions.cs`) registra todos los handlers de `Application`. No los registres a mano.
 - **Sin `var`** y **sin `=>` en miembros** (constructores, métodos y propiedades llevan bloque `{ }` y `return` explícito; `=>` solo en lambdas LINQ).
 - **Códigos y excepciones de negocio:** usa `using TitanGlobal.Application.Exceptions;`, `ReglaNegocioException` y `CodigosEstado.Status400BadRequest` / `Status404NotFound` / `Status409Conflict` (nunca `StatusCodes` de ASP.NET).
 - **Conflictos de base de datos:** captura `ViolacionRestriccionException` (nunca `DbUpdateException` ni `PostgresException`):
@@ -144,14 +154,16 @@ Reglas obligatorias en `Application`:
   - Clave foránea (`23503`): `catch (ViolacionRestriccionException excepcion) when (excepcion.Tipo == TipoViolacionRestriccion.ReferenciaForanea)`
   - Si una tabla tiene varias restricciones únicas, distingue cuál falló leyendo `excepcion.Restriccion`.
 
+> Las ramas abiertas antes del cambio a CQRS todavía pueden traer clases `*UseCase`: siguen registrándose por reflexión (`AddUseCases`) hasta que se migren. Un módulo nuevo usa siempre Queries y Commands.
+
 Lo que los tests con EF InMemory no detectan y en PostgreSQL acaba en 500. Valídalo siempre:
 - **Fechas:** las columnas son `timestamptz` y solo aceptan UTC, pero una petición puede traer `"2027-12-31"` sin `Z`. Normaliza con `FechasUtc.Normalizar` (`TitanGlobal.Domain.Common`) antes de guardar o de filtrar. Si la fecha es un día, sin hora (vigencias, vencimientos), usa `FechasUtc.Normalizar(DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc))` para que no se mueva de día. Declara la fecha obligatoria como `DateTime?` en el DTO si quieres devolver tu propio mensaje cuando falte. Ejemplo: `ValidacionImpuesto` en `Modulo75_ImpuestosTasas`.
 - **Textos:** valida la misma longitud máxima que la columna.
 - **Decimales:** en `decimal(18,2)`, un valor de más de 16 dígitos enteros desborda, y uno con más decimales se redondea en silencio (`0.001` se guarda como `0.00`). Rechaza ambos con 400.
 
 Patrones a copiar según lo que pida la spec:
-- **Listado paginado y resumen:** `ListarProveedoresUseCase` y `ResumenProveedoresUseCase`, con los mensajes de paginación y la agregación en la consulta, sin `ToListAsync` previo.
-- **Baja lógica:** `DesactivarImpuestoUseCase` en `Modulo75_ImpuestosTasas`. Los módulos anteriores usan baja física, como `EliminarProveedorUseCase`.
+- **Listado paginado y resumen:** `ListarProveedoresQuery` y `ResumenProveedoresQuery`, con los mensajes de paginación y la agregación en la consulta, sin `ToListAsync` previo.
+- **Baja lógica:** `DesactivarImpuestoCommand` en `Modulo75_ImpuestosTasas`. Los módulos anteriores usan baja física, como `EliminarProveedorCommand`.
 
 Ejemplo de validación (`src/TitanGlobal.Application/UseCases/Modulo11_Proveedores/ValidacionProveedor.cs`):
 
@@ -183,33 +195,39 @@ internal static class ValidacionProveedor
 }
 ```
 
-Ejemplo de caso de uso de escritura (`src/TitanGlobal.Application/UseCases/Modulo11_Proveedores/CrearProveedorUseCase.cs`):
+Ejemplo de Command con su handler (`src/TitanGlobal.Application/UseCases/Modulo11_Proveedores/Commands/CrearProveedorCommand.cs`):
 
 ```csharp
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo11_Proveedores;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo11_Proveedores;
+namespace TitanGlobal.Application.UseCases.Modulo11_Proveedores.Commands;
 
-public class CrearProveedorUseCase
+public class CrearProveedorCommand : IRequest<int>
+{
+    public required GuardarProveedorRequestDto Solicitud { get; set; }
+}
+
+public class CrearProveedorCommandHandler : IRequestHandler<CrearProveedorCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public CrearProveedorUseCase(IUnitOfWork unitOfWork)
+    public CrearProveedorCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> ExecuteAsync(GuardarProveedorRequestDto solicitud)
+    public async Task<int> Handle(CrearProveedorCommand request, CancellationToken cancellationToken)
     {
-        string razonSocial = ValidacionProveedor.NormalizarRazonSocial(solicitud.RazonSocial);
-        string ruc = ValidacionProveedor.NormalizarRuc(solicitud.Ruc);
-        string pais = ValidacionProveedor.NormalizarPais(solicitud.Pais);
-        string? email = ValidacionProveedor.NormalizarEmail(solicitud.Email);
-        string? telefono = ValidacionProveedor.NormalizarTelefono(solicitud.Telefono);
+        string razonSocial = ValidacionProveedor.NormalizarRazonSocial(request.Solicitud.RazonSocial);
+        string ruc = ValidacionProveedor.NormalizarRuc(request.Solicitud.Ruc);
+        string pais = ValidacionProveedor.NormalizarPais(request.Solicitud.Pais);
+        string? email = ValidacionProveedor.NormalizarEmail(request.Solicitud.Email);
+        string? telefono = ValidacionProveedor.NormalizarTelefono(request.Solicitud.Telefono);
         bool rucExiste = await _unitOfWork.Repository<Proveedor>()
             .AsQueryable()
             .AnyAsync(proveedor => proveedor.Ruc == ruc);
@@ -225,7 +243,7 @@ public class CrearProveedorUseCase
             Pais = pais,
             Email = email,
             Telefono = telefono,
-            Activo = solicitud.Activo
+            Activo = request.Solicitud.Activo
         };
         await _unitOfWork.Repository<Proveedor>().AddAsync(proveedorNuevo);
 
@@ -257,14 +275,16 @@ public class CrearProveedorUseCase
 
 ### 7. Controlador
 
-Crea el controlador en `src/TitanGlobal.Api/Controllers/ModuloNN_Nombre/<Recurso>Controller.cs` (`namespace TitanGlobal.Api.Controllers.ModuloNN_Nombre;`). Debe ser delgado: solo recibe la petición, llama al `UseCase` y devuelve el resultado. Si una acción `POST` o `PUT` no lleva cuerpo (por ejemplo, `aprobar` o `recibir`), decórala con `[PermitirCuerpoVacio]`.
+Crea el controlador en `src/TitanGlobal.Api/Controllers/ModuloNN_Nombre/<Recurso>Controller.cs` (`namespace TitanGlobal.Api.Controllers.ModuloNN_Nombre;`). Debe ser delgado: recibe la petición, envía la Query o el Command con `ISender` y devuelve el resultado. Solo inyecta `ISender`. Si una acción `POST` o `PUT` no lleva cuerpo (por ejemplo, `aprobar` o `recibir`), decórala con `[PermitirCuerpoVacio]`.
 
-Ejemplo real (`src/TitanGlobal.Api/Controllers/Modulo11_Proveedores/ProveedoresController.cs`):
+Ejemplo real (`src/TitanGlobal.Api/Controllers/Modulo11_Proveedores/ProveedoresController.cs`, recortado):
 
 ```csharp
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo11_Proveedores;
-using TitanGlobal.Application.UseCases.Modulo11_Proveedores;
+using TitanGlobal.Application.UseCases.Modulo11_Proveedores.Commands;
+using TitanGlobal.Application.UseCases.Modulo11_Proveedores.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo11_Proveedores;
 
@@ -272,42 +292,25 @@ namespace TitanGlobal.Api.Controllers.Modulo11_Proveedores;
 [Route("api/v1/proveedores")]
 public class ProveedoresController : ControllerBase
 {
-    private readonly ListarProveedoresUseCase _listarProveedoresUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerProveedorUseCase _obtenerProveedorUseCase;
-
-    private readonly CrearProveedorUseCase _crearProveedorUseCase;
-
-    private readonly ActualizarProveedorUseCase _actualizarProveedorUseCase;
-
-    private readonly EliminarProveedorUseCase _eliminarProveedorUseCase;
-
-    private readonly ListarPaisesProveedorUseCase _listarPaisesProveedorUseCase;
-
-    private readonly ResumenProveedoresUseCase _resumenProveedoresUseCase;
-
-    public ProveedoresController(
-        ListarProveedoresUseCase listarProveedoresUseCase,
-        ObtenerProveedorUseCase obtenerProveedorUseCase,
-        CrearProveedorUseCase crearProveedorUseCase,
-        ActualizarProveedorUseCase actualizarProveedorUseCase,
-        EliminarProveedorUseCase eliminarProveedorUseCase,
-        ListarPaisesProveedorUseCase listarPaisesProveedorUseCase,
-        ResumenProveedoresUseCase resumenProveedoresUseCase)
+    public ProveedoresController(ISender sender)
     {
-        _listarProveedoresUseCase = listarProveedoresUseCase;
-        _obtenerProveedorUseCase = obtenerProveedorUseCase;
-        _crearProveedorUseCase = crearProveedorUseCase;
-        _actualizarProveedorUseCase = actualizarProveedorUseCase;
-        _eliminarProveedorUseCase = eliminarProveedorUseCase;
-        _listarPaisesProveedorUseCase = listarPaisesProveedorUseCase;
-        _resumenProveedoresUseCase = resumenProveedoresUseCase;
+        _sender = sender;
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> Obtener(int id)
+    {
+        ProveedorDetalleDto resultado = await _sender.Send(new ObtenerProveedorQuery { Id = id });
+
+        return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarProveedorRequestDto solicitud)
     {
-        int id = await _crearProveedorUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearProveedorCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -315,7 +318,7 @@ public class ProveedoresController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarProveedorUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarProveedorCommand { Id = id });
 
         return NoContent();
     }
@@ -419,8 +422,9 @@ Confirma los cambios con tu identidad de git, sube tu rama y abre el pull reques
 | `f: dependencia prohibida en TitanGlobal.Application` por `Microsoft.AspNetCore` o `StatusCodes` | Se usó `StatusCodes.Status409Conflict` o `using Microsoft.AspNetCore.Http;` en un caso de uso | Sustituir por `CodigosEstado.Status409Conflict` y `using TitanGlobal.Application.Exceptions;` |
 | `f: dependencia prohibida en TitanGlobal.Application` por `Npgsql` o fallo al compilar `PostgresException` | Se capturó `DbUpdateException` / `PostgresException` en `Application` | Capturar `ViolacionRestriccionException` y filtrar con `excepcion.Tipo == TipoViolacionRestriccion.Unicidad` (o `ReferenciaForanea`) y `excepcion.Restriccion` |
 | `f: dependencia prohibida en TitanGlobal.Domain` | Se añadió `using Microsoft.EntityFrameworkCore;` o referencia a otra capa en una entidad de `Domain` | Dejar la entidad limpia: la entidad se regenera con `./scripts/scaffold.sh` y la restricción vive en el script SQL de `database/` |
-| `g: UseCase fuera de Application` o el contenedor DI no resuelve el `UseCase` | La clase `*UseCase` se creó en `Api` o `Infrastructure`, o no termina en `UseCase` | Moverla a `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/` y asegurar que sea `public class ...UseCase` concreta sin interfaz |
-| `e: controlador con dependencia de persistencia` | El controlador recibe `IUnitOfWork`, `IGenericRepository<T>` o `TitanGlobalDbContext` | Inyectar solo casos de uso en el controlador; llevar las consultas a un `UseCase` en `Application` |
+| `h: handler fuera de Application` o MediatR responde «No handler was found» | El handler se creó en `Api` o `Infrastructure`, o no implementa `IRequestHandler<...>` | Moverlo a `src/TitanGlobal.Application/UseCases/ModuloNN_Nombre/Queries` o `Commands`, en el mismo archivo que su request y como `public class <Request>Handler` |
+| `i: query o command fuera de Queries/Commands` | Una clase `...Query`/`...Command` que implementa `IRequest` está suelta en la raíz del módulo | Moverla a la carpeta `Queries/` (solo lee) o `Commands/` (escribe), con el namespace `...ModuloNN_Nombre.Queries` o `.Commands` |
+| `e: controlador con dependencia de persistencia` | El controlador recibe `IUnitOfWork`, `IGenericRepository<T>` o `TitanGlobalDbContext` | Inyectar solo `ISender` en el controlador; llevar las consultas a una Query o un Command en `Application` |
 | `a: var usado como tipo` o `b: miembro con cuerpo de expresión` | Se usó `var` o `=>` en un método, constructor o propiedad | Declarar el tipo explícito y usar bloque `{ }` con `return` (`=>` solo vale dentro de lambdas LINQ o de configuración) |
 | `ERROR: el código generado no coincide…` en `./scripts/smoke-postgres.sh` | Se editó a mano una entidad generada o `TitanGlobalDbContext.cs`, o falta regenerar tras cambiar un script | Deshaz la edición a mano, ejecuta `./scripts/aplicar-bd.sh` y `./scripts/scaffold.sh` y confirma el resultado |
 | `la base local tiene scripts sin aplicar` al ejecutar `./scripts/scaffold.sh` | Hay scripts nuevos en `database/` (por ejemplo, tras un `git pull`) | Ejecuta `./scripts/aplicar-bd.sh` y vuelve a lanzar el scaffold |

@@ -7,7 +7,7 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
 ## Estilo y estructura en cuatro capas
 - **Cuatro capas con carpeta por módulo** (decidido el 2026-11-02 según el Lab 10, spec 50):
   - `src/TitanGlobal.Domain`: `Models/` (entidades), `Repositories/` (`IGenericRepository<T>`, `IUnitOfWork`), `Common/` (`FechasUtc`).
-  - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/`, `Exceptions/` (`ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`), `Services/` (`IContextoSolicitud`).
+  - `src/TitanGlobal.Application`: `DTOs/ModuloNN_Nombre/`, `UseCases/ModuloNN_Nombre/Queries/` y `Commands/` (CQRS con MediatR), `Exceptions/` (`ReglaNegocioException`, `CodigosEstado`, `ViolacionRestriccionException`, `TipoViolacionRestriccion`), `Services/` (`IContextoSolicitud`).
   - `src/TitanGlobal.Infrastructure`: `Persistence/` (solo `TitanGlobalDbContext.cs`, generado), `config/` (`TitanGlobalDbContext.Constructor.cs` y `TitanGlobalDbContext.Auditoria.cs`, escritos a mano), `Repositories/Implementation/` (`GenericRepository<T>`, `UnitOfWork`), `Configuration/` (`InfrastructureServicesExtensions`).
   - `src/TitanGlobal.Api`: `Controllers/ModuloNN_Nombre/`, `Middlewares/`, `Configuration/` (`ServiceRegistrationExtensions`), `Services/` (`IAuthService`, `AuthService`, `ContextoSolicitud`), `Program.cs`.
   - Las pruebas viven en `tests/TitanGlobal.Api.Tests/ModuloNN_Nombre/` y `tests/TitanGlobal.Api.Tests/Arquitectura/`.
@@ -24,7 +24,7 @@ Fuente: `docs/enunciado.md` (Lab 08 / Examen, backend). Además se requiere **fr
   - En `Application` se usa `CodigosEstado.Status400BadRequest` / `Status404NotFound` / `Status409Conflict` (en lugar de `StatusCodes` de ASP.NET) con `ReglaNegocioException` (`using TitanGlobal.Application.Exceptions;`).
   - `UnitOfWork.CompleteAsync()` traduce las violaciones de PostgreSQL (`23505` y `23503`) a `ViolacionRestriccionException`, con `TipoViolacionRestriccion.Unicidad` o `TipoViolacionRestriccion.ReferenciaForanea` y `excepcion.Restriccion` para el nombre de la restricción. En `Application` nunca se capturan `DbUpdateException` ni `PostgresException`.
   - La auditoría del `DbContext` obtiene el usuario (`X-Usuario`) y la ruta mediante el puerto `IContextoSolicitud` (`Application/Services`), implementado por `ContextoSolicitud` en `Api/Services`.
-- **Casos de uso concretos sin interfaz**, registrados por reflexión sobre el ensamblado de `TitanGlobal.Application` en `ServiceRegistrationExtensions.AddApplicationServices` (toda clase concreta terminada en `UseCase`).
+- **CQRS con MediatR:** cada caso de uso es una Query (lectura) o un Command (escritura) con su handler en el mismo archivo, dentro de `UseCases/ModuloNN_Nombre/Queries` o `Commands`. `AddMediatR` registra los handlers del ensamblado de `TitanGlobal.Application` en `ServiceRegistrationExtensions.AddApplicationServices`, y los controladores solo usan `ISender`. Las clases `*UseCase` de ramas anteriores siguen registrándose por reflexión hasta que se migren.
 - **Pipeline fijo:** ErrorHandling (500) → Routing → ParameterValidation (400) → RoleBasedAccess (403) → Authorization → Controllers. Como Routing va antes, ParameterValidation lee los metadatos del endpoint: las acciones sin cuerpo se declaran con `[PermitirCuerpoVacio]` (spec 18).
 - **Autenticación y roles:** inicio de sesión con contraseña guardada con BCrypt y JWT (spec 51). Toda la API exige token salvo `POST api/v1/autenticacion/login` y la salud. Crear, editar o borrar usuarios y roles, y cambiar contraseñas, exige el rol `ADMIN`. La cabecera `X-User-Role` del enunciado se conserva: `Bloqueado` y `SinPermiso` siguen respondiendo 403.
 - **Documentación de la API en desarrollo:** Swagger UI en `http://localhost:5080/swagger` (con token Bearer y `X-User-Role` autorizables) y documento OpenAPI en `/openapi/v1.json`.
@@ -133,8 +133,8 @@ Las reglas de código están en `CONTRIBUTING.md` § Reglas de código.
 
 ## Módulo de referencia
 `Modulo04_OrdenesCompra` es la plantilla del enunciado (código original en `docs/enunciado.md` §3), repartida en las cuatro capas:
-- Un caso de uso transaccional de escritura: `CrearOrdenCompraUseCase` (`src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/`).
-- Un caso de uso analítico con los 12 patrones LINQ obligatorios, numerados en comentarios: `AnaliticaOrdenesCompraUseCase` (`src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/`).
+- Un command transaccional de escritura: `CrearOrdenCompraCommand` (`src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/Commands/`).
+- Las queries analíticas con los 12 patrones LINQ obligatorios, numerados en comentarios: `BuscarProductosPorFiltroQuery`, `ObtenerSumaVentasDesdeFechaQuery`, `ObtenerOrdenesJerarquicasQuery` y el resto de `src/TitanGlobal.Application/UseCases/Modulo04_OrdenesCompra/Queries/`.
 - Un controlador delgado (`api/v1/ordenes-compra`): `OrdenesCompraController` (`src/TitanGlobal.Api/Controllers/Modulo04_OrdenesCompra/`).
 
 Para programar un módulo CRUD completo en cuatro capas, el módulo de referencia es `Modulo11_Proveedores` (o `Modulo13_SolicitudesCompra` si hay líneas y estados); ver [`docs/equipo/crear-modulo.md`](equipo/crear-modulo.md).
