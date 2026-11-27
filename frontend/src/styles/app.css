@@ -2239,6 +2239,93 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .listas-materiales-area { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 }
 
+/* Módulo 20: acuerdos de abastecimiento */
+.acuerdos-page { padding-bottom: 42px; }
+.acuerdos-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.acuerdos-summary > article, .acuerdos-conteos, .acuerdos-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.acuerdos-summary > article { display: grid; min-height: 82px; align-content: space-between; padding: 13px; color: var(--ink-soft); font-size: 10px; }
+.acuerdos-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.acuerdos-conteos { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 13px 17px; list-style: none; }
+.acuerdos-conteos li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.acuerdos-conteos li strong { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.acuerdos-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0 14px; }
+.acuerdos-panel { margin-top: 14px; padding: 17px; }
+.acuerdos-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.acuerdos-panel-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; overflow-wrap: anywhere; }
+.acuerdos-filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 9px; margin-bottom: 13px; }
+.acuerdos-filters label { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.acuerdos-filter-periodo { display: flex; align-items: flex-end; gap: 7px; min-width: 0; }
+.acuerdos-filter-periodo > label { flex: 1 1 auto; }
+.acuerdos-filters input, .acuerdos-filters select, .acuerdo-form input, .acuerdo-form select, .acuerdo-form textarea { width: 100%; min-width: 0; min-height: 35px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.acuerdos-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.acuerdos-table { min-width: 520px; }
+.acuerdos-table th, .acuerdos-table td { padding: 8px 7px; font-size: 9px; }
+.acuerdo-row-select { padding: 0; border: 0; background: transparent; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }
+.acuerdo-detail-grid, .acuerdo-form-readonly { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.acuerdo-detail-grid > div, .acuerdo-form-readonly > div { min-width: 0; }
+.acuerdo-detail-grid dt, .acuerdo-form-readonly dt { margin-bottom: 4px; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+.acuerdo-detail-grid dd, .acuerdo-form-readonly dd { margin: 0; color: var(--ink); font-size: 10px; overflow-wrap: anywhere; }
+.acuerdo-detail-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.acuerdo-detail-note h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.acuerdo-detail-note p { margin-bottom: 0; color: var(--ink); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.acuerdo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.acuerdos-error { margin: 10px 0 0; color: var(--bad); font-size: 10px; line-height: 1.5; }
+.acuerdo-form-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.acuerdo-form-readonly { grid-column: 1 / -1; }
+.acuerdo-form .form-field { min-width: 0; gap: 5px; }
+.acuerdo-form .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.acuerdo-form textarea { resize: vertical; }
+.acuerdo-contador { color: var(--ink-faint); font-size: 9px; text-align: right; }
+.acuerdo-form-actions { display: flex; justify-content: flex-end; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+.acuerdo-estado { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 20px; font-size: 8px; font-weight: 750; white-space: nowrap; }
+.acuerdo-estado.is-vigente { background: var(--good-soft); color: var(--good); }
+.acuerdo-estado.is-suspendido { background: var(--accent-soft); color: var(--accent-ink); }
+.acuerdo-estado.is-cancelado { background: var(--bad-soft); color: var(--bad); }
+.acuerdo-aviso, .acuerdo-aviso-banner { color: var(--bad); font-size: 8px; font-weight: 750; }
+.acuerdo-aviso { display: block; margin-top: 3px; }
+.acuerdo-aviso-banner { margin: 0 0 10px; padding: 7px 9px; border-radius: 8px; background: var(--bad-soft); font-size: 10px; }
+.acuerdo-proveedor { margin: 0 0 12px; color: var(--ink); font-size: 11px; font-weight: 650; overflow-wrap: anywhere; }
+.acuerdo-detail-lineas { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.acuerdo-detail-lineas h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.acuerdo-lineas-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.acuerdo-lineas-table { width: 100%; min-width: 420px; border-collapse: collapse; }
+.acuerdo-lineas-table caption { padding-bottom: 6px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.acuerdo-lineas-table th, .acuerdo-lineas-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 9px; text-align: left; }
+.acuerdo-lineas-table thead th { background: var(--surface-muted); color: var(--ink-soft); font-weight: 700; }
+.acuerdo-aviso { display: block; margin-top: 3px; color: var(--bad); font-size: 8px; font-weight: 750; }
+.acuerdo-porcentaje { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 8px; font-weight: 750; }
+.acuerdo-progreso { width: 100%; height: 8px; margin-top: 12px; }
+.acuerdo-num { text-align: right; font-variant-numeric: tabular-nums; }
+.acuerdo-linea-acciones { display: flex; flex-wrap: wrap; gap: 5px; }
+.acuerdo-motivo { margin: 8px 0 0; color: var(--ink-soft); font-size: 9px; }
+@media (min-width: 1024px) {
+  .acuerdos-work-area { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); }
+  .acuerdos-table { min-width: 0; table-layout: fixed; }
+  .acuerdos-table th, .acuerdos-table td { padding: 7px 4px; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 900px) {
+  .acuerdos-conteos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acuerdos-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acuerdo-form-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .acuerdos-page { padding-bottom: 28px; }
+  .acuerdos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .acuerdos-summary > article { min-height: 76px; padding: 11px; }
+  .acuerdos-summary > article strong { font-size: 16px; }
+  .acuerdos-ranking { padding: 12px; }
+  .acuerdos-panel { margin-top: 12px; padding: 14px; }
+  .acuerdos-panel-heading h2 { font-size: 14px; }
+  .acuerdos-filters { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .acuerdo-form-fields { grid-template-columns: minmax(0, 1fr); }
+  .acuerdo-detail-grid, .acuerdo-form-readonly { grid-template-columns: minmax(0, 1fr); }
+  .acuerdo-actions { justify-content: flex-start; }
+  .acuerdo-form-actions .primary-button { width: 100%; }
+}
+
 /* Módulo 43: rutas de despacho */
 .rutas-despacho-page { min-width: 0; }
 .rutas-despacho-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }

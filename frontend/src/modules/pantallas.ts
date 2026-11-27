@@ -32,6 +32,7 @@ import { AsistenciaBiometricaPage } from './asistencia-biometrica/AsistenciaBiom
 import { VacacionesPermisosPage } from './vacaciones-permisos/VacacionesPermisosPage';
 import { AdelantosPrestamosPage } from './adelantos-prestamos/AdelantosPrestamosPage';
 import { PlanillasPage } from './planillas/PlanillasPage';
+import { AcuerdosAbastecimientoPage } from './acuerdos-abastecimiento/AcuerdosAbastecimientoPage';
 import { EvaluacionDesempenoPage } from './evaluacion-desempeno/EvaluacionDesempenoPage';
 import { CapacitacionesPage } from './capacitaciones/CapacitacionesPage';
 import { SeguridadSaludOcupacionalPage } from './seguridad-salud-ocupacional/SeguridadSaludOcupacionalPage';
@@ -75,4 +76,5 @@ export const pantallas: Record<string, ComponentType> = {
   '69-capacitaciones': CapacitacionesPage,
   '70-seguridad-salud-ocupacional': SeguridadSaludOcupacionalPage,
   '31-listas-materiales': ListasMaterialesPage,
+  '20-acuerdos-abastecimiento': AcuerdosAbastecimientoPage,
 };

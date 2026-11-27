@@ -63,13 +63,20 @@
 | A8 | Visual y E2E | capturas (`page.route`) a 375 y 1280 px, claro y oscuro, con un acuerdo vigente con consumo, el diálogo de consumo y el formulario de línea; márgenes ≥ 16 px; sin scroll horizontal ni celdas recortadas; y una pasada contra la API y PostgreSQL reales con el seed (4 acuerdos AM-2026-001 a 004 y conteo por estado) | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla con avance.
-- [ ] Tarea 3: detalle con líneas y acciones por estado.
-- [ ] Tarea 4: formularios y diálogos (línea, consumo, cambios de estado y eliminar).
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla con avance.
+- [x] Tarea 3: detalle con líneas y acciones por estado.
+- [x] Tarea 4: formularios y diálogos (línea, consumo, cambios de estado y eliminar).
 - [ ] Tarea 5: tests, capturas y A1–A8.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| — | — | pendiente | spec sin aprobar |
+| 2026-11-25 | A1 | ⚠️ parcial | frontend: `eslint . --max-warnings 0` sin avisos, `tsc -b` limpio, `vite build` correcto y `scripts/check-rules.sh` en 0; `./scripts/verify.sh` completo pendiente de correrlo en macOS antes del PR |
+| 2026-11-25 | A2 | ✅ | `api.test.ts`: 4 tests (query exacta, filtros vacíos fuera, rutas de detalle, resumen, proveedores y productos, método y cuerpo de crear, actualizar, líneas, consumo, suspender, reactivar, cancelar y eliminar) |
+| 2026-11-25 | A3 | ✅ | `AcuerdosAbastecimientoPage.test.tsx`: resumen y conteo en orden fijo, avance con porcentaje, «Vencido» y «Aún no inicia», estado y proveedor en la query con página 1, búsqueda a los 300 ms, vacío y error |
+| 2026-11-25 | A4 | ✅ | `AcuerdosAbastecimientoPage.test.tsx`: líneas con saldo, botones exactos en `Vigente`, `Suspendido` y `Cancelado`, «Eliminar» y «Quitar línea» solo sin consumo, consumo deshabilitado con motivo en vencido, no iniciado, suspendido y línea sin saldo |
+| 2026-11-25 | A5 | ✅ | `AcuerdoAcciones.test.tsx`: literales de validación sin petición, creación con número en mayúsculas y fechas ISO, 409 y 400 sin perder lo escrito, edición con campos de solo lectura y PUT, producto repetido deshabilitado, vista previa del compromiso |
+| 2026-11-25 | A6 | ✅ | `AcuerdoAcciones.test.tsx`: consumo con saldo y error local al superarlo, POST con cantidad exacta, 409 dentro del diálogo, suspender con Escape y foco devuelto, reactivar, cancelar con 409, quitar línea y eliminar con `DialogoBaja` |
+| 2026-11-25 | A7 | ✅ | suite completa `vitest run`: 1366 tests pasan en 139 archivos sin cambiar lo que comprueban |
+| — | A8 | pendiente | capturas a 375 y 1280 px (claro/oscuro) y pasada contra la API y PostgreSQL reales con el seed |
