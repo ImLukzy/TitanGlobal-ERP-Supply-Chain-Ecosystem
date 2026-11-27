@@ -959,4 +959,26 @@ AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."Consolidacio
 SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
 SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
 
+TRUNCATE TABLE "OfertasLicitacion", "Licitaciones" RESTART IDENTITY;
+
+INSERT INTO "Licitaciones" ("Id", "Numero", "Titulo", "Descripcion", "Tipo", "Estado", "PresupuestoReferencial", "FechaCierre", "ProveedorAdjudicadoId", "MontoAdjudicado", "FechaRegistro") VALUES
+    (1, 'LIC-2026-001', 'Suministro de empaques', 'Cajas y pallets para despacho nacional.', 'ConcursoPrecios', 'Abierta', 20000.00, TIMESTAMPTZ '2099-12-31 00:00:00+00', NULL, NULL, TIMESTAMPTZ '2026-10-01 12:00:00+00'),
+    (2, 'LIC-2026-002', 'Flete marítimo Callao-Shanghái', NULL, 'SubastaInversa', 'Abierta', 50000.00, TIMESTAMPTZ '2099-12-31 00:00:00+00', NULL, NULL, TIMESTAMPTZ '2026-10-02 12:00:00+00'),
+    (3, 'LIC-2026-003', 'Repuestos de maquinaria', NULL, 'ConcursoPrecios', 'Adjudicada', 30000.00, TIMESTAMPTZ '2026-10-15 00:00:00+00', 1, 28000.00, TIMESTAMPTZ '2026-10-03 12:00:00+00'),
+    (4, 'LIC-2026-004', 'Uniformes de planta', NULL, 'ConcursoPrecios', 'Cerrada', 8000.00, TIMESTAMPTZ '2026-10-30 00:00:00+00', NULL, NULL, TIMESTAMPTZ '2026-10-04 12:00:00+00'),
+    (5, 'LIC-2026-005', 'Servicio de limpieza', NULL, 'ConcursoPrecios', 'Cancelada', 12000.00, TIMESTAMPTZ '2026-11-30 00:00:00+00', NULL, NULL, TIMESTAMPTZ '2026-10-05 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"Licitaciones"', 'Id'), (SELECT MAX("Id") FROM "Licitaciones"));
+
+INSERT INTO "OfertasLicitacion" ("Id", "LicitacionId", "ProveedorId", "Monto", "PlazoEntregaDias", "Observaciones", "FechaRegistro") VALUES
+    (1, 1, 1, 18500.00, 15, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (2, 1, 2, 19200.00, 10, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (3, 2, 3, 47000.00, 30, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (4, 2, 6, 45500.00, 25, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (5, 3, 1, 28000.00, 20, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (6, 3, 4, 29500.00, 18, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00'),
+    (7, 4, 2, 7500.00, 12, NULL, TIMESTAMPTZ '2026-10-20 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"OfertasLicitacion"', 'Id'), (SELECT MAX("Id") FROM "OfertasLicitacion"));
+
 COMMIT;

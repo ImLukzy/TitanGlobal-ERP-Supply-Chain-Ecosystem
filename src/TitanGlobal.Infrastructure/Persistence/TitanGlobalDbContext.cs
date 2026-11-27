@@ -93,6 +93,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
 
+    public virtual DbSet<Licitacion> Licitaciones { get; set; } = null!;
+
     public virtual DbSet<LineaConsolidacionCarga> LineasConsolidacionCarga { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
@@ -102,6 +104,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<ListaPrecios> ListasPrecios { get; set; } = null!;
 
     public virtual DbSet<Marcacion> Marcaciones { get; set; } = null!;
+
+    public virtual DbSet<OfertaLicitacion> OfertasLicitacion { get; set; } = null!;
 
     public virtual DbSet<OperacionRutaProduccion> OperacionesRutaProduccion { get; set; } = null!;
 
@@ -827,6 +831,25 @@ public partial class TitanGlobalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<Licitacion>(entity =>
+        {
+            entity.HasIndex(e => e.Numero, "IX_Licitaciones_Numero").IsUnique();
+
+            entity.HasIndex(e => e.ProveedorAdjudicadoId, "IX_Licitaciones_ProveedorAdjudicadoId");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.MontoAdjudicado).HasPrecision(18, 2);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.PresupuestoReferencial).HasPrecision(18, 2);
+            entity.Property(e => e.Tipo).HasMaxLength(20);
+            entity.Property(e => e.Titulo).HasMaxLength(150);
+
+            entity.HasOne(d => d.ProveedorAdjudicado).WithMany(p => p.Licitaciones)
+                .HasForeignKey(d => d.ProveedorAdjudicadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<LineaConsolidacionCarga>(entity =>
         {
             entity.HasIndex(e => e.ConsolidacionCargaId, "IX_LineasConsolidacionCarga_ConsolidacionCargaId");
@@ -902,6 +925,24 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Empleado).WithMany(p => p.Marcaciones)
                 .HasForeignKey(d => d.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OfertaLicitacion>(entity =>
+        {
+            entity.HasIndex(e => new { e.LicitacionId, e.ProveedorId }, "IX_OfertasLicitacion_LicitacionId_ProveedorId").IsUnique();
+
+            entity.HasIndex(e => e.ProveedorId, "IX_OfertasLicitacion_ProveedorId");
+
+            entity.Property(e => e.Monto).HasPrecision(18, 2);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.Licitacion).WithMany(p => p.OfertasLicitacion)
+                .HasForeignKey(d => d.LicitacionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.OfertasLicitacion)
+                .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
