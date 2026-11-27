@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo13_SolicitudesCompra;
-using TitanGlobal.Application.UseCases.Modulo13_SolicitudesCompra;
+using TitanGlobal.Application.UseCases.Modulo13_SolicitudesCompra.Commands;
+using TitanGlobal.Application.UseCases.Modulo13_SolicitudesCompra.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo13_SolicitudesCompra;
 
@@ -9,40 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo13_SolicitudesCompra;
 [Route("api/v1/solicitudes-compra")]
 public class SolicitudesCompraController : ControllerBase
 {
-    private readonly ListarSolicitudesCompraUseCase _listarSolicitudesCompraUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerSolicitudCompraUseCase _obtenerSolicitudCompraUseCase;
-
-    private readonly CrearSolicitudCompraUseCase _crearSolicitudCompraUseCase;
-
-    private readonly ActualizarSolicitudCompraUseCase _actualizarSolicitudCompraUseCase;
-
-    private readonly AprobarSolicitudCompraUseCase _aprobarSolicitudCompraUseCase;
-
-    private readonly RechazarSolicitudCompraUseCase _rechazarSolicitudCompraUseCase;
-
-    private readonly EliminarSolicitudCompraUseCase _eliminarSolicitudCompraUseCase;
-
-    private readonly ResumenSolicitudesCompraUseCase _resumenSolicitudesCompraUseCase;
-
-    public SolicitudesCompraController(
-        ListarSolicitudesCompraUseCase listarSolicitudesCompraUseCase,
-        ObtenerSolicitudCompraUseCase obtenerSolicitudCompraUseCase,
-        CrearSolicitudCompraUseCase crearSolicitudCompraUseCase,
-        ActualizarSolicitudCompraUseCase actualizarSolicitudCompraUseCase,
-        AprobarSolicitudCompraUseCase aprobarSolicitudCompraUseCase,
-        RechazarSolicitudCompraUseCase rechazarSolicitudCompraUseCase,
-        EliminarSolicitudCompraUseCase eliminarSolicitudCompraUseCase,
-        ResumenSolicitudesCompraUseCase resumenSolicitudesCompraUseCase)
+    public SolicitudesCompraController(ISender sender)
     {
-        _listarSolicitudesCompraUseCase = listarSolicitudesCompraUseCase;
-        _obtenerSolicitudCompraUseCase = obtenerSolicitudCompraUseCase;
-        _crearSolicitudCompraUseCase = crearSolicitudCompraUseCase;
-        _actualizarSolicitudCompraUseCase = actualizarSolicitudCompraUseCase;
-        _aprobarSolicitudCompraUseCase = aprobarSolicitudCompraUseCase;
-        _rechazarSolicitudCompraUseCase = rechazarSolicitudCompraUseCase;
-        _eliminarSolicitudCompraUseCase = eliminarSolicitudCompraUseCase;
-        _resumenSolicitudesCompraUseCase = resumenSolicitudesCompraUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -55,14 +28,16 @@ public class SolicitudesCompraController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaSolicitudesDto resultado = await _listarSolicitudesCompraUseCase.ExecuteAsync(
-            busqueda,
-            estado,
-            proveedorId,
-            fechaDesde,
-            fechaHasta,
-            pagina,
-            tamanoPagina);
+        PaginaSolicitudesDto resultado = await _sender.Send(new ListarSolicitudesCompraQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            ProveedorId = proveedorId,
+            FechaDesde = fechaDesde,
+            FechaHasta = fechaHasta,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -70,7 +45,7 @@ public class SolicitudesCompraController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenSolicitudesDto resultado = await _resumenSolicitudesCompraUseCase.ExecuteAsync();
+        ResumenSolicitudesDto resultado = await _sender.Send(new ResumenSolicitudesCompraQuery());
 
         return Ok(resultado);
     }
@@ -78,7 +53,7 @@ public class SolicitudesCompraController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        SolicitudDetalleDto resultado = await _obtenerSolicitudCompraUseCase.ExecuteAsync(id);
+        SolicitudDetalleDto resultado = await _sender.Send(new ObtenerSolicitudCompraQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -86,7 +61,10 @@ public class SolicitudesCompraController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarSolicitudRequestDto solicitud)
     {
-        SolicitudCreadaDto resultado = await _crearSolicitudCompraUseCase.ExecuteAsync(solicitud);
+        SolicitudCreadaDto resultado = await _sender.Send(new CrearSolicitudCompraCommand
+        {
+            Solicitud = solicitud
+        });
 
         return Ok(resultado);
     }
@@ -94,7 +72,11 @@ public class SolicitudesCompraController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarSolicitudRequestDto solicitud)
     {
-        SolicitudCreadaDto resultado = await _actualizarSolicitudCompraUseCase.ExecuteAsync(id, solicitud);
+        SolicitudCreadaDto resultado = await _sender.Send(new ActualizarSolicitudCompraCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(resultado);
     }
@@ -103,7 +85,7 @@ public class SolicitudesCompraController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Aprobar(int id)
     {
-        SolicitudDetalleDto resultado = await _aprobarSolicitudCompraUseCase.ExecuteAsync(id);
+        SolicitudDetalleDto resultado = await _sender.Send(new AprobarSolicitudCompraCommand { Id = id });
 
         return Ok(resultado);
     }
@@ -111,7 +93,11 @@ public class SolicitudesCompraController : ControllerBase
     [HttpPost("{id:int}/rechazar")]
     public async Task<IActionResult> Rechazar(int id, [FromBody] RechazarSolicitudRequestDto solicitudRechazo)
     {
-        SolicitudDetalleDto resultado = await _rechazarSolicitudCompraUseCase.ExecuteAsync(id, solicitudRechazo);
+        SolicitudDetalleDto resultado = await _sender.Send(new RechazarSolicitudCompraCommand
+        {
+            Id = id,
+            SolicitudRechazo = solicitudRechazo
+        });
 
         return Ok(resultado);
     }
@@ -119,7 +105,7 @@ public class SolicitudesCompraController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarSolicitudCompraUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarSolicitudCompraCommand { Id = id });
 
         return NoContent();
     }

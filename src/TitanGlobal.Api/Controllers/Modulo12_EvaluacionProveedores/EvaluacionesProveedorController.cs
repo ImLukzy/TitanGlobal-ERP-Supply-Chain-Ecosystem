@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo12_EvaluacionProveedores;
-using TitanGlobal.Application.UseCases.Modulo12_EvaluacionProveedores;
+using TitanGlobal.Application.UseCases.Modulo12_EvaluacionProveedores.Commands;
+using TitanGlobal.Application.UseCases.Modulo12_EvaluacionProveedores.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo12_EvaluacionProveedores;
 
@@ -8,32 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo12_EvaluacionProveedores;
 [Route("api/v1/evaluaciones-proveedores")]
 public class EvaluacionesProveedorController : ControllerBase
 {
-    private readonly ListarEvaluacionesProveedorUseCase _listarEvaluacionesUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerEvaluacionProveedorUseCase _obtenerEvaluacionUseCase;
-
-    private readonly CrearEvaluacionProveedorUseCase _crearEvaluacionUseCase;
-
-    private readonly ActualizarEvaluacionProveedorUseCase _actualizarEvaluacionUseCase;
-
-    private readonly EliminarEvaluacionProveedorUseCase _eliminarEvaluacionUseCase;
-
-    private readonly ResumenEvaluacionesProveedorUseCase _resumenEvaluacionesUseCase;
-
-    public EvaluacionesProveedorController(
-        ListarEvaluacionesProveedorUseCase listarEvaluacionesUseCase,
-        ObtenerEvaluacionProveedorUseCase obtenerEvaluacionUseCase,
-        CrearEvaluacionProveedorUseCase crearEvaluacionUseCase,
-        ActualizarEvaluacionProveedorUseCase actualizarEvaluacionUseCase,
-        EliminarEvaluacionProveedorUseCase eliminarEvaluacionUseCase,
-        ResumenEvaluacionesProveedorUseCase resumenEvaluacionesUseCase)
+    public EvaluacionesProveedorController(ISender sender)
     {
-        _listarEvaluacionesUseCase = listarEvaluacionesUseCase;
-        _obtenerEvaluacionUseCase = obtenerEvaluacionUseCase;
-        _crearEvaluacionUseCase = crearEvaluacionUseCase;
-        _actualizarEvaluacionUseCase = actualizarEvaluacionUseCase;
-        _eliminarEvaluacionUseCase = eliminarEvaluacionUseCase;
-        _resumenEvaluacionesUseCase = resumenEvaluacionesUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -44,12 +25,14 @@ public class EvaluacionesProveedorController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaEvaluacionesDto resultado = await _listarEvaluacionesUseCase.ExecuteAsync(
-            proveedorId,
-            periodo,
-            calificacion,
-            pagina,
-            tamanoPagina);
+        PaginaEvaluacionesDto resultado = await _sender.Send(new ListarEvaluacionesProveedorQuery
+        {
+            ProveedorId = proveedorId,
+            Periodo = periodo,
+            Calificacion = calificacion,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -57,7 +40,7 @@ public class EvaluacionesProveedorController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenEvaluacionesDto resultado = await _resumenEvaluacionesUseCase.ExecuteAsync();
+        ResumenEvaluacionesDto resultado = await _sender.Send(new ResumenEvaluacionesProveedorQuery());
 
         return Ok(resultado);
     }
@@ -65,7 +48,7 @@ public class EvaluacionesProveedorController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        EvaluacionDetalleDto resultado = await _obtenerEvaluacionUseCase.ExecuteAsync(id);
+        EvaluacionDetalleDto resultado = await _sender.Send(new ObtenerEvaluacionProveedorQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -73,7 +56,7 @@ public class EvaluacionesProveedorController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearEvaluacionRequestDto solicitud)
     {
-        int id = await _crearEvaluacionUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearEvaluacionProveedorCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -81,7 +64,11 @@ public class EvaluacionesProveedorController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarEvaluacionRequestDto solicitud)
     {
-        int idActualizado = await _actualizarEvaluacionUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarEvaluacionProveedorCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(new { Id = idActualizado });
     }
@@ -89,7 +76,7 @@ public class EvaluacionesProveedorController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarEvaluacionUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarEvaluacionProveedorCommand { Id = id });
 
         return NoContent();
     }

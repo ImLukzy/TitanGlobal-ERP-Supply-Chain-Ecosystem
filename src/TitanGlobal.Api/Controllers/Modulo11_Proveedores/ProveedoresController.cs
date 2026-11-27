@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo11_Proveedores;
-using TitanGlobal.Application.UseCases.Modulo11_Proveedores;
+using TitanGlobal.Application.UseCases.Modulo11_Proveedores.Commands;
+using TitanGlobal.Application.UseCases.Modulo11_Proveedores.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo11_Proveedores;
 
@@ -8,36 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo11_Proveedores;
 [Route("api/v1/proveedores")]
 public class ProveedoresController : ControllerBase
 {
-    private readonly ListarProveedoresUseCase _listarProveedoresUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerProveedorUseCase _obtenerProveedorUseCase;
-
-    private readonly CrearProveedorUseCase _crearProveedorUseCase;
-
-    private readonly ActualizarProveedorUseCase _actualizarProveedorUseCase;
-
-    private readonly EliminarProveedorUseCase _eliminarProveedorUseCase;
-
-    private readonly ListarPaisesProveedorUseCase _listarPaisesProveedorUseCase;
-
-    private readonly ResumenProveedoresUseCase _resumenProveedoresUseCase;
-
-    public ProveedoresController(
-        ListarProveedoresUseCase listarProveedoresUseCase,
-        ObtenerProveedorUseCase obtenerProveedorUseCase,
-        CrearProveedorUseCase crearProveedorUseCase,
-        ActualizarProveedorUseCase actualizarProveedorUseCase,
-        EliminarProveedorUseCase eliminarProveedorUseCase,
-        ListarPaisesProveedorUseCase listarPaisesProveedorUseCase,
-        ResumenProveedoresUseCase resumenProveedoresUseCase)
+    public ProveedoresController(ISender sender)
     {
-        _listarProveedoresUseCase = listarProveedoresUseCase;
-        _obtenerProveedorUseCase = obtenerProveedorUseCase;
-        _crearProveedorUseCase = crearProveedorUseCase;
-        _actualizarProveedorUseCase = actualizarProveedorUseCase;
-        _eliminarProveedorUseCase = eliminarProveedorUseCase;
-        _listarPaisesProveedorUseCase = listarPaisesProveedorUseCase;
-        _resumenProveedoresUseCase = resumenProveedoresUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -48,12 +25,14 @@ public class ProveedoresController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaProveedoresDto resultado = await _listarProveedoresUseCase.ExecuteAsync(
-            busqueda,
-            pais,
-            activo,
-            pagina,
-            tamanoPagina);
+        PaginaProveedoresDto resultado = await _sender.Send(new ListarProveedoresQuery
+        {
+            Busqueda = busqueda,
+            Pais = pais,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -61,7 +40,7 @@ public class ProveedoresController : ControllerBase
     [HttpGet("paises")]
     public async Task<IActionResult> Paises()
     {
-        List<string> resultado = await _listarPaisesProveedorUseCase.ExecuteAsync();
+        List<string> resultado = await _sender.Send(new ListarPaisesProveedorQuery());
 
         return Ok(resultado);
     }
@@ -69,7 +48,7 @@ public class ProveedoresController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenProveedoresDto resultado = await _resumenProveedoresUseCase.ExecuteAsync();
+        ResumenProveedoresDto resultado = await _sender.Send(new ResumenProveedoresQuery());
 
         return Ok(resultado);
     }
@@ -77,7 +56,7 @@ public class ProveedoresController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ProveedorDetalleDto resultado = await _obtenerProveedorUseCase.ExecuteAsync(id);
+        ProveedorDetalleDto resultado = await _sender.Send(new ObtenerProveedorQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -85,7 +64,7 @@ public class ProveedoresController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarProveedorRequestDto solicitud)
     {
-        int id = await _crearProveedorUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearProveedorCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -93,7 +72,7 @@ public class ProveedoresController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarProveedorRequestDto solicitud)
     {
-        int idActualizado = await _actualizarProveedorUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarProveedorCommand { Id = id, Solicitud = solicitud });
 
         return Ok(new { Id = idActualizado });
     }
@@ -101,7 +80,7 @@ public class ProveedoresController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarProveedorUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarProveedorCommand { Id = id });
 
         return NoContent();
     }
