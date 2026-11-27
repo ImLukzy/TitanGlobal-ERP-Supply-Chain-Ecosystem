@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo24_ZonasAlmacenaje;
-using TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje;
+using TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje.Commands;
+using TitanGlobal.Application.UseCases.Modulo24_ZonasAlmacenaje.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo24_ZonasAlmacenaje;
 
@@ -8,32 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo24_ZonasAlmacenaje;
 [Route("api/v1/zonas-almacenaje")]
 public class ZonasAlmacenajeController : ControllerBase
 {
-    private readonly ListarZonasAlmacenajeUseCase _listarZonasAlmacenajeUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerZonaAlmacenajeUseCase _obtenerZonaAlmacenajeUseCase;
-
-    private readonly CrearZonaAlmacenajeUseCase _crearZonaAlmacenajeUseCase;
-
-    private readonly ActualizarZonaAlmacenajeUseCase _actualizarZonaAlmacenajeUseCase;
-
-    private readonly EliminarZonaAlmacenajeUseCase _eliminarZonaAlmacenajeUseCase;
-
-    private readonly ResumenZonasAlmacenajeUseCase _resumenZonasAlmacenajeUseCase;
-
-    public ZonasAlmacenajeController(
-        ListarZonasAlmacenajeUseCase listarZonasAlmacenajeUseCase,
-        ObtenerZonaAlmacenajeUseCase obtenerZonaAlmacenajeUseCase,
-        CrearZonaAlmacenajeUseCase crearZonaAlmacenajeUseCase,
-        ActualizarZonaAlmacenajeUseCase actualizarZonaAlmacenajeUseCase,
-        EliminarZonaAlmacenajeUseCase eliminarZonaAlmacenajeUseCase,
-        ResumenZonasAlmacenajeUseCase resumenZonasAlmacenajeUseCase)
+    public ZonasAlmacenajeController(ISender sender)
     {
-        _listarZonasAlmacenajeUseCase = listarZonasAlmacenajeUseCase;
-        _obtenerZonaAlmacenajeUseCase = obtenerZonaAlmacenajeUseCase;
-        _crearZonaAlmacenajeUseCase = crearZonaAlmacenajeUseCase;
-        _actualizarZonaAlmacenajeUseCase = actualizarZonaAlmacenajeUseCase;
-        _eliminarZonaAlmacenajeUseCase = eliminarZonaAlmacenajeUseCase;
-        _resumenZonasAlmacenajeUseCase = resumenZonasAlmacenajeUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -46,14 +27,16 @@ public class ZonasAlmacenajeController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaZonasDto resultado = await _listarZonasAlmacenajeUseCase.ExecuteAsync(
-            almacenId,
-            busqueda,
-            tipo,
-            temperatura,
-            activa,
-            pagina,
-            tamanoPagina);
+        PaginaZonasDto resultado = await _sender.Send(new ListarZonasAlmacenajeQuery
+        {
+            AlmacenId = almacenId,
+            Busqueda = busqueda,
+            Tipo = tipo,
+            Temperatura = temperatura,
+            Activa = activa,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -61,7 +44,7 @@ public class ZonasAlmacenajeController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen([FromQuery] int? almacenId)
     {
-        ResumenZonasDto resultado = await _resumenZonasAlmacenajeUseCase.ExecuteAsync(almacenId);
+        ResumenZonasDto resultado = await _sender.Send(new ResumenZonasAlmacenajeQuery { AlmacenId = almacenId });
 
         return Ok(resultado);
     }
@@ -69,7 +52,7 @@ public class ZonasAlmacenajeController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ZonaDetalleDto resultado = await _obtenerZonaAlmacenajeUseCase.ExecuteAsync(id);
+        ZonaDetalleDto resultado = await _sender.Send(new ObtenerZonaAlmacenajeQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -77,7 +60,7 @@ public class ZonasAlmacenajeController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarZonaRequestDto solicitud)
     {
-        int id = await _crearZonaAlmacenajeUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearZonaAlmacenajeCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -85,7 +68,11 @@ public class ZonasAlmacenajeController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarZonaRequestDto solicitud)
     {
-        int idActualizado = await _actualizarZonaAlmacenajeUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarZonaAlmacenajeCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(new { Id = idActualizado });
     }
@@ -93,7 +80,7 @@ public class ZonasAlmacenajeController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarZonaAlmacenajeUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarZonaAlmacenajeCommand { Id = id });
 
         return NoContent();
     }

@@ -1,6 +1,7 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo77_AuditoriaTransaccional;
-using TitanGlobal.Application.UseCases.Modulo77_AuditoriaTransaccional;
+using TitanGlobal.Application.UseCases.Modulo77_AuditoriaTransaccional.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo77_AuditoriaTransaccional;
 
@@ -8,24 +9,11 @@ namespace TitanGlobal.Api.Controllers.Modulo77_AuditoriaTransaccional;
 [Route("api/v1/auditoria")]
 public class AuditoriaController : ControllerBase
 {
-    private readonly ListarAuditoriaUseCase _listarAuditoriaUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerRegistroAuditoriaUseCase _obtenerRegistroAuditoriaUseCase;
-
-    private readonly ListarEntidadesAuditoriaUseCase _listarEntidadesAuditoriaUseCase;
-
-    private readonly ResumenAuditoriaUseCase _resumenAuditoriaUseCase;
-
-    public AuditoriaController(
-        ListarAuditoriaUseCase listarAuditoriaUseCase,
-        ObtenerRegistroAuditoriaUseCase obtenerRegistroAuditoriaUseCase,
-        ListarEntidadesAuditoriaUseCase listarEntidadesAuditoriaUseCase,
-        ResumenAuditoriaUseCase resumenAuditoriaUseCase)
+    public AuditoriaController(ISender sender)
     {
-        _listarAuditoriaUseCase = listarAuditoriaUseCase;
-        _obtenerRegistroAuditoriaUseCase = obtenerRegistroAuditoriaUseCase;
-        _listarEntidadesAuditoriaUseCase = listarEntidadesAuditoriaUseCase;
-        _resumenAuditoriaUseCase = resumenAuditoriaUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -39,36 +27,38 @@ public class AuditoriaController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaAuditoriaDto resultado = await _listarAuditoriaUseCase.ExecuteAsync(
-            entidad,
-            entidadId,
-            accion,
-            usuario,
-            fechaDesde,
-            fechaHasta,
-            pagina,
-            tamanoPagina);
+        PaginaAuditoriaDto resultado = await _sender.Send(new ListarAuditoriaQuery
+        {
+            Entidad = entidad,
+            EntidadId = entidadId,
+            Accion = accion,
+            Usuario = usuario,
+            FechaDesde = fechaDesde,
+            FechaHasta = fechaHasta,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("entidades")]
     public async Task<IActionResult> ListarEntidades()
     {
-        List<string> resultado = await _listarEntidadesAuditoriaUseCase.ExecuteAsync();
+        List<string> resultado = await _sender.Send(new ListarEntidadesAuditoriaQuery());
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenAuditoriaDto resultado = await _resumenAuditoriaUseCase.ExecuteAsync();
+        ResumenAuditoriaDto resultado = await _sender.Send(new ResumenAuditoriaQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:long}")]
     public async Task<IActionResult> Obtener(long id)
     {
-        RegistroDetalleDto resultado = await _obtenerRegistroAuditoriaUseCase.ExecuteAsync(id);
+        RegistroDetalleDto resultado = await _sender.Send(new ObtenerRegistroAuditoriaQuery { Id = id });
         return Ok(resultado);
     }
 }

@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo02_SegmentacionClientes;
-using TitanGlobal.Application.UseCases.Modulo02_SegmentacionClientes;
+using TitanGlobal.Application.UseCases.Modulo02_SegmentacionClientes.Commands;
+using TitanGlobal.Application.UseCases.Modulo02_SegmentacionClientes.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo02_SegmentacionClientes;
 
@@ -8,33 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo02_SegmentacionClientes;
 [Route("api/v1/segmentos-clientes")]
 public class SegmentosClientesController : ControllerBase
 {
-    private readonly ListarSegmentosClientesUseCase _listarUseCase;
-    private readonly ObtenerSegmentoClienteUseCase _obtenerUseCase;
-    private readonly CrearSegmentoClienteUseCase _crearUseCase;
-    private readonly ActualizarSegmentoClienteUseCase _actualizarUseCase;
-    private readonly EliminarSegmentoClienteUseCase _eliminarUseCase;
-    private readonly ListarClientesDeSegmentoUseCase _clientesSegmentoUseCase;
-    private readonly ListarClientesClasificadosUseCase _clasificacionUseCase;
-    private readonly ResumenSegmentacionClientesUseCase _resumenUseCase;
+    private readonly ISender _sender;
 
-    public SegmentosClientesController(
-        ListarSegmentosClientesUseCase listarUseCase,
-        ObtenerSegmentoClienteUseCase obtenerUseCase,
-        CrearSegmentoClienteUseCase crearUseCase,
-        ActualizarSegmentoClienteUseCase actualizarUseCase,
-        EliminarSegmentoClienteUseCase eliminarUseCase,
-        ListarClientesDeSegmentoUseCase clientesSegmentoUseCase,
-        ListarClientesClasificadosUseCase clasificacionUseCase,
-        ResumenSegmentacionClientesUseCase resumenUseCase)
+    public SegmentosClientesController(ISender sender)
     {
-        _listarUseCase = listarUseCase;
-        _obtenerUseCase = obtenerUseCase;
-        _crearUseCase = crearUseCase;
-        _actualizarUseCase = actualizarUseCase;
-        _eliminarUseCase = eliminarUseCase;
-        _clientesSegmentoUseCase = clientesSegmentoUseCase;
-        _clasificacionUseCase = clasificacionUseCase;
-        _resumenUseCase = resumenUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -44,7 +24,13 @@ public class SegmentosClientesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaSegmentosDto resultado = await _listarUseCase.ExecuteAsync(busqueda, activo, pagina, tamanoPagina);
+        PaginaSegmentosDto resultado = await _sender.Send(new ListarSegmentosClientesQuery
+        {
+            Busqueda = busqueda,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
@@ -56,54 +42,65 @@ public class SegmentosClientesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaClientesSegmentoDto resultado = await _clasificacionUseCase.ExecuteAsync(
-            segmentoId,
-            sinSegmento,
-            busqueda,
-            pagina,
-            tamanoPagina);
+        PaginaClientesSegmentoDto resultado = await _sender.Send(new ListarClientesClasificadosQuery
+        {
+            SegmentoId = segmentoId,
+            SinSegmento = sinSegmento,
+            Busqueda = busqueda,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenSegmentacionDto resultado = await _resumenUseCase.ExecuteAsync();
+        ResumenSegmentacionDto resultado = await _sender.Send(new ResumenSegmentacionClientesQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}/clientes")]
     public async Task<IActionResult> Clientes(int id, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        PaginaClientesSegmentoDto resultado = await _clientesSegmentoUseCase.ExecuteAsync(id, pagina, tamanoPagina);
+        PaginaClientesSegmentoDto resultado = await _sender.Send(new ListarClientesDeSegmentoQuery
+        {
+            Id = id,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        SegmentoDetalleDto resultado = await _obtenerUseCase.ExecuteAsync(id);
+        SegmentoDetalleDto resultado = await _sender.Send(new ObtenerSegmentoClienteQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarSegmentoRequestDto solicitud)
     {
-        int id = await _crearUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearSegmentoClienteCommand { Solicitud = solicitud });
         return Ok(new { Id = id });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarSegmentoRequestDto solicitud)
     {
-        int idActualizado = await _actualizarUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarSegmentoClienteCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(new { Id = idActualizado });
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarSegmentoClienteCommand { Id = id });
         return NoContent();
     }
 }

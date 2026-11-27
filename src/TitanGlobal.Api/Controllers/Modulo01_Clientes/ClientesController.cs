@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo01_Clientes;
-using TitanGlobal.Application.UseCases.Modulo01_Clientes;
+using TitanGlobal.Application.UseCases.Modulo01_Clientes.Commands;
+using TitanGlobal.Application.UseCases.Modulo01_Clientes.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo01_Clientes;
 
@@ -8,32 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo01_Clientes;
 [Route("api/v1/clientes")]
 public class ClientesController : ControllerBase
 {
-    private readonly ListarClientesUseCase _listarClientesUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerClienteUseCase _obtenerClienteUseCase;
-
-    private readonly CrearClienteUseCase _crearClienteUseCase;
-
-    private readonly ActualizarClienteUseCase _actualizarClienteUseCase;
-
-    private readonly EliminarClienteUseCase _eliminarClienteUseCase;
-
-    private readonly ResumenClientesUseCase _resumenClientesUseCase;
-
-    public ClientesController(
-        ListarClientesUseCase listarClientesUseCase,
-        ObtenerClienteUseCase obtenerClienteUseCase,
-        CrearClienteUseCase crearClienteUseCase,
-        ActualizarClienteUseCase actualizarClienteUseCase,
-        EliminarClienteUseCase eliminarClienteUseCase,
-        ResumenClientesUseCase resumenClientesUseCase)
+    public ClientesController(ISender sender)
     {
-        _listarClientesUseCase = listarClientesUseCase;
-        _obtenerClienteUseCase = obtenerClienteUseCase;
-        _crearClienteUseCase = crearClienteUseCase;
-        _actualizarClienteUseCase = actualizarClienteUseCase;
-        _eliminarClienteUseCase = eliminarClienteUseCase;
-        _resumenClientesUseCase = resumenClientesUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -42,7 +23,12 @@ public class ClientesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaClientesDto resultado = await _listarClientesUseCase.ExecuteAsync(busqueda, pagina, tamanoPagina);
+        PaginaClientesDto resultado = await _sender.Send(new ListarClientesQuery
+        {
+            Busqueda = busqueda,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -50,7 +36,7 @@ public class ClientesController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenClientesDto resultado = await _resumenClientesUseCase.ExecuteAsync();
+        ResumenClientesDto resultado = await _sender.Send(new ResumenClientesQuery());
 
         return Ok(resultado);
     }
@@ -58,7 +44,7 @@ public class ClientesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ClienteDetalleDto resultado = await _obtenerClienteUseCase.ExecuteAsync(id);
+        ClienteDetalleDto resultado = await _sender.Send(new ObtenerClienteQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -66,7 +52,7 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarClienteRequestDto solicitud)
     {
-        int id = await _crearClienteUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearClienteCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -74,7 +60,7 @@ public class ClientesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarClienteRequestDto solicitud)
     {
-        int idActualizado = await _actualizarClienteUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarClienteCommand { Id = id, Solicitud = solicitud });
 
         return Ok(new { Id = idActualizado });
     }
@@ -82,7 +68,7 @@ public class ClientesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarClienteUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarClienteCommand { Id = id });
 
         return NoContent();
     }

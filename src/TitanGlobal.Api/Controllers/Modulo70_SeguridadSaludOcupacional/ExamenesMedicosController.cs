@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo70_SeguridadSaludOcupacional;
-using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional;
+using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional.Commands;
+using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo70_SeguridadSaludOcupacional;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo70_SeguridadSaludOcupacional;
 [Route("api/v1/examenes-medicos")]
 public class ExamenesMedicosController : ControllerBase
 {
-    private readonly AdministrarExamenesMedicosUseCase _administrarExamenes;
+    private readonly ISender _sender;
 
-    public ExamenesMedicosController(AdministrarExamenesMedicosUseCase administrarExamenes)
+    public ExamenesMedicosController(ISender sender)
     {
-        _administrarExamenes = administrarExamenes;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,7 +27,15 @@ public class ExamenesMedicosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaExamenesMedicosDto respuesta = await _administrarExamenes.ListarAsync(empleadoId, tipo, resultado, vencidos, pagina, tamanoPagina);
+        PaginaExamenesMedicosDto respuesta = await _sender.Send(new ListarExamenesMedicosQuery
+        {
+            EmpleadoId = empleadoId,
+            Tipo = tipo,
+            Resultado = resultado,
+            Vencidos = vencidos,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(respuesta);
     }
 
@@ -33,7 +43,10 @@ public class ExamenesMedicosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarExamenMedicoRequestDto solicitud)
     {
-        ExamenMedicoIdDto resultado = await _administrarExamenes.RegistrarAsync(solicitud);
+        ExamenMedicoIdDto resultado = await _sender.Send(new RegistrarExamenMedicoCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 }

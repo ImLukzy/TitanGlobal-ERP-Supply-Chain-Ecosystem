@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo62_ContratosLaborales;
-using TitanGlobal.Application.UseCases.Modulo62_ContratosLaborales;
+using TitanGlobal.Application.UseCases.Modulo62_ContratosLaborales.Commands;
+using TitanGlobal.Application.UseCases.Modulo62_ContratosLaborales.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo62_ContratosLaborales;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo62_ContratosLaborales;
 [Route("api/v1/contratos-laborales")]
 public class ContratosLaboralesController : ControllerBase
 {
-    private readonly AdministrarContratosLaboralesUseCase _administrarContratos;
+    private readonly ISender _sender;
 
-    public ContratosLaboralesController(AdministrarContratosLaboralesUseCase administrarContratos)
+    public ContratosLaboralesController(ISender sender)
     {
-        _administrarContratos = administrarContratos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,20 +27,22 @@ public class ContratosLaboralesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaContratosLaboralesDto resultado = await _administrarContratos.ListarAsync(
-            busqueda,
-            estado,
-            modalidad,
-            empleadoId,
-            pagina,
-            tamanoPagina);
+        PaginaContratosLaboralesDto resultado = await _sender.Send(new ListarContratosLaboralesQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            Modalidad = modalidad,
+            EmpleadoId = empleadoId,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ContratoLaboralDetalleDto resultado = await _administrarContratos.ObtenerAsync(id);
+        ContratoLaboralDetalleDto resultado = await _sender.Send(new ObtenerContratoLaboralQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -46,7 +50,10 @@ public class ContratosLaboralesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarContratoLaboralRequestDto solicitud)
     {
-        ContratoLaboralCreadoDto resultado = await _administrarContratos.CrearAsync(solicitud);
+        ContratoLaboralCreadoDto resultado = await _sender.Send(new CrearContratoLaboralCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -54,7 +61,11 @@ public class ContratosLaboralesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Renovar(int id, [FromBody] RenovarContratoLaboralRequestDto solicitud)
     {
-        ContratoLaboralCreadoDto resultado = await _administrarContratos.RenovarAsync(id, solicitud);
+        ContratoLaboralCreadoDto resultado = await _sender.Send(new RenovarContratoLaboralCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -62,7 +73,11 @@ public class ContratosLaboralesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> AgregarAdenda(int id, [FromBody] AdendaContratoRequestDto solicitud)
     {
-        ContratoLaboralIdDto resultado = await _administrarContratos.AgregarAdendaAsync(id, solicitud);
+        ContratoLaboralIdDto resultado = await _sender.Send(new AgregarAdendaCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -70,7 +85,11 @@ public class ContratosLaboralesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Anular(int id, [FromBody] AnularContratoLaboralRequestDto solicitud)
     {
-        ContratoLaboralIdDto resultado = await _administrarContratos.AnularAsync(id, solicitud);
+        ContratoLaboralIdDto resultado = await _sender.Send(new AnularContratoLaboralCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 }

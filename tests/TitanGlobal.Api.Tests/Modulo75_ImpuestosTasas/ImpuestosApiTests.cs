@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
 using TitanGlobal.Application.Exceptions;
-using TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+using TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Commands;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -189,11 +189,11 @@ public class ImpuestosApiTests
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
         IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        CrearImpuestoUseCase casoDeUso = new CrearImpuestoUseCase(
+        CrearImpuestoCommandHandler manejador = new CrearImpuestoCommandHandler(
             new UnitOfWorkConUnicidadViolada(unitOfWork, TipoViolacionRestriccion.Unicidad));
 
         ReglaNegocioException excepcion = await Assert.ThrowsAsync<ReglaNegocioException>(
-            () => casoDeUso.Ejecutar(CrearSolicitud("carrera", "Carrera", "IVA")));
+            () => manejador.Handle(new CrearImpuestoCommand { Dto = CrearSolicitud("carrera", "Carrera", "IVA") }, CancellationToken.None));
 
         Assert.Equal(409, excepcion.StatusCode);
         Assert.Equal("Ya existe un impuesto con el código CARRERA.", excepcion.Message);
@@ -204,11 +204,11 @@ public class ImpuestosApiTests
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
         IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        CrearImpuestoUseCase casoDeUso = new CrearImpuestoUseCase(
+        CrearImpuestoCommandHandler manejador = new CrearImpuestoCommandHandler(
             new UnitOfWorkConUnicidadViolada(unitOfWork, TipoViolacionRestriccion.ReferenciaForanea));
 
         await Assert.ThrowsAsync<ViolacionRestriccionException>(
-            () => casoDeUso.Ejecutar(CrearSolicitud("carrera", "Carrera", "IVA")));
+            () => manejador.Handle(new CrearImpuestoCommand { Dto = CrearSolicitud("carrera", "Carrera", "IVA") }, CancellationToken.None));
     }
 
     [Fact]
@@ -243,11 +243,11 @@ public class ImpuestosApiTests
     {
         using IServiceScope scope = _fabrica.Services.CreateScope();
         IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        ActualizarImpuestoUseCase casoDeUso = new ActualizarImpuestoUseCase(
+        ActualizarImpuestoCommandHandler manejador = new ActualizarImpuestoCommandHandler(
             new UnitOfWorkConUnicidadViolada(unitOfWork, TipoViolacionRestriccion.Unicidad));
 
         ReglaNegocioException excepcion = await Assert.ThrowsAsync<ReglaNegocioException>(
-            () => casoDeUso.Ejecutar(1, CrearSolicitud("igv", "IGV", "IGV")));
+            () => manejador.Handle(new ActualizarImpuestoCommand { Id = 1, Dto = CrearSolicitud("igv", "IGV", "IGV") }, CancellationToken.None));
 
         Assert.Equal(409, excepcion.StatusCode);
         Assert.Equal("Ya existe un impuesto con el código IGV.", excepcion.Message);

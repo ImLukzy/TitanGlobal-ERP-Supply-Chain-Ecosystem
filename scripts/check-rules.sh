@@ -12,6 +12,10 @@ failed = False
 var_declaration = re.compile(r"\bvar\s+(?:[A-Za-z_]\w*|\([^)]*\))\s*(?:=|\bin\b)")
 interface_use_case = re.compile(r"\binterface\s+I\w*UseCase\b")
 class_use_case = re.compile(r"\b(?:class|record)\s+\w*UseCase\b")
+# CQRS con MediatR: las queries, los commands y sus handlers viven en Application,
+# dentro de UseCases/ModuloNN_Nombre/Queries o UseCases/ModuloNN_Nombre/Commands.
+class_handler = re.compile(r"\b(?:class|record)\s+\w+(?:Query|Command)Handler\b")
+class_request = re.compile(r"\b(?:class|record)\s+\w+(?:Query|Command)\s*:\s*IRequest\b")
 controller_dependency = re.compile(r"\b(?:IUnitOfWork|DbContext|IGenericRepository|GenericRepository)\b")
 member_expression = re.compile(
     r"^\s*(?:(?:public|private|protected|internal|static|async|virtual|override|sealed|new|partial|extern|unsafe|readonly)\s+)*"
@@ -34,6 +38,8 @@ for path in sorted(root.rglob("*.cs")):
         ("d: UseCase en Services", class_use_case, "Services" in path.parts),
         ("e: controlador con dependencia de persistencia", controller_dependency, "Controllers" in path.parts),
         ("g: UseCase fuera de Application", class_use_case, any(layer in path.parts for layer in ("TitanGlobal.Api", "TitanGlobal.Infrastructure", "TitanGlobal.Domain"))),
+        ("h: handler fuera de Application", class_handler, any(layer in path.parts for layer in ("TitanGlobal.Api", "TitanGlobal.Infrastructure", "TitanGlobal.Domain"))),
+        ("i: query o command fuera de Queries/Commands", class_request, "TitanGlobal.Application" in path.parts and not {"Queries", "Commands"} & set(path.parts)),
     ]
 
     code = re.sub(r"//.*", "", text)

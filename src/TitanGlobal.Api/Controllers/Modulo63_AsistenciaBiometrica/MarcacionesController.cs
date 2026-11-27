@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo63_AsistenciaBiometrica;
-using TitanGlobal.Application.UseCases.Modulo63_AsistenciaBiometrica;
+using TitanGlobal.Application.UseCases.Modulo63_AsistenciaBiometrica.Commands;
+using TitanGlobal.Application.UseCases.Modulo63_AsistenciaBiometrica.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo63_AsistenciaBiometrica;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo63_AsistenciaBiometrica;
 [Route("api/v1/marcaciones")]
 public class MarcacionesController : ControllerBase
 {
-    private readonly AdministrarMarcacionesUseCase _administrarMarcaciones;
+    private readonly ISender _sender;
 
-    public MarcacionesController(AdministrarMarcacionesUseCase administrarMarcaciones)
+    public MarcacionesController(ISender sender)
     {
-        _administrarMarcaciones = administrarMarcaciones;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -26,14 +28,16 @@ public class MarcacionesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaMarcacionesDto resultado = await _administrarMarcaciones.ListarAsync(
-            empleadoId,
-            desde,
-            hasta,
-            tipo,
-            origen,
-            pagina,
-            tamanoPagina);
+        PaginaMarcacionesDto resultado = await _sender.Send(new ListarMarcacionesQuery
+        {
+            EmpleadoId = empleadoId,
+            Desde = desde,
+            Hasta = hasta,
+            Tipo = tipo,
+            Origen = origen,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
@@ -41,7 +45,7 @@ public class MarcacionesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarMarcacionRequestDto solicitud)
     {
-        MarcacionIdDto resultado = await _administrarMarcaciones.RegistrarAsync(solicitud);
+        MarcacionIdDto resultado = await _sender.Send(new RegistrarMarcacionCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -49,7 +53,10 @@ public class MarcacionesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Importar([FromBody] ImportarMarcacionesRequestDto solicitud)
     {
-        ResultadoImportacionDto resultado = await _administrarMarcaciones.ImportarAsync(solicitud);
+        ResultadoImportacionDto resultado = await _sender.Send(new ImportarMarcacionesCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -57,7 +64,7 @@ public class MarcacionesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _administrarMarcaciones.EliminarAsync(id);
+        await _sender.Send(new EliminarMarcacionCommand { Id = id });
         return NoContent();
     }
 }

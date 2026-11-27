@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo64_TurnosHorarios;
-using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios;
+using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios.Commands;
+using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo64_TurnosHorarios;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo64_TurnosHorarios;
 [Route("api/v1/turnos")]
 public class TurnosController : ControllerBase
 {
-    private readonly AdministrarTurnosUseCase _administrarTurnos;
+    private readonly ISender _sender;
 
-    public TurnosController(AdministrarTurnosUseCase administrarTurnos)
+    public TurnosController(ISender sender)
     {
-        _administrarTurnos = administrarTurnos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,21 +27,28 @@ public class TurnosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaTurnosDto resultado = await _administrarTurnos.ListarAsync(busqueda, tipo, activo, pagina, tamanoPagina);
+        PaginaTurnosDto resultado = await _sender.Send(new ListarTurnosQuery
+        {
+            Busqueda = busqueda,
+            Tipo = tipo,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenTurnosDto resultado = await _administrarTurnos.ResumenAsync();
+        ResumenTurnosDto resultado = await _sender.Send(new ResumenTurnosQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        TurnoDetalleDto resultado = await _administrarTurnos.ObtenerAsync(id);
+        TurnoDetalleDto resultado = await _sender.Send(new ObtenerTurnoQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -47,7 +56,7 @@ public class TurnosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarTurnoRequestDto solicitud)
     {
-        TurnoIdDto resultado = await _administrarTurnos.CrearAsync(solicitud);
+        TurnoIdDto resultado = await _sender.Send(new CrearTurnoCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -55,7 +64,7 @@ public class TurnosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarTurnoRequestDto solicitud)
     {
-        TurnoIdDto resultado = await _administrarTurnos.ActualizarAsync(id, solicitud);
+        TurnoIdDto resultado = await _sender.Send(new ActualizarTurnoCommand { Id = id, Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -64,7 +73,7 @@ public class TurnosController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Desactivar(int id)
     {
-        TurnoIdDto resultado = await _administrarTurnos.DesactivarAsync(id);
+        TurnoIdDto resultado = await _sender.Send(new DesactivarTurnoCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -73,7 +82,7 @@ public class TurnosController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        TurnoIdDto resultado = await _administrarTurnos.ActivarAsync(id);
+        TurnoIdDto resultado = await _sender.Send(new ActivarTurnoCommand { Id = id });
         return Ok(resultado);
     }
 }

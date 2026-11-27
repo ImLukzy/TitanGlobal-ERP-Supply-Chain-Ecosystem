@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo65_VacacionesPermisos;
-using TitanGlobal.Application.UseCases.Modulo65_VacacionesPermisos;
+using TitanGlobal.Application.UseCases.Modulo65_VacacionesPermisos.Commands;
+using TitanGlobal.Application.UseCases.Modulo65_VacacionesPermisos.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo65_VacacionesPermisos;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo65_VacacionesPermisos;
 [Route("api/v1/ausencias")]
 public class AusenciasController : ControllerBase
 {
-    private readonly AdministrarAusenciasUseCase _administrarAusencias;
+    private readonly ISender _sender;
 
-    public AusenciasController(AdministrarAusenciasUseCase administrarAusencias)
+    public AusenciasController(ISender sender)
     {
-        _administrarAusencias = administrarAusencias;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -28,43 +30,49 @@ public class AusenciasController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaAusenciasDto resultado = await _administrarAusencias.ListarAsync(
-            busqueda,
-            empleadoId,
-            tipo,
-            estado,
-            desde,
-            hasta,
-            pagina,
-            tamanoPagina);
+        PaginaAusenciasDto resultado = await _sender.Send(new ListarAusenciasQuery
+        {
+            Busqueda = busqueda,
+            EmpleadoId = empleadoId,
+            Tipo = tipo,
+            Estado = estado,
+            Desde = desde,
+            Hasta = hasta,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenAusenciasDto resultado = await _administrarAusencias.ResumenAsync();
+        ResumenAusenciasDto resultado = await _sender.Send(new ResumenAusenciasQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        AusenciaDetalleDto resultado = await _administrarAusencias.ObtenerAsync(id);
+        AusenciaDetalleDto resultado = await _sender.Send(new ObtenerAusenciaQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpGet("saldo-vacacional/{empleadoId:int}")]
     public async Task<IActionResult> ObtenerSaldo(int empleadoId, [FromQuery] DateOnly? fecha)
     {
-        SaldoVacacionalDto resultado = await _administrarAusencias.ObtenerSaldoAsync(empleadoId, fecha);
+        SaldoVacacionalDto resultado = await _sender.Send(new ObtenerSaldoQuery
+        {
+            EmpleadoId = empleadoId,
+            Fecha = fecha
+        });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Registrar([FromBody] RegistrarAusenciaRequestDto solicitud)
     {
-        AusenciaCreadaDto resultado = await _administrarAusencias.RegistrarAsync(solicitud);
+        AusenciaCreadaDto resultado = await _sender.Send(new RegistrarAusenciaCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -73,7 +81,11 @@ public class AusenciasController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Aprobar(int id)
     {
-        AusenciaIdDto resultado = await _administrarAusencias.AprobarAsync(id, ObtenerUsuario());
+        AusenciaIdDto resultado = await _sender.Send(new AprobarAusenciaCommand
+        {
+            Id = id,
+            Usuario = ObtenerUsuario()
+        });
         return Ok(resultado);
     }
 
@@ -81,7 +93,12 @@ public class AusenciasController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Rechazar(int id, [FromBody] RechazarAusenciaRequestDto solicitud)
     {
-        AusenciaIdDto resultado = await _administrarAusencias.RechazarAsync(id, solicitud, ObtenerUsuario());
+        AusenciaIdDto resultado = await _sender.Send(new RechazarAusenciaCommand
+        {
+            Id = id,
+            Solicitud = solicitud,
+            Usuario = ObtenerUsuario()
+        });
         return Ok(resultado);
     }
 
@@ -89,7 +106,7 @@ public class AusenciasController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Cancelar(int id)
     {
-        AusenciaIdDto resultado = await _administrarAusencias.CancelarAsync(id);
+        AusenciaIdDto resultado = await _sender.Send(new CancelarAusenciaCommand { Id = id });
         return Ok(resultado);
     }
 

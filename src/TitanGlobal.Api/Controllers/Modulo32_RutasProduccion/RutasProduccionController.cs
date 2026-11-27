@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo32_RutasProduccion;
-using TitanGlobal.Application.UseCases.Modulo32_RutasProduccion;
+using TitanGlobal.Application.UseCases.Modulo32_RutasProduccion.Commands;
+using TitanGlobal.Application.UseCases.Modulo32_RutasProduccion.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo32_RutasProduccion;
 
@@ -9,27 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo32_RutasProduccion;
 [Route("api/v1/rutas-produccion")]
 public class RutasProduccionController : ControllerBase
 {
-    private readonly ListarRutasProduccionUseCase _listar;
-    private readonly ObtenerRutaProduccionUseCase _obtener;
-    private readonly CrearRutaProduccionUseCase _crear;
-    private readonly EditarRutaProduccionUseCase _editar;
-    private readonly ActivarRutaProduccionUseCase _activar;
-    private readonly RetirarRutaProduccionUseCase _retirar;
+    private readonly ISender _sender;
 
-    public RutasProduccionController(
-        ListarRutasProduccionUseCase listar,
-        ObtenerRutaProduccionUseCase obtener,
-        CrearRutaProduccionUseCase crear,
-        EditarRutaProduccionUseCase editar,
-        ActivarRutaProduccionUseCase activar,
-        RetirarRutaProduccionUseCase retirar)
+    public RutasProduccionController(ISender sender)
     {
-        _listar = listar;
-        _obtener = obtener;
-        _crear = crear;
-        _editar = editar;
-        _activar = activar;
-        _retirar = retirar;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -39,28 +25,34 @@ public class RutasProduccionController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaRutasProduccionDto resultado = await _listar.ExecuteAsync(productoId, estado, pagina, tamanoPagina);
+        PaginaRutasProduccionDto resultado = await _sender.Send(new ListarRutasProduccionQuery
+        {
+            ProductoId = productoId,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        RutaProduccionDetalleDto resultado = await _obtener.ExecuteAsync(id);
+        RutaProduccionDetalleDto resultado = await _sender.Send(new ObtenerRutaProduccionQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearRutaProduccionRequestDto solicitud)
     {
-        int id = await _crear.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearRutaProduccionCommand { Solicitud = solicitud });
         return CreatedAtAction(nameof(Obtener), new { id }, new { Id = id });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Editar(int id, [FromBody] EditarRutaProduccionRequestDto solicitud)
     {
-        int resultado = await _editar.ExecuteAsync(id, solicitud);
+        int resultado = await _sender.Send(new EditarRutaProduccionCommand { Id = id, Solicitud = solicitud });
         return Ok(new { Id = resultado });
     }
 
@@ -68,7 +60,7 @@ public class RutasProduccionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        int resultado = await _activar.ExecuteAsync(id);
+        int resultado = await _sender.Send(new ActivarRutaProduccionCommand { Id = id });
         return Ok(new { Id = resultado });
     }
 
@@ -76,7 +68,7 @@ public class RutasProduccionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Retirar(int id)
     {
-        int resultado = await _retirar.ExecuteAsync(id);
+        int resultado = await _sender.Send(new RetirarRutaProduccionCommand { Id = id });
         return Ok(new { Id = resultado });
     }
 }

@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo04_OrdenesCompra;
-using TitanGlobal.Application.UseCases.Modulo04_OrdenesCompra;
+using TitanGlobal.Application.UseCases.Modulo04_OrdenesCompra.Commands;
+using TitanGlobal.Application.UseCases.Modulo04_OrdenesCompra.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo04_OrdenesCompra;
 
@@ -8,22 +10,17 @@ namespace TitanGlobal.Api.Controllers.Modulo04_OrdenesCompra;
 [Route("api/v1/ordenes-compra")]
 public class OrdenesCompraController : ControllerBase
 {
-    private readonly CrearOrdenCompraUseCase _crearOrdenCompraUseCase;
+    private readonly ISender _sender;
 
-    private readonly AnaliticaOrdenesCompraUseCase _analiticaOrdenesCompraUseCase;
-
-    public OrdenesCompraController(
-        CrearOrdenCompraUseCase crearOrdenCompraUseCase,
-        AnaliticaOrdenesCompraUseCase analiticaOrdenesCompraUseCase)
+    public OrdenesCompraController(ISender sender)
     {
-        _crearOrdenCompraUseCase = crearOrdenCompraUseCase;
-        _analiticaOrdenesCompraUseCase = analiticaOrdenesCompraUseCase;
+        _sender = sender;
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearOrdenCompraRequestDto request)
     {
-        int id = await _crearOrdenCompraUseCase.ExecuteAsync(request);
+        int id = await _sender.Send(new CrearOrdenCompraCommand { Request = request });
 
         return Ok(new { Id = id });
     }
@@ -33,8 +30,11 @@ public class OrdenesCompraController : ControllerBase
         [FromQuery] string termino,
         [FromQuery] decimal minPrecio)
     {
-        List<ProductoResumenDto> products = await _analiticaOrdenesCompraUseCase
-            .BuscarProductosPorFiltroAsync(termino, minPrecio);
+        List<ProductoResumenDto> products = await _sender.Send(new BuscarProductosPorFiltroQuery
+        {
+            Termino = termino,
+            MinPrecio = minPrecio
+        });
 
         return Ok(products);
     }
@@ -42,7 +42,10 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("ventas/suma")]
     public async Task<IActionResult> ObtenerSumaVentasDesdeFecha([FromQuery] DateTime fechaInicio)
     {
-        decimal totalVentas = await _analiticaOrdenesCompraUseCase.ObtenerSumaVentasDesdeFechaAsync(fechaInicio);
+        decimal totalVentas = await _sender.Send(new ObtenerSumaVentasDesdeFechaQuery
+        {
+            FechaInicio = fechaInicio
+        });
 
         return Ok(new { TotalVentas = totalVentas });
     }
@@ -50,7 +53,7 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("productos/mas-caro")]
     public async Task<IActionResult> ObtenerProductoMasCaro()
     {
-        ProductoResumenDto? product = await _analiticaOrdenesCompraUseCase.ObtenerProductoMasCaroAsync();
+        ProductoResumenDto? product = await _sender.Send(new ObtenerProductoMasCaroQuery());
 
         return Ok(product);
     }
@@ -58,7 +61,7 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("clientes/{clienteId:int}/promedio")]
     public async Task<IActionResult> ObtenerPromedioTotalPorCliente(int clienteId)
     {
-        decimal average = await _analiticaOrdenesCompraUseCase.ObtenerPromedioTotalPorClienteAsync(clienteId);
+        decimal average = await _sender.Send(new ObtenerPromedioTotalPorClienteQuery { ClienteId = clienteId });
 
         return Ok(new { ClienteId = clienteId, PromedioCompra = average });
     }
@@ -66,7 +69,7 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("productos/sin-descripcion")]
     public async Task<IActionResult> ObtenerProductosSinDescripcion()
     {
-        List<ProductoResumenDto> products = await _analiticaOrdenesCompraUseCase.ObtenerProductosSinDescripcionAsync();
+        List<ProductoResumenDto> products = await _sender.Send(new ObtenerProductosSinDescripcionQuery());
 
         return Ok(products);
     }
@@ -74,7 +77,7 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("clientes/frecuencia")]
     public async Task<IActionResult> ObtenerClientesConMasOrdenes()
     {
-        List<ClienteFrecuenciaDto> clients = await _analiticaOrdenesCompraUseCase.ObtenerClientesConMasOrdenesAsync();
+        List<ClienteFrecuenciaDto> clients = await _sender.Send(new ObtenerClientesConMasOrdenesQuery());
 
         return Ok(clients);
     }
@@ -82,8 +85,10 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("clientes/{clienteId:int}/jerarquia")]
     public async Task<IActionResult> ObtenerOrdenesJerarquicas(int clienteId)
     {
-        List<OrdenCompraJerarquicaDto> orders = await _analiticaOrdenesCompraUseCase
-            .ObtenerOrdenesJerarquicasAsync(clienteId);
+        List<OrdenCompraJerarquicaDto> orders = await _sender.Send(new ObtenerOrdenesJerarquicasQuery
+        {
+            ClienteId = clienteId
+        });
 
         return Ok(orders);
     }
@@ -91,8 +96,10 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("clientes/{clienteId:int}/categorias-unicas")]
     public async Task<IActionResult> ObtenerCategoriasUnicasCompradasPorCliente(int clienteId)
     {
-        List<string> categories = await _analiticaOrdenesCompraUseCase
-            .ObtenerCategoriasUnicasCompradasPorClienteAsync(clienteId);
+        List<string> categories = await _sender.Send(new ObtenerCategoriasUnicasCompradasPorClienteQuery
+        {
+            ClienteId = clienteId
+        });
 
         return Ok(categories);
     }
@@ -100,8 +107,10 @@ public class OrdenesCompraController : ControllerBase
     [HttpGet("productos/{productoId:int}/clientes-compradores")]
     public async Task<IActionResult> ObtenerClientesQueCompraronProducto(int productoId)
     {
-        List<string> clients = await _analiticaOrdenesCompraUseCase
-            .ObtenerClientesQueCompraronProductoAsync(productoId);
+        List<string> clients = await _sender.Send(new ObtenerClientesQueCompraronProductoQuery
+        {
+            ProductoId = productoId
+        });
 
         return Ok(clients);
     }

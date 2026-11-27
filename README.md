@@ -52,7 +52,7 @@ El resto de módulos muestra «Pantalla pendiente». La lista completa está en 
 ## Mapa del repositorio
 ```
 src/TitanGlobal.Domain/          Models/, Repositories/, Common/
-src/TitanGlobal.Application/     DTOs/ModuloNN_Nombre/, UseCases/ModuloNN_Nombre/, Exceptions/, Services/
+src/TitanGlobal.Application/     DTOs/ModuloNN_Nombre/, UseCases/ModuloNN_Nombre/{Queries,Commands}/, Exceptions/, Services/
 src/TitanGlobal.Infrastructure/  Persistence/, Repositories/Implementation/, Configuration/
 src/TitanGlobal.Api/             Controllers/ModuloNN_Nombre/, Middlewares/, Configuration/, Services/, Program.cs
 tests/TitanGlobal.Api.Tests/     tests de integración y de arquitectura (xUnit)

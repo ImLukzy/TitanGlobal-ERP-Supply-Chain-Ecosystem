@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo64_TurnosHorarios;
-using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios;
+using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios.Commands;
+using TitanGlobal.Application.UseCases.Modulo64_TurnosHorarios.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo64_TurnosHorarios;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo64_TurnosHorarios;
 [Route("api/v1/asignaciones-turno")]
 public class AsignacionesTurnoController : ControllerBase
 {
-    private readonly AdministrarAsignacionesTurnoUseCase _administrarAsignaciones;
+    private readonly ISender _sender;
 
-    public AsignacionesTurnoController(AdministrarAsignacionesTurnoUseCase administrarAsignaciones)
+    public AsignacionesTurnoController(ISender sender)
     {
-        _administrarAsignaciones = administrarAsignaciones;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,12 +26,14 @@ public class AsignacionesTurnoController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaAsignacionesTurnoDto resultado = await _administrarAsignaciones.ListarAsync(
-            empleadoId,
-            turnoId,
-            estado,
-            pagina,
-            tamanoPagina);
+        PaginaAsignacionesTurnoDto resultado = await _sender.Send(new ListarAsignacionesTurnoQuery
+        {
+            EmpleadoId = empleadoId,
+            TurnoId = turnoId,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
@@ -39,7 +43,12 @@ public class AsignacionesTurnoController : ControllerBase
         [FromQuery] DateOnly? desde,
         [FromQuery] DateOnly? hasta)
     {
-        List<DiaProgramadoDto> resultado = await _administrarAsignaciones.ProgramacionAsync(empleadoId, desde, hasta);
+        List<DiaProgramadoDto> resultado = await _sender.Send(new ObtenerProgramacionTurnosQuery
+        {
+            EmpleadoId = empleadoId,
+            Desde = desde,
+            Hasta = hasta
+        });
         return Ok(resultado);
     }
 
@@ -47,7 +56,10 @@ public class AsignacionesTurnoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarAsignacionTurnoRequestDto solicitud)
     {
-        AsignacionTurnoIdDto resultado = await _administrarAsignaciones.CrearAsync(solicitud);
+        AsignacionTurnoIdDto resultado = await _sender.Send(new CrearAsignacionTurnoCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -55,7 +67,11 @@ public class AsignacionesTurnoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Finalizar(int id, [FromBody] FinalizarAsignacionTurnoRequestDto solicitud)
     {
-        AsignacionTurnoIdDto resultado = await _administrarAsignaciones.FinalizarAsync(id, solicitud);
+        AsignacionTurnoIdDto resultado = await _sender.Send(new FinalizarAsignacionTurnoCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -63,7 +79,7 @@ public class AsignacionesTurnoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _administrarAsignaciones.EliminarAsync(id);
+        await _sender.Send(new EliminarAsignacionTurnoCommand { Id = id });
         return NoContent();
     }
 }

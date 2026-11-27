@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo48_TransportistasTerceros;
-using TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros;
+using TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros.Commands;
+using TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo48_TransportistasTerceros;
 
@@ -8,62 +10,67 @@ namespace TitanGlobal.Api.Controllers.Modulo48_TransportistasTerceros;
 [Route("api/v1/transportistas-terceros")]
 public class TransportistasTercerosController : ControllerBase
 {
-    private readonly ListarTransportistasTercerosUseCase _listarTransportistasTercerosUseCase;
-    private readonly ResumenTransportistasTercerosUseCase _resumenTransportistasTercerosUseCase;
-    private readonly ObtenerTransportistaTerceroUseCase _obtenerTransportistaTerceroUseCase;
-    private readonly CrearTransportistaTerceroUseCase _crearTransportistaTerceroUseCase;
-    private readonly ActualizarTransportistaTerceroUseCase _actualizarTransportistaTerceroUseCase;
-    private readonly EliminarTransportistaTerceroUseCase _eliminarTransportistaTerceroUseCase;
+    private readonly ISender _sender;
 
-    public TransportistasTercerosController(ListarTransportistasTercerosUseCase listarTransportistasTercerosUseCase, ResumenTransportistasTercerosUseCase resumenTransportistasTercerosUseCase, ObtenerTransportistaTerceroUseCase obtenerTransportistaTerceroUseCase, CrearTransportistaTerceroUseCase crearTransportistaTerceroUseCase, ActualizarTransportistaTerceroUseCase actualizarTransportistaTerceroUseCase, EliminarTransportistaTerceroUseCase eliminarTransportistaTerceroUseCase)
+    public TransportistasTercerosController(ISender sender)
     {
-        _listarTransportistasTercerosUseCase = listarTransportistasTercerosUseCase;
-        _resumenTransportistasTercerosUseCase = resumenTransportistasTercerosUseCase;
-        _obtenerTransportistaTerceroUseCase = obtenerTransportistaTerceroUseCase;
-        _crearTransportistaTerceroUseCase = crearTransportistaTerceroUseCase;
-        _actualizarTransportistaTerceroUseCase = actualizarTransportistaTerceroUseCase;
-        _eliminarTransportistaTerceroUseCase = eliminarTransportistaTerceroUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> Listar([FromQuery] string? busqueda, [FromQuery] string? pais, [FromQuery] string? tipoServicio, [FromQuery] bool? activo, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        PaginaTransportistasTercerosDto resultado = await _listarTransportistasTercerosUseCase.ExecuteAsync(busqueda, pais, tipoServicio, activo, pagina, tamanoPagina);
+        PaginaTransportistasTercerosDto resultado = await _sender.Send(new ListarTransportistasTercerosQuery
+        {
+            Busqueda = busqueda,
+            Pais = pais,
+            TipoServicio = tipoServicio,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenTransportistasTercerosDto resultado = await _resumenTransportistasTercerosUseCase.ExecuteAsync();
+        ResumenTransportistasTercerosDto resultado = await _sender.Send(new ResumenTransportistasTercerosQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        TransportistaTerceroDetalleDto resultado = await _obtenerTransportistaTerceroUseCase.ExecuteAsync(id);
+        TransportistaTerceroDetalleDto resultado = await _sender.Send(new ObtenerTransportistaTerceroQuery
+        {
+            Id = id
+        });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarTransportistaTerceroRequestDto solicitud)
     {
-        int resultado = await _crearTransportistaTerceroUseCase.ExecuteAsync(solicitud);
+        int resultado = await _sender.Send(new CrearTransportistaTerceroCommand { Solicitud = solicitud });
         return Ok(new { Id = resultado });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarTransportistaTerceroRequestDto solicitud)
     {
-        int resultado = await _actualizarTransportistaTerceroUseCase.ExecuteAsync(id, solicitud);
+        int resultado = await _sender.Send(new ActualizarTransportistaTerceroCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(new { Id = resultado });
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarTransportistaTerceroUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarTransportistaTerceroCommand { Id = id });
         return NoContent();
     }
 }

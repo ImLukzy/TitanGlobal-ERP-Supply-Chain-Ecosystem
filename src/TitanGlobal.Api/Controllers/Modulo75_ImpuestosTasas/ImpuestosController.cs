@@ -1,8 +1,10 @@
+using MediatR;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo75_ImpuestosTasas;
-using TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas;
+using TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Commands;
+using TitanGlobal.Application.UseCases.Modulo75_ImpuestosTasas.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo75_ImpuestosTasas;
 
@@ -10,49 +12,30 @@ namespace TitanGlobal.Api.Controllers.Modulo75_ImpuestosTasas;
 [Route("api/v1/impuestos")]
 public class ImpuestosController : ControllerBase
 {
-    private readonly CrearImpuestoUseCase _crear;
-    private readonly ListarImpuestosUseCase _listar;
-    private readonly ObtenerImpuestoUseCase _obtener;
-    private readonly ActualizarImpuestoUseCase _actualizar;
-    private readonly DesactivarImpuestoUseCase _desactivar;
-    private readonly RegistrarTasaImpuestoUseCase _registrarTasa;
-    private readonly CalcularImpuestoUseCase _calcular;
+    private readonly ISender _sender;
 
-    public ImpuestosController(
-        CrearImpuestoUseCase crear,
-        ListarImpuestosUseCase listar,
-        ObtenerImpuestoUseCase obtener,
-        ActualizarImpuestoUseCase actualizar,
-        DesactivarImpuestoUseCase desactivar,
-        RegistrarTasaImpuestoUseCase registrarTasa,
-        CalcularImpuestoUseCase calcular)
+    public ImpuestosController(ISender sender)
     {
-        _crear = crear;
-        _listar = listar;
-        _obtener = obtener;
-        _actualizar = actualizar;
-        _desactivar = desactivar;
-        _registrarTasa = registrarTasa;
-        _calcular = calcular;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> Listar()
     {
-        return Ok(await _listar.Ejecutar());
+        return Ok(await _sender.Send(new ListarImpuestosQuery()));
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        return Ok(await _obtener.Ejecutar(id));
+        return Ok(await _sender.Send(new ObtenerImpuestoQuery { Id = id }));
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear(
         [FromBody] GuardarImpuestoRequestDto dto)
     {
-        int id = await _crear.Ejecutar(dto);
+        int id = await _sender.Send(new CrearImpuestoCommand { Dto = dto });
         return Created($"/api/v1/impuestos/{id}", new { id });
     }
 
@@ -61,14 +44,14 @@ public class ImpuestosController : ControllerBase
         int id,
         [FromBody] GuardarImpuestoRequestDto dto)
     {
-        await _actualizar.Ejecutar(id, dto);
+        await _sender.Send(new ActualizarImpuestoCommand { Id = id, Dto = dto });
         return NoContent();
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Desactivar(int id)
     {
-        await _desactivar.Ejecutar(id);
+        await _sender.Send(new DesactivarImpuestoCommand { Id = id });
         return NoContent();
     }
 
@@ -77,7 +60,7 @@ public class ImpuestosController : ControllerBase
         int id,
         [FromBody] GuardarTasaImpuestoRequestDto dto)
     {
-        int tasaId = await _registrarTasa.Ejecutar(id, dto);
+        int tasaId = await _sender.Send(new RegistrarTasaImpuestoCommand { ImpuestoId = id, Dto = dto });
         return StatusCode(201, new { id = tasaId, impuestoId = id });
     }
 
@@ -85,6 +68,6 @@ public class ImpuestosController : ControllerBase
     public async Task<IActionResult> Calcular(
         [FromBody] CalcularImpuestoRequestDto dto)
     {
-        return Ok(await _calcular.Ejecutar(dto));
+        return Ok(await _sender.Send(new CalcularImpuestoQuery { Dto = dto }));
     }
 }

@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo61_Empleados;
-using TitanGlobal.Application.UseCases.Modulo61_Empleados;
+using TitanGlobal.Application.UseCases.Modulo61_Empleados.Commands;
+using TitanGlobal.Application.UseCases.Modulo61_Empleados.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo61_Empleados;
 
@@ -8,11 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo61_Empleados;
 [Route("api/v1/empleados")]
 public class EmpleadosController : ControllerBase
 {
-    private readonly AdministrarEmpleadosUseCase _administrarEmpleados;
+    private readonly ISender _sender;
 
-    public EmpleadosController(AdministrarEmpleadosUseCase administrarEmpleados)
+    public EmpleadosController(ISender sender)
     {
-        _administrarEmpleados = administrarEmpleados;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -22,39 +24,41 @@ public class EmpleadosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaEmpleadosDto resultado = await _administrarEmpleados.ListarAsync(
-            busqueda,
-            estado,
-            pagina,
-            tamanoPagina);
+        PaginaEmpleadosDto resultado = await _sender.Send(new ListarEmpleadosQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        EmpleadoDetalleDto resultado = await _administrarEmpleados.ObtenerAsync(id);
+        EmpleadoDetalleDto resultado = await _sender.Send(new ObtenerEmpleadoQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarEmpleadoRequestDto solicitud)
     {
-        int id = await _administrarEmpleados.CrearAsync(solicitud);
+        int id = await _sender.Send(new CrearEmpleadoCommand { Solicitud = solicitud });
         return Ok(new EmpleadoIdDto { Id = id });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarEmpleadoRequestDto solicitud)
     {
-        int actualizado = await _administrarEmpleados.ActualizarAsync(id, solicitud);
+        int actualizado = await _sender.Send(new ActualizarEmpleadoCommand { Id = id, Solicitud = solicitud });
         return Ok(new EmpleadoIdDto { Id = actualizado });
     }
 
     [HttpPost("{id:int}/cese")]
     public async Task<IActionResult> Cesar(int id, [FromBody] CeseEmpleadoRequestDto solicitud)
     {
-        int cesado = await _administrarEmpleados.CesarAsync(id, solicitud);
+        int cesado = await _sender.Send(new CesarEmpleadoCommand { Id = id, Solicitud = solicitud });
         return Ok(new EmpleadoIdDto { Id = cesado });
     }
 }

@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo69_Capacitaciones;
-using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones;
+using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones.Commands;
+using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo69_Capacitaciones;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo69_Capacitaciones;
 [Route("api/v1/programaciones-curso")]
 public class ProgramacionesCursoController : ControllerBase
 {
-    private readonly AdministrarProgramacionesCursoUseCase _administrarProgramaciones;
+    private readonly ISender _sender;
 
-    public ProgramacionesCursoController(AdministrarProgramacionesCursoUseCase administrarProgramaciones)
+    public ProgramacionesCursoController(ISender sender)
     {
-        _administrarProgramaciones = administrarProgramaciones;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,14 +27,21 @@ public class ProgramacionesCursoController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaProgramacionesDto resultado = await _administrarProgramaciones.ListarAsync(anio, cursoId, estado, pagina, tamanoPagina);
+        PaginaProgramacionesDto resultado = await _sender.Send(new ListarProgramacionesCursoQuery
+        {
+            Anio = anio,
+            CursoId = cursoId,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ProgramacionDetalleDto resultado = await _administrarProgramaciones.ObtenerAsync(id);
+        ProgramacionDetalleDto resultado = await _sender.Send(new ObtenerProgramacionCursoQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -40,7 +49,10 @@ public class ProgramacionesCursoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarProgramacionRequestDto solicitud)
     {
-        ProgramacionIdDto resultado = await _administrarProgramaciones.CrearAsync(solicitud);
+        ProgramacionIdDto resultado = await _sender.Send(new CrearProgramacionCursoCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -48,7 +60,11 @@ public class ProgramacionesCursoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Inscribir(int id, [FromBody] InscribirEmpleadoRequestDto solicitud)
     {
-        InscripcionIdDto resultado = await _administrarProgramaciones.InscribirAsync(id, solicitud);
+        InscripcionIdDto resultado = await _sender.Send(new InscribirProgramacionCursoCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -57,7 +73,11 @@ public class ProgramacionesCursoController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Retirar(int id, int inscripcionId)
     {
-        InscripcionIdDto resultado = await _administrarProgramaciones.RetirarAsync(id, inscripcionId);
+        InscripcionIdDto resultado = await _sender.Send(new RetirarProgramacionCursoCommand
+        {
+            Id = id,
+            InscripcionId = inscripcionId
+        });
         return Ok(resultado);
     }
 
@@ -66,7 +86,7 @@ public class ProgramacionesCursoController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Realizar(int id)
     {
-        ProgramacionIdDto resultado = await _administrarProgramaciones.RealizarAsync(id);
+        ProgramacionIdDto resultado = await _sender.Send(new RealizarProgramacionCursoCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -75,7 +95,7 @@ public class ProgramacionesCursoController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Cancelar(int id)
     {
-        ProgramacionIdDto resultado = await _administrarProgramaciones.CancelarAsync(id);
+        ProgramacionIdDto resultado = await _sender.Send(new CancelarProgramacionCursoCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -83,7 +103,11 @@ public class ProgramacionesCursoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> RegistrarResultados(int id, [FromBody] RegistrarResultadosRequestDto solicitud)
     {
-        ProgramacionIdDto resultado = await _administrarProgramaciones.RegistrarResultadosAsync(id, solicitud);
+        ProgramacionIdDto resultado = await _sender.Send(new RegistrarResultadosCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -91,7 +115,12 @@ public class ProgramacionesCursoController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> EmitirCertificacion(int id, int inscripcionId, [FromBody] EmitirCertificacionRequestDto solicitud)
     {
-        CertificacionIdDto resultado = await _administrarProgramaciones.EmitirCertificacionAsync(id, inscripcionId, solicitud);
+        CertificacionIdDto resultado = await _sender.Send(new EmitirCertificacionCommand
+        {
+            Id = id,
+            InscripcionId = inscripcionId,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 }

@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo78_NotificacionesAlertas;
-using TitanGlobal.Application.UseCases.Modulo78_NotificacionesAlertas;
+using TitanGlobal.Application.UseCases.Modulo78_NotificacionesAlertas.Commands;
+using TitanGlobal.Application.UseCases.Modulo78_NotificacionesAlertas.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo78_NotificacionesAlertas;
 
@@ -8,11 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo78_NotificacionesAlertas;
 [Route("api/v1/alertas")]
 public class AlertasController : ControllerBase
 {
-    private readonly AlertasUseCase _alertasUseCase;
+    private readonly ISender _sender;
 
-    public AlertasController(AlertasUseCase alertasUseCase)
+    public AlertasController(ISender sender)
     {
-        _alertasUseCase = alertasUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -23,19 +25,21 @@ public class AlertasController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaAlertasDto respuesta = await _alertasUseCase.ListarAsync(
-            tipo,
-            severidad,
-            incluirDescartadas,
-            pagina,
-            tamanoPagina);
+        PaginaAlertasDto respuesta = await _sender.Send(new ListarAlertasQuery
+        {
+            Tipo = tipo,
+            Severidad = severidad,
+            IncluirDescartadas = incluirDescartadas,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(respuesta);
     }
 
     [HttpGet("resumen")]
     public async Task<ActionResult<ResumenAlertasDto>> Resumen()
     {
-        ResumenAlertasDto respuesta = await _alertasUseCase.ResumenAsync();
+        ResumenAlertasDto respuesta = await _sender.Send(new ResumenAlertasQuery());
         return Ok(respuesta);
     }
 
@@ -43,7 +47,7 @@ public class AlertasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Descartar([FromBody] ClaveAlertaRequestDto solicitud)
     {
-        await _alertasUseCase.DescartarAsync(solicitud);
+        await _sender.Send(new DescartarAlertaCommand { Solicitud = solicitud });
         return NoContent();
     }
 
@@ -51,7 +55,7 @@ public class AlertasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Restaurar([FromBody] ClaveAlertaRequestDto solicitud)
     {
-        await _alertasUseCase.RestaurarAsync(solicitud);
+        await _sender.Send(new RestaurarAlertaCommand { Solicitud = solicitud });
         return NoContent();
     }
 }

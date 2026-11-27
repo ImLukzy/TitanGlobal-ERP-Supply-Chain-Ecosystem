@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo67_AdelantosPrestamos;
-using TitanGlobal.Application.UseCases.Modulo67_AdelantosPrestamos;
+using TitanGlobal.Application.UseCases.Modulo67_AdelantosPrestamos.Commands;
+using TitanGlobal.Application.UseCases.Modulo67_AdelantosPrestamos.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo67_AdelantosPrestamos;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo67_AdelantosPrestamos;
 [Route("api/v1/prestamos")]
 public class PrestamosController : ControllerBase
 {
-    private readonly AdministrarPrestamosUseCase _administrarPrestamos;
+    private readonly ISender _sender;
 
-    public PrestamosController(AdministrarPrestamosUseCase administrarPrestamos)
+    public PrestamosController(ISender sender)
     {
-        _administrarPrestamos = administrarPrestamos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,34 +27,40 @@ public class PrestamosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaPrestamosDto resultado = await _administrarPrestamos.ListarAsync(
-            busqueda,
-            empleadoId,
-            tipo,
-            estado,
-            pagina,
-            tamanoPagina);
+        PaginaPrestamosDto resultado = await _sender.Send(new ListarPrestamosQuery
+        {
+            Busqueda = busqueda,
+            EmpleadoId = empleadoId,
+            Tipo = tipo,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenPrestamosDto resultado = await _administrarPrestamos.ResumenAsync();
+        ResumenPrestamosDto resultado = await _sender.Send(new ResumenPrestamosQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        PrestamoDetalleDto resultado = await _administrarPrestamos.ObtenerAsync(id);
+        PrestamoDetalleDto resultado = await _sender.Send(new ObtenerPrestamoQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpGet("capacidad/{empleadoId:int}")]
     public async Task<IActionResult> ObtenerCapacidad(int empleadoId, [FromQuery] DateOnly? fecha)
     {
-        CapacidadPrestamoDto resultado = await _administrarPrestamos.ObtenerCapacidadAsync(empleadoId, fecha);
+        CapacidadPrestamoDto resultado = await _sender.Send(new ObtenerCapacidadQuery
+        {
+            EmpleadoId = empleadoId,
+            Fecha = fecha
+        });
         return Ok(resultado);
     }
 
@@ -60,7 +68,7 @@ public class PrestamosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarPrestamoRequestDto solicitud)
     {
-        PrestamoCreadoDto resultado = await _administrarPrestamos.RegistrarAsync(solicitud);
+        PrestamoCreadoDto resultado = await _sender.Send(new RegistrarPrestamoCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -68,7 +76,7 @@ public class PrestamosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Anular(int id, [FromBody] AnularPrestamoRequestDto solicitud)
     {
-        PrestamoIdDto resultado = await _administrarPrestamos.AnularAsync(id, solicitud);
+        PrestamoIdDto resultado = await _sender.Send(new AnularPrestamoCommand { Id = id, Solicitud = solicitud });
         return Ok(resultado);
     }
 }
