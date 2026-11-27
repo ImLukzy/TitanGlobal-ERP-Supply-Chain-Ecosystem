@@ -10,6 +10,8 @@
 
 Sigue el patrón de `Modulo11_Proveedores` (padrón con activar y desactivar) y de `Modulo14_Licitaciones` (estados con acciones explícitas). Depende de `Modulo16_Importaciones`.
 
+Responsable: Sergio. Estado: implementado, en revisión de Lukas (PR #97).
+
 ## 2. Fuera de alcance
 - Las 4 entidades del enunciado, los middlewares y el pipeline.
 - Cambios en `Modulo16_Importaciones`: liberar un expediente **no exige** una declaración levantada, ni levantar una declaración cambia el expediente. Se podrá exigir cuando ambos módulos estén integrados.
@@ -162,12 +164,15 @@ Resumen esperado del seed: 4 agentes (3 activos), 4 declaraciones, derechos vige
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, validaciones, casos de uso y controladores.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
+- [x] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, validaciones, casos de uso y controladores.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| — | — | pendiente | spec sin aprobar |
+| 2026-11-25 | A1, A2 | cumple | `./scripts/verify.sh` en verde (formato, reglas de código, compilación con `-warnaserror`, tests de backend y frontend) |
+| 2026-11-25 | A3, A4, A5, A6 | cumple | `AgentesAduanerosApiTests` y `DeclaracionesAduanaApiTests` dentro de `./scripts/verify.sh` |
+| 2026-11-25 | A7 | cumple | `./scripts/aplicar-bd.sh --reiniciar`, `./scripts/scaffold.sh` y `./scripts/smoke-postgres.sh` terminan en `SMOKE OK` |
+| 2026-11-25 | A8 | cumple | el humo valida las 15 operaciones en `/openapi/v1.json` (`openapi-agentes-aduaneros`) |

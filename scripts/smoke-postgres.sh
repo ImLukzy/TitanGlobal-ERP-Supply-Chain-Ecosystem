@@ -82,7 +82,12 @@ check_port_is_free() {
     local port="$1"
     local listener
 
-    listener="$(ss -H -ltn "sport = :${port}")"
+    if command -v ss >/dev/null 2>&1; then
+        listener="$(ss -H -ltn "sport = :${port}")"
+    else
+        # macOS no trae ss: lsof lista quién escucha en el puerto (sale con 1 si nadie).
+        listener="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+    fi
     if [[ -n "$listener" ]]; then
         printf 'ERROR: el puerto %s ya está ocupado; no se iniciará el smoke\n' "$port" >&2
         printf '%s\n' "$listener" >&2
@@ -586,6 +591,13 @@ checks = {
         ("/api/v1/listas-materiales/{id}", "get"), ("/api/v1/listas-materiales/{id}", "put"),
         ("/api/v1/listas-materiales/{id}/activar", "post"), ("/api/v1/listas-materiales/{id}/retirar", "post"),
     ]),
+    "openapi-importaciones": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/importaciones", "get"), ("/api/v1/importaciones", "post"),
+        ("/api/v1/importaciones/resumen", "get"), ("/api/v1/importaciones/{id}", "get"),
+        ("/api/v1/importaciones/{id}", "put"), ("/api/v1/importaciones/{id}", "delete"),
+        ("/api/v1/importaciones/{id}/embarcar", "post"), ("/api/v1/importaciones/{id}/arribar", "post"),
+        ("/api/v1/importaciones/{id}/liberar", "post"), ("/api/v1/importaciones/{id}/cancelar", "post"),
+    ]),
     "listas-materiales-seed": lambda data: data["total"] == 2 and [
         (item["version"], item["estado"], item["totalComponentes"]) for item in data["items"]
     ] == [(2, "Borrador", 2), (1, "Activa", 2)],
@@ -618,6 +630,86 @@ checks = {
         r"No se puede eliminar el centro de trabajo [0-9]+ porque está en uso en una ruta de producción\.",
         data["Message"],
     ) is not None and "Detail" not in data,
+    "importaciones-resumen": lambda data: data["totalExpedientes"] == 5 and data["enCurso"] == 3 and [
+        (item["estado"], item["total"]) for item in data["porEstado"]
+    ] == [("Programado", 1), ("EnTransito", 1), ("EnAduana", 1), ("Liberado", 1), ("Cancelado", 1)],
+    "importaciones-filtro-estado": lambda data: data["total"] == 1 and [
+        (item["numero"], item["ordenNumero"], item["estado"]) for item in data["items"]
+    ] == [("IMP-2026-001", "OA-DEV-001", "EnTransito")],
+    "importaciones-lista-orden": lambda data: data["total"] == 5 and [item["numero"] for item in data["items"]][0] == "IMP-2026-004",
+    "importaciones-detalle-1": lambda data: (
+        data["numero"] == "IMP-2026-001" and data["ordenNumero"] == "OA-DEV-001" and data["incoterm"] == "CIF"
+        and data["medioTransporte"] == "Maritimo" and data["estado"] == "EnTransito"
+        and data["documentoTransporte"] == "MSKU1234567" and data["fechaLlegadaReal"] is None
+    ),
+    "importacion-created-6": lambda data: data["id"] == 6,
+    "importacion-id-6": lambda data: data["id"] == 6,
+    "importacion-id-2": lambda data: data["id"] == 2,
+    "importacion-liberada": lambda data: (
+        data["numero"] == "IMP-SMOKE-001" and data["estado"] == "Liberado" and data["documentoTransporte"] == "SMK-DOC-01"
+        and data["fechaEmbarque"] is not None and data["fechaLlegadaReal"] is not None
+    ),
+    "importacion-cancelada": lambda data: data["estado"] == "Cancelado" and data["motivoCancelacion"] == "Cambio de proveedor",
+    "importacion-duplicada": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un expediente con el número IMP-SMOKE-001." and "Detail" not in data,
+    "importacion-orden-anulada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La orden de abastecimiento 4 está anulada.",
+    "importacion-incoterm-aereo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El Incoterm FOB solo aplica al transporte marítimo.",
+    "importacion-liberar-programado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 6 no está en aduana.",
+    "importacion-arribo-programado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 6 no está en tránsito.",
+    "importacion-cancelar-liberado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 4 no se puede cancelar porque está Liberado.",
+    "importacion-motivo": lambda data: data["StatusCode"] == 400 and data["Message"] == "El motivo de cancelación es obligatorio.",
+    "openapi-agentes-aduaneros": lambda data: all(verb in data["paths"].get(path, {}) for path, verb in [
+        ("/api/v1/agentes-aduaneros", "get"), ("/api/v1/agentes-aduaneros", "post"),
+        ("/api/v1/agentes-aduaneros/{id}", "get"), ("/api/v1/agentes-aduaneros/{id}", "put"),
+        ("/api/v1/agentes-aduaneros/{id}", "delete"),
+        ("/api/v1/agentes-aduaneros/{id}/activar", "post"), ("/api/v1/agentes-aduaneros/{id}/desactivar", "post"),
+        ("/api/v1/declaraciones-aduana", "get"), ("/api/v1/declaraciones-aduana", "post"),
+        ("/api/v1/declaraciones-aduana/resumen", "get"), ("/api/v1/declaraciones-aduana/{id}", "get"),
+        ("/api/v1/declaraciones-aduana/{id}", "put"), ("/api/v1/declaraciones-aduana/{id}/numerar", "post"),
+        ("/api/v1/declaraciones-aduana/{id}/levantar", "post"), ("/api/v1/declaraciones-aduana/{id}/anular", "post"),
+    ]),
+    "agentes-seed": lambda data: data["total"] == 4 and sorted(
+        (item["ruc"], item["activo"], item["totalDeclaraciones"]) for item in data["items"]
+    ) == [("20512345678", True, 2), ("20523456789", True, 1), ("20534567890", True, 1), ("20545678901", False, 0)],
+    "agentes-inactivos": lambda data: data["total"] == 1 and data["items"][0]["ruc"] == "20545678901",
+    "agente-1": lambda data: data["razonSocial"] == "Aduanas del Pacífico S.A.C." and data["totalDeclaraciones"] == 2 and data["activo"] is True,
+    "agente-created-5": lambda data: data["id"] == 5,
+    "agente-id-5": lambda data: data["id"] == 5,
+    "agente-ruc-invalido": lambda data: data["StatusCode"] == 400 and data["Message"] == "El RUC debe tener 11 dígitos.",
+    "agente-ruc-repetido": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un agente con el RUC 20556789012." and "Detail" not in data,
+    "agente-ya-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El agente aduanero 5 ya está inactivo.",
+    "agente-con-declaraciones": lambda data: data["StatusCode"] == 409 and data["Message"] == "El agente aduanero 1 tiene declaraciones y no se puede eliminar; desactívelo.",
+    "declaraciones-resumen": lambda data: data["totalDeclaraciones"] == 4 and float(data["derechosArancelVigentes"]) == 4320.0 and [
+        (item["estado"], item["total"]) for item in data["porEstado"]
+    ] == [("Registrada", 1), ("Numerada", 1), ("Levantada", 1), ("Anulada", 1)],
+    "declaraciones-numeradas": lambda data: data["total"] == 1 and [
+        (item["numero"], item["canal"], item["estado"]) for item in data["items"]
+    ] == [("118-2026-10-000102", "Naranja", "Numerada")],
+    "declaracion-1": lambda data: (
+        data["numero"] == "118-2026-10-000101" and data["expedienteNumero"] == "IMP-2026-001"
+        and float(data["derechosArancel"]) == 3000.0 and data["estado"] == "Registrada" and data["canal"] is None
+    ),
+    "importacion-created-7": lambda data: data["id"] == 7,
+    "importacion-id-7": lambda data: data["id"] == 7,
+    "declaracion-created-5": lambda data: data["id"] == 5,
+    "declaracion-created-6": lambda data: data["id"] == 6,
+    "declaracion-id-5": lambda data: data["id"] == 5,
+    "declaracion-id-1": lambda data: data["id"] == 1,
+    "declaracion-5-calculada": lambda data: data["numero"] == "SMK-DAM-001" and float(data["derechosArancel"]) == 1250.06 and data["estado"] == "Registrada",
+    "declaracion-5-levantada": lambda data: (
+        data["estado"] == "Levantada" and data["canal"] == "Rojo" and float(data["derechosArancel"]) == 2000.0
+        and data["fechaNumeracion"] is not None and data["fechaLevante"] is not None
+    ),
+    "declaracion-agente-inactivo": lambda data: data["StatusCode"] == 409 and data["Message"] == "El agente aduanero 4 está inactivo.",
+    "declaracion-expediente-liberado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 4 no admite declaraciones en estado Liberado.",
+    "declaracion-expediente-programado": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 7 no admite declaraciones en estado Programado.",
+    "declaracion-expediente-con-vigente": lambda data: data["StatusCode"] == 409 and data["Message"] == "El expediente 1 ya tiene la declaración 118-2026-10-000101.",
+    "declaracion-numero-repetido": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe una declaración con el número 118-2026-10-000101." and "Detail" not in data,
+    "declaracion-canal-invalido": lambda data: data["StatusCode"] == 400 and data["Message"] == "El canal debe ser Verde, Naranja o Rojo.",
+    "declaracion-no-registrada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La declaración 5 no está registrada.",
+    "declaracion-5-no-numerada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La declaración 5 no está numerada.",
+    "declaracion-no-numerada": lambda data: data["StatusCode"] == 409 and data["Message"] == "La declaración 6 no está numerada.",
+    "declaracion-levantada-no-anula": lambda data: data["StatusCode"] == 409 and data["Message"] == "La declaración 5 no se puede anular porque está Levantada.",
+    "declaracion-valor-invalido": lambda data: data["StatusCode"] == 400 and data["Message"] == "El valor aduanero debe ser mayor a 0.",
 }
 
 if validation not in checks or not checks[validation](body):
@@ -1284,10 +1376,14 @@ request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calc
 request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
 request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
 # Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
-SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
-SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
-SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
-SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+# Fecha UTC relativa a hoy; date -d no existe en macOS, python3 funciona igual en todos los sistemas.
+smoke_fecha_relativa() {
+    python3 -c 'import datetime, sys; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=int(sys.argv[1]))).strftime("%Y-%m-%d"))' "$1"
+}
+SMOKE_INICIO_PERIODO="$(smoke_fecha_relativa -169)"
+SMOKE_FIN_PERIODO="$(smoke_fecha_relativa +10)"
+SMOKE_APERTURA_CICLO="$(smoke_fecha_relativa -5)"
+SMOKE_CIERRE_CICLO="$(smoke_fecha_relativa +30)"
 request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
 request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
 request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle
@@ -1345,6 +1441,61 @@ request_check 'POST cierre del incidente 2' POST '/api/v1/incidentes-sst/2/cierr
 request_check 'POST accion en un incidente cerrado' POST '/api/v1/incidentes-sst/2/acciones' 409 incidente-cerrado-sin-cambios '{"descripcion":"Otra accion","responsable":"Jefe","fechaCompromiso":"2099-12-31"}'
 request_check 'Incidente 2 cerrado' GET '/api/v1/incidentes-sst/2' 200 sst-incidente-2-cerrado
 
+# Modulo 16: importaciones; las fechas de humo salen de hoy.
+request_check 'OpenAPI de importaciones' GET '/openapi/v1.json' 200 openapi-importaciones
+request_check 'Resumen de expedientes de importacion' GET '/api/v1/importaciones/resumen' 200 importaciones-resumen
+request_check 'Expedientes en transito' GET '/api/v1/importaciones?estado=EnTransito' 200 importaciones-filtro-estado
+request_check 'Listado de expedientes por llegada estimada' GET '/api/v1/importaciones?tamanoPagina=100' 200 importaciones-lista-orden
+request_check 'Expediente 1 en transito' GET '/api/v1/importaciones/1' 200 importaciones-detalle-1
+request_check 'POST expediente sobre una orden anulada' POST '/api/v1/importaciones' 409 importacion-orden-anulada '{"numero":"imp-smoke-001","ordenAbastecimientoId":4,"incoterm":"fob","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente aereo con Incoterm maritimo' POST '/api/v1/importaciones' 400 importacion-incoterm-aereo '{"numero":"imp-smoke-001","ordenAbastecimientoId":1,"incoterm":"FOB","medioTransporte":"Aereo","paisOrigen":"Chile","lugarOrigen":"Santiago","lugarDestino":"Lima","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente' POST '/api/v1/importaciones' 200 importacion-created-6 '{"numero":"imp-smoke-001","ordenAbastecimientoId":1,"incoterm":"fob","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST expediente con numero repetido' POST '/api/v1/importaciones' 409 importacion-duplicada '{"numero":"IMP-SMOKE-001","ordenAbastecimientoId":1,"incoterm":"FOB","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST liberar un expediente programado' POST '/api/v1/importaciones/6/liberar' 409 importacion-liberar-programado
+request_check 'POST arribo de un expediente programado' POST '/api/v1/importaciones/6/arribar' 409 importacion-arribo-programado "{\"fechaLlegadaReal\":\"${SMOKE_HOY}\"}"
+request_check 'POST embarque' POST '/api/v1/importaciones/6/embarcar' 200 importacion-id-6 "{\"documentoTransporte\":\"SMK-DOC-01\",\"fechaEmbarque\":\"${SMOKE_HOY}\"}"
+request_check 'POST arribo' POST '/api/v1/importaciones/6/arribar' 200 importacion-id-6 "{\"fechaLlegadaReal\":\"${SMOKE_HOY}\"}"
+request_check 'POST liberacion' POST '/api/v1/importaciones/6/liberar' 200 importacion-id-6
+request_check 'Expediente liberado' GET '/api/v1/importaciones/6' 200 importacion-liberada
+request_check 'POST cancelar un expediente liberado' POST '/api/v1/importaciones/4/cancelar' 409 importacion-cancelar-liberado '{"motivo":"Ya no aplica"}'
+request_check 'POST cancelar sin motivo' POST '/api/v1/importaciones/2/cancelar' 400 importacion-motivo '{"motivo":"  "}'
+request_check 'POST cancelar expediente programado' POST '/api/v1/importaciones/2/cancelar' 200 importacion-id-2 '{"motivo":"Cambio de proveedor"}'
+request_check 'Expediente cancelado' GET '/api/v1/importaciones/2' 200 importacion-cancelada
+# Modulo 17: agentes aduaneros y declaraciones; el expediente 7 lo crea este bloque justo despues del 6 del modulo 16.
+request_check 'OpenAPI de agentes aduaneros' GET '/openapi/v1.json' 200 openapi-agentes-aduaneros
+request_check 'Listado de agentes aduaneros' GET '/api/v1/agentes-aduaneros' 200 agentes-seed
+request_check 'Agentes inactivos' GET '/api/v1/agentes-aduaneros?activo=false' 200 agentes-inactivos
+request_check 'Agente aduanero 1' GET '/api/v1/agentes-aduaneros/1' 200 agente-1
+request_check 'Resumen de declaraciones' GET '/api/v1/declaraciones-aduana/resumen' 200 declaraciones-resumen
+request_check 'Declaraciones numeradas' GET '/api/v1/declaraciones-aduana?estado=Numerada' 200 declaraciones-numeradas
+request_check 'Declaracion 1' GET '/api/v1/declaraciones-aduana/1' 200 declaracion-1
+request_check 'POST agente con RUC invalido' POST '/api/v1/agentes-aduaneros' 400 agente-ruc-invalido '{"ruc":"123","razonSocial":"Agente","numeroRegistro":"AA-9"}'
+request_check 'POST agente' POST '/api/v1/agentes-aduaneros' 200 agente-created-5 '{"ruc":"20556789012","razonSocial":"Agente de smoke","numeroRegistro":"aa-0105","email":"smoke@agente.pe","telefono":"999111222"}'
+request_check 'POST agente con RUC repetido' POST '/api/v1/agentes-aduaneros' 409 agente-ruc-repetido '{"ruc":"20556789012","razonSocial":"Otro agente","numeroRegistro":"AA-0106"}'
+request_check 'POST declaracion con agente inactivo' POST '/api/v1/declaraciones-aduana' 409 declaracion-agente-inactivo '{"numero":"smk-dam-000","expedienteImportacionId":3,"agenteAduaneroId":4,"regimen":"ImportacionConsumo","valorAduanero":100,"tasaArancelaria":5}'
+request_check 'POST declaracion de un expediente liberado' POST '/api/v1/declaraciones-aduana' 409 declaracion-expediente-liberado '{"numero":"smk-dam-000","expedienteImportacionId":4,"agenteAduaneroId":1,"regimen":"ImportacionConsumo","valorAduanero":100,"tasaArancelaria":5}'
+request_check 'POST declaracion con valor cero' POST '/api/v1/declaraciones-aduana' 400 declaracion-valor-invalido '{"numero":"smk-dam-000","expedienteImportacionId":3,"agenteAduaneroId":1,"regimen":"ImportacionConsumo","valorAduanero":0,"tasaArancelaria":5}'
+request_check 'POST declaracion sobre un expediente con otra vigente' POST '/api/v1/declaraciones-aduana' 409 declaracion-expediente-con-vigente '{"numero":"smk-dam-000","expedienteImportacionId":1,"agenteAduaneroId":1,"regimen":"ImportacionConsumo","valorAduanero":100,"tasaArancelaria":5}'
+request_check 'POST declaracion con numero repetido' POST '/api/v1/declaraciones-aduana' 409 declaracion-numero-repetido '{"numero":"118-2026-10-000101","expedienteImportacionId":3,"agenteAduaneroId":1,"regimen":"ImportacionConsumo","valorAduanero":100,"tasaArancelaria":5}'
+request_check 'POST expediente nuevo para declaraciones' POST '/api/v1/importaciones' 200 importacion-created-7 '{"numero":"imp-smoke-017","ordenAbastecimientoId":1,"incoterm":"fob","medioTransporte":"Maritimo","paisOrigen":"Chile","lugarOrigen":"Valparaiso","lugarDestino":"Callao","fechaLlegadaEstimada":"2099-06-01"}'
+request_check 'POST declaracion de un expediente programado' POST '/api/v1/declaraciones-aduana' 409 declaracion-expediente-programado '{"numero":"smk-dam-001","expedienteImportacionId":7,"agenteAduaneroId":5,"regimen":"ImportacionConsumo","valorAduanero":10000.50,"tasaArancelaria":12.5}'
+request_check 'POST embarque del expediente nuevo' POST '/api/v1/importaciones/7/embarcar' 200 importacion-id-7 "{\"documentoTransporte\":\"SMK-DOC-17\",\"fechaEmbarque\":\"${SMOKE_HOY}\"}"
+request_check 'POST declaracion' POST '/api/v1/declaraciones-aduana' 200 declaracion-created-5 '{"numero":"smk-dam-001","expedienteImportacionId":7,"agenteAduaneroId":5,"regimen":"ImportacionConsumo","valorAduanero":10000.50,"tasaArancelaria":12.5}'
+request_check 'Declaracion con derechos calculados' GET '/api/v1/declaraciones-aduana/5' 200 declaracion-5-calculada
+request_check 'PUT declaracion registrada' PUT '/api/v1/declaraciones-aduana/5' 200 declaracion-id-5 '{"agenteAduaneroId":5,"regimen":"ImportacionConsumo","valorAduanero":20000,"tasaArancelaria":10}'
+request_check 'POST numerar con canal invalido' POST '/api/v1/declaraciones-aduana/5/numerar' 400 declaracion-canal-invalido '{"canal":"Azul"}'
+request_check 'POST levantar una declaracion registrada' POST '/api/v1/declaraciones-aduana/5/levantar' 409 declaracion-5-no-numerada
+request_check 'POST numerar' POST '/api/v1/declaraciones-aduana/5/numerar' 200 declaracion-id-5 '{"canal":"rojo"}'
+request_check 'PUT declaracion numerada' PUT '/api/v1/declaraciones-aduana/5' 409 declaracion-no-registrada '{"agenteAduaneroId":5,"regimen":"ImportacionConsumo","valorAduanero":20000,"tasaArancelaria":10}'
+request_check 'POST levantar' POST '/api/v1/declaraciones-aduana/5/levantar' 200 declaracion-id-5
+request_check 'POST anular una declaracion levantada' POST '/api/v1/declaraciones-aduana/5/anular' 409 declaracion-levantada-no-anula '{"motivo":"Error"}'
+request_check 'Declaracion levantada' GET '/api/v1/declaraciones-aduana/5' 200 declaracion-5-levantada
+request_check 'POST anular declaracion registrada' POST '/api/v1/declaraciones-aduana/1/anular' 200 declaracion-id-1 '{"motivo":"Se corrige el valor"}'
+request_check 'POST nueva declaracion tras anular la anterior' POST '/api/v1/declaraciones-aduana' 200 declaracion-created-6 '{"numero":"smk-dam-002","expedienteImportacionId":1,"agenteAduaneroId":1,"regimen":"Deposito","valorAduanero":500,"tasaArancelaria":0}'
+request_check 'POST levantar una declaracion no numerada' POST '/api/v1/declaraciones-aduana/6/levantar' 409 declaracion-no-numerada
+request_check 'DELETE agente con declaraciones' DELETE '/api/v1/agentes-aduaneros/1' 409 agente-con-declaraciones
+request_check 'POST desactivar agente' POST '/api/v1/agentes-aduaneros/5/desactivar' 200 agente-id-5
+request_check 'POST desactivar agente inactivo' POST '/api/v1/agentes-aduaneros/5/desactivar' 409 agente-ya-inactivo
 request_check 'OpenAPI de listas de materiales' GET '/openapi/v1.json' 200 openapi-listas-materiales
 request_check 'Versiones de la lista de materiales del producto 1' GET '/api/v1/listas-materiales?productoId=1' 200 listas-materiales-seed
 request_check 'Rechazar versión repetida' POST '/api/v1/listas-materiales' 409 lista-material-version-duplicada '{"productoId":1,"version":1,"componentes":[{"componenteProductoId":3,"cantidad":1,"unidadMedida":"unidad"}]}'

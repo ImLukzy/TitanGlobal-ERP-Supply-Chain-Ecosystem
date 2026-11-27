@@ -13,6 +13,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<AfiliacionPension> AfiliacionesPension { get; set; } = null!;
 
+    public virtual DbSet<AgenteAduanero> AgentesAduaneros { get; set; } = null!;
+
     public virtual DbSet<AlertaDescartada> AlertasDescartadas { get; set; } = null!;
 
     public virtual DbSet<Almacen> Almacenes { get; set; } = null!;
@@ -53,6 +55,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<Curso> Cursos { get; set; } = null!;
 
+    public virtual DbSet<DeclaracionAduana> DeclaracionesAduana { get; set; } = null!;
+
     public virtual DbSet<DescuentoCuotaPrestamo> DescuentosCuotaPrestamo { get; set; } = null!;
 
     public virtual DbSet<DetalleCotizacion> DetallesCotizacion { get; set; } = null!;
@@ -80,6 +84,8 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<EvaluacionProveedor> EvaluacionesProveedor { get; set; } = null!;
 
     public virtual DbSet<ExamenMedico> ExamenesMedicos { get; set; } = null!;
+
+    public virtual DbSet<ExpedienteImportacion> ExpedientesImportacion { get; set; } = null!;
 
     public virtual DbSet<FleteTercero> FletesTerceros { get; set; } = null!;
 
@@ -202,6 +208,19 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.ParametroPension).WithMany(p => p.AfiliacionesPension)
                 .HasForeignKey(d => d.ParametroPensionId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AgenteAduanero>(entity =>
+        {
+            entity.HasIndex(e => e.NumeroRegistro, "IX_AgentesAduaneros_NumeroRegistro").IsUnique();
+
+            entity.HasIndex(e => e.Ruc, "IX_AgentesAduaneros_Ruc").IsUnique();
+
+            entity.Property(e => e.Email).HasMaxLength(150);
+            entity.Property(e => e.NumeroRegistro).HasMaxLength(20);
+            entity.Property(e => e.RazonSocial).HasMaxLength(200);
+            entity.Property(e => e.Ruc).HasMaxLength(11);
+            entity.Property(e => e.Telefono).HasMaxLength(20);
         });
 
         modelBuilder.Entity<AlertaDescartada>(entity =>
@@ -487,6 +506,35 @@ public partial class TitanGlobalDbContext : DbContext
             entity.Property(e => e.Tipo).HasMaxLength(20);
         });
 
+        modelBuilder.Entity<DeclaracionAduana>(entity =>
+        {
+            entity.HasIndex(e => e.AgenteAduaneroId, "IX_DeclaracionesAduana_AgenteAduaneroId");
+
+            entity.HasIndex(e => e.ExpedienteImportacionId, "IX_DeclaracionesAduana_Expediente_Vigente")
+                .IsUnique()
+                .HasFilter("((\"Estado\")::text <> 'Anulada'::text)");
+
+            entity.HasIndex(e => e.Numero, "IX_DeclaracionesAduana_Numero").IsUnique();
+
+            entity.Property(e => e.Canal).HasMaxLength(10);
+            entity.Property(e => e.DerechosArancel).HasPrecision(18, 2);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.MotivoAnulacion).HasMaxLength(500);
+            entity.Property(e => e.Numero).HasMaxLength(30);
+            entity.Property(e => e.Regimen).HasMaxLength(30);
+            entity.Property(e => e.TasaArancelaria).HasPrecision(5, 2);
+            entity.Property(e => e.ValorAduanero).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.AgenteAduanero).WithMany(p => p.DeclaracionesAduana)
+                .HasForeignKey(d => d.AgenteAduaneroId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.ExpedienteImportacion).WithOne(p => p.DeclaracionAduana)
+                .HasForeignKey<DeclaracionAduana>(d => d.ExpedienteImportacionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_DeclaracionesAduana_ExpedientesImportacion_ExpedienteImporta");
+        });
+
         modelBuilder.Entity<DescuentoCuotaPrestamo>(entity =>
         {
             entity.HasIndex(e => e.CuotaPrestamoId, "IX_DescuentosCuotaPrestamo_CuotaPrestamoId");
@@ -718,6 +766,29 @@ public partial class TitanGlobalDbContext : DbContext
             entity.HasOne(d => d.Empleado).WithMany(p => p.ExamenesMedicos)
                 .HasForeignKey(d => d.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ExpedienteImportacion>(entity =>
+        {
+            entity.HasIndex(e => e.Numero, "IX_ExpedientesImportacion_Numero").IsUnique();
+
+            entity.HasIndex(e => e.OrdenAbastecimientoId, "IX_ExpedientesImportacion_OrdenAbastecimientoId");
+
+            entity.Property(e => e.DocumentoTransporte).HasMaxLength(40);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Incoterm).HasMaxLength(3);
+            entity.Property(e => e.LugarDestino).HasMaxLength(100);
+            entity.Property(e => e.LugarOrigen).HasMaxLength(100);
+            entity.Property(e => e.MedioTransporte).HasMaxLength(20);
+            entity.Property(e => e.MotivoCancelacion).HasMaxLength(500);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PaisOrigen).HasMaxLength(100);
+
+            entity.HasOne(d => d.OrdenAbastecimiento).WithMany(p => p.ExpedientesImportacion)
+                .HasForeignKey(d => d.OrdenAbastecimientoId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_ExpedientesImportacion_OrdenesAbastecimiento_OrdenAbastecimi");
         });
 
         modelBuilder.Entity<FleteTercero>(entity =>

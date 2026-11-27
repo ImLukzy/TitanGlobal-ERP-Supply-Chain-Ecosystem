@@ -108,8 +108,8 @@ Varias ramas eligieron el mismo número. Para que no choquen al integrar, cada s
 | 023 | `023-listas-materiales.sql` | Antony | `antony/modulo31-listas-materiales` (PR #40) | sí, desde 002 |
 | 025 | `025-ordenes-produccion.sql` | Antony | `antony/modulo34-ordenes-produccion` | no (el 024 lo usa Leonel en `leonel/modulo52-notas-credito-debito`) |
 | 026 | `026-mantenimiento-preventivo.sql` | Antony | `antony/modulo39-mantenimiento-preventivo` | no |
-| 027 | `027-importaciones.sql` | Sergio | `sergio/modulo16-importaciones` (PR #56) | no |
-| 028 | `028-agentes-aduaneros.sql` | Sergio | `sergio/modulo17-agentes-aduaneros` | no |
+| 027 | `027-importaciones.sql` | Sergio | `sergio/modulo16-backend` (PR #95) | no |
+| 028 | `028-agentes-aduaneros.sql` | Sergio | `sergio/modulo17-backend` (PR #97) | no |
 | 029 | `029-costeo-importacion.sql` | Sergio | `sergio/modulo18-costeo-importacion` | no |
 | 030 | `030-recepcion-mercaderia.sql` | Sergio | `sergio/modulo19-recepcion-mercaderia` | no |
 | 031 | `031-monedas-tipos-cambio.sql` | Sergio | `sergio/modulo74-monedas-tipos-cambio` | no |

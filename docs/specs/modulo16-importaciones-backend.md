@@ -10,6 +10,8 @@
 
 Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas) y de `Modulo15_OrdenesAbastecimiento` (cabecera ligada a una orden).
 
+Responsable: Sergio. Estado: implementado, en revisión de Lukas (PR #95).
+
 ## 2. Fuera de alcance
 - Las 4 entidades del enunciado, los middlewares y el pipeline.
 - Cambios en `Modulo11_Proveedores` ni en `Modulo15_OrdenesAbastecimiento`; la baja de una orden con expedientes queda bloqueada por la clave foránea.
@@ -60,13 +62,15 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas) y
 | `LugarOrigen` | `character varying(100) NOT NULL` | puerto, aeropuerto o frontera de salida |
 | `LugarDestino` | `character varying(100) NOT NULL` | puerto, aeropuerto o frontera de llegada |
 | `DocumentoTransporte` | `character varying(40)` | BL, AWB o carta de porte; se llena al embarcar |
-| `FechaEmbarque` | `timestamp with time zone` | UTC; se llena al embarcar |
-| `FechaLlegadaEstimada` | `timestamp with time zone NOT NULL` | UTC |
-| `FechaLlegadaReal` | `timestamp with time zone` | UTC; se llena al llegar a aduana |
+| `FechaEmbarque` | `date` | día calendario (`DateOnly`, `yyyy-MM-dd`); se llena al embarcar |
+| `FechaLlegadaEstimada` | `date NOT NULL` | día calendario (`DateOnly`, `yyyy-MM-dd`) |
+| `FechaLlegadaReal` | `date` | día calendario (`DateOnly`, `yyyy-MM-dd`); se llena al llegar a aduana |
 | `Estado` | `character varying(20) NOT NULL` | `CHECK` en (`Programado`, `EnTransito`, `EnAduana`, `Liberado`, `Cancelado`) |
 | `MotivoCancelacion` | `character varying(500)` | solo con estado `Cancelado` |
 | `Observaciones` | `character varying(500)` | opcional |
 | `FechaRegistro` | `timestamp with time zone NOT NULL` | UTC, la pone el servidor |
+
+Las fechas de embarque y de llegada son de día, no de instante: se guardan como `date` y viajan como `yyyy-MM-dd`. «Futura» y «no futura» se comparan contra la fecha UTC de hoy. `FechaRegistro` sigue siendo un instante UTC.
 
 `CHECK` adicional `CK_ExpedientesImportacion_LlegadaRealPosteriorEmbarque`: si hay `FechaEmbarque` y `FechaLlegadaReal`, la llegada no es anterior al embarque. Los `CHECK` siguen la convención `CK_<Tabla>_<Regla>`.
 
@@ -153,12 +157,15 @@ Resumen esperado del seed: 5 expedientes, 3 en curso y conteo por estado Program
 ## 6. Checklist de ejecución
 *(Marca `[x]` solo cuando la tarea esté hecha **y** A1–A2 estén en verde.)*
 
-- [ ] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
-- [ ] Tarea 2: DTOs, `ValidacionExpedienteImportacion`, casos de uso y controlador.
-- [ ] Tarea 3: tests, seed y smoke.
-- [ ] Tarea 4: verificar A1–A8 y anotar resultados en §7.
+- [x] Tarea 1: script SQL, aplicarlo y generar entidades con scaffold.
+- [x] Tarea 2: DTOs, `ValidacionExpedienteImportacion`, casos de uso y controlador.
+- [x] Tarea 3: tests, seed y smoke.
+- [x] Tarea 4: verificar A1–A8 y anotar resultados en §7.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| — | — | pendiente | spec sin aprobar |
+| 2026-11-25 | A1, A2 | cumple | `./scripts/verify.sh` en verde (formato, reglas de código, compilación con `-warnaserror`, tests de backend y frontend) |
+| 2026-11-25 | A3, A4, A5, A6 | cumple | `ImportacionesApiTests` dentro de `./scripts/verify.sh` |
+| 2026-11-25 | A7 | cumple | `./scripts/aplicar-bd.sh --reiniciar`, `./scripts/scaffold.sh` y `./scripts/smoke-postgres.sh` terminan en `SMOKE OK` |
+| 2026-11-25 | A8 | cumple | el humo valida las 10 operaciones en `/openapi/v1.json` (`openapi-importaciones`) |

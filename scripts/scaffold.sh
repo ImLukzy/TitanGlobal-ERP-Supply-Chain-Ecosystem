@@ -11,7 +11,7 @@ if ./scripts/aplicar-bd.sh --estado | grep -q '^pendiente'; then
     exit 1
 fi
 
-clave="$(sed -nE "s/^\s*POSTGRES_PASSWORD:\s*['\"]?([^'\"]*)['\"]?\s*$/\1/p" docker-compose.yml | head -1 | tr -d '\r')"
+clave="$(sed -nE "s/^[[:space:]]*POSTGRES_PASSWORD:[[:space:]]*['\"]?([^'\"]*)['\"]?[[:space:]]*$/\1/p" docker-compose.yml | head -1 | tr -d '\r')"
 conexion="Host=localhost;Port=5433;Database=titanglobal;Username=titanglobal;Password=${clave}"
 modelos="../TitanGlobal.Domain/Models"
 contexto="Persistence"
@@ -75,8 +75,8 @@ for actual in src/TitanGlobal.Domain/Models/*.cs; do
             printf 'Entidad sin tabla en database/ (escrita a mano): %s en %s\n' "$clase" "$actual" >&2
             distintos=$((distintos + 1))
         fi
-    done < <(sed -nE 's/^\s*(public |internal )?(sealed |abstract |static )?(partial )?class ([A-Za-z_][A-Za-z0-9_]*).*/\4/p' "$actual")
-    if grep -qE '^\s*public (sealed |abstract )?class ' "$actual"; then
+    done < <(sed -nE 's/^[[:space:]]*(public |internal )?(sealed |abstract |static )?(partial )?class ([A-Za-z_][A-Za-z0-9_]*).*/\4/p' "$actual")
+    if grep -qE '^[[:space:]]*public (sealed |abstract )?class ' "$actual"; then
         printf 'Solo se admiten clases partial escritas a mano en Models: %s\n' "$actual" >&2
         distintos=$((distintos + 1))
     fi
