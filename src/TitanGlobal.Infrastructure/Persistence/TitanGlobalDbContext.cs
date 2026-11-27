@@ -96,6 +96,7 @@ public partial class TitanGlobalDbContext : DbContext
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
 
     public virtual DbSet<LineaAcuerdoAbastecimiento> LineasAcuerdoAbastecimiento { get; set; } = null!;
+
     public virtual DbSet<LineaConsolidacionCarga> LineasConsolidacionCarga { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
