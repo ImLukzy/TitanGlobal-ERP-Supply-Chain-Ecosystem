@@ -16,5 +16,5 @@ public class ExpedienteListadoDto
 
     public string Estado { get; set; } = string.Empty;
 
-    public DateTime FechaLlegadaEstimada { get; set; }
+    public DateOnly FechaLlegadaEstimada { get; set; }
 }

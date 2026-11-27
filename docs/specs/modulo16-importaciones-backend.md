@@ -10,6 +10,8 @@
 
 Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas) y de `Modulo15_OrdenesAbastecimiento` (cabecera ligada a una orden).
 
+Responsable: Sergio. Estado: implementado, en revisión de Lukas (PR #95).
+
 ## 2. Fuera de alcance
 - Las 4 entidades del enunciado, los middlewares y el pipeline.
 - Cambios en `Modulo11_Proveedores` ni en `Modulo15_OrdenesAbastecimiento`; la baja de una orden con expedientes queda bloqueada por la clave foránea.
@@ -60,13 +62,15 @@ Sigue el patrón de `Modulo14_Licitaciones` (estados con acciones explícitas) y
 | `LugarOrigen` | `character varying(100) NOT NULL` | puerto, aeropuerto o frontera de salida |
 | `LugarDestino` | `character varying(100) NOT NULL` | puerto, aeropuerto o frontera de llegada |
 | `DocumentoTransporte` | `character varying(40)` | BL, AWB o carta de porte; se llena al embarcar |
-| `FechaEmbarque` | `timestamp with time zone` | UTC; se llena al embarcar |
-| `FechaLlegadaEstimada` | `timestamp with time zone NOT NULL` | UTC |
-| `FechaLlegadaReal` | `timestamp with time zone` | UTC; se llena al llegar a aduana |
+| `FechaEmbarque` | `date` | día calendario (`DateOnly`, `yyyy-MM-dd`); se llena al embarcar |
+| `FechaLlegadaEstimada` | `date NOT NULL` | día calendario (`DateOnly`, `yyyy-MM-dd`) |
+| `FechaLlegadaReal` | `date` | día calendario (`DateOnly`, `yyyy-MM-dd`); se llena al llegar a aduana |
 | `Estado` | `character varying(20) NOT NULL` | `CHECK` en (`Programado`, `EnTransito`, `EnAduana`, `Liberado`, `Cancelado`) |
 | `MotivoCancelacion` | `character varying(500)` | solo con estado `Cancelado` |
 | `Observaciones` | `character varying(500)` | opcional |
 | `FechaRegistro` | `timestamp with time zone NOT NULL` | UTC, la pone el servidor |
+
+Las fechas de embarque y de llegada son de día, no de instante: se guardan como `date` y viajan como `yyyy-MM-dd`. «Futura» y «no futura» se comparan contra la fecha UTC de hoy. `FechaRegistro` sigue siendo un instante UTC.
 
 `CHECK` adicional `CK_ExpedientesImportacion_LlegadaRealPosteriorEmbarque`: si hay `FechaEmbarque` y `FechaLlegadaReal`, la llegada no es anterior al embarque. Los `CHECK` siguen la convención `CK_<Tabla>_<Regla>`.
 

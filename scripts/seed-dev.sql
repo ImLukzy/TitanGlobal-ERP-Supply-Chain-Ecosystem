@@ -969,11 +969,11 @@ SELECT datos.numero, orden."Id", datos.incoterm, datos.medio, datos.pais, datos.
     datos.documento, datos.embarque, datos.llegada_estimada, datos.llegada_real, datos.estado, datos.motivo,
     NULL, datos.registro
 FROM (VALUES
-    ('IMP-2026-001', 'OA-DEV-001', 'CIF', 'Maritimo', 'China', 'Shanghái', 'Callao', 'MSKU1234567', TIMESTAMPTZ '2026-11-01 12:00:00+00', TIMESTAMPTZ '2099-02-01 00:00:00+00', NULL::timestamptz, 'EnTransito', NULL, TIMESTAMPTZ '2026-10-20 09:00:00+00'),
-    ('IMP-2026-002', 'OA-DEV-001', 'FOB', 'Maritimo', 'Chile', 'Valparaíso', 'Callao', NULL, NULL::timestamptz, TIMESTAMPTZ '2099-01-15 00:00:00+00', NULL::timestamptz, 'Programado', NULL, TIMESTAMPTZ '2026-10-21 09:00:00+00'),
-    ('IMP-2026-003', 'OA-DEV-002', 'DAP', 'Terrestre', 'Chile', 'Arica', 'Tacna', 'CRT-0045', TIMESTAMPTZ '2026-11-02 12:00:00+00', TIMESTAMPTZ '2026-11-06 00:00:00+00', TIMESTAMPTZ '2026-11-05 12:00:00+00', 'EnAduana', NULL, TIMESTAMPTZ '2026-10-22 09:00:00+00'),
-    ('IMP-2026-004', 'OA-DEV-003', 'FCA', 'Aereo', 'China', 'Shenzhen', 'Lima', 'AWB-77701', TIMESTAMPTZ '2026-02-10 12:00:00+00', TIMESTAMPTZ '2026-02-15 00:00:00+00', TIMESTAMPTZ '2026-02-14 12:00:00+00', 'Liberado', NULL, TIMESTAMPTZ '2026-02-05 09:00:00+00'),
-    ('IMP-2026-005', 'OA-DEV-002', 'EXW', 'Maritimo', 'China', 'Ningbó', 'Callao', NULL, NULL::timestamptz, TIMESTAMPTZ '2099-03-01 00:00:00+00', NULL::timestamptz, 'Cancelado', 'Proveedor no pudo despachar', TIMESTAMPTZ '2026-10-23 09:00:00+00')
+    ('IMP-2026-001', 'OA-DEV-001', 'CIF', 'Maritimo', 'China', 'Shanghái', 'Callao', 'MSKU1234567', DATE '2026-11-01', DATE '2099-02-01', NULL::date, 'EnTransito', NULL, TIMESTAMPTZ '2026-10-20 09:00:00+00'),
+    ('IMP-2026-002', 'OA-DEV-001', 'FOB', 'Maritimo', 'Chile', 'Valparaíso', 'Callao', NULL, NULL::date, DATE '2099-01-15', NULL::date, 'Programado', NULL, TIMESTAMPTZ '2026-10-21 09:00:00+00'),
+    ('IMP-2026-003', 'OA-DEV-002', 'DAP', 'Terrestre', 'Chile', 'Arica', 'Tacna', 'CRT-0045', DATE '2026-11-02', DATE '2026-11-06', DATE '2026-11-05', 'EnAduana', NULL, TIMESTAMPTZ '2026-10-22 09:00:00+00'),
+    ('IMP-2026-004', 'OA-DEV-003', 'FCA', 'Aereo', 'China', 'Shenzhen', 'Lima', 'AWB-77701', DATE '2026-02-10', DATE '2026-02-15', DATE '2026-02-14', 'Liberado', NULL, TIMESTAMPTZ '2026-02-05 09:00:00+00'),
+    ('IMP-2026-005', 'OA-DEV-002', 'EXW', 'Maritimo', 'China', 'Ningbó', 'Callao', NULL, NULL::date, DATE '2099-03-01', NULL::date, 'Cancelado', 'Proveedor no pudo despachar', TIMESTAMPTZ '2026-10-23 09:00:00+00')
 ) AS datos(numero, orden_numero, incoterm, medio, pais, origen, destino, documento, embarque, llegada_estimada, llegada_real, estado, motivo, registro)
 JOIN "OrdenesAbastecimiento" orden ON orden."Numero" = datos.orden_numero
 ORDER BY datos.numero;

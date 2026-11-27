@@ -4,5 +4,5 @@ public class EmbarcarExpedienteRequestDto
 {
     public string DocumentoTransporte { get; set; } = string.Empty;
 
-    public DateTime FechaEmbarque { get; set; }
+    public DateOnly FechaEmbarque { get; set; }
 }

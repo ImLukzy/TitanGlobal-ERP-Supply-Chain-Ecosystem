@@ -23,11 +23,11 @@ public partial class ExpedienteImportacion
 
     public string? DocumentoTransporte { get; set; }
 
-    public DateTime? FechaEmbarque { get; set; }
+    public DateOnly? FechaEmbarque { get; set; }
 
-    public DateTime FechaLlegadaEstimada { get; set; }
+    public DateOnly FechaLlegadaEstimada { get; set; }
 
-    public DateTime? FechaLlegadaReal { get; set; }
+    public DateOnly? FechaLlegadaReal { get; set; }
 
     public string Estado { get; set; } = string.Empty;
 
