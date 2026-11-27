@@ -27,6 +27,8 @@ public partial class OrdenAbastecimiento
 
     public virtual ICollection<DetalleOrdenAbastecimiento> Detalles { get; set; } = new List<DetalleOrdenAbastecimiento>();
 
+    public virtual ICollection<ExpedienteImportacion> ExpedientesImportacion { get; set; } = new List<ExpedienteImportacion>();
+
     public virtual Proveedor Proveedor { get; set; } = null!;
 
     public virtual SolicitudCompra? SolicitudCompra { get; set; }

@@ -96,7 +96,7 @@ INSERT INTO "DetallesSolicitudCompra" ("SolicitudCompraId", "ProductoId", "Canti
 SELECT setval(pg_get_serial_sequence('"SolicitudesCompra"', 'Id'), (SELECT MAX("Id") FROM "SolicitudesCompra"));
 SELECT setval(pg_get_serial_sequence('"DetallesSolicitudCompra"', 'Id'), (SELECT COALESCE(MAX("Id"), 1) FROM "DetallesSolicitudCompra"));
 
-TRUNCATE TABLE "DetallesOrdenesAbastecimiento", "OrdenesAbastecimiento" RESTART IDENTITY;
+TRUNCATE TABLE "DetallesOrdenesAbastecimiento", "OrdenesAbastecimiento" RESTART IDENTITY CASCADE;
 
 INSERT INTO "OrdenesAbastecimiento" (
     "Numero", "Fecha", "ProveedorId", "SolicitudCompraId", "Estado", "FechaEntregaEstimada", "FechaRecepcion", "Observaciones", "MotivoAnulacion") VALUES
@@ -958,5 +958,26 @@ FROM "ConsolidacionesCarga" c WHERE c."Codigo" IN ('CAR-44001','CAR-44002','CAR-
 AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."ConsolidacionCargaId" = c."Id" AND l."Posicion" = 1);
 SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
 SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
+
+TRUNCATE TABLE "ExpedientesImportacion" RESTART IDENTITY;
+
+INSERT INTO "ExpedientesImportacion" (
+    "Numero", "OrdenAbastecimientoId", "Incoterm", "MedioTransporte", "PaisOrigen", "LugarOrigen", "LugarDestino",
+    "DocumentoTransporte", "FechaEmbarque", "FechaLlegadaEstimada", "FechaLlegadaReal", "Estado", "MotivoCancelacion",
+    "Observaciones", "FechaRegistro")
+SELECT datos.numero, orden."Id", datos.incoterm, datos.medio, datos.pais, datos.origen, datos.destino,
+    datos.documento, datos.embarque, datos.llegada_estimada, datos.llegada_real, datos.estado, datos.motivo,
+    NULL, datos.registro
+FROM (VALUES
+    ('IMP-2026-001', 'OA-DEV-001', 'CIF', 'Maritimo', 'China', 'Shanghái', 'Callao', 'MSKU1234567', DATE '2026-11-01', DATE '2099-02-01', NULL::date, 'EnTransito', NULL, TIMESTAMPTZ '2026-10-20 09:00:00+00'),
+    ('IMP-2026-002', 'OA-DEV-001', 'FOB', 'Maritimo', 'Chile', 'Valparaíso', 'Callao', NULL, NULL::date, DATE '2099-01-15', NULL::date, 'Programado', NULL, TIMESTAMPTZ '2026-10-21 09:00:00+00'),
+    ('IMP-2026-003', 'OA-DEV-002', 'DAP', 'Terrestre', 'Chile', 'Arica', 'Tacna', 'CRT-0045', DATE '2026-11-02', DATE '2026-11-06', DATE '2026-11-05', 'EnAduana', NULL, TIMESTAMPTZ '2026-10-22 09:00:00+00'),
+    ('IMP-2026-004', 'OA-DEV-003', 'FCA', 'Aereo', 'China', 'Shenzhen', 'Lima', 'AWB-77701', DATE '2026-02-10', DATE '2026-02-15', DATE '2026-02-14', 'Liberado', NULL, TIMESTAMPTZ '2026-02-05 09:00:00+00'),
+    ('IMP-2026-005', 'OA-DEV-002', 'EXW', 'Maritimo', 'China', 'Ningbó', 'Callao', NULL, NULL::date, DATE '2099-03-01', NULL::date, 'Cancelado', 'Proveedor no pudo despachar', TIMESTAMPTZ '2026-10-23 09:00:00+00')
+) AS datos(numero, orden_numero, incoterm, medio, pais, origen, destino, documento, embarque, llegada_estimada, llegada_real, estado, motivo, registro)
+JOIN "OrdenesAbastecimiento" orden ON orden."Numero" = datos.orden_numero
+ORDER BY datos.numero;
+
+SELECT setval(pg_get_serial_sequence('"ExpedientesImportacion"', 'Id'), (SELECT MAX("Id") FROM "ExpedientesImportacion"));
 
 COMMIT;
