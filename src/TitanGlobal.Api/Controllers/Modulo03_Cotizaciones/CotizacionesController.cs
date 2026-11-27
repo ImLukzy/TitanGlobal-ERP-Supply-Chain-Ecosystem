@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo03_Cotizaciones;
-using TitanGlobal.Application.UseCases.Modulo03_Cotizaciones;
+using TitanGlobal.Application.UseCases.Modulo03_Cotizaciones.Commands;
+using TitanGlobal.Application.UseCases.Modulo03_Cotizaciones.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo03_Cotizaciones;
 
@@ -9,33 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo03_Cotizaciones;
 [Route("api/v1/cotizaciones")]
 public class CotizacionesController : ControllerBase
 {
-    private readonly ListarCotizacionesUseCase _listarCotizacionesUseCase;
-    private readonly ObtenerCotizacionUseCase _obtenerCotizacionUseCase;
-    private readonly CrearCotizacionUseCase _crearCotizacionUseCase;
-    private readonly ActualizarCotizacionUseCase _actualizarCotizacionUseCase;
-    private readonly AceptarCotizacionUseCase _aceptarCotizacionUseCase;
-    private readonly RechazarCotizacionUseCase _rechazarCotizacionUseCase;
-    private readonly EliminarCotizacionUseCase _eliminarCotizacionUseCase;
-    private readonly ResumenCotizacionesUseCase _resumenCotizacionesUseCase;
+    private readonly ISender _sender;
 
-    public CotizacionesController(
-        ListarCotizacionesUseCase listarCotizacionesUseCase,
-        ObtenerCotizacionUseCase obtenerCotizacionUseCase,
-        CrearCotizacionUseCase crearCotizacionUseCase,
-        ActualizarCotizacionUseCase actualizarCotizacionUseCase,
-        AceptarCotizacionUseCase aceptarCotizacionUseCase,
-        RechazarCotizacionUseCase rechazarCotizacionUseCase,
-        EliminarCotizacionUseCase eliminarCotizacionUseCase,
-        ResumenCotizacionesUseCase resumenCotizacionesUseCase)
+    public CotizacionesController(ISender sender)
     {
-        _listarCotizacionesUseCase = listarCotizacionesUseCase;
-        _obtenerCotizacionUseCase = obtenerCotizacionUseCase;
-        _crearCotizacionUseCase = crearCotizacionUseCase;
-        _actualizarCotizacionUseCase = actualizarCotizacionUseCase;
-        _aceptarCotizacionUseCase = aceptarCotizacionUseCase;
-        _rechazarCotizacionUseCase = rechazarCotizacionUseCase;
-        _eliminarCotizacionUseCase = eliminarCotizacionUseCase;
-        _resumenCotizacionesUseCase = resumenCotizacionesUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -49,43 +29,49 @@ public class CotizacionesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaCotizacionesDto resultado = await _listarCotizacionesUseCase.ExecuteAsync(
-            busqueda,
-            estado,
-            clienteId,
-            vencidas,
-            fechaDesde,
-            fechaHasta,
-            pagina,
-            tamanoPagina);
+        PaginaCotizacionesDto resultado = await _sender.Send(new ListarCotizacionesQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            ClienteId = clienteId,
+            Vencidas = vencidas,
+            FechaDesde = fechaDesde,
+            FechaHasta = fechaHasta,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenCotizacionesDto resultado = await _resumenCotizacionesUseCase.ExecuteAsync();
+        ResumenCotizacionesDto resultado = await _sender.Send(new ResumenCotizacionesQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        CotizacionDetalleDto resultado = await _obtenerCotizacionUseCase.ExecuteAsync(id);
+        CotizacionDetalleDto resultado = await _sender.Send(new ObtenerCotizacionQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarCotizacionRequestDto solicitud)
     {
-        CotizacionCreadaDto resultado = await _crearCotizacionUseCase.ExecuteAsync(solicitud);
+        CotizacionCreadaDto resultado = await _sender.Send(new CrearCotizacionCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarCotizacionRequestDto solicitud)
     {
-        CotizacionCreadaDto resultado = await _actualizarCotizacionUseCase.ExecuteAsync(id, solicitud);
+        CotizacionCreadaDto resultado = await _sender.Send(new ActualizarCotizacionCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -93,21 +79,25 @@ public class CotizacionesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Aceptar(int id)
     {
-        CotizacionDetalleDto resultado = await _aceptarCotizacionUseCase.ExecuteAsync(id);
+        CotizacionDetalleDto resultado = await _sender.Send(new AceptarCotizacionCommand { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost("{id:int}/rechazar")]
     public async Task<IActionResult> Rechazar(int id, [FromBody] RechazarCotizacionRequestDto solicitud)
     {
-        CotizacionDetalleDto resultado = await _rechazarCotizacionUseCase.ExecuteAsync(id, solicitud);
+        CotizacionDetalleDto resultado = await _sender.Send(new RechazarCotizacionCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarCotizacionUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarCotizacionCommand { Id = id });
         return NoContent();
     }
 }

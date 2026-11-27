@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo07_PromocionesDescuentos;
-using TitanGlobal.Application.UseCases.Modulo07_PromocionesDescuentos;
+using TitanGlobal.Application.UseCases.Modulo07_PromocionesDescuentos.Commands;
+using TitanGlobal.Application.UseCases.Modulo07_PromocionesDescuentos.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo07_PromocionesDescuentos;
 
@@ -8,11 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo07_PromocionesDescuentos;
 [Route("api/v1/promociones")]
 public class PromocionesController : ControllerBase
 {
-    private readonly PromocionesUseCase _promocionesUseCase;
+    private readonly ISender _sender;
 
-    public PromocionesController(PromocionesUseCase promocionesUseCase)
+    public PromocionesController(ISender sender)
     {
-        _promocionesUseCase = promocionesUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,50 +26,57 @@ public class PromocionesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaPromocionesDto resultado = await _promocionesUseCase.ListarAsync(
-            busqueda, tipo, segmentoId, vigentes, pagina, tamanoPagina);
+        PaginaPromocionesDto resultado = await _sender.Send(new ListarPromocionesQuery
+        {
+            Busqueda = busqueda,
+            Tipo = tipo,
+            SegmentoId = segmentoId,
+            Vigentes = vigentes,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenPromocionesDto resultado = await _promocionesUseCase.ResumenAsync();
+        ResumenPromocionesDto resultado = await _sender.Send(new ResumenPromocionesQuery());
         return Ok(resultado);
     }
 
     [HttpPost("evaluar")]
     public async Task<IActionResult> Evaluar([FromBody] EvaluarCompraRequestDto solicitud)
     {
-        EvaluacionCompraDto resultado = await _promocionesUseCase.EvaluarAsync(solicitud);
+        EvaluacionCompraDto resultado = await _sender.Send(new EvaluarPromocionesQuery { Solicitud = solicitud });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        PromocionDetalleDto resultado = await _promocionesUseCase.ObtenerAsync(id);
+        PromocionDetalleDto resultado = await _sender.Send(new ObtenerPromocionQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarPromocionRequestDto solicitud)
     {
-        int id = await _promocionesUseCase.GuardarAsync(solicitud, null);
+        int id = await _sender.Send(new GuardarPromocionCommand { Solicitud = solicitud, Id = null });
         return Ok(new PromocionCreadaDto { Id = id });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarPromocionRequestDto solicitud)
     {
-        int idActualizado = await _promocionesUseCase.GuardarAsync(solicitud, id);
+        int idActualizado = await _sender.Send(new GuardarPromocionCommand { Solicitud = solicitud, Id = id });
         return Ok(new PromocionCreadaDto { Id = idActualizado });
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _promocionesUseCase.EliminarAsync(id);
+        await _sender.Send(new EliminarPromocionCommand { Id = id });
         return NoContent();
     }
 }

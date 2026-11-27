@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo05_ContratosComerciales;
-using TitanGlobal.Application.UseCases.Modulo05_ContratosComerciales;
+using TitanGlobal.Application.UseCases.Modulo05_ContratosComerciales.Commands;
+using TitanGlobal.Application.UseCases.Modulo05_ContratosComerciales.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo05_ContratosComerciales;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo05_ContratosComerciales;
 [Route("api/v1/contratos-comerciales")]
 public class ContratosComercialesController : ControllerBase
 {
-    private readonly ContratosComercialesUseCase _casoDeUso;
+    private readonly ISender _sender;
 
-    public ContratosComercialesController(ContratosComercialesUseCase casoDeUso)
+    public ContratosComercialesController(ISender sender)
     {
-        _casoDeUso = casoDeUso;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,36 +27,50 @@ public class ContratosComercialesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaContratosDto resultado = await _casoDeUso.ListarAsync(
-            busqueda, estado, clienteId, vencidos, pagina, tamanoPagina);
+        PaginaContratosDto resultado = await _sender.Send(new ListarContratosComercialesQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            ClienteId = clienteId,
+            Vencidos = vencidos,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenContratosDto resultado = await _casoDeUso.ResumenAsync();
+        ResumenContratosDto resultado = await _sender.Send(new ResumenContratosComercialesQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ContratoDetalleDto resultado = await _casoDeUso.ObtenerAsync(id);
+        ContratoDetalleDto resultado = await _sender.Send(new ObtenerContratoComercialQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarContratoRequestDto solicitud)
     {
-        ContratoCreadoDto resultado = await _casoDeUso.CrearAsync(solicitud);
+        ContratoCreadoDto resultado = await _sender.Send(new CrearContratoComercialCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarContratoRequestDto solicitud)
     {
-        ContratoCreadoDto resultado = await _casoDeUso.ActualizarAsync(id, solicitud);
+        ContratoCreadoDto resultado = await _sender.Send(new ActualizarContratoComercialCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -62,7 +78,7 @@ public class ContratosComercialesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        ContratoDetalleDto resultado = await _casoDeUso.ActivarAsync(id);
+        ContratoDetalleDto resultado = await _sender.Send(new ActivarContratoComercialCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -70,21 +86,25 @@ public class ContratosComercialesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Finalizar(int id)
     {
-        ContratoDetalleDto resultado = await _casoDeUso.FinalizarAsync(id);
+        ContratoDetalleDto resultado = await _sender.Send(new FinalizarContratoComercialCommand { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost("{id:int}/cancelar")]
     public async Task<IActionResult> Cancelar(int id, [FromBody] CancelarContratoRequestDto solicitud)
     {
-        ContratoDetalleDto resultado = await _casoDeUso.CancelarAsync(id, solicitud);
+        ContratoDetalleDto resultado = await _sender.Send(new CancelarContratoComercialCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _casoDeUso.EliminarAsync(id);
+        await _sender.Send(new EliminarContratoComercialCommand { Id = id });
         return NoContent();
     }
 }

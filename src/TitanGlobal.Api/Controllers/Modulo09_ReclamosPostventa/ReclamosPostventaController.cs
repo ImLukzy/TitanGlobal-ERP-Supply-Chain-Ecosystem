@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo09_ReclamosPostventa;
-using TitanGlobal.Application.UseCases.Modulo09_ReclamosPostventa;
+using TitanGlobal.Application.UseCases.Modulo09_ReclamosPostventa.Commands;
+using TitanGlobal.Application.UseCases.Modulo09_ReclamosPostventa.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo09_ReclamosPostventa;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo09_ReclamosPostventa;
 [Route("api/v1/reclamos-postventa")]
 public class ReclamosPostventaController : ControllerBase
 {
-    private readonly ReclamosPostventaUseCase _reclamosPostventaUseCase;
+    private readonly ISender _sender;
 
-    public ReclamosPostventaController(ReclamosPostventaUseCase reclamosPostventaUseCase)
+    public ReclamosPostventaController(ISender sender)
     {
-        _reclamosPostventaUseCase = reclamosPostventaUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -27,43 +29,52 @@ public class ReclamosPostventaController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaReclamosDto resultado = await _reclamosPostventaUseCase.ListarAsync(
-            busqueda,
-            estado,
-            tipo,
-            prioridad,
-            clienteId,
-            vencidos,
-            pagina,
-            tamanoPagina);
+        PaginaReclamosDto resultado = await _sender.Send(new ListarReclamosPostventaQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            Tipo = tipo,
+            Prioridad = prioridad,
+            ClienteId = clienteId,
+            Vencidos = vencidos,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenReclamosDto resultado = await _reclamosPostventaUseCase.ResumenAsync();
+        ResumenReclamosDto resultado = await _sender.Send(new ResumenReclamosPostventaQuery());
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ReclamoDetalleDto resultado = await _reclamosPostventaUseCase.ObtenerAsync(id);
+        ReclamoDetalleDto resultado = await _sender.Send(new ObtenerReclamoPostventaQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarReclamoRequestDto solicitud)
     {
-        ReclamoCreadoDto resultado = await _reclamosPostventaUseCase.CrearAsync(solicitud);
+        ReclamoCreadoDto resultado = await _sender.Send(new CrearReclamoPostventaCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarReclamoRequestDto solicitud)
     {
-        ReclamoCreadoDto resultado = await _reclamosPostventaUseCase.ActualizarAsync(id, solicitud);
+        ReclamoCreadoDto resultado = await _sender.Send(new ActualizarReclamoPostventaCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -71,14 +82,18 @@ public class ReclamosPostventaController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Iniciar(int id)
     {
-        ReclamoDetalleDto resultado = await _reclamosPostventaUseCase.IniciarAsync(id);
+        ReclamoDetalleDto resultado = await _sender.Send(new IniciarReclamoPostventaCommand { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost("{id:int}/resolver")]
     public async Task<IActionResult> Resolver(int id, [FromBody] ResolverReclamoRequestDto solicitud)
     {
-        ReclamoDetalleDto resultado = await _reclamosPostventaUseCase.ResolverAsync(id, solicitud);
+        ReclamoDetalleDto resultado = await _sender.Send(new ResolverReclamoPostventaCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -86,14 +101,18 @@ public class ReclamosPostventaController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Cerrar(int id)
     {
-        ReclamoDetalleDto resultado = await _reclamosPostventaUseCase.CerrarAsync(id);
+        ReclamoDetalleDto resultado = await _sender.Send(new CerrarReclamoPostventaCommand { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost("{id:int}/rechazar")]
     public async Task<IActionResult> Rechazar(int id, [FromBody] RechazarReclamoRequestDto solicitud)
     {
-        ReclamoDetalleDto resultado = await _reclamosPostventaUseCase.RechazarAsync(id, solicitud);
+        ReclamoDetalleDto resultado = await _sender.Send(new RechazarReclamoPostventaCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 }
