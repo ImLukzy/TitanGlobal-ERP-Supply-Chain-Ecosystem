@@ -70,7 +70,7 @@ internal static class Modulo17Datos
 
     private static ExpedienteImportacion CrearExpediente(int id, string numero, string estado)
     {
-        DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly hoy = DateOnly.FromDateTime(DateTime.UtcNow);
 
         return new ExpedienteImportacion
         {
