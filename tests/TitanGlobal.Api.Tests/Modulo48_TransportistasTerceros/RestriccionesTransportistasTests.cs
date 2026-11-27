@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 using TitanGlobal.Application.DTOs.Modulo48_TransportistasTerceros;
 using TitanGlobal.Application.Exceptions;
-using TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros;
+using TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros.Commands;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -40,10 +40,10 @@ public class RestriccionesTransportistasTests
         GuardarTransportistaTerceroRequestDto maestro = new GuardarTransportistaTerceroRequestDto { RazonSocial = "Nuevo", DocumentoFiscal = "DOC-RACE", Pais = "Perú", TipoServicio = "Ambos" };
         ReglaNegocioException error = await Assert.ThrowsAsync<ReglaNegocioException>(async () =>
         {
-            if (operacion == "crear") { await new CrearTransportistaTerceroUseCase(unidad).ExecuteAsync(maestro); }
-            else if (operacion == "actualizar") { await new ActualizarTransportistaTerceroUseCase(unidad).ExecuteAsync(1, maestro); }
-            else if (operacion == "eliminar") { await new EliminarTransportistaTerceroUseCase(unidad).ExecuteAsync(1); }
-            else { await new RegistrarFleteTerceroUseCase(unidad).ExecuteAsync(new RegistrarFleteTerceroRequestDto { TransportistaId = 1, Referencia = "RACE", Fecha = DateTime.UtcNow, Origen = "Lima", Destino = "Callao", Importe = 1, Moneda = "PEN" }); }
+            if (operacion == "crear") { await new CrearTransportistaTerceroCommandHandler(unidad).Handle(new CrearTransportistaTerceroCommand { Solicitud = maestro }, CancellationToken.None); }
+            else if (operacion == "actualizar") { await new ActualizarTransportistaTerceroCommandHandler(unidad).Handle(new ActualizarTransportistaTerceroCommand { Id = 1, Solicitud = maestro }, CancellationToken.None); }
+            else if (operacion == "eliminar") { await new EliminarTransportistaTerceroCommandHandler(unidad).Handle(new EliminarTransportistaTerceroCommand { Id = 1 }, CancellationToken.None); }
+            else { await new RegistrarFleteTerceroCommandHandler(unidad).Handle(new RegistrarFleteTerceroCommand { Solicitud = new RegistrarFleteTerceroRequestDto { TransportistaId = 1, Referencia = "RACE", Fecha = DateTime.UtcNow, Origen = "Lima", Destino = "Callao", Importe = 1, Moneda = "PEN" } }, CancellationToken.None); }
         });
         Assert.Equal(409, error.StatusCode);
         Assert.Equal(mensaje, error.Message);

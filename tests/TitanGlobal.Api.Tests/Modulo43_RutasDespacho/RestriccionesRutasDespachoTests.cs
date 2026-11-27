@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 using TitanGlobal.Application.DTOs.Modulo43_RutasDespacho;
 using TitanGlobal.Application.Exceptions;
-using TitanGlobal.Application.UseCases.Modulo43_RutasDespacho;
+using TitanGlobal.Application.UseCases.Modulo43_RutasDespacho.Commands;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -30,9 +30,9 @@ public class RestriccionesRutasDespachoTests
         GuardarRutaDespachoRequestDto datos = RutasDespachoApiTests.Solicitud();
         ReglaNegocioException error = await Assert.ThrowsAsync<ReglaNegocioException>(async () =>
         {
-            if (operacion == "crear") { await new CrearRutaDespachoUseCase(unidad).ExecuteAsync(datos); }
-            else if (operacion == "editar") { await new ActualizarRutaDespachoUseCase(unidad).ExecuteAsync(1, datos); }
-            else { await new EliminarRutaDespachoUseCase(unidad).ExecuteAsync(1); }
+            if (operacion == "crear") { await new CrearRutaDespachoCommandHandler(unidad).Handle(new CrearRutaDespachoCommand { Solicitud = datos }, CancellationToken.None); }
+            else if (operacion == "editar") { await new ActualizarRutaDespachoCommandHandler(unidad).Handle(new ActualizarRutaDespachoCommand { Id = 1, Solicitud = datos }, CancellationToken.None); }
+            else { await new EliminarRutaDespachoCommandHandler(unidad).Handle(new EliminarRutaDespachoCommand { Id = 1 }, CancellationToken.None); }
         });
         Assert.Equal(409, error.StatusCode); Assert.Equal(mensaje, error.Message);
     }

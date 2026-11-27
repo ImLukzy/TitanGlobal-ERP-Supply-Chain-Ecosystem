@@ -1,0 +1,56 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using TitanGlobal.Application.DTOs.Modulo48_TransportistasTerceros;
+using TitanGlobal.Application.Exceptions;
+using TitanGlobal.Domain.Models;
+using TitanGlobal.Domain.Repositories;
+
+namespace TitanGlobal.Application.UseCases.Modulo48_TransportistasTerceros.Commands;
+
+public class ActualizarTransportistaTerceroCommand : IRequest<int>
+{
+    public int Id { get; set; }
+
+    public required GuardarTransportistaTerceroRequestDto Solicitud { get; set; }
+}
+
+public class ActualizarTransportistaTerceroCommandHandler : IRequestHandler<ActualizarTransportistaTerceroCommand, int>
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ActualizarTransportistaTerceroCommandHandler(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<int> Handle(ActualizarTransportistaTerceroCommand request, CancellationToken cancellationToken)
+    {
+        TransportistaTercero? entidad = await _unitOfWork.Repository<TransportistaTercero>().AsQueryable().FirstOrDefaultAsync(t => t.Id == request.Id);
+        if (entidad is null) { throw new ReglaNegocioException(CodigosEstado.Status404NotFound, $"El transportista {request.Id} no existe."); }
+        GuardarTransportistaTerceroRequestDto datos = ValidacionLogisticaExterna.Transportista(request.Solicitud);
+        string paisNormalizado = datos.Pais.ToLowerInvariant();
+        string documentoNormalizado = datos.DocumentoFiscal.ToLowerInvariant();
+        bool existe = await _unitOfWork.Repository<TransportistaTercero>().AsQueryable()
+            .AnyAsync(t => t.Pais.Trim().ToLower() == paisNormalizado && t.DocumentoFiscal.Trim().ToLower() == documentoNormalizado && t.Id != request.Id);
+        if (existe) { throw ValidacionLogisticaExterna.DocumentoDuplicado(datos.DocumentoFiscal, datos.Pais); }
+        entidad.RazonSocial = datos.RazonSocial;
+        entidad.DocumentoFiscal = datos.DocumentoFiscal;
+        entidad.Pais = datos.Pais;
+        entidad.TipoServicio = datos.TipoServicio;
+        entidad.Contacto = datos.Contacto;
+        entidad.Email = datos.Email;
+        entidad.Telefono = datos.Telefono;
+        entidad.Observaciones = datos.Observaciones;
+        entidad.Activo = datos.Activo;
+        _unitOfWork.Repository<TransportistaTercero>().Update(entidad);
+        try
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        catch (ViolacionRestriccionException excepcion) when (excepcion.Tipo == TipoViolacionRestriccion.Unicidad)
+        {
+            throw ValidacionLogisticaExterna.DocumentoDuplicado(datos.DocumentoFiscal, datos.Pais);
+        }
+        return entidad.Id;
+    }
+}

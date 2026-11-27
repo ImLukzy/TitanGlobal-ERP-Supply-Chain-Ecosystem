@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 using TitanGlobal.Application.Exceptions;
-using TitanGlobal.Application.UseCases.Modulo44_ConsolidacionCarga;
+using TitanGlobal.Application.UseCases.Modulo44_ConsolidacionCarga.Commands;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Infrastructure.Persistence;
@@ -26,9 +26,9 @@ public class RestriccionesCargaTests
         IUnitOfWork unidad = new FallaAlGuardar(scope.ServiceProvider.GetRequiredService<IUnitOfWork>(), tipo);
         ReglaNegocioException error = await Assert.ThrowsAsync<ReglaNegocioException>(async () =>
         {
-            if (accion == "crear") { await new CrearConsolidacionUseCase(unidad).ExecuteAsync(ConsolidacionesApiTests.Solicitud()); }
-            else if (accion == "editar") { await new ActualizarConsolidacionUseCase(unidad).ExecuteAsync(1, ConsolidacionesApiTests.Solicitud()); }
-            else { await new EliminarConsolidacionUseCase(unidad).ExecuteAsync(1); }
+            if (accion == "crear") { await new CrearConsolidacionCommandHandler(unidad).Handle(new CrearConsolidacionCommand { Solicitud = ConsolidacionesApiTests.Solicitud() }, CancellationToken.None); }
+            else if (accion == "editar") { await new ActualizarConsolidacionCommandHandler(unidad).Handle(new ActualizarConsolidacionCommand { Id = 1, Solicitud = ConsolidacionesApiTests.Solicitud() }, CancellationToken.None); }
+            else { await new EliminarConsolidacionCommandHandler(unidad).Handle(new EliminarConsolidacionCommand { Id = 1 }, CancellationToken.None); }
         });
         Assert.Equal(409, error.StatusCode); Assert.Equal(mensaje, error.Message);
     }

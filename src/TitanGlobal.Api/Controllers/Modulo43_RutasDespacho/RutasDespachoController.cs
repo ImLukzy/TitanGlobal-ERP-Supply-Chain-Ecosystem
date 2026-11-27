@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo43_RutasDespacho;
-using TitanGlobal.Application.UseCases.Modulo43_RutasDespacho;
+using TitanGlobal.Application.UseCases.Modulo43_RutasDespacho.Commands;
+using TitanGlobal.Application.UseCases.Modulo43_RutasDespacho.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo43_RutasDespacho;
 
@@ -8,71 +10,66 @@ namespace TitanGlobal.Api.Controllers.Modulo43_RutasDespacho;
 [Route("api/v1/rutas-despacho")]
 public class RutasDespachoController : ControllerBase
 {
-    private readonly ListarRutasDespachoUseCase _listar;
-    private readonly ObtenerRutaDespachoUseCase _obtener;
-    private readonly CrearRutaDespachoUseCase _crear;
-    private readonly ActualizarRutaDespachoUseCase _actualizar;
-    private readonly EliminarRutaDespachoUseCase _eliminar;
-    private readonly ListarZonasRutaDespachoUseCase _zonas;
-    private readonly ResumenRutasDespachoUseCase _resumen;
+    private readonly ISender _sender;
 
-    public RutasDespachoController(ListarRutasDespachoUseCase listar, ObtenerRutaDespachoUseCase obtener, CrearRutaDespachoUseCase crear, ActualizarRutaDespachoUseCase actualizar, EliminarRutaDespachoUseCase eliminar, ListarZonasRutaDespachoUseCase zonas, ResumenRutasDespachoUseCase resumen)
+    public RutasDespachoController(ISender sender)
     {
-        _listar = listar;
-        _obtener = obtener;
-        _crear = crear;
-        _actualizar = actualizar;
-        _eliminar = eliminar;
-        _zonas = zonas;
-        _resumen = resumen;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> Listar([FromQuery] string? busqueda, [FromQuery] string? zona, [FromQuery] bool? activo, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        PaginaRutasDespachoDto resultado = await _listar.ExecuteAsync(busqueda, zona, activo, pagina, tamanoPagina);
+        PaginaRutasDespachoDto resultado = await _sender.Send(new ListarRutasDespachoQuery
+        {
+            Busqueda = busqueda,
+            Zona = zona,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        RutaDespachoDetalleDto resultado = await _obtener.ExecuteAsync(id);
+        RutaDespachoDetalleDto resultado = await _sender.Send(new ObtenerRutaDespachoQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarRutaDespachoRequestDto solicitud)
     {
-        int resultado = await _crear.ExecuteAsync(solicitud);
+        int resultado = await _sender.Send(new CrearRutaDespachoCommand { Solicitud = solicitud });
         return Ok(new { Id = resultado });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarRutaDespachoRequestDto solicitud)
     {
-        int resultado = await _actualizar.ExecuteAsync(id, solicitud);
+        int resultado = await _sender.Send(new ActualizarRutaDespachoCommand { Id = id, Solicitud = solicitud });
         return Ok(new { Id = resultado });
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminar.ExecuteAsync(id);
+        await _sender.Send(new EliminarRutaDespachoCommand { Id = id });
         return NoContent();
     }
 
     [HttpGet("zonas")]
     public async Task<IActionResult> Zonas()
     {
-        List<string> resultado = await _zonas.ExecuteAsync();
+        List<string> resultado = await _sender.Send(new ListarZonasRutaDespachoQuery());
         return Ok(resultado);
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenRutasDespachoDto resultado = await _resumen.ExecuteAsync();
+        ResumenRutasDespachoDto resultado = await _sender.Send(new ResumenRutasDespachoQuery());
         return Ok(resultado);
     }
 }

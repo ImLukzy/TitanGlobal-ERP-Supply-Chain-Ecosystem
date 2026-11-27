@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo41_VehiculosFlota;
-using TitanGlobal.Application.UseCases.Modulo41_VehiculosFlota;
+using TitanGlobal.Application.UseCases.Modulo41_VehiculosFlota.Commands;
+using TitanGlobal.Application.UseCases.Modulo41_VehiculosFlota.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo41_VehiculosFlota;
 
@@ -8,36 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo41_VehiculosFlota;
 [Route("api/v1/vehiculos-flota")]
 public class VehiculosFlotaController : ControllerBase
 {
-    private readonly ListarVehiculosFlotaUseCase _listarVehiculosFlotaUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerVehiculoFlotaUseCase _obtenerVehiculoFlotaUseCase;
-
-    private readonly CrearVehiculoFlotaUseCase _crearVehiculoFlotaUseCase;
-
-    private readonly ActualizarVehiculoFlotaUseCase _actualizarVehiculoFlotaUseCase;
-
-    private readonly EliminarVehiculoFlotaUseCase _eliminarVehiculoFlotaUseCase;
-
-    private readonly ListarTiposVehiculoFlotaUseCase _listarTiposVehiculoFlotaUseCase;
-
-    private readonly ResumenVehiculosFlotaUseCase _resumenVehiculosFlotaUseCase;
-
-    public VehiculosFlotaController(
-        ListarVehiculosFlotaUseCase listarVehiculosFlotaUseCase,
-        ObtenerVehiculoFlotaUseCase obtenerVehiculoFlotaUseCase,
-        CrearVehiculoFlotaUseCase crearVehiculoFlotaUseCase,
-        ActualizarVehiculoFlotaUseCase actualizarVehiculoFlotaUseCase,
-        EliminarVehiculoFlotaUseCase eliminarVehiculoFlotaUseCase,
-        ListarTiposVehiculoFlotaUseCase listarTiposVehiculoFlotaUseCase,
-        ResumenVehiculosFlotaUseCase resumenVehiculosFlotaUseCase)
+    public VehiculosFlotaController(ISender sender)
     {
-        _listarVehiculosFlotaUseCase = listarVehiculosFlotaUseCase;
-        _obtenerVehiculoFlotaUseCase = obtenerVehiculoFlotaUseCase;
-        _crearVehiculoFlotaUseCase = crearVehiculoFlotaUseCase;
-        _actualizarVehiculoFlotaUseCase = actualizarVehiculoFlotaUseCase;
-        _eliminarVehiculoFlotaUseCase = eliminarVehiculoFlotaUseCase;
-        _listarTiposVehiculoFlotaUseCase = listarTiposVehiculoFlotaUseCase;
-        _resumenVehiculosFlotaUseCase = resumenVehiculosFlotaUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -48,12 +25,14 @@ public class VehiculosFlotaController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaVehiculosFlotaDto resultado = await _listarVehiculosFlotaUseCase.ExecuteAsync(
-            busqueda,
-            tipo,
-            activo,
-            pagina,
-            tamanoPagina);
+        PaginaVehiculosFlotaDto resultado = await _sender.Send(new ListarVehiculosFlotaQuery
+        {
+            Busqueda = busqueda,
+            Tipo = tipo,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -61,7 +40,7 @@ public class VehiculosFlotaController : ControllerBase
     [HttpGet("tipos")]
     public async Task<IActionResult> Tipos()
     {
-        List<string> resultado = await _listarTiposVehiculoFlotaUseCase.ExecuteAsync();
+        List<string> resultado = await _sender.Send(new ListarTiposVehiculoFlotaQuery());
 
         return Ok(resultado);
     }
@@ -69,7 +48,7 @@ public class VehiculosFlotaController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenVehiculosFlotaDto resultado = await _resumenVehiculosFlotaUseCase.ExecuteAsync();
+        ResumenVehiculosFlotaDto resultado = await _sender.Send(new ResumenVehiculosFlotaQuery());
 
         return Ok(resultado);
     }
@@ -77,7 +56,7 @@ public class VehiculosFlotaController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        VehiculoFlotaDetalleDto resultado = await _obtenerVehiculoFlotaUseCase.ExecuteAsync(id);
+        VehiculoFlotaDetalleDto resultado = await _sender.Send(new ObtenerVehiculoFlotaQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -85,7 +64,7 @@ public class VehiculosFlotaController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarVehiculoFlotaRequestDto solicitud)
     {
-        int id = await _crearVehiculoFlotaUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearVehiculoFlotaCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -93,7 +72,11 @@ public class VehiculosFlotaController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarVehiculoFlotaRequestDto solicitud)
     {
-        int idActualizado = await _actualizarVehiculoFlotaUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarVehiculoFlotaCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(new { Id = idActualizado });
     }
@@ -101,7 +84,7 @@ public class VehiculosFlotaController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarVehiculoFlotaUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarVehiculoFlotaCommand { Id = id });
 
         return NoContent();
     }
