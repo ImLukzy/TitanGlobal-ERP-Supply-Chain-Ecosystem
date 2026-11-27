@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo68_EvaluacionDesempeno;
-using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno;
+using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno.Commands;
+using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo68_EvaluacionDesempeno;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo68_EvaluacionDesempeno;
 [Route("api/v1/ciclos-evaluacion")]
 public class CiclosEvaluacionController : ControllerBase
 {
-    private readonly AdministrarCiclosEvaluacionUseCase _administrarCiclos;
+    private readonly ISender _sender;
 
-    public CiclosEvaluacionController(AdministrarCiclosEvaluacionUseCase administrarCiclos)
+    public CiclosEvaluacionController(ISender sender)
     {
-        _administrarCiclos = administrarCiclos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,21 +26,27 @@ public class CiclosEvaluacionController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaCiclosEvaluacionDto resultado = await _administrarCiclos.ListarAsync(busqueda, estado, pagina, tamanoPagina);
+        PaginaCiclosEvaluacionDto resultado = await _sender.Send(new ListarCiclosEvaluacionQuery
+        {
+            Busqueda = busqueda,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        CicloEvaluacionDetalleDto resultado = await _administrarCiclos.ObtenerAsync(id);
+        CicloEvaluacionDetalleDto resultado = await _sender.Send(new ObtenerCicloEvaluacionQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}/resultados")]
     public async Task<IActionResult> ObtenerResultados(int id)
     {
-        ResultadosCicloEvaluacionDto resultado = await _administrarCiclos.ObtenerResultadosAsync(id);
+        ResultadosCicloEvaluacionDto resultado = await _sender.Send(new ObtenerResultadosQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -46,7 +54,10 @@ public class CiclosEvaluacionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarCicloEvaluacionRequestDto solicitud)
     {
-        CicloEvaluacionIdDto resultado = await _administrarCiclos.CrearAsync(solicitud);
+        CicloEvaluacionIdDto resultado = await _sender.Send(new CrearCicloEvaluacionCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -54,7 +65,11 @@ public class CiclosEvaluacionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarCicloEvaluacionRequestDto solicitud)
     {
-        CicloEvaluacionIdDto resultado = await _administrarCiclos.ActualizarAsync(id, solicitud);
+        CicloEvaluacionIdDto resultado = await _sender.Send(new ActualizarCicloEvaluacionCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -62,7 +77,11 @@ public class CiclosEvaluacionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> CrearCompetencia(int id, [FromBody] GuardarCompetenciaEvaluacionRequestDto solicitud)
     {
-        CompetenciaEvaluacionIdDto resultado = await _administrarCiclos.CrearCompetenciaAsync(id, solicitud);
+        CompetenciaEvaluacionIdDto resultado = await _sender.Send(new CrearCompetenciaCommand
+        {
+            CicloId = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -70,7 +89,12 @@ public class CiclosEvaluacionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> ActualizarCompetencia(int id, int competenciaId, [FromBody] GuardarCompetenciaEvaluacionRequestDto solicitud)
     {
-        CompetenciaEvaluacionIdDto resultado = await _administrarCiclos.ActualizarCompetenciaAsync(id, competenciaId, solicitud);
+        CompetenciaEvaluacionIdDto resultado = await _sender.Send(new ActualizarCompetenciaCommand
+        {
+            CicloId = id,
+            CompetenciaId = competenciaId,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -78,7 +102,7 @@ public class CiclosEvaluacionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> EliminarCompetencia(int id, int competenciaId)
     {
-        await _administrarCiclos.EliminarCompetenciaAsync(id, competenciaId);
+        await _sender.Send(new EliminarCompetenciaCommand { CicloId = id, CompetenciaId = competenciaId });
         return NoContent();
     }
 
@@ -87,7 +111,7 @@ public class CiclosEvaluacionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Abrir(int id)
     {
-        CicloEvaluacionIdDto resultado = await _administrarCiclos.AbrirAsync(id);
+        CicloEvaluacionIdDto resultado = await _sender.Send(new AbrirCicloEvaluacionCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -96,7 +120,7 @@ public class CiclosEvaluacionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Cerrar(int id)
     {
-        CicloEvaluacionIdDto resultado = await _administrarCiclos.CerrarAsync(id);
+        CicloEvaluacionIdDto resultado = await _sender.Send(new CerrarCicloEvaluacionCommand { Id = id });
         return Ok(resultado);
     }
 }

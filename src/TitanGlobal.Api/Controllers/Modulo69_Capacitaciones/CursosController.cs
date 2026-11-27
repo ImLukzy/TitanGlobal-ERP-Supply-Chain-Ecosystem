@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo69_Capacitaciones;
-using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones;
+using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones.Commands;
+using TitanGlobal.Application.UseCases.Modulo69_Capacitaciones.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo69_Capacitaciones;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo69_Capacitaciones;
 [Route("api/v1/cursos")]
 public class CursosController : ControllerBase
 {
-    private readonly AdministrarCursosUseCase _administrarCursos;
+    private readonly ISender _sender;
 
-    public CursosController(AdministrarCursosUseCase administrarCursos)
+    public CursosController(ISender sender)
     {
-        _administrarCursos = administrarCursos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -25,14 +27,21 @@ public class CursosController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaCursosDto resultado = await _administrarCursos.ListarAsync(busqueda, tipo, activo, pagina, tamanoPagina);
+        PaginaCursosDto resultado = await _sender.Send(new ListarCursosQuery
+        {
+            Busqueda = busqueda,
+            Tipo = tipo,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        CursoListadoDto resultado = await _administrarCursos.ObtenerAsync(id);
+        CursoListadoDto resultado = await _sender.Send(new ObtenerCursoQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -40,7 +49,7 @@ public class CursosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarCursoRequestDto solicitud)
     {
-        CursoIdDto resultado = await _administrarCursos.CrearAsync(solicitud);
+        CursoIdDto resultado = await _sender.Send(new CrearCursoCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -48,7 +57,7 @@ public class CursosController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarCursoRequestDto solicitud)
     {
-        CursoIdDto resultado = await _administrarCursos.ActualizarAsync(id, solicitud);
+        CursoIdDto resultado = await _sender.Send(new ActualizarCursoCommand { Id = id, Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -57,7 +66,7 @@ public class CursosController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Desactivar(int id)
     {
-        CursoIdDto resultado = await _administrarCursos.DesactivarAsync(id);
+        CursoIdDto resultado = await _sender.Send(new DesactivarCursoCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -66,7 +75,7 @@ public class CursosController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        CursoIdDto resultado = await _administrarCursos.ActivarAsync(id);
+        CursoIdDto resultado = await _sender.Send(new ActivarCursoCommand { Id = id });
         return Ok(resultado);
     }
 }

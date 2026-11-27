@@ -5,7 +5,8 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using TitanGlobal.Api.Tests.Modulo04_OrdenesCompra;
 using TitanGlobal.Application.DTOs.Modulo67_AdelantosPrestamos;
-using TitanGlobal.Application.UseCases.Modulo67_AdelantosPrestamos;
+using MediatR;
+using TitanGlobal.Application.UseCases.Modulo67_AdelantosPrestamos.Commands;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -330,9 +331,9 @@ public class PrestamosApiTests
 
         using (IServiceScope alcance = _fabrica.Services.CreateScope())
         {
-            AdministrarPrestamosUseCase casoDeUso = alcance.ServiceProvider.GetRequiredService<AdministrarPrestamosUseCase>();
+            ISender mediador = alcance.ServiceProvider.GetRequiredService<ISender>();
             IUnitOfWork unidad = alcance.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            Assert.Equal(300m, await casoDeUso.RevertirDescuentosAsync(5));
+            Assert.Equal(300m, await mediador.Send(new RevertirDescuentosCommand { PlanillaId = 5 }));
             await unidad.CompleteAsync();
         }
 
@@ -349,8 +350,8 @@ public class PrestamosApiTests
 
         using (IServiceScope alcance = _fabrica.Services.CreateScope())
         {
-            AdministrarPrestamosUseCase casoDeUso = alcance.ServiceProvider.GetRequiredService<AdministrarPrestamosUseCase>();
-            Assert.Equal(0m, await casoDeUso.RevertirDescuentosAsync(99));
+            ISender mediador = alcance.ServiceProvider.GetRequiredService<ISender>();
+            Assert.Equal(0m, await mediador.Send(new RevertirDescuentosCommand { PlanillaId = 99 }));
         }
     }
 
@@ -367,9 +368,9 @@ public class PrestamosApiTests
 
         using (IServiceScope alcance = _fabrica.Services.CreateScope())
         {
-            AdministrarPrestamosUseCase casoDeUso = alcance.ServiceProvider.GetRequiredService<AdministrarPrestamosUseCase>();
+            ISender mediador = alcance.ServiceProvider.GetRequiredService<ISender>();
             IUnitOfWork unidad = alcance.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            Assert.Equal(140m, await casoDeUso.RevertirDescuentosAsync(2));
+            Assert.Equal(140m, await mediador.Send(new RevertirDescuentosCommand { PlanillaId = 2 }));
             await unidad.CompleteAsync();
         }
 
@@ -571,9 +572,16 @@ public class PrestamosApiTests
     private async Task<decimal> DescontarAsync(int empleadoId, int anio, int mes, decimal montoMaximo, int planillaId, bool guardar)
     {
         using IServiceScope alcance = _fabrica.Services.CreateScope();
-        AdministrarPrestamosUseCase casoDeUso = alcance.ServiceProvider.GetRequiredService<AdministrarPrestamosUseCase>();
+        ISender mediador = alcance.ServiceProvider.GetRequiredService<ISender>();
         IUnitOfWork unidad = alcance.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        decimal descontado = await casoDeUso.DescontarCuotasAsync(empleadoId, anio, mes, montoMaximo, planillaId);
+        decimal descontado = await mediador.Send(new DescontarCuotasCommand
+        {
+            EmpleadoId = empleadoId,
+            Anio = anio,
+            Mes = mes,
+            MontoMaximo = montoMaximo,
+            PlanillaId = planillaId
+        });
         if (guardar)
         {
             await unidad.CompleteAsync();

@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo66_Planillas;
-using TitanGlobal.Application.UseCases.Modulo66_Planillas;
+using TitanGlobal.Application.UseCases.Modulo66_Planillas.Commands;
+using TitanGlobal.Application.UseCases.Modulo66_Planillas.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo66_Planillas;
 
@@ -9,11 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo66_Planillas;
 [Route("api/v1/afiliaciones-pension")]
 public class AfiliacionesPensionController : ControllerBase
 {
-    private readonly AdministrarAfiliacionesPensionUseCase _administrarAfiliaciones;
+    private readonly ISender _sender;
 
-    public AfiliacionesPensionController(AdministrarAfiliacionesPensionUseCase administrarAfiliaciones)
+    public AfiliacionesPensionController(ISender sender)
     {
-        _administrarAfiliaciones = administrarAfiliaciones;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -22,7 +24,12 @@ public class AfiliacionesPensionController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaAfiliacionesPensionDto resultado = await _administrarAfiliaciones.ListarAsync(empleadoId, pagina, tamanoPagina);
+        PaginaAfiliacionesPensionDto resultado = await _sender.Send(new ListarAfiliacionesPensionQuery
+        {
+            EmpleadoId = empleadoId,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
@@ -30,7 +37,11 @@ public class AfiliacionesPensionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Guardar(int empleadoId, [FromBody] GuardarAfiliacionPensionRequestDto solicitud)
     {
-        AfiliacionPensionIdDto resultado = await _administrarAfiliaciones.GuardarAsync(empleadoId, solicitud);
+        AfiliacionPensionIdDto resultado = await _sender.Send(new GuardarAfiliacionPensionCommand
+        {
+            EmpleadoId = empleadoId,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 }

@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo68_EvaluacionDesempeno;
-using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno;
+using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno.Commands;
+using TitanGlobal.Application.UseCases.Modulo68_EvaluacionDesempeno.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo68_EvaluacionDesempeno;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo68_EvaluacionDesempeno;
 [Route("api/v1/evaluaciones")]
 public class EvaluacionesController : ControllerBase
 {
-    private readonly AdministrarEvaluacionesUseCase _administrarEvaluaciones;
+    private readonly ISender _sender;
 
-    public EvaluacionesController(AdministrarEvaluacionesUseCase administrarEvaluaciones)
+    public EvaluacionesController(ISender sender)
     {
-        _administrarEvaluaciones = administrarEvaluaciones;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -26,20 +28,22 @@ public class EvaluacionesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaEvaluacionesDto resultado = await _administrarEvaluaciones.ListarAsync(
-            cicloId,
-            empleadoId,
-            estado,
-            busqueda,
-            pagina,
-            tamanoPagina);
+        PaginaEvaluacionesDto resultado = await _sender.Send(new ListarEvaluacionesQuery
+        {
+            CicloId = cicloId,
+            EmpleadoId = empleadoId,
+            Estado = estado,
+            Busqueda = busqueda,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        EvaluacionDetalleDto resultado = await _administrarEvaluaciones.ObtenerAsync(id);
+        EvaluacionDetalleDto resultado = await _sender.Send(new ObtenerEvaluacionQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -47,7 +51,7 @@ public class EvaluacionesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] CrearEvaluacionRequestDto solicitud)
     {
-        EvaluacionIdDto resultado = await _administrarEvaluaciones.CrearAsync(solicitud);
+        EvaluacionIdDto resultado = await _sender.Send(new CrearEvaluacionCommand { Solicitud = solicitud });
         return Ok(resultado);
     }
 
@@ -55,7 +59,11 @@ public class EvaluacionesController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> GuardarCalificaciones(int id, [FromBody] GuardarCalificacionesRequestDto solicitud)
     {
-        EvaluacionIdDto resultado = await _administrarEvaluaciones.GuardarCalificacionesAsync(id, solicitud);
+        EvaluacionIdDto resultado = await _sender.Send(new GuardarCalificacionesCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -64,7 +72,7 @@ public class EvaluacionesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Enviar(int id)
     {
-        EvaluacionIdDto resultado = await _administrarEvaluaciones.EnviarAsync(id);
+        EvaluacionIdDto resultado = await _sender.Send(new EnviarEvaluacionCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -73,7 +81,7 @@ public class EvaluacionesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Cerrar(int id)
     {
-        EvaluacionIdDto resultado = await _administrarEvaluaciones.CerrarAsync(id);
+        EvaluacionIdDto resultado = await _sender.Send(new CerrarEvaluacionCommand { Id = id });
         return Ok(resultado);
     }
 }

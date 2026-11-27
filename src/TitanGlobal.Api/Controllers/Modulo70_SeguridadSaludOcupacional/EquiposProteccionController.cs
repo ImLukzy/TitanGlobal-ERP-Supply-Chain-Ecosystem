@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo70_SeguridadSaludOcupacional;
-using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional;
+using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional.Commands;
+using TitanGlobal.Application.UseCases.Modulo70_SeguridadSaludOcupacional.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo70_SeguridadSaludOcupacional;
 
@@ -10,11 +12,11 @@ namespace TitanGlobal.Api.Controllers.Modulo70_SeguridadSaludOcupacional;
 [Route("api/v1/equipos-proteccion")]
 public class EquiposProteccionController : ControllerBase
 {
-    private readonly AdministrarEquiposProteccionUseCase _administrarEquipos;
+    private readonly ISender _sender;
 
-    public EquiposProteccionController(AdministrarEquiposProteccionUseCase administrarEquipos)
+    public EquiposProteccionController(ISender sender)
     {
-        _administrarEquipos = administrarEquipos;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,14 +26,20 @@ public class EquiposProteccionController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10)
     {
-        PaginaEquiposProteccionDto resultado = await _administrarEquipos.ListarAsync(busqueda, activo, pagina, tamanoPagina);
+        PaginaEquiposProteccionDto resultado = await _sender.Send(new ListarEquiposProteccionQuery
+        {
+            Busqueda = busqueda,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        EquipoProteccionListadoDto resultado = await _administrarEquipos.ObtenerAsync(id);
+        EquipoProteccionListadoDto resultado = await _sender.Send(new ObtenerEquipoProteccionQuery { Id = id });
         return Ok(resultado);
     }
 
@@ -39,7 +47,10 @@ public class EquiposProteccionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Crear([FromBody] GuardarEquipoProteccionRequestDto solicitud)
     {
-        EquipoProteccionIdDto resultado = await _administrarEquipos.CrearAsync(solicitud);
+        EquipoProteccionIdDto resultado = await _sender.Send(new CrearEquipoProteccionCommand
+        {
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -47,7 +58,11 @@ public class EquiposProteccionController : ControllerBase
     [Authorize(Roles = "RRHH,ADMIN")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarEquipoProteccionRequestDto solicitud)
     {
-        EquipoProteccionIdDto resultado = await _administrarEquipos.ActualizarAsync(id, solicitud);
+        EquipoProteccionIdDto resultado = await _sender.Send(new ActualizarEquipoProteccionCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
         return Ok(resultado);
     }
 
@@ -56,7 +71,7 @@ public class EquiposProteccionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Desactivar(int id)
     {
-        EquipoProteccionIdDto resultado = await _administrarEquipos.DesactivarAsync(id);
+        EquipoProteccionIdDto resultado = await _sender.Send(new DesactivarEquipoProteccionCommand { Id = id });
         return Ok(resultado);
     }
 
@@ -65,7 +80,7 @@ public class EquiposProteccionController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        EquipoProteccionIdDto resultado = await _administrarEquipos.ActivarAsync(id);
+        EquipoProteccionIdDto resultado = await _sender.Send(new ActivarEquipoProteccionCommand { Id = id });
         return Ok(resultado);
     }
 }
