@@ -2239,6 +2239,93 @@ html:has(.comisiones-page) { overflow-x: hidden; }
   .listas-materiales-area { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 }
 
+/* Módulo 14: licitaciones */
+.licitaciones-page { padding-bottom: 42px; }
+.licitaciones-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.licitaciones-summary > article, .licitaciones-conteos, .licitaciones-panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.licitaciones-summary > article { display: grid; min-height: 82px; align-content: space-between; padding: 13px; color: var(--ink-soft); font-size: 10px; }
+.licitaciones-summary > article strong { color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums; }
+.licitaciones-conteos { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 13px 17px; list-style: none; }
+.licitaciones-conteos li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.licitaciones-conteos li strong { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.licitaciones-work-area { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0 14px; }
+.licitaciones-panel { margin-top: 14px; padding: 17px; }
+.licitaciones-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.licitaciones-panel-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 16px; overflow-wrap: anywhere; }
+.licitaciones-filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 9px; margin-bottom: 13px; }
+.licitaciones-filters label { display: grid; min-width: 0; align-content: start; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.licitaciones-filter-periodo { display: flex; align-items: flex-end; gap: 7px; min-width: 0; }
+.licitaciones-filter-periodo > label { flex: 1 1 auto; }
+.licitaciones-filters input, .licitaciones-filters select, .licitacion-form input, .licitacion-form select, .licitacion-form textarea { width: 100%; min-width: 0; min-height: 35px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-raised); color: var(--ink); font: inherit; font-size: 10px; }
+.licitaciones-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.licitaciones-table { min-width: 520px; }
+.licitaciones-table th, .licitaciones-table td { padding: 8px 7px; font-size: 9px; }
+.licitacion-row-select { padding: 0; border: 0; background: transparent; color: var(--accent-ink); cursor: pointer; font: inherit; font-weight: 700; }
+.licitacion-detail-grid, .licitacion-form-readonly { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.licitacion-detail-grid > div, .licitacion-form-readonly > div { min-width: 0; }
+.licitacion-detail-grid dt, .licitacion-form-readonly dt { margin-bottom: 4px; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+.licitacion-detail-grid dd, .licitacion-form-readonly dd { margin: 0; color: var(--ink); font-size: 10px; overflow-wrap: anywhere; }
+.licitacion-detail-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.licitacion-detail-note h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.licitacion-detail-note p { margin-bottom: 0; color: var(--ink); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.licitacion-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.licitaciones-error { margin: 10px 0 0; color: var(--bad); font-size: 10px; line-height: 1.5; }
+.licitacion-form-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.licitacion-form-readonly { grid-column: 1 / -1; }
+.licitacion-form .form-field { min-width: 0; gap: 5px; }
+.licitacion-form .form-field > label { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.licitacion-form textarea { resize: vertical; }
+.licitacion-contador { color: var(--ink-faint); font-size: 9px; text-align: right; }
+.licitacion-form-actions { display: flex; justify-content: flex-end; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+.licitacion-estado { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 20px; font-size: 8px; font-weight: 750; white-space: nowrap; }
+.licitacion-estado.is-abierta { background: var(--accent-soft); color: var(--accent-ink); }
+.licitacion-estado.is-cerrada { background: var(--surface-muted); color: var(--ink-soft); }
+.licitacion-estado.is-adjudicada { background: var(--good-soft); color: var(--good); }
+.licitacion-estado.is-cancelada { background: var(--bad-soft); color: var(--bad); }
+.licitacion-late-label, .licitacion-late-banner { color: var(--bad); font-size: 8px; font-weight: 750; }
+.licitacion-late-label { display: block; margin-top: 3px; }
+.licitacion-late-banner { margin: 0 0 10px; padding: 7px 9px; border-radius: 8px; background: var(--bad-soft); font-size: 10px; }
+.licitacion-titulo { margin: 0 0 12px; color: var(--ink); font-size: 11px; font-weight: 650; overflow-wrap: anywhere; }
+.licitacion-detail-ofertas { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.licitacion-detail-ofertas h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.licitacion-ofertas-scroll { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.licitacion-ofertas-table { width: 100%; min-width: 420px; border-collapse: collapse; }
+.licitacion-ofertas-table caption { padding-bottom: 6px; color: var(--ink-faint); text-align: left; font-size: 9px; }
+.licitacion-ofertas-table th, .licitacion-ofertas-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 9px; text-align: left; }
+.licitacion-ofertas-table thead th { background: var(--surface-muted); color: var(--ink-soft); font-weight: 700; }
+.licitacion-ganadora { display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 20px; background: var(--good-soft); color: var(--good); font-size: 8px; font-weight: 750; }
+.licitacion-adjudicar-opciones { display: grid; gap: 8px; margin: 0 0 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.licitacion-adjudicar-opciones legend { color: var(--ink-soft); font-size: 9px; font-weight: 650; }
+.licitacion-adjudicar-opciones label { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 10px; }
+.licitacion-adjudicar-opciones input { width: auto; min-height: 0; }
+@media (min-width: 1024px) {
+  .licitaciones-work-area { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); }
+  .licitaciones-table { min-width: 0; table-layout: fixed; }
+  .licitaciones-table th, .licitaciones-table td { padding: 7px 4px; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 900px) {
+  .licitaciones-conteos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .licitaciones-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .licitacion-form-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .licitaciones-page { padding-bottom: 28px; }
+  .licitaciones-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .licitaciones-summary > article { min-height: 76px; padding: 11px; }
+  .licitaciones-summary > article strong { font-size: 16px; }
+  .licitaciones-ranking { padding: 12px; }
+  .licitaciones-panel { margin-top: 12px; padding: 14px; }
+  .licitaciones-panel-heading h2 { font-size: 14px; }
+  .licitaciones-filters { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .licitacion-form-fields { grid-template-columns: minmax(0, 1fr); }
+  .licitacion-detail-grid, .licitacion-form-readonly { grid-template-columns: minmax(0, 1fr); }
+  .licitacion-actions { justify-content: flex-start; }
+  .licitacion-form-actions .primary-button { width: 100%; }
+}
+
 /* Módulo 43: rutas de despacho */
 .rutas-despacho-page { min-width: 0; }
 .rutas-despacho-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }

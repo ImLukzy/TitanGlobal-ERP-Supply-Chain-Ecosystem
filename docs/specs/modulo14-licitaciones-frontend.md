@@ -61,13 +61,20 @@
 | A8 | Visual y E2E | capturas (`page.route`) a 375 y 1280 px, claro y oscuro, con una licitación cerrada con ofertas, el diálogo de adjudicación y el formulario de oferta; márgenes ≥ 16 px; sin scroll horizontal ni celdas recortadas; y una pasada contra la API y PostgreSQL reales con el seed (resumen 5 / 7 / 70000,00 / 28000,00 y conteo por estado 2 / 1 / 1 / 1) | adjuntas |
 
 ## 6. Checklist de ejecución
-- [ ] Tarea 1: tipos y `api.ts`.
-- [ ] Tarea 2: resumen, filtros y tabla.
-- [ ] Tarea 3: detalle con ofertas y acciones por estado.
-- [ ] Tarea 4: formularios y diálogos (cerrar, cancelar, adjudicar y eliminar).
+- [x] Tarea 1: tipos y `api.ts`.
+- [x] Tarea 2: resumen, filtros y tabla.
+- [x] Tarea 3: detalle con ofertas y acciones por estado.
+- [x] Tarea 4: formularios y diálogos (cerrar, cancelar, adjudicar y eliminar).
 - [ ] Tarea 5: tests, capturas y A1–A8.
 
 ## 7. Registro de verificación
 | Fecha | Criterio | Resultado | Evidencia (comando / captura) |
 |---|---|---|---|
-| — | — | pendiente | spec sin aprobar |
+| 2026-11-25 | A1 | ⚠️ parcial | frontend: `eslint . --max-warnings 0` sin avisos, `tsc -b` limpio, `vite build` correcto y `scripts/check-rules.sh` en 0; `./scripts/verify.sh` completo pendiente de correrlo en macOS antes del PR |
+| 2026-11-25 | A2 | ✅ | `api.test.ts`: 4 tests (query exacta, filtros vacíos fuera, rutas de detalle, resumen y proveedores, método y cuerpo de crear, actualizar, ofertas, mejora, cerrar, adjudicar, cancelar y eliminar) |
+| 2026-11-25 | A3 | ✅ | `LicitacionesPage.test.tsx`: resumen y conteo por estado en orden fijo, «Plazo vencido» solo en la abierta vencida, estado y tipo en la query con página 1, búsqueda a los 300 ms, vacío y error |
+| 2026-11-25 | A4 | ✅ | `LicitacionesPage.test.tsx`: botones exactos por estado, «Mejorar oferta» por oferta solo en subasta, «Eliminar» solo sin ofertas, «Ganadora», «Sin observaciones», plazo vencido sin «Presentar oferta» |
+| 2026-11-25 | A5 | ✅ | `LicitacionAcciones.test.tsx`: literales de validación sin petición, creación con número en mayúsculas y fecha ISO, 409 sin perder lo escrito, edición con campos de solo lectura, oferta con límite de monto |
+| 2026-11-25 | A6 | ✅ | `LicitacionAcciones.test.tsx`: mejora a la baja, cerrar con Escape y foco devuelto, adjudicar con la más baja preseleccionada y `ofertaId` exacto, 409 dentro del diálogo, eliminar con `DialogoBaja` |
+| 2026-11-25 | A7 | ✅ | suite completa `vitest run`: 1362 tests pasan en 139 archivos sin cambiar lo que comprueban |
+| — | A8 | pendiente | capturas a 375 y 1280 px (claro/oscuro) y pasada contra la API y PostgreSQL reales con el seed |
