@@ -85,7 +85,12 @@ check_port_is_free() {
     local port="$1"
     local listener
 
-    listener="$(ss -H -ltn "sport = :${port}")"
+    if command -v ss >/dev/null 2>&1; then
+        listener="$(ss -H -ltn "sport = :${port}")"
+    else
+        # macOS no trae ss: lsof lista quién escucha en el puerto (sale con 1 si nadie).
+        listener="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+    fi
     if [[ -n "$listener" ]]; then
         printf 'ERROR: el puerto %s ya está ocupado; no se iniciará el smoke\n' "$port" >&2
         printf '%s\n' "$listener" >&2
@@ -1319,10 +1324,14 @@ request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calc
 request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
 request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
 # Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
-SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
-SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
-SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
-SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+# Fecha UTC relativa a hoy; date -d no existe en macOS, python3 funciona igual en todos los sistemas.
+smoke_fecha_relativa() {
+    python3 -c 'import datetime, sys; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=int(sys.argv[1]))).strftime("%Y-%m-%d"))' "$1"
+}
+SMOKE_INICIO_PERIODO="$(smoke_fecha_relativa -169)"
+SMOKE_FIN_PERIODO="$(smoke_fecha_relativa +10)"
+SMOKE_APERTURA_CICLO="$(smoke_fecha_relativa -5)"
+SMOKE_CIERRE_CICLO="$(smoke_fecha_relativa +30)"
 request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
 request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
 request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle
