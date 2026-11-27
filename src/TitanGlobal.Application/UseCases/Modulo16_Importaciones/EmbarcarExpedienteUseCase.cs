@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo16_Importaciones;
-using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -42,8 +41,8 @@ public class EmbarcarExpedienteUseCase
                 $"El documento de transporte no puede superar {ValidacionExpedienteImportacion.MaximoDocumento} caracteres.");
         }
 
-        DateTime fechaEmbarque = FechasUtc.Normalizar(solicitud.FechaEmbarque);
-        if (fechaEmbarque > DateTime.UtcNow)
+        DateOnly fechaEmbarque = solicitud.FechaEmbarque;
+        if (fechaEmbarque > ValidacionExpedienteImportacion.Hoy())
         {
             throw ValidacionExpedienteImportacion.Error("La fecha de embarque no puede ser futura.");
         }

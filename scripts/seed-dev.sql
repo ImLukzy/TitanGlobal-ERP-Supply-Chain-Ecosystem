@@ -935,6 +935,30 @@ ON CONFLICT ("RutaProduccionId", "Secuencia") DO UPDATE SET
     "MinutosPreparacion" = EXCLUDED."MinutosPreparacion",
     "MinutosPorUnidad" = EXCLUDED."MinutosPorUnidad";
 
+-- Módulo 43: maestro de rutas; estimaciones por recorrido, sin conversión.
+INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda", "Activo", "Observaciones") VALUES
+('RTA-43001', 'Corredor Norte', 'Norte', 'Lima', 'Trujillo', 558.50, 98.00, 'PEN', true, 'Estimación de peajes por recorrido.'),
+('RTA-43002', 'Corredor Sur', 'Sur', 'Lima', 'Ica', 303.25, 35.50, 'PEN', true, NULL),
+('RTA-43003', 'Conexión urbana', 'Centro', 'Callao', 'Lima', 25.00, 0.00, 'PEN', true, 'Recorrido sin peajes estimados.'),
+('RTA-43004', 'Conexión internacional', 'Norte', 'Tumbes', 'Guayaquil', 280.00, 18.75, 'USD', true, NULL),
+('RTA-43005', 'Tramo Sur suspendido', 'Sur', 'Arequipa', 'Tacna', 368.20, 42.00, 'PEN', false, 'Ruta temporalmente desactivada.'),
+('RTA-43006', 'Corredor Centro', 'Centro', 'Lima', 'Huancayo', 302.40, 44.00, 'PEN', true, NULL)
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"RutasDespacho"', 'Id'), (SELECT MAX("Id") FROM "RutasDespacho"));
+
+-- Módulo 44: preparación manual de carga; valores estimados por empaque.
+INSERT INTO "ConsolidacionesCarga" ("Codigo","Nombre","Estado","Observaciones","FechaConfirmacion","MotivoCancelacion","FechaCancelacion") VALUES
+('CAR-44001','Preparación Norte','Borrador','Picking pendiente.',NULL,NULL,NULL),
+('CAR-44002','Carga confirmada Centro','Confirmada',NULL,'2026-11-20T12:00:00Z',NULL,NULL),
+('CAR-44003','Carga cancelada Sur','Cancelada',NULL,'2026-11-19T12:00:00Z','Cambio de programación.','2026-11-20T12:00:00Z')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad","CantidadRecogida","UnidadesPorBulto","LargoCm","AnchoCm","AltoCm","PesoBultoKg")
+SELECT c."Id",1,'MAN-44001','Presentación manual de ejemplo',10,CASE WHEN c."Estado" = 'Borrador' THEN 4 ELSE 10 END,4,50,40,30,2
+FROM "ConsolidacionesCarga" c WHERE c."Codigo" IN ('CAR-44001','CAR-44002','CAR-44003')
+AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."ConsolidacionCargaId" = c."Id" AND l."Posicion" = 1);
+SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
+SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
+
 TRUNCATE TABLE "ExpedientesImportacion" RESTART IDENTITY CASCADE;
 
 INSERT INTO "ExpedientesImportacion" (
@@ -945,11 +969,11 @@ SELECT datos.numero, orden."Id", datos.incoterm, datos.medio, datos.pais, datos.
     datos.documento, datos.embarque, datos.llegada_estimada, datos.llegada_real, datos.estado, datos.motivo,
     NULL, datos.registro
 FROM (VALUES
-    ('IMP-2026-001', 'OA-DEV-001', 'CIF', 'Maritimo', 'China', 'Shanghái', 'Callao', 'MSKU1234567', TIMESTAMPTZ '2026-11-01 12:00:00+00', TIMESTAMPTZ '2099-02-01 00:00:00+00', NULL::timestamptz, 'EnTransito', NULL, TIMESTAMPTZ '2026-10-20 09:00:00+00'),
-    ('IMP-2026-002', 'OA-DEV-001', 'FOB', 'Maritimo', 'Chile', 'Valparaíso', 'Callao', NULL, NULL::timestamptz, TIMESTAMPTZ '2099-01-15 00:00:00+00', NULL::timestamptz, 'Programado', NULL, TIMESTAMPTZ '2026-10-21 09:00:00+00'),
-    ('IMP-2026-003', 'OA-DEV-002', 'DAP', 'Terrestre', 'Chile', 'Arica', 'Tacna', 'CRT-0045', TIMESTAMPTZ '2026-11-02 12:00:00+00', TIMESTAMPTZ '2026-11-06 00:00:00+00', TIMESTAMPTZ '2026-11-05 12:00:00+00', 'EnAduana', NULL, TIMESTAMPTZ '2026-10-22 09:00:00+00'),
-    ('IMP-2026-004', 'OA-DEV-003', 'FCA', 'Aereo', 'China', 'Shenzhen', 'Lima', 'AWB-77701', TIMESTAMPTZ '2026-02-10 12:00:00+00', TIMESTAMPTZ '2026-02-15 00:00:00+00', TIMESTAMPTZ '2026-02-14 12:00:00+00', 'Liberado', NULL, TIMESTAMPTZ '2026-02-05 09:00:00+00'),
-    ('IMP-2026-005', 'OA-DEV-002', 'EXW', 'Maritimo', 'China', 'Ningbó', 'Callao', NULL, NULL::timestamptz, TIMESTAMPTZ '2099-03-01 00:00:00+00', NULL::timestamptz, 'Cancelado', 'Proveedor no pudo despachar', TIMESTAMPTZ '2026-10-23 09:00:00+00')
+    ('IMP-2026-001', 'OA-DEV-001', 'CIF', 'Maritimo', 'China', 'Shanghái', 'Callao', 'MSKU1234567', DATE '2026-11-01', DATE '2099-02-01', NULL::date, 'EnTransito', NULL, TIMESTAMPTZ '2026-10-20 09:00:00+00'),
+    ('IMP-2026-002', 'OA-DEV-001', 'FOB', 'Maritimo', 'Chile', 'Valparaíso', 'Callao', NULL, NULL::date, DATE '2099-01-15', NULL::date, 'Programado', NULL, TIMESTAMPTZ '2026-10-21 09:00:00+00'),
+    ('IMP-2026-003', 'OA-DEV-002', 'DAP', 'Terrestre', 'Chile', 'Arica', 'Tacna', 'CRT-0045', DATE '2026-11-02', DATE '2026-11-06', DATE '2026-11-05', 'EnAduana', NULL, TIMESTAMPTZ '2026-10-22 09:00:00+00'),
+    ('IMP-2026-004', 'OA-DEV-003', 'FCA', 'Aereo', 'China', 'Shenzhen', 'Lima', 'AWB-77701', DATE '2026-02-10', DATE '2026-02-15', DATE '2026-02-14', 'Liberado', NULL, TIMESTAMPTZ '2026-02-05 09:00:00+00'),
+    ('IMP-2026-005', 'OA-DEV-002', 'EXW', 'Maritimo', 'China', 'Ningbó', 'Callao', NULL, NULL::date, DATE '2099-03-01', NULL::date, 'Cancelado', 'Proveedor no pudo despachar', TIMESTAMPTZ '2026-10-23 09:00:00+00')
 ) AS datos(numero, orden_numero, incoterm, medio, pais, origen, destino, documento, embarque, llegada_estimada, llegada_real, estado, motivo, registro)
 JOIN "OrdenesAbastecimiento" orden ON orden."Numero" = datos.orden_numero
 ORDER BY datos.numero;

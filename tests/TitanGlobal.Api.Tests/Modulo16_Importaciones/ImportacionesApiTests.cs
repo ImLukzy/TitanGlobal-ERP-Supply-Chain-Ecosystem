@@ -67,7 +67,7 @@ public class ImportacionesApiTests
         CrearExpedienteRequestDto incotermInvalido = CrearSolicitud("IMP-T-024", "XXX", "Maritimo");
         CrearExpedienteRequestDto medioInvalido = CrearSolicitud("IMP-T-025", "EXW", "Ferroviario");
         CrearExpedienteRequestDto llegadaPasada = CrearSolicitud("IMP-T-026", "FOB", "Maritimo");
-        llegadaPasada.FechaLlegadaEstimada = DateTime.UtcNow.Date.AddDays(-1);
+        llegadaPasada.FechaLlegadaEstimada = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
         CrearExpedienteRequestDto sinOrigen = CrearSolicitud("IMP-T-027", "FOB", "Maritimo");
         sinOrigen.LugarOrigen = "   ";
         CrearExpedienteRequestDto sinNumero = CrearSolicitud("   ", "FOB", "Maritimo");
@@ -86,7 +86,7 @@ public class ImportacionesApiTests
     [Fact]
     public async Task FullFlowShipArriveAndRelease()
     {
-        DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         HttpResponseMessage embarque = await _clienteHttp.PostAsJsonAsync(
             $"{Ruta}/1/embarcar",
             new EmbarcarExpedienteRequestDto { DocumentoTransporte = "  MSKU-0001 ", FechaEmbarque = hoy.AddDays(-2) });
@@ -114,7 +114,7 @@ public class ImportacionesApiTests
     [Fact]
     public async Task TransitionsRespectTheStateMachine()
     {
-        DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         EmbarcarExpedienteRequestDto embarque = new EmbarcarExpedienteRequestDto { DocumentoTransporte = "DOC-X", FechaEmbarque = hoy };
 
         await AssertBusinessErrorAsync(await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/arribar", new ArribarExpedienteRequestDto { FechaLlegadaReal = hoy }), HttpStatusCode.Conflict, 409, "El expediente 1 no está en tránsito.");
@@ -128,7 +128,7 @@ public class ImportacionesApiTests
     [Fact]
     public async Task ShipAndArriveValidateDocumentAndDates()
     {
-        DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly hoy = DateOnly.FromDateTime(DateTime.UtcNow);
 
         await AssertBusinessErrorAsync(await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/embarcar", new EmbarcarExpedienteRequestDto { DocumentoTransporte = "  ", FechaEmbarque = hoy }), HttpStatusCode.BadRequest, 400, "El documento de transporte es obligatorio.");
         await AssertBusinessErrorAsync(await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/embarcar", new EmbarcarExpedienteRequestDto { DocumentoTransporte = new string('D', 41), FechaEmbarque = hoy }), HttpStatusCode.BadRequest, 400, "El documento de transporte no puede superar 40 caracteres.");
@@ -157,8 +157,8 @@ public class ImportacionesApiTests
     public async Task CancelWorksFromInTransitAndCustoms()
     {
         HttpResponseMessage desdeTransito = await _clienteHttp.PostAsJsonAsync($"{Ruta}/2/cancelar", new CancelarExpedienteRequestDto { Motivo = "Naviera quebró" });
-        HttpResponseMessage llegada = await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/embarcar", new EmbarcarExpedienteRequestDto { DocumentoTransporte = "DOC-A", FechaEmbarque = DateTime.UtcNow.Date });
-        HttpResponseMessage arribo = await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/arribar", new ArribarExpedienteRequestDto { FechaLlegadaReal = DateTime.UtcNow.Date });
+        HttpResponseMessage llegada = await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/embarcar", new EmbarcarExpedienteRequestDto { DocumentoTransporte = "DOC-A", FechaEmbarque = DateOnly.FromDateTime(DateTime.UtcNow) });
+        HttpResponseMessage arribo = await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/arribar", new ArribarExpedienteRequestDto { FechaLlegadaReal = DateOnly.FromDateTime(DateTime.UtcNow) });
         HttpResponseMessage desdeAduana = await _clienteHttp.PostAsJsonAsync($"{Ruta}/1/cancelar", new CancelarExpedienteRequestDto { Motivo = "Mercadería retenida" });
         ResumenExpedientesDto? resumen = await _clienteHttp.GetFromJsonAsync<ResumenExpedientesDto>($"{Ruta}/resumen");
 
@@ -252,7 +252,7 @@ public class ImportacionesApiTests
             PaisOrigen = "Chile",
             LugarOrigen = "Valparaiso",
             LugarDestino = "Callao",
-            FechaLlegadaEstimada = DateTime.UtcNow.Date.AddDays(30)
+            FechaLlegadaEstimada = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(30)
         };
     }
 
@@ -280,6 +280,7 @@ public class ImportacionesApiTests
         contexto.Proveedores.RemoveRange(contexto.Proveedores);
 
         DateTime hoy = DateTime.UtcNow.Date;
+        DateOnly hoyDia = DateOnly.FromDateTime(hoy);
         contexto.Proveedores.Add(new Proveedor { Id = 1, RazonSocial = "Proveedor Activo", Ruc = "20611111111", Pais = "Peru", Activo = true });
         contexto.OrdenesAbastecimiento.AddRange(
             new OrdenAbastecimiento
@@ -302,9 +303,9 @@ public class ImportacionesApiTests
                 MotivoAnulacion = "Prueba"
             });
         contexto.ExpedientesImportacion.AddRange(
-            CrearExpediente(1, "IMP-T-001", "FOB", "Maritimo", "Programado", hoy.AddDays(30), null, null),
-            CrearExpediente(2, "IMP-T-002", "EXW", "Terrestre", "EnTransito", hoy.AddDays(5), hoy.AddDays(-3), null),
-            CrearExpediente(3, "IMP-T-003", "CIF", "Maritimo", "Liberado", hoy.AddDays(-9), hoy.AddDays(-20), hoy.AddDays(-10)));
+            CrearExpediente(1, "IMP-T-001", "FOB", "Maritimo", "Programado", hoyDia.AddDays(30), null, null),
+            CrearExpediente(2, "IMP-T-002", "EXW", "Terrestre", "EnTransito", hoyDia.AddDays(5), hoyDia.AddDays(-3), null),
+            CrearExpediente(3, "IMP-T-003", "CIF", "Maritimo", "Liberado", hoyDia.AddDays(-9), hoyDia.AddDays(-20), hoyDia.AddDays(-10)));
         contexto.SaveChanges();
     }
 
@@ -314,9 +315,9 @@ public class ImportacionesApiTests
         string incoterm,
         string medio,
         string estado,
-        DateTime llegadaEstimada,
-        DateTime? embarque,
-        DateTime? llegadaReal)
+        DateOnly llegadaEstimada,
+        DateOnly? embarque,
+        DateOnly? llegadaReal)
     {
         return new ExpedienteImportacion
         {

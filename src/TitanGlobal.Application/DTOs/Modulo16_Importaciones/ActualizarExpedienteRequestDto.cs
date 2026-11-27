@@ -12,7 +12,7 @@ public class ActualizarExpedienteRequestDto
 
     public string LugarDestino { get; set; } = string.Empty;
 
-    public DateTime FechaLlegadaEstimada { get; set; }
+    public DateOnly FechaLlegadaEstimada { get; set; }
 
     public string? Observaciones { get; set; }
 }

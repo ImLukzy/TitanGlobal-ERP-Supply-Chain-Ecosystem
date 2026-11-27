@@ -44,8 +44,13 @@ internal static class ValidacionExpedienteImportacion
         string PaisOrigen,
         string LugarOrigen,
         string LugarDestino,
-        DateTime FechaLlegadaEstimada,
+        DateOnly FechaLlegadaEstimada,
         string? Observaciones);
+
+    internal static DateOnly Hoy()
+    {
+        return DateOnly.FromDateTime(DateTime.UtcNow);
+    }
 
     internal static string NormalizarNumero(string? numero)
     {
@@ -70,7 +75,7 @@ internal static class ValidacionExpedienteImportacion
         string? paisOrigen,
         string? lugarOrigen,
         string? lugarDestino,
-        DateTime fechaLlegadaEstimada,
+        DateOnly fechaLlegadaEstimada,
         string? observaciones)
     {
         string incotermNormalizado = NormalizarIncoterm(incoterm);
@@ -83,8 +88,8 @@ internal static class ValidacionExpedienteImportacion
         string pais = NormalizarLugar(paisOrigen, "El país de origen");
         string origen = NormalizarLugar(lugarOrigen, "El lugar de origen");
         string destino = NormalizarLugar(lugarDestino, "El lugar de destino");
-        DateTime llegada = FechasUtc.Normalizar(fechaLlegadaEstimada);
-        if (llegada <= DateTime.UtcNow)
+        DateOnly llegada = fechaLlegadaEstimada;
+        if (llegada <= Hoy())
         {
             throw Error("La fecha de llegada estimada debe ser futura.");
         }

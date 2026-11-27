@@ -2,5 +2,5 @@ namespace TitanGlobal.Application.DTOs.Modulo16_Importaciones;
 
 public class ArribarExpedienteRequestDto
 {
-    public DateTime FechaLlegadaReal { get; set; }
+    public DateOnly FechaLlegadaReal { get; set; }
 }

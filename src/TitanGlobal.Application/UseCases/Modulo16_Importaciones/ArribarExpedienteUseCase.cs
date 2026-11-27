@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo16_Importaciones;
-using TitanGlobal.Domain.Common;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
@@ -30,8 +29,8 @@ public class ArribarExpedienteUseCase
             throw ValidacionExpedienteImportacion.Conflicto($"El expediente {id} no está en tránsito.");
         }
 
-        DateTime fechaLlegada = FechasUtc.Normalizar(solicitud.FechaLlegadaReal);
-        if (fechaLlegada > DateTime.UtcNow)
+        DateOnly fechaLlegada = solicitud.FechaLlegadaReal;
+        if (fechaLlegada > ValidacionExpedienteImportacion.Hoy())
         {
             throw ValidacionExpedienteImportacion.Error("La fecha de llegada no puede ser futura.");
         }
