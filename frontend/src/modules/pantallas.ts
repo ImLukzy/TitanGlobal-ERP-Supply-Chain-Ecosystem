@@ -3,6 +3,7 @@ import { ClientesPage } from './clientes/ClientesPage';
 import { OrdenesCompraPage } from './ordenes-compra/OrdenesCompraPage';
 import { ProductosPage } from './productos/ProductosPage';
 import { ProveedoresPage } from './proveedores/ProveedoresPage';
+import { EvaluacionProveedoresPage } from './evaluacion-proveedores/EvaluacionProveedoresPage';
 import { SolicitudesCompraPage } from './solicitudes-compra/SolicitudesCompraPage';
 import { OrdenesAbastecimientoPage } from './ordenes-abastecimiento/OrdenesAbastecimientoPage';
 import { AlmacenesPage } from './almacenes/AlmacenesPage';
@@ -49,6 +50,7 @@ export const pantallas: Record<string, ComponentType> = {
   '77-auditoria-transaccional': AuditoriaPage,
   '04-ordenes-compra': OrdenesCompraPage,
   '11-proveedores': ProveedoresPage,
+  '12-evaluacion-proveedores': EvaluacionProveedoresPage,
   '13-solicitudes-compra': SolicitudesCompraPage,
   '15-ordenes-abastecimiento': OrdenesAbastecimientoPage,
   '21-productos': ProductosPage,
