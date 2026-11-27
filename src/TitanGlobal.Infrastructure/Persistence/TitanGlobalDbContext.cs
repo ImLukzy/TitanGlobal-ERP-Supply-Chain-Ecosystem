@@ -9,6 +9,8 @@ public partial class TitanGlobalDbContext : DbContext
 {
     public virtual DbSet<AccionCorrectivaSst> AccionesCorrectivasSst { get; set; } = null!;
 
+    public virtual DbSet<AcuerdoAbastecimiento> AcuerdosAbastecimiento { get; set; } = null!;
+
     public virtual DbSet<AdendaContrato> AdendasContrato { get; set; } = null!;
 
     public virtual DbSet<AfiliacionPension> AfiliacionesPension { get; set; } = null!;
@@ -93,6 +95,8 @@ public partial class TitanGlobalDbContext : DbContext
 
     public virtual DbSet<JornadaAsistencia> JornadasAsistencia { get; set; } = null!;
 
+    public virtual DbSet<LineaAcuerdoAbastecimiento> LineasAcuerdoAbastecimiento { get; set; } = null!;
+
     public virtual DbSet<LineaConsolidacionCarga> LineasConsolidacionCarga { get; set; } = null!;
 
     public virtual DbSet<LiquidacionComision> LiquidacionesComisiones { get; set; } = null!;
@@ -172,6 +176,22 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.IncidenteSst).WithMany(p => p.AccionesCorrectivasSst)
                 .HasForeignKey(d => d.IncidenteSstId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AcuerdoAbastecimiento>(entity =>
+        {
+            entity.HasIndex(e => e.Numero, "IX_AcuerdosAbastecimiento_Numero").IsUnique();
+
+            entity.HasIndex(e => e.ProveedorId, "IX_AcuerdosAbastecimiento_ProveedorId");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.MontoMaximo).HasPrecision(18, 2);
+            entity.Property(e => e.Numero).HasMaxLength(20);
+
+            entity.HasOne(d => d.Proveedor).WithMany(p => p.AcuerdosAbastecimiento)
+                .HasForeignKey(d => d.ProveedorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -824,6 +844,23 @@ public partial class TitanGlobalDbContext : DbContext
 
             entity.HasOne(d => d.Turno).WithMany(p => p.JornadasAsistencia)
                 .HasForeignKey(d => d.TurnoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<LineaAcuerdoAbastecimiento>(entity =>
+        {
+            entity.HasIndex(e => new { e.AcuerdoId, e.ProductoId }, "IX_LineasAcuerdoAbastecimiento_AcuerdoId_ProductoId").IsUnique();
+
+            entity.HasIndex(e => e.ProductoId, "IX_LineasAcuerdoAbastecimiento_ProductoId");
+
+            entity.Property(e => e.PrecioAcordado).HasPrecision(18, 2);
+
+            entity.HasOne(d => d.Acuerdo).WithMany(p => p.LineasAcuerdoAbastecimiento)
+                .HasForeignKey(d => d.AcuerdoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.LineasAcuerdoAbastecimiento)
+                .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

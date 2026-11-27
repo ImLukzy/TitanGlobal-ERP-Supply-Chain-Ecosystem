@@ -40,6 +40,9 @@ EVALUACION_CREADA_ID=""
 TURNO_CREADO_ID=""
 ASIGNACION_TURNO_CREADA_ID=""
 RUTA_PRODUCCION_CREADA_ID=""
+ACUERDO_CREADO_ID=""
+LINEA_ACUERDO_CREADA_ID=""
+ACUERDO_BORRABLE_ID=""
 
 cleanup() {
     local exit_status=$?
@@ -82,7 +85,12 @@ check_port_is_free() {
     local port="$1"
     local listener
 
-    listener="$(ss -H -ltn "sport = :${port}")"
+    if command -v ss >/dev/null 2>&1; then
+        listener="$(ss -H -ltn "sport = :${port}")"
+    else
+        # macOS no trae ss: lsof lista quién escucha en el puerto (sale con 1 si nadie).
+        listener="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+    fi
     if [[ -n "$listener" ]]; then
         printf 'ERROR: el puerto %s ya está ocupado; no se iniciará el smoke\n' "$port" >&2
         printf '%s\n' "$listener" >&2
@@ -254,6 +262,16 @@ checks = {
     "evaluaciones-resumen": lambda data: data["totalEvaluaciones"] == 6 and data["proveedoresEvaluados"] == 4 and data["promedioGeneral"] == 78.72 and [(item["calificacion"], item["total"]) for item in data["porCalificacion"]] == [("Excelente", 2), ("Bueno", 2), ("Regular", 1), ("Deficiente", 1)] and [(item["proveedorId"], item["promedio"]) for item in data["ranking"]] == [(6, 95.5), (1, 89.05), (4, 66.6), (2, 65.5)],
     "evaluacion-created": lambda data: data["id"] > 0,
     "evaluacion-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "El proveedor 1 ya tiene una evaluación del periodo 2026-10.",
+    "acuerdos-vigentes": lambda data: data["total"] == 2 and [item["id"] for item in data["items"]] == [2, 1] and all(item["estado"] == "Vigente" for item in data["items"]),
+    "acuerdo-detalle": lambda data: data["id"] == 1 and data["numero"] == "AM-2026-001" and data["proveedorId"] == 1 and data["montoComprometido"] == 90000.0 and data["montoConsumido"] == 20000.0 and [(linea["productoId"], linea["saldo"]) for linea in data["lineas"]] == [(1, 600), (2, 500)],
+    "acuerdos-resumen": lambda data: data["totalAcuerdos"] == 4 and data["montoMaximoVigente"] == 160000.0 and data["montoConsumido"] == 61750.0 and [(item["estado"], item["total"]) for item in data["porEstado"]] == [("Vigente", 2), ("Suspendido", 1), ("Cancelado", 1)],
+    "acuerdo-created": lambda data: data["id"] > 0,
+    "linea-acuerdo-created": lambda data: data["id"] > 0,
+    "acuerdo-borrable-created": lambda data: data["id"] > 0,
+    "acuerdo-id": lambda data: data["id"] > 0,
+    "acuerdo-consumo-suspendido": lambda data: data["StatusCode"] == 409 and re.fullmatch(r"El acuerdo \d+ no está vigente\.", data["Message"]) is not None,
+    "acuerdo-consumo-smoke": lambda data: data["estado"] == "Vigente" and data["montoComprometido"] == 1000.0 and data["montoConsumido"] == 400.0 and [(linea["cantidadConsumida"], linea["saldo"]) for linea in data["lineas"]] == [(40, 60)],
+    "acuerdo-duplicate": lambda data: data["StatusCode"] == 409 and data["Message"] == "Ya existe un acuerdo con el número AM-2026-001.",
     "openapi-segmentos": lambda data: all(path in data["paths"] for path in ["/api/v1/segmentos-clientes", "/api/v1/segmentos-clientes/{id}", "/api/v1/segmentos-clientes/{id}/clientes", "/api/v1/segmentos-clientes/clasificacion", "/api/v1/segmentos-clientes/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/segmentos-clientes", "get"), ("/api/v1/segmentos-clientes", "post"), ("/api/v1/segmentos-clientes/{id}", "get"), ("/api/v1/segmentos-clientes/{id}", "put"), ("/api/v1/segmentos-clientes/{id}", "delete"), ("/api/v1/segmentos-clientes/{id}/clientes", "get"), ("/api/v1/segmentos-clientes/clasificacion", "get"), ("/api/v1/segmentos-clientes/resumen", "get")]),
     "openapi-contracts": lambda data: all(path in data["paths"] for path in ["/api/v1/contratos-comerciales", "/api/v1/contratos-comerciales/{id}", "/api/v1/contratos-comerciales/{id}/activar", "/api/v1/contratos-comerciales/{id}/finalizar", "/api/v1/contratos-comerciales/{id}/cancelar", "/api/v1/contratos-comerciales/resumen"]) and all(verb in data["paths"][path] for path, verb in [("/api/v1/contratos-comerciales", "get"), ("/api/v1/contratos-comerciales", "post"), ("/api/v1/contratos-comerciales/{id}", "get"), ("/api/v1/contratos-comerciales/{id}", "put"), ("/api/v1/contratos-comerciales/{id}", "delete"), ("/api/v1/contratos-comerciales/{id}/activar", "post"), ("/api/v1/contratos-comerciales/{id}/finalizar", "post"), ("/api/v1/contratos-comerciales/{id}/cancelar", "post"), ("/api/v1/contratos-comerciales/resumen", "get")]),
     "contracts-list": lambda data: data["total"] == 1 and data["items"][0]["numero"] == "CC-DEV-001" and data["items"][0]["montoConsumido"] == 9000.0 and data["items"][0]["porcentajeConsumido"] == 45.0,
@@ -721,6 +739,18 @@ request_check() {
         EVALUACION_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
 
+    if [[ "$validation" == "acuerdo-created" ]]; then
+        ACUERDO_CREADO_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "linea-acuerdo-created" ]]; then
+        LINEA_ACUERDO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
+    if [[ "$validation" == "acuerdo-borrable-created" ]]; then
+        ACUERDO_BORRABLE_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
+    fi
+
     if [[ "$validation" == "categoria-producto-created" ]]; then
         CATEGORIA_PRODUCTO_CREADA_ID="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["id"])' "$body")"
     fi
@@ -906,6 +936,19 @@ request_check 'Resumen de evaluaciones' GET '/api/v1/evaluaciones-proveedores/re
 request_check 'POST evaluación válida' POST '/api/v1/evaluaciones-proveedores' 200 evaluacion-created '{"proveedorId":1,"periodo":"2026-08","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80,"observaciones":"Evaluación smoke"}'
 request_check 'POST evaluación del periodo repetido' POST '/api/v1/evaluaciones-proveedores' 409 evaluacion-duplicate '{"proveedorId":1,"periodo":"2026-10","puntajeCumplimiento":80,"puntajeCalidad":80,"puntajePlazos":80}'
 request_check 'DELETE evaluación recién creada' DELETE "/api/v1/evaluaciones-proveedores/${EVALUACION_CREADA_ID}" 204 ''
+request_check 'Acuerdos de abastecimiento vigentes' GET '/api/v1/acuerdos-abastecimiento?estado=vigente' 200 acuerdos-vigentes
+request_check 'Detalle del acuerdo 1' GET '/api/v1/acuerdos-abastecimiento/1' 200 acuerdo-detalle
+request_check 'Resumen de acuerdos de abastecimiento' GET '/api/v1/acuerdos-abastecimiento/resumen' 200 acuerdos-resumen
+request_check 'POST acuerdo válido' POST '/api/v1/acuerdos-abastecimiento' 200 acuerdo-created '{"numero":"AM-SMOKE-001","proveedorId":1,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":5000}'
+request_check 'POST línea válida' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas" 200 linea-acuerdo-created '{"productoId":1,"precioAcordado":10,"cantidadComprometida":100}'
+request_check 'POST consumo válido' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas/${LINEA_ACUERDO_CREADA_ID}/consumos" 200 acuerdo-id '{"cantidad":40}'
+request_check 'Suspender acuerdo recién creado' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/suspender" 200 acuerdo-id ''
+request_check 'POST consumo con el acuerdo suspendido' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/lineas/${LINEA_ACUERDO_CREADA_ID}/consumos" 409 acuerdo-consumo-suspendido '{"cantidad":1}'
+request_check 'Reactivar acuerdo recién creado' POST "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}/reactivar" 200 acuerdo-id ''
+request_check 'Detalle del acuerdo con consumo' GET "/api/v1/acuerdos-abastecimiento/${ACUERDO_CREADO_ID}" 200 acuerdo-consumo-smoke
+request_check 'POST acuerdo con número del seed' POST '/api/v1/acuerdos-abastecimiento' 409 acuerdo-duplicate '{"numero":"AM-2026-001","proveedorId":1,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":1000}'
+request_check 'POST acuerdo para borrar' POST '/api/v1/acuerdos-abastecimiento' 200 acuerdo-borrable-created '{"numero":"AM-SMOKE-002","proveedorId":2,"fechaInicio":"2026-01-01T00:00:00Z","fechaFin":"2099-12-31T00:00:00Z","montoMaximo":500}'
+request_check 'DELETE acuerdo sin consumos' DELETE "/api/v1/acuerdos-abastecimiento/${ACUERDO_BORRABLE_ID}" 204 ''
 request_check 'Categorías de producto activas' GET '/api/v1/categorias-producto' 200 categorias-producto-list
 request_check 'Detalle de la categoría de producto 1' GET '/api/v1/categorias-producto/1' 200 categoria-producto-detail
 request_check 'Resumen de categorías de producto' GET '/api/v1/categorias-producto/resumen' 200 categorias-producto-summary
@@ -1284,10 +1327,14 @@ request_check 'POST recalcular planilla aprobada' POST '/api/v1/planillas/2/calc
 request_check 'Boleta del primer detalle' GET '/api/v1/planillas/boletas/3' 200 planilla-boleta
 request_check 'POST pago de la planilla 2026-11' POST '/api/v1/planillas/2/pago' 200 planilla-pagada '{"fechaPago":"2099-12-31"}'
 # Modulo 68: las fechas del ciclo de humo salen de hoy para que no dependan del calendario.
-SMOKE_INICIO_PERIODO="$(date -u -d '-169 days' +%Y-%m-%d)"
-SMOKE_FIN_PERIODO="$(date -u -d '+10 days' +%Y-%m-%d)"
-SMOKE_APERTURA_CICLO="$(date -u -d '-5 days' +%Y-%m-%d)"
-SMOKE_CIERRE_CICLO="$(date -u -d '+30 days' +%Y-%m-%d)"
+# Fecha UTC relativa a hoy; date -d no existe en macOS, python3 funciona igual en todos los sistemas.
+smoke_fecha_relativa() {
+    python3 -c 'import datetime, sys; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=int(sys.argv[1]))).strftime("%Y-%m-%d"))' "$1"
+}
+SMOKE_INICIO_PERIODO="$(smoke_fecha_relativa -169)"
+SMOKE_FIN_PERIODO="$(smoke_fecha_relativa +10)"
+SMOKE_APERTURA_CICLO="$(smoke_fecha_relativa -5)"
+SMOKE_CIERRE_CICLO="$(smoke_fecha_relativa +30)"
 request_check 'OpenAPI de evaluacion de desempeno' GET '/openapi/v1.json' 200 openapi-evaluaciones
 request_check 'Resultados del ciclo 2026-S1' GET '/api/v1/ciclos-evaluacion/1/resultados' 200 evaluacion-resultados-s1
 request_check 'Evaluacion enviada del seed' GET '/api/v1/evaluaciones/4' 200 evaluacion-4-detalle

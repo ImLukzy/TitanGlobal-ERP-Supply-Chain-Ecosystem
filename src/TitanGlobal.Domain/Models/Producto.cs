@@ -29,6 +29,8 @@ public partial class Producto
 
     public virtual ICollection<ItemListaPrecios> ItemsListaPrecios { get; set; } = new List<ItemListaPrecios>();
 
+    public virtual ICollection<LineaAcuerdoAbastecimiento> LineasAcuerdoAbastecimiento { get; set; } = new List<LineaAcuerdoAbastecimiento>();
+
     public virtual ListaMateriales? ListaMateriales { get; set; }
 
     public virtual ICollection<Promocion> Promociones { get; set; } = new List<Promocion>();

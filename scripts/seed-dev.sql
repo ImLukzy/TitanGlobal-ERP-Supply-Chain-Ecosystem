@@ -959,4 +959,23 @@ AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."Consolidacio
 SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
 SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
 
+TRUNCATE TABLE "LineasAcuerdoAbastecimiento", "AcuerdosAbastecimiento" RESTART IDENTITY;
+
+INSERT INTO "AcuerdosAbastecimiento" ("Id", "Numero", "ProveedorId", "Descripcion", "FechaInicio", "FechaFin", "MontoMaximo", "Estado", "FechaRegistro") VALUES
+    (1, 'AM-2026-001', 1, 'Contrato marco anual de empaques y pallets.', TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2099-12-31 00:00:00+00', 100000.00, 'Vigente', TIMESTAMPTZ '2026-10-01 12:00:00+00'),
+    (2, 'AM-2026-002', 2, NULL, TIMESTAMPTZ '2026-03-01 00:00:00+00', TIMESTAMPTZ '2099-12-31 00:00:00+00', 60000.00, 'Vigente', TIMESTAMPTZ '2026-10-02 12:00:00+00'),
+    (3, 'AM-2026-003', 3, NULL, TIMESTAMPTZ '2026-06-01 00:00:00+00', TIMESTAMPTZ '2099-12-31 00:00:00+00', 40000.00, 'Suspendido', TIMESTAMPTZ '2026-10-03 12:00:00+00'),
+    (4, 'AM-2026-004', 4, NULL, TIMESTAMPTZ '2026-01-01 00:00:00+00', TIMESTAMPTZ '2026-06-30 00:00:00+00', 25000.00, 'Cancelado', TIMESTAMPTZ '2026-10-04 12:00:00+00');
+
+SELECT setval(pg_get_serial_sequence('"AcuerdosAbastecimiento"', 'Id'), (SELECT MAX("Id") FROM "AcuerdosAbastecimiento"));
+
+INSERT INTO "LineasAcuerdoAbastecimiento" ("Id", "AcuerdoId", "ProductoId", "PrecioAcordado", "CantidadComprometida", "CantidadConsumida") VALUES
+    (1, 1, 1, 50.00, 1000, 400),
+    (2, 1, 2, 80.00, 500, 0),
+    (3, 2, 3, 120.00, 300, 300),
+    (4, 3, 1, 55.00, 200, 50),
+    (5, 4, 4, 30.00, 500, 100);
+
+SELECT setval(pg_get_serial_sequence('"LineasAcuerdoAbastecimiento"', 'Id'), (SELECT MAX("Id") FROM "LineasAcuerdoAbastecimiento"));
+
 COMMIT;
