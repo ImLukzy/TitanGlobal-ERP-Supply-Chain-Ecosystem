@@ -1,20 +1,25 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo33_CentrosTrabajo;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo;
+namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo.Queries;
 
-public class ResumenCentrosTrabajoUseCase
+public class ResumenCentrosTrabajoQuery : IRequest<ResumenCentrosTrabajoDto>
+{
+}
+
+public class ResumenCentrosTrabajoQueryHandler : IRequestHandler<ResumenCentrosTrabajoQuery, ResumenCentrosTrabajoDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ResumenCentrosTrabajoUseCase(IUnitOfWork unitOfWork)
+    public ResumenCentrosTrabajoQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResumenCentrosTrabajoDto> ExecuteAsync()
+    public async Task<ResumenCentrosTrabajoDto> Handle(ResumenCentrosTrabajoQuery request, CancellationToken cancellationToken)
     {
         IQueryable<CentroTrabajo> centros = _unitOfWork.Repository<CentroTrabajo>().AsQueryable();
         int totalCentros = await centros.CountAsync();

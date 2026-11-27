@@ -1,35 +1,44 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo32_RutasProduccion;
+namespace TitanGlobal.Application.UseCases.Modulo32_RutasProduccion.Commands;
 
-public class ActivarRutaProduccionUseCase
+public class ActivarRutaProduccionCommand : IRequest<int>
+{
+    public int Id { get; set; }
+}
+
+public class ActivarRutaProduccionCommandHandler : IRequestHandler<ActivarRutaProduccionCommand, int>
 {
     private readonly IUnitOfWork _unidad;
+
     private readonly IEscrituraRutaProduccion _escritura;
 
-    public ActivarRutaProduccionUseCase(IUnitOfWork unidad, IEscrituraRutaProduccion escritura)
+    public ActivarRutaProduccionCommandHandler(
+        IUnitOfWork unidad,
+        IEscrituraRutaProduccion escritura)
     {
         _unidad = unidad;
         _escritura = escritura;
     }
 
-    public async Task<int> ExecuteAsync(int id)
+    public async Task<int> Handle(ActivarRutaProduccionCommand request, CancellationToken cancellationToken)
     {
-        return await _escritura.EjecutarAsync(id, ActivarAsync);
+        return await _escritura.EjecutarAsync(request.Id, ActivarAsync);
 
         async Task<int> ActivarAsync()
         {
-            RutaProduccion ruta = await PersistenciaRutaProduccion.ObtenerAsync(_unidad, id);
+            RutaProduccion ruta = await PersistenciaRutaProduccion.ObtenerAsync(_unidad, request.Id);
             if (ruta.Estado != ValidacionRutaProduccion.Borrador)
             {
                 throw ValidacionRutaProduccion.Conflicto("Solo se pueden activar rutas de producción en borrador.");
             }
 
             int? inactivo = await _unidad.Repository<OperacionRutaProduccion>().AsQueryable()
-                .Where(operacion => operacion.RutaProduccionId == id && !operacion.CentroTrabajo.Activo)
+                .Where(operacion => operacion.RutaProduccionId == request.Id && !operacion.CentroTrabajo.Activo)
                 .OrderBy(operacion => operacion.Secuencia)
                 .Select(operacion => (int?)operacion.CentroTrabajoId)
                 .FirstOrDefaultAsync();
@@ -56,7 +65,7 @@ public class ActivarRutaProduccionUseCase
                 throw RutaActiva(ruta.ProductoId);
             }
 
-            return id;
+            return request.Id;
         }
     }
 

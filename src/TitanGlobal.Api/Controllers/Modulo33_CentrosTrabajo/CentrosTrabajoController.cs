@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Application.DTOs.Modulo33_CentrosTrabajo;
-using TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo;
+using TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo.Commands;
+using TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo33_CentrosTrabajo;
 
@@ -8,36 +10,11 @@ namespace TitanGlobal.Api.Controllers.Modulo33_CentrosTrabajo;
 [Route("api/v1/centros-trabajo")]
 public class CentrosTrabajoController : ControllerBase
 {
-    private readonly ListarCentrosTrabajoUseCase _listarCentrosTrabajoUseCase;
+    private readonly ISender _sender;
 
-    private readonly ObtenerCentroTrabajoUseCase _obtenerCentroTrabajoUseCase;
-
-    private readonly CrearCentroTrabajoUseCase _crearCentroTrabajoUseCase;
-
-    private readonly ActualizarCentroTrabajoUseCase _actualizarCentroTrabajoUseCase;
-
-    private readonly EliminarCentroTrabajoUseCase _eliminarCentroTrabajoUseCase;
-
-    private readonly ListarPlantasCentroTrabajoUseCase _listarPlantasCentroTrabajoUseCase;
-
-    private readonly ResumenCentrosTrabajoUseCase _resumenCentrosTrabajoUseCase;
-
-    public CentrosTrabajoController(
-        ListarCentrosTrabajoUseCase listarCentrosTrabajoUseCase,
-        ObtenerCentroTrabajoUseCase obtenerCentroTrabajoUseCase,
-        CrearCentroTrabajoUseCase crearCentroTrabajoUseCase,
-        ActualizarCentroTrabajoUseCase actualizarCentroTrabajoUseCase,
-        EliminarCentroTrabajoUseCase eliminarCentroTrabajoUseCase,
-        ListarPlantasCentroTrabajoUseCase listarPlantasCentroTrabajoUseCase,
-        ResumenCentrosTrabajoUseCase resumenCentrosTrabajoUseCase)
+    public CentrosTrabajoController(ISender sender)
     {
-        _listarCentrosTrabajoUseCase = listarCentrosTrabajoUseCase;
-        _obtenerCentroTrabajoUseCase = obtenerCentroTrabajoUseCase;
-        _crearCentroTrabajoUseCase = crearCentroTrabajoUseCase;
-        _actualizarCentroTrabajoUseCase = actualizarCentroTrabajoUseCase;
-        _eliminarCentroTrabajoUseCase = eliminarCentroTrabajoUseCase;
-        _listarPlantasCentroTrabajoUseCase = listarPlantasCentroTrabajoUseCase;
-        _resumenCentrosTrabajoUseCase = resumenCentrosTrabajoUseCase;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -49,13 +26,15 @@ public class CentrosTrabajoController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaCentrosTrabajoDto resultado = await _listarCentrosTrabajoUseCase.ExecuteAsync(
-            busqueda,
-            planta,
-            tipo,
-            activo,
-            pagina,
-            tamanoPagina);
+        PaginaCentrosTrabajoDto resultado = await _sender.Send(new ListarCentrosTrabajoQuery
+        {
+            Busqueda = busqueda,
+            Planta = planta,
+            Tipo = tipo,
+            Activo = activo,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
 
         return Ok(resultado);
     }
@@ -63,7 +42,7 @@ public class CentrosTrabajoController : ControllerBase
     [HttpGet("plantas")]
     public async Task<IActionResult> Plantas()
     {
-        List<string> resultado = await _listarPlantasCentroTrabajoUseCase.ExecuteAsync();
+        List<string> resultado = await _sender.Send(new ListarPlantasCentroTrabajoQuery());
 
         return Ok(resultado);
     }
@@ -71,7 +50,7 @@ public class CentrosTrabajoController : ControllerBase
     [HttpGet("resumen")]
     public async Task<IActionResult> Resumen()
     {
-        ResumenCentrosTrabajoDto resultado = await _resumenCentrosTrabajoUseCase.ExecuteAsync();
+        ResumenCentrosTrabajoDto resultado = await _sender.Send(new ResumenCentrosTrabajoQuery());
 
         return Ok(resultado);
     }
@@ -79,7 +58,7 @@ public class CentrosTrabajoController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        CentroTrabajoDetalleDto resultado = await _obtenerCentroTrabajoUseCase.ExecuteAsync(id);
+        CentroTrabajoDetalleDto resultado = await _sender.Send(new ObtenerCentroTrabajoQuery { Id = id });
 
         return Ok(resultado);
     }
@@ -87,7 +66,7 @@ public class CentrosTrabajoController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] GuardarCentroTrabajoRequestDto solicitud)
     {
-        int id = await _crearCentroTrabajoUseCase.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearCentroTrabajoCommand { Solicitud = solicitud });
 
         return Ok(new { Id = id });
     }
@@ -95,7 +74,11 @@ public class CentrosTrabajoController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarCentroTrabajoRequestDto solicitud)
     {
-        int idActualizado = await _actualizarCentroTrabajoUseCase.ExecuteAsync(id, solicitud);
+        int idActualizado = await _sender.Send(new ActualizarCentroTrabajoCommand
+        {
+            Id = id,
+            Solicitud = solicitud
+        });
 
         return Ok(new { Id = idActualizado });
     }
@@ -103,7 +86,7 @@ public class CentrosTrabajoController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _eliminarCentroTrabajoUseCase.ExecuteAsync(id);
+        await _sender.Send(new EliminarCentroTrabajoCommand { Id = id });
 
         return NoContent();
     }

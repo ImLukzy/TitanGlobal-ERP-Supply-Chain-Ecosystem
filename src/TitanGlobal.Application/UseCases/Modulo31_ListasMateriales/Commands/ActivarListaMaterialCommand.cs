@@ -1,29 +1,37 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.Exceptions;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales;
+namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales.Commands;
 
-public class ActivarListaMaterialUseCase
+public class ActivarListaMaterialCommand : IRequest<int>
+{
+    public int Id { get; set; }
+}
+
+public class ActivarListaMaterialCommandHandler : IRequestHandler<ActivarListaMaterialCommand, int>
 {
     private readonly IUnitOfWork _unidad;
 
     private readonly IEscrituraListaMaterial _escritura;
 
-    public ActivarListaMaterialUseCase(IUnitOfWork unidad, IEscrituraListaMaterial escritura)
+    public ActivarListaMaterialCommandHandler(
+        IUnitOfWork unidad,
+        IEscrituraListaMaterial escritura)
     {
         _unidad = unidad;
         _escritura = escritura;
     }
 
-    public async Task<int> ExecuteAsync(int id)
+    public async Task<int> Handle(ActivarListaMaterialCommand request, CancellationToken cancellationToken)
     {
-        return await _escritura.EjecutarAsync(id, ActivarAsync);
+        return await _escritura.EjecutarAsync(request.Id, ActivarAsync);
 
         async Task<int> ActivarAsync()
         {
-            ListaMateriales lista = await PersistenciaListaMaterial.ObtenerParaEscrituraAsync(_unidad, id);
+            ListaMateriales lista = await PersistenciaListaMaterial.ObtenerParaEscrituraAsync(_unidad, request.Id);
             if (lista.Estado != ValidacionListaMaterial.Borrador)
             {
                 throw ValidacionListaMaterial.Conflicto("Solo se pueden activar listas de materiales en borrador.");
@@ -48,7 +56,7 @@ public class ActivarListaMaterialUseCase
                 throw ValidacionListaMaterial.Conflicto(mensajeActiva);
             }
 
-            return id;
+            return request.Id;
         }
     }
 }

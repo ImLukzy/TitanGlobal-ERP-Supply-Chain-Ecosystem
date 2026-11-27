@@ -1,38 +1,49 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo32_RutasProduccion;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo32_RutasProduccion;
+namespace TitanGlobal.Application.UseCases.Modulo32_RutasProduccion.Commands;
 
-public class EditarRutaProduccionUseCase
+public class EditarRutaProduccionCommand : IRequest<int>
+{
+    public int Id { get; set; }
+
+    public required EditarRutaProduccionRequestDto Solicitud { get; set; }
+}
+
+public class EditarRutaProduccionCommandHandler : IRequestHandler<EditarRutaProduccionCommand, int>
 {
     private readonly IUnitOfWork _unidad;
+
     private readonly IEscrituraRutaProduccion _escritura;
 
-    public EditarRutaProduccionUseCase(IUnitOfWork unidad, IEscrituraRutaProduccion escritura)
+    public EditarRutaProduccionCommandHandler(
+        IUnitOfWork unidad,
+        IEscrituraRutaProduccion escritura)
     {
         _unidad = unidad;
         _escritura = escritura;
     }
 
-    public async Task<int> ExecuteAsync(int id, EditarRutaProduccionRequestDto solicitud)
+    public async Task<int> Handle(EditarRutaProduccionCommand request, CancellationToken cancellationToken)
     {
-        return await _escritura.EjecutarAsync(id, EditarAsync);
+        return await _escritura.EjecutarAsync(request.Id, EditarAsync);
 
         async Task<int> EditarAsync()
         {
-            RutaProduccion ruta = await PersistenciaRutaProduccion.ObtenerAsync(_unidad, id);
+            RutaProduccion ruta = await PersistenciaRutaProduccion.ObtenerAsync(_unidad, request.Id);
             if (ruta.Estado != ValidacionRutaProduccion.Borrador)
             {
                 throw ValidacionRutaProduccion.Conflicto("Solo se pueden editar rutas de producción en borrador.");
             }
 
             List<OperacionRutaProduccion> operaciones =
-                await ValidacionRutaProduccion.ValidarOperacionesAsync(_unidad, solicitud.Operaciones);
-            await ReemplazarOperacionesAsync(id, operaciones);
+                await ValidacionRutaProduccion.ValidarOperacionesAsync(_unidad, request.Solicitud.Operaciones);
+            await ReemplazarOperacionesAsync(request.Id, operaciones);
             await PersistenciaRutaProduccion.GuardarOperacionesAsync(_unidad, ruta.ProductoId, operaciones);
-            return id;
+            return request.Id;
         }
     }
 

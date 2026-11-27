@@ -1,23 +1,29 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo31_ListasMateriales;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales;
+namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales.Queries;
 
-public class ObtenerListaMaterialUseCase
+public class ObtenerListaMaterialQuery : IRequest<ListaMaterialDetalleDto>
+{
+    public int Id { get; set; }
+}
+
+public class ObtenerListaMaterialQueryHandler : IRequestHandler<ObtenerListaMaterialQuery, ListaMaterialDetalleDto>
 {
     private readonly IUnitOfWork _unidad;
 
-    public ObtenerListaMaterialUseCase(IUnitOfWork unidad)
+    public ObtenerListaMaterialQueryHandler(IUnitOfWork unidad)
     {
         _unidad = unidad;
     }
 
-    public async Task<ListaMaterialDetalleDto> ExecuteAsync(int id)
+    public async Task<ListaMaterialDetalleDto> Handle(ObtenerListaMaterialQuery request, CancellationToken cancellationToken)
     {
         ListaMaterialDetalleDto? detalle = await _unidad.Repository<ListaMateriales>().AsQueryable()
-            .Where(lista => lista.Id == id)
+            .Where(lista => lista.Id == request.Id)
             .Select(lista => new ListaMaterialDetalleDto(
                 lista.Id, lista.ProductoId, lista.Producto.Nombre, lista.Version, lista.Estado,
                 lista.DetallesListaMaterial.OrderBy(linea => linea.ComponenteProductoId)
@@ -26,6 +32,6 @@ public class ObtenerListaMaterialUseCase
                     .ToList()))
             .SingleOrDefaultAsync();
 
-        return detalle ?? throw ValidacionListaMaterial.NoEncontrada(id);
+        return detalle ?? throw ValidacionListaMaterial.NoEncontrada(request.Id);
     }
 }

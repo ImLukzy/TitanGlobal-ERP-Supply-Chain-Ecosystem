@@ -1,24 +1,30 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo33_CentrosTrabajo;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 
-namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo;
+namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo.Queries;
 
-public class ObtenerCentroTrabajoUseCase
+public class ObtenerCentroTrabajoQuery : IRequest<CentroTrabajoDetalleDto>
+{
+    public int Id { get; set; }
+}
+
+public class ObtenerCentroTrabajoQueryHandler : IRequestHandler<ObtenerCentroTrabajoQuery, CentroTrabajoDetalleDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ObtenerCentroTrabajoUseCase(IUnitOfWork unitOfWork)
+    public ObtenerCentroTrabajoQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<CentroTrabajoDetalleDto> ExecuteAsync(int id)
+    public async Task<CentroTrabajoDetalleDto> Handle(ObtenerCentroTrabajoQuery request, CancellationToken cancellationToken)
     {
         CentroTrabajoDetalleDto? centro = await _unitOfWork.Repository<CentroTrabajo>()
             .AsQueryable()
-            .Where(entidad => entidad.Id == id)
+            .Where(entidad => entidad.Id == request.Id)
             .Select(entidad => new CentroTrabajoDetalleDto
             {
                 Id = entidad.Id,
@@ -34,7 +40,7 @@ public class ObtenerCentroTrabajoUseCase
             .SingleOrDefaultAsync();
         if (centro is null)
         {
-            throw PersistenciaCentroTrabajo.CrearNoEncontrado(id);
+            throw PersistenciaCentroTrabajo.CrearNoEncontrado(request.Id);
         }
 
         return centro;

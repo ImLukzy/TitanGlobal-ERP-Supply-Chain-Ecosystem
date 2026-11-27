@@ -1,34 +1,44 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo33_CentrosTrabajo;
 using TitanGlobal.Domain.Repositories;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Application.Exceptions;
 
-namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo;
+namespace TitanGlobal.Application.UseCases.Modulo33_CentrosTrabajo.Queries;
 
-public class ListarCentrosTrabajoUseCase
+public class ListarCentrosTrabajoQuery : IRequest<PaginaCentrosTrabajoDto>
+{
+    public string? Busqueda { get; set; }
+
+    public string? Planta { get; set; }
+
+    public string? Tipo { get; set; }
+
+    public bool? Activo { get; set; }
+
+    public int Pagina { get; set; }
+
+    public int TamanoPagina { get; set; }
+}
+
+public class ListarCentrosTrabajoQueryHandler : IRequestHandler<ListarCentrosTrabajoQuery, PaginaCentrosTrabajoDto>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ListarCentrosTrabajoUseCase(IUnitOfWork unitOfWork)
+    public ListarCentrosTrabajoQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PaginaCentrosTrabajoDto> ExecuteAsync(
-        string? busqueda,
-        string? planta,
-        string? tipo,
-        bool? activo,
-        int pagina,
-        int tamanoPagina)
+    public async Task<PaginaCentrosTrabajoDto> Handle(ListarCentrosTrabajoQuery request, CancellationToken cancellationToken)
     {
-        if (pagina < 1)
+        if (request.Pagina < 1)
         {
             throw new ReglaNegocioException(CodigosEstado.Status400BadRequest, "La página debe ser mayor o igual a 1.");
         }
 
-        if (tamanoPagina < 1 || tamanoPagina > 100)
+        if (request.TamanoPagina < 1 || request.TamanoPagina > 100)
         {
             throw new ReglaNegocioException(
                 CodigosEstado.Status400BadRequest,
@@ -36,7 +46,7 @@ public class ListarCentrosTrabajoUseCase
         }
 
         IQueryable<CentroTrabajo> consulta = _unitOfWork.Repository<CentroTrabajo>().AsQueryable();
-        string busquedaNormalizada = busqueda?.Trim().ToLowerInvariant() ?? string.Empty;
+        string busquedaNormalizada = request.Busqueda?.Trim().ToLowerInvariant() ?? string.Empty;
         if (!string.IsNullOrEmpty(busquedaNormalizada))
         {
             // PATRÓN LINQ 1: búsqueda textual insensible a mayúsculas.
@@ -45,31 +55,31 @@ public class ListarCentrosTrabajoUseCase
                 || centro.Nombre.ToLower().Contains(busquedaNormalizada));
         }
 
-        string plantaNormalizada = planta?.Trim().ToLowerInvariant() ?? string.Empty;
+        string plantaNormalizada = request.Planta?.Trim().ToLowerInvariant() ?? string.Empty;
         if (!string.IsNullOrEmpty(plantaNormalizada))
         {
             consulta = consulta.Where(centro => centro.Planta.ToLower() == plantaNormalizada);
         }
 
-        if (!string.IsNullOrWhiteSpace(tipo))
+        if (!string.IsNullOrWhiteSpace(request.Tipo))
         {
-            string tipoNormalizado = ValidacionCentroTrabajo.NormalizarTipo(tipo);
+            string tipoNormalizado = ValidacionCentroTrabajo.NormalizarTipo(request.Tipo);
             consulta = consulta.Where(centro => centro.Tipo == tipoNormalizado);
         }
 
-        if (activo.HasValue)
+        if (request.Activo.HasValue)
         {
-            consulta = consulta.Where(centro => centro.Activo == activo.Value);
+            consulta = consulta.Where(centro => centro.Activo == request.Activo.Value);
         }
 
         int total = await consulta.CountAsync();
-        long inicio = ((long)pagina - 1) * tamanoPagina;
+        long inicio = ((long)request.Pagina - 1) * request.TamanoPagina;
         int saltar = inicio > int.MaxValue ? int.MaxValue : (int)inicio;
         List<CentroTrabajoListadoDto> items = await consulta
             .OrderBy(centro => centro.Codigo)
             .ThenBy(centro => centro.Id)
             .Skip(saltar)
-            .Take(tamanoPagina)
+            .Take(request.TamanoPagina)
             .Select(centro => new CentroTrabajoListadoDto
             {
                 Id = centro.Id,
@@ -86,8 +96,8 @@ public class ListarCentrosTrabajoUseCase
         {
             Items = items,
             Total = total,
-            Pagina = pagina,
-            TamanoPagina = tamanoPagina
+            Pagina = request.Pagina,
+            TamanoPagina = request.TamanoPagina
         };
     }
 }

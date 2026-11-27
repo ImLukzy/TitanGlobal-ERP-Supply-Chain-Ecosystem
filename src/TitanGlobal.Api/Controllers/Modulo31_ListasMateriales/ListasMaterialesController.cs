@@ -1,7 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TitanGlobal.Api.Middlewares;
 using TitanGlobal.Application.DTOs.Modulo31_ListasMateriales;
-using TitanGlobal.Application.UseCases.Modulo31_ListasMateriales;
+using TitanGlobal.Application.UseCases.Modulo31_ListasMateriales.Commands;
+using TitanGlobal.Application.UseCases.Modulo31_ListasMateriales.Queries;
 
 namespace TitanGlobal.Api.Controllers.Modulo31_ListasMateriales;
 
@@ -9,27 +11,11 @@ namespace TitanGlobal.Api.Controllers.Modulo31_ListasMateriales;
 [Route("api/v1/listas-materiales")]
 public class ListasMaterialesController : ControllerBase
 {
-    private readonly ListarListasMaterialesUseCase _listar;
-    private readonly ObtenerListaMaterialUseCase _obtener;
-    private readonly CrearListaMaterialUseCase _crear;
-    private readonly EditarListaMaterialUseCase _editar;
-    private readonly ActivarListaMaterialUseCase _activar;
-    private readonly RetirarListaMaterialUseCase _retirar;
+    private readonly ISender _sender;
 
-    public ListasMaterialesController(
-        ListarListasMaterialesUseCase listar,
-        ObtenerListaMaterialUseCase obtener,
-        CrearListaMaterialUseCase crear,
-        EditarListaMaterialUseCase editar,
-        ActivarListaMaterialUseCase activar,
-        RetirarListaMaterialUseCase retirar)
+    public ListasMaterialesController(ISender sender)
     {
-        _listar = listar;
-        _obtener = obtener;
-        _crear = crear;
-        _editar = editar;
-        _activar = activar;
-        _retirar = retirar;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -39,28 +25,34 @@ public class ListasMaterialesController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 20)
     {
-        PaginaListasMaterialesDto resultado = await _listar.ExecuteAsync(productoId, estado, pagina, tamanoPagina);
+        PaginaListasMaterialesDto resultado = await _sender.Send(new ListarListasMaterialesQuery
+        {
+            ProductoId = productoId,
+            Estado = estado,
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina
+        });
         return Ok(resultado);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        ListaMaterialDetalleDto resultado = await _obtener.ExecuteAsync(id);
+        ListaMaterialDetalleDto resultado = await _sender.Send(new ObtenerListaMaterialQuery { Id = id });
         return Ok(resultado);
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearListaMaterialRequestDto solicitud)
     {
-        int id = await _crear.ExecuteAsync(solicitud);
+        int id = await _sender.Send(new CrearListaMaterialCommand { Solicitud = solicitud });
         return CreatedAtAction(nameof(Obtener), new { id }, new { Id = id });
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Editar(int id, [FromBody] EditarListaMaterialRequestDto solicitud)
     {
-        int resultado = await _editar.ExecuteAsync(id, solicitud);
+        int resultado = await _sender.Send(new EditarListaMaterialCommand { Id = id, Solicitud = solicitud });
         return Ok(new { Id = resultado });
     }
 
@@ -68,7 +60,7 @@ public class ListasMaterialesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Activar(int id)
     {
-        int resultado = await _activar.ExecuteAsync(id);
+        int resultado = await _sender.Send(new ActivarListaMaterialCommand { Id = id });
         return Ok(new { Id = resultado });
     }
 
@@ -76,7 +68,7 @@ public class ListasMaterialesController : ControllerBase
     [PermitirCuerpoVacio]
     public async Task<IActionResult> Retirar(int id)
     {
-        int resultado = await _retirar.ExecuteAsync(id);
+        int resultado = await _sender.Send(new RetirarListaMaterialCommand { Id = id });
         return Ok(new { Id = resultado });
     }
 }

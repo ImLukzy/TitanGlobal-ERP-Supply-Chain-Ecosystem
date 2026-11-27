@@ -1,39 +1,49 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TitanGlobal.Application.DTOs.Modulo31_ListasMateriales;
 using TitanGlobal.Domain.Models;
 using TitanGlobal.Domain.Repositories;
 
-namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales;
+namespace TitanGlobal.Application.UseCases.Modulo31_ListasMateriales.Commands;
 
-public class EditarListaMaterialUseCase
+public class EditarListaMaterialCommand : IRequest<int>
+{
+    public int Id { get; set; }
+
+    public required EditarListaMaterialRequestDto Solicitud { get; set; }
+}
+
+public class EditarListaMaterialCommandHandler : IRequestHandler<EditarListaMaterialCommand, int>
 {
     private readonly IUnitOfWork _unidad;
 
     private readonly IEscrituraListaMaterial _escritura;
 
-    public EditarListaMaterialUseCase(IUnitOfWork unidad, IEscrituraListaMaterial escritura)
+    public EditarListaMaterialCommandHandler(
+        IUnitOfWork unidad,
+        IEscrituraListaMaterial escritura)
     {
         _unidad = unidad;
         _escritura = escritura;
     }
 
-    public async Task<int> ExecuteAsync(int id, EditarListaMaterialRequestDto solicitud)
+    public async Task<int> Handle(EditarListaMaterialCommand request, CancellationToken cancellationToken)
     {
-        return await _escritura.EjecutarAsync(id, EditarAsync);
+        return await _escritura.EjecutarAsync(request.Id, EditarAsync);
 
         async Task<int> EditarAsync()
         {
-            ListaMateriales lista = await PersistenciaListaMaterial.ObtenerParaEscrituraAsync(_unidad, id);
+            ListaMateriales lista = await PersistenciaListaMaterial.ObtenerParaEscrituraAsync(_unidad, request.Id);
             if (lista.Estado != ValidacionListaMaterial.Borrador)
             {
                 throw ValidacionListaMaterial.Conflicto("Solo se pueden editar listas de materiales en borrador.");
             }
 
             List<DetalleListaMaterial> detalles = await ValidacionListaMaterial.ValidarComponentesAsync(
-                _unidad, lista.ProductoId, solicitud.Componentes);
-            await ReemplazarComponentesAsync(id, detalles);
+                _unidad, lista.ProductoId, request.Solicitud.Componentes);
+            await ReemplazarComponentesAsync(request.Id, detalles);
             await PersistenciaListaMaterial.GuardarComponentesAsync(_unidad, lista.ProductoId, detalles);
-            return id;
+            return request.Id;
         }
     }
 
