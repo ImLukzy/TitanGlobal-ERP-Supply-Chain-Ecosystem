@@ -935,6 +935,30 @@ ON CONFLICT ("RutaProduccionId", "Secuencia") DO UPDATE SET
     "MinutosPreparacion" = EXCLUDED."MinutosPreparacion",
     "MinutosPorUnidad" = EXCLUDED."MinutosPorUnidad";
 
+-- Módulo 43: maestro de rutas; estimaciones por recorrido, sin conversión.
+INSERT INTO "RutasDespacho" ("Codigo", "Nombre", "Zona", "Origen", "Destino", "DistanciaKm", "PeajeEstimado", "Moneda", "Activo", "Observaciones") VALUES
+('RTA-43001', 'Corredor Norte', 'Norte', 'Lima', 'Trujillo', 558.50, 98.00, 'PEN', true, 'Estimación de peajes por recorrido.'),
+('RTA-43002', 'Corredor Sur', 'Sur', 'Lima', 'Ica', 303.25, 35.50, 'PEN', true, NULL),
+('RTA-43003', 'Conexión urbana', 'Centro', 'Callao', 'Lima', 25.00, 0.00, 'PEN', true, 'Recorrido sin peajes estimados.'),
+('RTA-43004', 'Conexión internacional', 'Norte', 'Tumbes', 'Guayaquil', 280.00, 18.75, 'USD', true, NULL),
+('RTA-43005', 'Tramo Sur suspendido', 'Sur', 'Arequipa', 'Tacna', 368.20, 42.00, 'PEN', false, 'Ruta temporalmente desactivada.'),
+('RTA-43006', 'Corredor Centro', 'Centro', 'Lima', 'Huancayo', 302.40, 44.00, 'PEN', true, NULL)
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('"RutasDespacho"', 'Id'), (SELECT MAX("Id") FROM "RutasDespacho"));
+
+-- Módulo 44: preparación manual de carga; valores estimados por empaque.
+INSERT INTO "ConsolidacionesCarga" ("Codigo","Nombre","Estado","Observaciones","FechaConfirmacion","MotivoCancelacion","FechaCancelacion") VALUES
+('CAR-44001','Preparación Norte','Borrador','Picking pendiente.',NULL,NULL,NULL),
+('CAR-44002','Carga confirmada Centro','Confirmada',NULL,'2026-11-20T12:00:00Z',NULL,NULL),
+('CAR-44003','Carga cancelada Sur','Cancelada',NULL,'2026-11-19T12:00:00Z','Cambio de programación.','2026-11-20T12:00:00Z')
+ON CONFLICT (lower(btrim("Codigo"))) DO NOTHING;
+INSERT INTO "LineasConsolidacionCarga" ("ConsolidacionCargaId","Posicion","Sku","Descripcion","Cantidad","CantidadRecogida","UnidadesPorBulto","LargoCm","AnchoCm","AltoCm","PesoBultoKg")
+SELECT c."Id",1,'MAN-44001','Presentación manual de ejemplo',10,CASE WHEN c."Estado" = 'Borrador' THEN 4 ELSE 10 END,4,50,40,30,2
+FROM "ConsolidacionesCarga" c WHERE c."Codigo" IN ('CAR-44001','CAR-44002','CAR-44003')
+AND NOT EXISTS (SELECT 1 FROM "LineasConsolidacionCarga" l WHERE l."ConsolidacionCargaId" = c."Id" AND l."Posicion" = 1);
+SELECT setval(pg_get_serial_sequence('"ConsolidacionesCarga"','Id'),(SELECT MAX("Id") FROM "ConsolidacionesCarga"));
+SELECT setval(pg_get_serial_sequence('"LineasConsolidacionCarga"','Id'),(SELECT MAX("Id") FROM "LineasConsolidacionCarga"));
+
 TRUNCATE TABLE "ExpedientesImportacion" RESTART IDENTITY;
 
 INSERT INTO "ExpedientesImportacion" (
